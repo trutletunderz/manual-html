@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบคู่มือการใช้งาน - Docs</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <aside class="sidebar">
+      <h2>คลังคู่มือ</h2>
+      <ul>
+        <li><a href="index.html" class="active">หน้าแรก / แนะนำ</a></li>
+        <li><a href="guide/install.html">ขั้นตอนการติดตั้ง</a></li>
+        <li><a href="guide/config.html">การตั้งค่าระบบ</a></li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+      <article class="doc-article">
+        <h1>คู่มือเริ่มต้นการใช้งานระบบ</h1>
+        <p>ยินดีต้อนรับเข้าสู่หน้าคู่มือการใช้งาน เว็บไซต์นี้จัดทำขึ้นเพื่อใช้ดูประกอบการทำงานของระบบแบบเป็นขั้นตอน</p>
+        
+        <div class="callout">
+          <strong>💡 หมายเหตุ:</strong> คู่มือนี้จะอัปเดตเวอร์ชันล่าสุดเสมอผ่านระบบ Static Hosting ของเรา
+        </div>
+
+        <h2>ความต้องการของระบบ</h2>
+        <p>ก่อนเริ่มใช้งาน กรุณาตรวจสอบให้แน่ใจว่าเครื่องของคุณมีคำสั่ง <code>node</code> เวอร์ชัน 18 ขึ้นไปติดตั้งเรียบร้อยแล้ว</p>
+
+        <h2>คำสั่งเบื้องต้น</h2>
+        <p>เปิด Terminal แล้วรันคำสั่งด้านล่างนี้เพื่อเริ่มต้นโปรเจกต์ใหม่:</p>
+        
+        <pre><code>npm install
+npm run dev</code></pre>
+
+        <p>เมื่อรันสำเร็จ ระบบจะเปิด Local Server ให้คุณสามารถทดสอบใช้งานได้ทันที</p>
+      </article>
+    </main>
+
+  </div>
+
+</body>
+</html>

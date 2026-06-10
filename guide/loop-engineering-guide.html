@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loop Engineering — คู่มือฉบับสมบูรณ์</title>
+<style>
+:root{
+  --bg:#07090f;--bg2:#0d1117;--bg3:#111827;
+  --border:#1e293b;--border2:#263044;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--text4:#475569;
+  --mono:'JetBrains Mono','Fira Code',monospace;
+  --sans:'IBM Plex Sans Thai','Noto Sans Thai','IBM Plex Sans',system-ui,sans-serif;
+  --purple:#7c3aed;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.65;min-height:100vh}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px}
+.section{padding:52px 0 40px;border-top:1px solid var(--border)}
+h1{font-size:clamp(26px,5vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.1}
+h2{font-size:clamp(18px,3vw,26px);font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
+h3{font-size:15px;font-weight:600;margin-bottom:5px}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;display:block;margin-bottom:10px}
+p{color:var(--text2);line-height:1.7}
+.th-desc{color:var(--text2);font-size:13px;line-height:1.75;margin-top:6px}
+.en-note{font-family:var(--mono);font-size:10px;color:var(--text4);border-left:2px solid var(--border2);padding-left:8px;margin-top:6px;line-height:1.5}
+.badge{display:inline-block;font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:100px;border:1px solid currentColor}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px}
+pre,code{font-family:var(--mono);font-size:11px}
+pre{background:#050709;border:1px solid var(--border);border-radius:7px;padding:14px;overflow-x:auto;line-height:1.8;color:#7dd3fc;margin-top:10px}
+.ic{background:rgba(125,211,252,.07);border:1px solid rgba(125,211,252,.15);border-radius:4px;padding:1px 5px;color:#7dd3fc;font-family:var(--mono);font-size:11px}
+.divider{display:flex;align-items:center;gap:12px;margin:22px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.divider span{font-family:var(--mono);font-size:10px;color:var(--text4);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:640px){.g2,.g3{grid-template-columns:1fr}}
+@media(max-width:820px){.g3{grid-template-columns:repeat(2,1fr)}}
+.sw{background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.18);border-radius:6px;padding:9px 13px;font-size:12px;color:#fca5a5}
+.so{background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.18);border-radius:6px;padding:9px 13px;font-size:12px;color:#86efac}
+.si{background:rgba(124,58,237,.04);border:1px solid rgba(124,58,237,.2);border-radius:6px;padding:9px 13px;font-size:12px;color:#c4b5fd}
+.pb{background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.2);border-radius:7px;padding:10px 14px;font-size:12px;color:#c4b5fd;margin-top:10px}
+.pill{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px;display:inline-block}
+.quote{border-left:2px solid var(--purple);padding:10px 14px;background:rgba(124,58,237,.04);border-radius:0 6px 6px 0;font-style:italic;color:var(--text2);font-size:12px;line-height:1.7}
+.quote .th-trans{font-style:normal;color:var(--text3);font-size:11px;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
+.fl{display:flex}.fj{flex-direction:column}.fia{align-items:center}
+.gap4{gap:4px}.gap6{gap:6px}.gap8{gap:8px}.gap10{gap:10px}.gap12{gap:12px}
+.mb4{margin-bottom:4px}.mb6{margin-bottom:6px}.mb8{margin-bottom:8px}
+.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}
+.mb20{margin-bottom:20px}.mb24{margin-bottom:24px}.mt6{margin-top:6px}
+.mt8{margin-top:8px}.mt10{margin-top:10px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.tx{font-size:12px}.fw6{font-weight:600}
+#nav{position:sticky;top:0;z-index:100;background:rgba(7,9,15,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 0}
+#nav .wrap{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+#nav a{font-family:var(--mono);font-size:9px;color:var(--text4);text-decoration:none;padding:3px 8px;border-radius:4px;border:1px solid transparent;transition:all .15s;letter-spacing:.04em;text-transform:uppercase}
+#nav a:hover{color:var(--text2);border-color:var(--border2)}
+.logo{font-size:11px;font-weight:700;color:var(--text);margin-right:8px;letter-spacing:-.01em}
+.hero-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:28px}
+.hs{background:var(--bg2);padding:18px 20px}
+.hs .num{font-family:var(--mono);font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1;margin-bottom:4px}
+.hs .lbl{font-size:12px;color:var(--text3);margin-bottom:2px}
+.hs .lbl-th{font-size:11px;color:var(--text4)}
+@media(max-width:560px){.hero-grid{grid-template-columns:1fr}}
+.lcard{border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:10px}
+.lflow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0}
+.fn{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:5px}
+.fa{color:var(--text4);font-size:11px}
+.bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:680px){.bgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.bgrid{grid-template-columns:1fr}}
+.bcard{border:1px solid var(--border);border-radius:10px;padding:16px;transition:all .2s;text-decoration:none;display:block}
+.bcard:hover{border-color:var(--border2);transform:translateY(-1px)}
+.bnum{font-family:var(--mono);font-size:9px;color:var(--text4);margin-bottom:2px}
+.btitle{font-size:13px;font-weight:600;margin-bottom:2px}
+.bsub{font-family:var(--mono);font-size:9px}
+.bdesc{font-size:11px;color:var(--text3);margin-top:5px;line-height:1.5}
+.bdesc-th{font-size:11px;color:var(--text4);margin-top:3px;line-height:1.5}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.ap-row{display:grid;grid-template-columns:1fr 18px 1fr;align-items:start;gap:8px;padding:9px 0;border-bottom:1px solid var(--border)}
+.ap-row:last-child{border-bottom:none}
+.ab{font-family:var(--mono);font-size:10px;color:#f87171;background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.15);border-radius:4px;padding:5px 8px;line-height:1.5}
+.ag{font-family:var(--mono);font-size:10px;color:#4ade80;background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.15);border-radius:4px;padding:5px 8px;line-height:1.5}
+#finale{padding:64px 0;text-align:center}
+.fq{font-size:clamp(14px,2.2vw,18px);font-weight:600;color:var(--text);max-width:580px;margin:0 auto 10px;line-height:1.45;letter-spacing:-.01em}
+/* GLOSSARY */
+.gloss-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(max-width:640px){.gloss-grid{grid-template-columns:1fr}}
+.gloss-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px}
+.gloss-term{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px}
+.gloss-cat{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.gloss-th{font-size:13px;color:var(--text2);margin-bottom:4px;font-weight:500}
+.gloss-desc{font-size:11px;color:var(--text3);line-height:1.6}
+.gloss-example{font-family:var(--mono);font-size:10px;color:var(--text4);background:rgba(0,0,0,.3);border-radius:4px;padding:4px 8px;margin-top:6px;line-height:1.5}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+</head>
+<body>
+<!-- NAV -->
+<nav id="nav"><div class="wrap">
+  <span class="logo">Loop Engineering</span>
+  <a href="#overview">ภาพรวม</a>
+  <a href="#blocks">6 Blocks</a>
+  <a href="#b1">Automations</a>
+  <a href="#b2">Worktrees</a>
+  <a href="#b3">Skills</a>
+  <a href="#b4">Connectors</a>
+  <a href="#b5">Sub-agents</a>
+  <a href="#b6">Memory</a>
+  <a href="#addy">Addy Extended</a>
+  <a href="#glossary">Glossary</a>
+</div></nav>
+
+<!-- HERO -->
+<section style="padding:60px 0 44px"><div class="wrap">
+  <span class="eyebrow" style="color:#7c3aed">Addy Osmani · Boris Cherny · Pedpro Edition · 2026</span>
+  <h1>Loop<br><span style="color:#7c3aed">Engineering</span></h1>
+  <p class="th-desc" style="max-width:560px;margin-top:14px;font-size:15px">
+    วิศวกรรมลูป — การออกแบบระบบที่สั่ง AI agent แทนตัวคุณเอง
+    แทนที่จะ prompt ทีละครั้ง คุณสร้าง loop ที่วนซ้ำจนงานเสร็จ
+    คู่มือนี้ครอบคลุม 3 ระดับ, 6 building blocks, และ 7 เรื่องที่ Addy Osmani เขียนเพิ่มเติม
+  </p>
+  <div class="hero-grid">
+    <div class="hs"><div class="num" style="color:#7c3aed">3</div><div class="lbl">Engineering Levels</div><div class="lbl-th">ระดับวิศวกรรม</div></div>
+    <div class="hs"><div class="num" style="color:#f59e0b">6</div><div class="lbl">Building Blocks</div><div class="lbl-th">ส่วนประกอบหลัก</div></div>
+    <div class="hs"><div class="num" style="color:#22c55e">7</div><div class="lbl">Addy's Extended Topics</div><div class="lbl-th">เรื่องเพิ่มเติมจาก Addy</div></div>
+  </div>
+  <div class="quote mt16" style="margin-top:20px">
+    "My job is to write loops" — <strong>Boris Cherny</strong>, Head of Claude Code, Anthropic
+    <div class="th-trans">แปล: "งานของผมคือเขียน loop" — หมายความว่า แทนที่จะนั่ง prompt agent เอง งานที่แท้จริงคือออกแบบระบบ loop ที่ทำงานแทนตัวเอง</div>
+  </div>
+</div></section>
+
+<!-- OVERVIEW -->
+<section class="section" id="overview"><div class="wrap">
+  <span class="eyebrow" style="color:#7c3aed">ส่วนที่ 1</span>
+  <h2>3 ระดับของการทำงานกับ AI Agent</h2>
+  <p class="th-desc mb20">วิวัฒนาการจากการ prompt ทีละครั้ง ไปสู่ระบบอัตโนมัติที่ prompt agent แทนตัวเอง
+  แต่ละระดับเพิ่ม layer ใหม่เข้าไป ไม่ได้แทนที่ระดับก่อน</p>
+
+  <div class="lcard mb10" style="border-color:rgba(100,116,139,.35);background:rgba(100,116,139,.04)">
+    <div class="fl fia gap12 mb8">
+      <div><span class="eyebrow" style="color:#94a3b8;margin-bottom:2px">ระดับ 1</span><h3 style="color:#94a3b8">Prompt Engineering — วิศวกรรม Prompt</h3></div>
+      <span class="badge" style="color:#94a3b8">Human-in-the-loop</span>
+    </div>
+    <div class="lflow">
+      <span class="fn" style="background:rgba(241,245,249,.06);color:#f1f5f9">Human</span>
+      <span class="fa">&#x2192; prompt &#x2192;</span>
+      <span class="fn" style="background:rgba(125,211,252,.08);color:#7dd3fc">Agent</span>
+      <span class="fa">&#x2192; output &#x2192;</span>
+      <span class="fn" style="background:rgba(241,245,249,.06);color:#f1f5f9">Human</span>
+    </div>
+    <p class="th-desc">คนถือ agent ตลอดเวลา ส่ง prompt ทีละ turn รอผล อ่าน และพิมพ์ต่อ
+    ขีดจำกัดคือ bandwidth ของคน — agent ฉลาดแค่ไหนก็ช้าแค่คนพิมพ์</p>
+    <div class="en-note">Leverage point: quality of the prompt you write · Bottleneck: human typing speed</div>
+  </div>
+
+  <div class="divider"><span>เพิ่ม harness (สภาพแวดล้อม)</span></div>
+
+  <div class="lcard mb10" style="border-color:rgba(13,148,136,.35);background:rgba(13,148,136,.04)">
+    <div class="fl fia gap12 mb8">
+      <div><span class="eyebrow" style="color:#2dd4bf;margin-bottom:2px">ระดับ 2</span><h3 style="color:#2dd4bf">Harness Engineering — วิศวกรรม Harness</h3></div>
+      <span class="badge" style="color:#2dd4bf">Human-triggers</span>
+    </div>
+    <div class="lflow">
+      <span class="fn" style="background:rgba(241,245,249,.06);color:#f1f5f9">Human</span>
+      <span class="fa" style="color:#0d9488">&#x2192; trigger &#x2192;</span>
+      <span class="fn" style="background:rgba(45,212,191,.1);color:#2dd4bf">Harness + Agent</span>
+      <span class="fa" style="color:#0d9488">&#x2192; output &#x2192;</span>
+      <span class="fn" style="background:rgba(241,245,249,.06);color:#f1f5f9">Human</span>
+    </div>
+    <p class="th-desc">ออกแบบ "สภาพแวดล้อม" ที่ agent อาศัยอยู่ — CLAUDE.md บอก conventions,
+    Skills บอกวิธีทำงาน, Hooks เป็น guardrail อัตโนมัติ
+    agent ฉลาดขึ้นมาก แต่คนยังต้อง trigger เอง ทำงานทีละ task</p>
+    <div class="en-note">Harness = CLAUDE.md + Skills + Rules + Hooks + Subagents + MCP</div>
+    <div class="si mt8">&#x1F4A1; <strong>Addy:</strong> "A decent model with a great harness beats a great model with a bad harness." — model ธรรมดา + harness ดี ชนะ model เก่ง + harness แย่</div>
+  </div>
+
+  <div class="divider"><span>เพิ่ม automation + memory (ความจำนอก session)</span></div>
+
+  <div class="lcard" style="border-color:rgba(124,58,237,.45);background:rgba(124,58,237,.05)">
+    <div class="fl fia gap12 mb8">
+      <div><span class="eyebrow" style="color:#a78bfa;margin-bottom:2px">ระดับ 3</span><h3 style="color:#a78bfa">Loop Engineering — วิศวกรรม Loop</h3></div>
+      <span class="badge" style="color:#a78bfa">System-runs</span>
+    </div>
+    <div class="lflow">
+      <span class="fn" style="background:rgba(167,139,250,.1);color:#f1f5f9">Automation</span>
+      <span class="fa" style="color:#7c3aed">&#x2192; หางาน &#x2192;</span>
+      <span class="fn" style="background:rgba(167,139,250,.12);color:#a78bfa">Agent &#x2192; Sub-agent</span>
+      <span class="fa" style="color:#7c3aed">&#x2192; ตรวจสอบ &#x2192;</span>
+      <span class="fn" style="background:rgba(167,139,250,.1);color:#f1f5f9">loop / เสร็จ</span>
+    </div>
+    <p class="th-desc">ออกแบบ "ระบบ" ที่ส่ง prompt ให้ agent แทนตัวคุณ
+    loop วนซ้ำจนกว่า condition ที่กำหนดจะเป็นจริง
+    คนย้ายจาก "คนพิมพ์ prompt" มาเป็น "คนออกแบบ loop" แทน</p>
+    <div class="en-note">Loop = Automation + Worktrees + Skills + Connectors + Sub-agents + Memory</div>
+    <div class="so mt8">&#x2713; <strong>Peter Steinberger:</strong> "You shouldn't be prompting coding agents anymore. You should be designing loops that prompt your agents."
+    <br><span style="color:#64748b;font-size:11px">แปล: "คุณไม่ควร prompt coding agent อีกต่อไป คุณควรออกแบบ loop ที่ prompt agent แทนคุณ"</span></div>
+  </div>
+</div></section>
+
+<!-- 6 BLOCKS -->
+<section class="section" id="blocks"><div class="wrap">
+  <span class="eyebrow" style="color:#f59e0b">ส่วนที่ 2</span>
+  <h2>6 Building Blocks ของ Loop</h2>
+  <p class="th-desc mb8">ส่วนประกอบ 6 ชิ้นที่ทำให้ Loop Engineering ทำงานได้จริง
+  แต่ละ block มีหน้าที่เฉพาะของตัวเอง คลิกเพื่อดู deep-dive ของแต่ละ block</p>
+  <p class="en-note mb20">Each block has a single responsibility. Missing any one of them creates a gap that breaks the loop.</p>
+  <div class="bgrid">
+    <a class="bcard" href="#b1" style="border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)">
+      <div style="font-size:24px;margin-bottom:8px">&#x1F493;</div>
+      <div class="bnum">Block 01</div><div class="btitle" style="color:#f59e0b">Automations</div>
+      <div class="bsub" style="color:#f59e0b">heartbeat / จังหวะใจ</div>
+      <div class="bdesc">Mechanism that makes loop run without human</div>
+      <div class="bdesc-th">กลไกที่ทำให้ loop รันโดยไม่ต้องมี human กดปุ่ม</div>
+    </a>
+    <a class="bcard" href="#b2" style="border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.04)">
+      <div style="font-size:24px;margin-bottom:8px">&#x1F33F;</div>
+      <div class="bnum">Block 02</div><div class="btitle" style="color:#22c55e">Worktrees</div>
+      <div class="bsub" style="color:#22c55e">parallel isolation / แยกพื้นที่ทำงาน</div>
+      <div class="bdesc">Multiple agents work simultaneously without conflicts</div>
+      <div class="bdesc-th">agent หลายตัวทำงานพร้อมกันบน codebase เดียวโดยไม่ชนกัน</div>
+    </a>
+    <a class="bcard" href="#b3" style="border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.04)">
+      <div style="font-size:24px;margin-bottom:8px">&#x1F4DA;</div>
+      <div class="bnum">Block 03</div><div class="btitle" style="color:#3b82f6">Skills</div>
+      <div class="bsub" style="color:#3b82f6">reusable knowledge / ความรู้นำกลับมาใช้</div>
+      <div class="bdesc">Project knowledge agent reads every run</div>
+      <div class="bdesc-th">ความรู้ project ที่ agent อ่านทุก run ไม่ต้อง explain ซ้ำ</div>
+    </a>
+    <a class="bcard" href="#b4" style="border-color:rgba(236,72,153,.3);background:rgba(236,72,153,.04)">
+      <div style="font-size:24px;margin-bottom:8px">&#x1F50C;</div>
+      <div class="bnum">Block 04</div><div class="btitle" style="color:#ec4899">Connectors</div>
+      <div class="bsub" style="color:#ec4899">external integrations / เชื่อมต่อภายนอก</div>
+      <div class="bdesc">Connect agent to real tools via MCP and REST</div>
+      <div class="bdesc-th">เชื่อม agent กับ tools ภายนอกเช่น YouTrack, GitHub, Telegram</div>
+    </a>
+    <a class="bcard" href="#b5" style="border-color:rgba(167,139,250,.3);background:rgba(167,139,250,.04)">
+      <div style="font-size:24px;margin-bottom:8px">&#x1F916;</div>
+      <div class="bnum">Block 05</div><div class="btitle" style="color:#a78bfa">Sub-agents</div>
+      <div class="bsub" style="color:#a78bfa">verify &amp; specialize / ตรวจสอบและเชี่ยวชาญ</div>
+      <div class="bdesc">Creator ≠ Checker — cross-verify prevents hallucination</div>
+      <div class="bdesc-th">ผู้สร้างไม่ใช่ผู้ตรวจ — ป้องกัน hallucination ด้วยการตรวจข้ามตัว</div>
+    </a>
+    <a class="bcard" href="#b6" style="border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.04)">
+      <div style="font-size:24px;margin-bottom:8px">&#x1F4BE;</div>
+      <div class="bnum">Block 06</div><div class="btitle" style="color:#22c55e">Memory</div>
+      <div class="bsub" style="color:#22c55e">external state / สถานะภายนอก</div>
+      <div class="bdesc">Agent forgets every run — but the repo doesn't</div>
+      <div class="bdesc-th">agent ลืมทุก run แต่ repo และ issue board ไม่ลืม</div>
+    </a>
+  </div>
+</div></section>
+
+<!-- BLOCK 1: AUTOMATIONS -->
+<section class="section" id="b1"><div class="wrap">
+  <span class="eyebrow" style="color:#f59e0b">Block 01</span>
+  <h2>&#x1F493; Automations — ระบบอัตโนมัติ</h2>
+  <p class="th-desc mb8">Automation คือกลไกที่ทำให้ loop "ตื่น" ขึ้นมาทำงานโดยไม่ต้องรอคนสั่ง
+  เหมือนหัวใจที่เต้นตามจังหวะ ไม่ต้องบอกให้เต้นทุกครั้ง
+  มี 3 แบบตามสิ่งที่ trigger ให้มันทำงาน</p>
+  <div class="en-note mb16">Automation is what separates "a loop you ran once" from "a loop that keeps running." Without automation, you still have to manually kick it off each time.</div>
+
+  <div class="g3 mb16">
+    <div class="card">
+      <div style="font-size:20px;margin-bottom:8px">&#x23F1;</div>
+      <div class="fw6 mb4" style="color:#f59e0b">Schedule / กำหนดเวลา</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text4);margin-bottom:8px">cron / interval</div>
+      <p class="th-desc tx">ทำงานตามเวลาที่กำหนดไว้ล่วงหน้า เช่น "ทุก 5 นาที" หรือ "ทุกเช้า 8 โมง"
+      ไม่รอ human สั่ง ระบบตื่นเองตามตาราง</p>
+      <div class="en-note mt8">Fires at fixed times regardless of what's happening. Good for polling and routine checks.</div>
+      <div class="pb"><strong>Pedpro:</strong> <span class="ic">cron */5 * * * *</span> → ดึง YouTrack sprint board ทุก 5 นาที</div>
+    </div>
+    <div class="card">
+      <div style="font-size:20px;margin-bottom:8px">&#x26A1;</div>
+      <div class="fw6 mb4" style="color:#3b82f6">Event / เหตุการณ์</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text4);margin-bottom:8px">webhook / message</div>
+      <p class="th-desc tx">ทำงานเมื่อมีเหตุการณ์เข้ามา — ตอบสนองทันทีโดยไม่ต้อง poll
+      เช่น เมื่อ user กด /approve ใน Telegram ระบบทำงานต่อทันที</p>
+      <div class="en-note mt8">Reactive, not polling. More efficient than schedule for infrequent events.</div>
+      <div class="pb"><strong>Pedpro:</strong> Telegram <span class="ic">/approve</span> → spec เปลี่ยน state เป็น ready_for_code ทันที</div>
+    </div>
+    <div class="card">
+      <div style="font-size:20px;margin-bottom:8px">&#x1F500;</div>
+      <div class="fw6 mb4" style="color:#22c55e">Condition / เงื่อนไข</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text4);margin-bottom:8px">watch / gate</div>
+      <p class="th-desc tx">ทำงานเมื่อ "เงื่อนไข" เป็นจริง เฝ้าดู state แล้วยิงเมื่อถึงเวลา
+      เช่น "ถ้า ticket มี status = ReadyForAgent ให้ agent claim"</p>
+      <div class="en-note mt8">Polls a condition and acts when it becomes true. Good for state-based triggers.</div>
+      <div class="pb"><strong>Pedpro:</strong> YouTrack status = 'ReadyForAgent' → heartbeat claim ticket อัตโนมัติ</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>Heartbeat Lifecycle — วงจรชีวิตต่อ 1 รอบ</span></div>
+  <p class="th-desc mb12">แต่ละรอบที่ heartbeat ตื่นมา มี 7 ขั้นตอนเรียงกัน ถ้าขั้นไหนล้มเหลวก็หยุดตรงนั้น ไม่ไปต่อ</p>
+
+  <div class="card">
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;margin-bottom:14px">
+      <div style="padding:6px 2px"><div style="font-size:16px">&#x1F493;</div><div style="font-family:var(--mono);font-size:8px;color:#f59e0b;margin-top:4px">Wake</div><div style="font-size:9px;color:var(--text4);margin-top:2px">ตื่น</div></div>
+      <div style="padding:6px 2px"><div style="font-size:16px">&#x1F50D;</div><div style="font-family:var(--mono);font-size:8px;color:#3b82f6;margin-top:4px">Scan</div><div style="font-size:9px;color:var(--text4);margin-top:2px">ค้นหา</div></div>
+      <div style="padding:6px 2px"><div style="font-size:16px">&#x1F3F7;</div><div style="font-family:var(--mono);font-size:8px;color:#a78bfa;margin-top:4px">Claim</div><div style="font-size:9px;color:var(--text4);margin-top:2px">จอง</div></div>
+      <div style="padding:6px 2px"><div style="font-size:16px">&#x1F4E4;</div><div style="font-family:var(--mono);font-size:8px;color:#ec4899;margin-top:4px">Dispatch</div><div style="font-size:9px;color:var(--text4);margin-top:2px">ส่งงาน</div></div>
+      <div style="padding:6px 2px"><div style="font-size:16px">&#x2705;</div><div style="font-family:var(--mono);font-size:8px;color:#22c55e;margin-top:4px">Verify</div><div style="font-size:9px;color:var(--text4);margin-top:2px">ตรวจ</div></div>
+      <div style="padding:6px 2px"><div style="font-size:16px">&#x1F4DD;</div><div style="font-family:var(--mono);font-size:8px;color:#f59e0b;margin-top:4px">Update</div><div style="font-size:9px;color:var(--text4);margin-top:2px">อัปเดต</div></div>
+      <div style="padding:6px 2px"><div style="font-size:16px">&#x1F4A4;</div><div style="font-family:var(--mono);font-size:8px;color:#475569;margin-top:4px">Sleep</div><div style="font-size:9px;color:var(--text4);margin-top:2px">นอน</div></div>
+    </div>
+    <div class="sw mb10">&#x26A0; <strong>Claim step สำคัญที่สุด:</strong> ต้อง lock ticket ก่อน dispatch เสมอ
+    ถ้าไม่ lock และมี 2 worktrees รัน parallel จะ claim ticket เดียวกัน เกิด race condition</div>
+    <pre>// Claim ก่อน dispatch — ป้องกัน race condition
+await youtrack.updateIssue(task.id, {
+  status: 'InProgressAgent',
+  assignee: 'hermes-bot'  // mark ว่ากำลังทำอยู่
+});
+// หลังจากนี้ถึงจะ dispatch ให้ Claude Code</pre>
+  </div>
+</div></section>
+
+<!-- BLOCK 2: WORKTREES -->
+<section class="section" id="b2"><div class="wrap">
+  <span class="eyebrow" style="color:#22c55e">Block 02</span>
+  <h2>&#x1F33F; Worktrees — พื้นที่ทำงานแยกกัน</h2>
+  <p class="th-desc mb8">Git Worktree คือการแยก "working directory" ออกจากกัน — เหมือนมีห้องทำงานหลายห้องในบ้านเดียวกัน
+  แต่ละ agent ได้ห้องของตัวเอง ไม่เดินเข้าห้องคนอื่น
+  ทำให้ agent หลายตัวทำงานบน codebase เดียวพร้อมกันได้โดยไม่ conflict</p>
+  <div class="en-note mb16">A git worktree is a separate working directory linked to the same repository. Each worktree has its own branch, its own files on disk, and its own uncommitted changes.</div>
+
+  <div class="g3 mb16">
+    <div class="card" style="border-color:rgba(248,113,113,.2);background:rgba(248,113,113,.03)">
+      <div style="color:#f87171;margin-bottom:6px;font-size:14px">&#x1F4A5; File Conflict</div>
+      <p class="th-desc tx">ถ้าไม่แยก worktree — agent 2 ตัวแก้ไฟล์เดียวกันพร้อมกัน เมื่อ merge กลับจะเกิด conflict ที่แก้ยากมาก</p>
+    </div>
+    <div class="card" style="border-color:rgba(248,113,113,.2);background:rgba(248,113,113,.03)">
+      <div style="color:#f87171;margin-bottom:6px;font-size:14px">&#x1F300; Dirty Working Tree</div>
+      <p class="th-desc tx">uncommitted changes ของ task A ปนกับ task B ทำให้ไม่รู้ว่าโค้ดไหนเป็นของ task ไหน</p>
+    </div>
+    <div class="card" style="border-color:rgba(248,113,113,.2);background:rgba(248,113,113,.03)">
+      <div style="color:#f87171;margin-bottom:6px;font-size:14px">&#x23F3; Sequential Bottleneck</div>
+      <p class="th-desc tx">ถ้าใช้ repo เดียว agent ตัวที่ 2 ต้องรอตัวแรกเสร็จก่อน ทำให้ parallel ไม่ได้ผล</p>
+    </div>
+  </div>
+
+  <div class="card mb12" style="border-color:rgba(34,197,94,.2)">
+    <div style="font-family:var(--mono);font-size:9px;color:#22c55e;margin-bottom:8px;text-transform:uppercase">Convention สำหรับ Pedpro — โครงสร้าง directory</div>
+    <pre>~/pedpro/              &#x2190; main repo  (human only — agents ห้ามแตะ!)
+~/pedpro-wt/           &#x2190; worktree root
+  feat/PEDPRO-142/     &#x2190; agent A ทำ BotLine UI (branch: feat/PEDPRO-142)
+  feat/PEDPRO-143/     &#x2190; agent B ทำ BotLine API (branch: feat/PEDPRO-143)
+  fix/PEDPRO-139/      &#x2190; agent C แก้ Auth bug (branch: fix/PEDPRO-139)
+# แต่ละ worktree คือห้องทำงานแยกกัน — ไฟล์ไม่ปนกัน</pre>
+  </div>
+
+  <div class="divider"><span>วงจรชีวิตของ Worktree ต่อ 1 Task</span></div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;text-align:center;margin-bottom:14px">
+    <div class="card" style="padding:12px 6px"><div style="font-size:18px;margin-bottom:4px">&#x1F331;</div><div style="font-family:var(--mono);font-size:8px;color:#22c55e">Create</div><div style="font-size:9px;color:var(--text4);margin-top:2px">สร้าง</div></div>
+    <div class="card" style="padding:12px 6px"><div style="font-size:18px;margin-bottom:4px">&#x26A1;</div><div style="font-family:var(--mono);font-size:8px;color:#3b82f6">Run Agent</div><div style="font-size:9px;color:var(--text4);margin-top:2px">รัน agent</div></div>
+    <div class="card" style="padding:12px 6px"><div style="font-size:18px;margin-bottom:4px">&#x1F50D;</div><div style="font-family:var(--mono);font-size:8px;color:#a78bfa">Review</div><div style="font-size:9px;color:var(--text4);margin-top:2px">ตรวจสอบ</div></div>
+    <div class="card" style="padding:12px 6px"><div style="font-size:18px;margin-bottom:4px">&#x1F4EC;</div><div style="font-family:var(--mono);font-size:8px;color:#ec4899">Open PR</div><div style="font-size:9px;color:var(--text4);margin-top:2px">เปิด PR</div></div>
+    <div class="card" style="padding:12px 6px"><div style="font-size:18px;margin-bottom:4px">&#x1F9F9;</div><div style="font-family:var(--mono);font-size:8px;color:#f59e0b">Cleanup</div><div style="font-size:9px;color:var(--text4);margin-top:2px">ลบทิ้ง</div></div>
+  </div>
+  <div class="si">&#x1F4A1; <strong>Addy:</strong> "The worktrees take away the mechanical collision but YOU are still the ceiling — your review bandwidth decides how many agents you can run."
+  <br><span style="color:#64748b;font-size:11px">แปล: Worktree แก้ปัญหา "ไฟล์ชนกัน" แต่ ceiling ที่แท้จริงคือตัวคุณ — review PR ทันกี่อัน ก็รัน agent ได้กี่ตัว เริ่มที่ 2 worktrees ก่อน</span></div>
+</div></section>
+
+<!-- BLOCK 3: SKILLS -->
+<section class="section" id="b3"><div class="wrap">
+  <span class="eyebrow" style="color:#3b82f6">Block 03</span>
+  <h2>&#x1F4DA; Skills — ความรู้นำกลับมาใช้</h2>
+  <p class="th-desc mb8">Skills คือ "ความรู้ project" ที่เขียนไว้ให้ agent อ่านทุกครั้งที่รัน
+  แทนที่จะอธิบาย conventions ซ้ำทุก session ก็เขียนครั้งเดียวแล้วปล่อยให้ agent อ่านเอง
+  แต่มี 3 ชั้นของ "ความรู้" ที่ต่างกัน — ต้องเลือกใช้ให้ถูก</p>
+
+  <div class="g3 mb16">
+    <div class="card" style="border-color:rgba(245,158,11,.3)">
+      <div style="font-size:20px;margin-bottom:6px">&#x1F4CC;</div>
+      <div class="fw6 mb4" style="color:#f59e0b">CLAUDE.md</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text4);margin-bottom:6px">Always injected · ฉีด context ทุก session</div>
+      <p class="th-desc tx mb8">เหมือน "DNA" ของ agent — อ่านทุกครั้งก่อนทำอะไรทั้งนั้น
+      เก็บ prohibitions (สิ่งที่ห้ามทำ), architecture rules, stack conventions</p>
+      <div class="sw">&#x26A0; อย่าใส่ critical rules ใน Project Knowledge (RAG) — อาจไม่ถูก retrieve เลย ใส่ใน CLAUDE.md เท่านั้น</div>
+    </div>
+    <div class="card" style="border-color:rgba(59,130,246,.3)">
+      <div style="font-size:20px;margin-bottom:6px">&#x1F4DA;</div>
+      <div class="fw6 mb4" style="color:#3b82f6">Skills</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text4);margin-bottom:6px">On-demand · เรียกใช้ตามต้องการ</div>
+      <p class="th-desc tx mb8">เหมือน "ผู้เชี่ยวชาญที่โทรเรียก" — มาเฉพาะตอนต้องการ
+      triggered โดย description match หรือเรียกตรงๆ ด้วย @skill-name</p>
+      <div class="si">&#x1F4A1; description field คือสิ่งสำคัญที่สุด — บอกว่าเมื่อไหร่ agent ควรเรียก skill นี้</div>
+    </div>
+    <div class="card" style="border-color:rgba(167,139,250,.3)">
+      <div style="font-size:20px;margin-bottom:6px">&#x1F5C4;</div>
+      <div class="fw6 mb4" style="color:#a78bfa">Project Knowledge</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text4);margin-bottom:6px">RAG retrieval · ค้นหาตามความเกี่ยวข้อง</div>
+      <p class="th-desc tx mb8">เหมือน "ห้องสมุดที่ต้องค้นหาก่อน" — semantic search ดึงเฉพาะส่วนที่เกี่ยวข้อง
+      เหมาะสำหรับ docs ขนาดใหญ่ที่ไม่ได้ใช้ทุก session</p>
+      <div class="sw">&#x26A0; reliability 80-90% — อาจพลาดถ้าคำถามไม่ตรง อย่าเก็บ critical rules ที่นี่</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>Pedpro Skill Inventory — รายการ skills ที่มีและควรสร้าง</span></div>
+  <div class="g2 mb12">
+    <div class="card" style="border-color:rgba(59,130,246,.2)">
+      <div style="font-family:var(--mono);font-size:9px;color:#3b82f6;margin-bottom:8px;text-transform:uppercase">Built — สร้างแล้ว พร้อมใช้</div>
+      <div class="fl fj gap6">
+        <div><span class="ic">pedpro-architect.md</span> <span style="color:var(--text4);font-size:10px">→ Opus · วางแผน architecture</span></div>
+        <div><span class="ic">typescript-reviewer.md</span> <span style="color:var(--text4);font-size:10px">→ Sonnet · review โค้ด</span></div>
+        <div><span class="ic">bruno-spec-lookup.md</span> <span style="color:var(--text4);font-size:10px">→ Haiku · หา API spec</span></div>
+        <div><span class="ic">build-error-resolver.md</span> <span style="color:var(--text4);font-size:10px">→ Sonnet · แก้ build error</span></div>
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(167,139,250,.2)">
+      <div style="font-family:var(--mono);font-size:9px;color:#a78bfa;margin-bottom:8px;text-transform:uppercase">TODO — ยังต้องสร้าง</div>
+      <div class="fl fj gap6">
+        <div><span class="ic">bruno-contract.md</span> <span style="color:var(--text4);font-size:10px">→ enforce ก่อน modify endpoint</span></div>
+        <div><span class="ic">pedpro-tdd.md</span> <span style="color:var(--text4);font-size:10px">→ Nuxt test patterns</span></div>
+        <div><span class="ic">/scrutinize</span> <span style="color:var(--text4);font-size:10px">→ 9arm-skills (ดัดแปลงสำหรับ Pedpro)</span></div>
+        <div><span class="ic">/grill-with-docs</span> <span style="color:var(--text4);font-size:10px">→ mattpocock/skills</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="border-color:rgba(245,158,11,.2);background:rgba(245,158,11,.03)">
+    <div style="font-family:var(--mono);font-size:9px;color:#f59e0b;margin-bottom:8px;text-transform:uppercase">Hashimoto Pattern — ทำให้ Skills เติบโตเองได้</div>
+    <p class="th-desc tx mb10">ทุกครั้งที่ agent ทำผิด แทนที่จะแค่แก้ผลลัพธ์ ให้ถามว่า "context อะไรขาดไป" แล้วเพิ่มเข้า CLAUDE.md หรือ skill ใหม่
+    ทำแบบนี้ทุก sprint — CLAUDE.md จะฉลาดขึ้นทุกรอบโดยอัตโนมัติ</p>
+    <div style="display:grid;grid-template-columns:20px 1fr;gap:5px;align-items:start;margin-bottom:10px">
+      <span style="font-family:var(--mono);font-size:11px;color:#f59e0b">1.</span><span class="th-desc tx">Claude ทำผิด → <strong>อย่า</strong>แค่แก้ output แล้วเดินหน้าต่อ</span>
+      <span style="font-family:var(--mono);font-size:11px;color:#f59e0b">2.</span><span class="th-desc tx">หา root cause — "context อะไรที่ขาดทำให้ agent เดาผิด?"</span>
+      <span style="font-family:var(--mono);font-size:11px;color:#f59e0b">3.</span><span class="th-desc tx">เขียน rule ใหม่เพิ่มเข้า CLAUDE.md หรือสร้าง SKILL.md ใหม่</span>
+      <span style="font-family:var(--mono);font-size:11px;color:#f59e0b">4.</span><span class="th-desc tx">เพิ่ม hook หรือ test ที่ agent รัน self-check ได้ทุกครั้ง</span>
+    </div>
+    <div class="quote">"ทุกบรรทัดใน CLAUDE.md คือ past agent failure ที่ป้องกันแล้ว" — Mitchell Hashimoto
+    <div class="th-trans">แปล: ทุก rule ใน CLAUDE.md ควร trace กลับไปได้ถึง "สิ่งที่ agent เคยทำผิดจริงๆ" ไม่ใช่ rule สมมติ</div></div>
+  </div>
+</div></section>
+
+<!-- BLOCK 4: CONNECTORS -->
+<section class="section" id="b4"><div class="wrap">
+  <span class="eyebrow" style="color:#ec4899">Block 04</span>
+  <h2>&#x1F50C; Connectors — การเชื่อมต่อภายนอก</h2>
+  <p class="th-desc mb8">Connector คือสะพานเชื่อม agent กับ tools ภายนอก — YouTrack, GitHub, Telegram, Cloud Run
+  loop ที่เข้าถึงแค่ filesystem เป็น "loop เล็กๆ" แต่ loop ที่เชื่อมกับ tools จริงๆ คือ loop ที่ทำงานได้จริง
+  มี 3 วิธีในการเชื่อม ต่างกันที่ระดับ intelligence และ predictability</p>
+
+  <div class="g3 mb16">
+    <div class="card" style="border-color:rgba(59,130,246,.3)">
+      <div class="fw6 mb4" style="color:#3b82f6">&#x1F50C; MCP</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text4);margin-bottom:8px">Model Context Protocol</div>
+      <p class="th-desc tx mb8">มาตรฐานกลางที่ Anthropic กำหนด — agent พูดคุยกับ service โดยตรงผ่าน tool calls
+      schema-typed ทำให้ไม่ต้อง parse response เอง รองรับ bidirectional (service ส่ง event กลับได้)</p>
+      <div class="en-note">Best when the service has an MCP server (YouTrack 2025.3+, GitHub, etc.)</div>
+      <div class="pb"><strong>Pedpro:</strong> YouTrack MCP — agent ดึง/อัปเดต ticket โดยตรงโดยไม่ต้อง paste ticket ID</div>
+    </div>
+    <div class="card" style="border-color:rgba(34,197,94,.3)">
+      <div class="fw6 mb4" style="color:#22c55e">&#x1F310; REST / Webhook</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text4);margin-bottom:8px">HTTP API ทั่วไป</div>
+      <p class="th-desc tx mb8">HTTP call ธรรมดา — agent เรียก fetch() หรือ curl ไปหา API
+      ใช้ได้กับ service ทุกตัวที่มี HTTP API flexible แต่ต้อง parse response เอง</p>
+      <div class="en-note">Use when no MCP server exists. More work but works with any HTTP API.</div>
+      <div class="pb"><strong>Pedpro:</strong> Telegram Bot API — curl ตรงไปหา Bot API ส่ง notification</div>
+    </div>
+    <div class="card" style="border-color:rgba(245,158,11,.3)">
+      <div class="fw6 mb4" style="color:#f59e0b">&#x2699; Deterministic Layer</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text4);margin-bottom:8px">thin middleware — ไม่ใช่ LLM!</div>
+      <p class="th-desc tx mb8">code ธรรมดา (if/switch) ทำ routing ระหว่าง connectors
+      predictable 100% ไม่มีโอกาส hallucinate routing decision ทำงานเร็ว ไม่เสีย token</p>
+      <div class="en-note">This layer MUST be deterministic code, never LLM. LLM routing = unpredictable.</div>
+      <div class="pb"><strong>Pedpro:</strong> heartbeat.mjs — if/switch routing ตาม ticket type ไม่ใช่ LLM ตัดสินใจ</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>Pedpro Connector Stack — หน้าที่ของแต่ละ connector</span></div>
+  <div class="fl fj gap6 mb12">
+    <div class="fl fia gap10 card" style="padding:12px 14px">
+      <span style="font-family:var(--mono);font-size:10px;color:#3b82f6;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);padding:3px 8px;border-radius:4px;flex-shrink:0;min-width:80px;text-align:center">YouTrack</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--text4);background:#0f172a;border:1px solid var(--border);padding:2px 6px;border-radius:3px;flex-shrink:0">State Owner</span>
+      <span class="th-desc tx">เจ้าของ state ทั้งหมด — ทุก ticket state change เขียนที่นี่เท่านั้น เป็น single source of truth ของ loop</span>
+    </div>
+    <div class="fl fia gap10 card" style="padding:12px 14px">
+      <span style="font-family:var(--mono);font-size:10px;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);padding:3px 8px;border-radius:4px;flex-shrink:0;min-width:80px;text-align:center">GitHub</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--text4);background:#0f172a;border:1px solid var(--border);padding:2px 6px;border-radius:3px;flex-shrink:0">CI Gate</span>
+      <span class="th-desc tx">จัดการ code review, CI/CD, branch protection — agent สร้าง PR ได้แต่ <strong>ไม่ merge เอง</strong></span>
+    </div>
+    <div class="fl fia gap10 card" style="padding:12px 14px">
+      <span style="font-family:var(--mono);font-size:10px;color:#22c55e;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);padding:3px 8px;border-radius:4px;flex-shrink:0;min-width:80px;text-align:center">Telegram</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--text4);background:#0f172a;border:1px solid var(--border);padding:2px 6px;border-radius:3px;flex-shrink:0">Human Gate</span>
+      <span class="th-desc tx">ช่องทาง approval เดียว — Human อยู่ที่นี่ รับ /approve /reject ไม่ต้องเปิด YouTrack ตลอดเวลา</span>
+    </div>
+    <div class="fl fia gap10 card" style="padding:12px 14px">
+      <span style="font-family:var(--mono);font-size:10px;color:#ec4899;background:rgba(236,72,153,.1);border:1px solid rgba(236,72,153,.2);padding:3px 8px;border-radius:4px;flex-shrink:0;min-width:80px;text-align:center">Cloud Run</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--text4);background:#0f172a;border:1px solid var(--border);padding:2px 6px;border-radius:3px;flex-shrink:0">Deploy</span>
+      <span class="th-desc tx">รับ trigger จาก GitHub Actions → deploy ผ่าน cloudbuild.yaml อัตโนมัติ agent ไม่แตะ deploy โดยตรง</span>
+    </div>
+  </div>
+  <div class="sw">&#x26A0; <strong>Anti-pattern:</strong> ห้ามให้ LLM ตัดสินใจ routing ระหว่าง connectors
+  routing ต้อง predictable 100% ใช้ if/switch code เท่านั้น — LLM routing = โอกาส hallucinate ทุกรอบ</div>
+</div></section>
+
+<!-- BLOCK 5: SUB-AGENTS -->
+<section class="section" id="b5"><div class="wrap">
+  <span class="eyebrow" style="color:#a78bfa">Block 05</span>
+  <h2>&#x1F916; Sub-agents — ผู้ช่วยเฉพาะทาง</h2>
+  <p class="th-desc mb8">Sub-agent คือ agent ลูกที่รับงานเฉพาะทาง — แทนที่จะมี agent ตัวเดียวทำทุกอย่าง
+  แบ่งงานออกเป็นบทบาทชัดเจน แต่ละตัวมี context ที่ตรงกับงานตัวเอง
+  หลักการสำคัญที่สุดคือ <strong>"ผู้สร้าง ≠ ผู้ตรวจ"</strong> — agent ที่เขียนโค้ดต้องไม่ตัดสินโค้ดตัวเอง</p>
+
+  <div class="g3 mb16">
+    <div class="card" style="border-color:rgba(59,130,246,.3)">
+      <div style="font-size:18px;margin-bottom:6px">&#x1FA22;</div>
+      <div class="fw6 mb4" style="color:#3b82f6">Separation of Concerns</div>
+      <p class="th-desc tx">ผู้สร้าง &#x2260; ผู้ตรวจ — agent ที่เขียนโค้ดมี bias ที่จะคิดว่าโค้ดตัวเองดี (conflict of interest) ทำให้ hallucination ผ่านไปได้</p>
+      <span class="pill mt8" style="background:rgba(59,130,246,.1);color:#3b82f6">maker ≠ checker</span>
+    </div>
+    <div class="card" style="border-color:rgba(34,197,94,.3)">
+      <div style="font-size:18px;margin-bottom:6px">&#x1F3AF;</div>
+      <div class="fw6 mb4" style="color:#22c55e">Specialization</div>
+      <p class="th-desc tx">แต่ละ sub-agent มีขอบเขตงานแคบและชัดเจน — context ที่ inject เข้าไปตรงงาน ทำให้ hallucinate น้อยกว่า general agent</p>
+      <span class="pill mt8" style="background:rgba(34,197,94,.1);color:#22c55e">narrow scope = ลด hallucination</span>
+    </div>
+    <div class="card" style="border-color:rgba(245,158,11,.3)">
+      <div style="font-size:18px;margin-bottom:6px">&#x1F4B0;</div>
+      <div class="fw6 mb4" style="color:#f59e0b">Cost Routing</div>
+      <p class="th-desc tx">งานเบาใช้ model เบา (Haiku) งานหนักใช้ model หนัก (Opus) ไม่ต้องจ่ายค่า Opus กับงานที่ Haiku ทำได้เหมือนกัน</p>
+      <span class="pill mt8" style="background:rgba(245,158,11,.1);color:#f59e0b">Haiku 60% · Sonnet 35% · Opus 5%</span>
+    </div>
+  </div>
+
+  <div class="divider"><span>5 Agent Roles ใน Pedpro — บทบาทและขอบเขต</span></div>
+  <div class="fl fj gap6 mb12">
+    <div class="card" style="border-color:rgba(59,130,246,.2)">
+      <div class="fl fia gap10">
+        <span style="font-size:20px">&#x2699;</span>
+        <div style="flex:1">
+          <div class="fl fia gap8"><span class="fw6" style="color:#3b82f6">Worker Agent — ผู้ลงมือทำ</span><span class="pill" style="background:rgba(59,130,246,.1);color:#3b82f6;font-size:8px">Sonnet</span></div>
+          <p class="th-desc tx mt4">implement งานตาม spec · เขียนโค้ด แก้ไข สร้างไฟล์
+          <strong>ห้าม</strong> commit/push/PR โดยตรง — ต้องผ่าน reviewer ก่อนเสมอ</p>
+        </div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text4);flex-shrink:0">pedpro-worker</span>
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(167,139,250,.2)">
+      <div class="fl fia gap10">
+        <span style="font-size:20px">&#x1F50D;</span>
+        <div style="flex:1">
+          <div class="fl fia gap8"><span class="fw6" style="color:#a78bfa">Reviewer Agent — ผู้ตรวจสอบ</span><span class="pill" style="background:rgba(167,139,250,.1);color:#a78bfa;font-size:8px">Sonnet</span></div>
+          <p class="th-desc tx mt4">รัน /scrutinize บน diff · cross-check กับ Bruno spec · ให้ verdict pass/fail
+          <strong>read-only เท่านั้น</strong> — ไม่มี Write/Edit tools เพื่อป้องกันการแก้โค้ดตรงๆ</p>
+        </div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text4);flex-shrink:0">typescript-reviewer</span>
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(245,158,11,.2)">
+      <div class="fl fia gap10">
+        <span style="font-size:20px">&#x1F5FA;</span>
+        <div style="flex:1">
+          <div class="fl fia gap8"><span class="fw6" style="color:#f59e0b">Planner Agent — ผู้วางแผน</span><span class="pill" style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:8px">Opus</span></div>
+          <p class="th-desc tx mt4">decompose ticket ใหญ่ · ออกแบบ Pinia store · ตัดสินใจ architecture · เขียน ADR
+          <strong>escalation target</strong> — เรียกใช้เมื่อ task ซับซ้อน ไม่ใช่ default agent</p>
+        </div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text4);flex-shrink:0">pedpro-architect</span>
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(34,197,94,.2)">
+      <div class="fl fia gap10">
+        <span style="font-size:20px">&#x1F4D6;</span>
+        <div style="flex:1">
+          <div class="fl fia gap8"><span class="fw6" style="color:#22c55e">Lookup Agent — ผู้ค้นหา</span><span class="pill" style="background:rgba(34,197,94,.1);color:#22c55e;font-size:8px">Haiku</span></div>
+          <p class="th-desc tx mt4">ตอบ query เร็ว · หา Bruno spec · grep codebase
+          <strong>read-only ทุกกรณี</strong> ห้าม write/edit แม้แต่บรรทัดเดียว · high-volume task</p>
+        </div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text4);flex-shrink:0">bruno-spec-lookup</span>
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(236,72,153,.2)">
+      <div class="fl fia gap10">
+        <span style="font-size:20px">&#x1F527;</span>
+        <div style="flex:1">
+          <div class="fl fia gap8"><span class="fw6" style="color:#ec4899">Fixer Agent — ผู้แก้ build</span><span class="pill" style="background:rgba(236,72,153,.1);color:#ec4899;font-size:8px">Sonnet</span></div>
+          <p class="th-desc tx mt4">แก้ TypeScript error, build error, test failure
+          <strong>ต้อง explain root cause ก่อนแก้เสมอ</strong> ห้าม silence error ด้วย any/ts-ignore โดยไม่ flag</p>
+        </div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text4);flex-shrink:0">build-error-resolver</span>
+      </div>
+    </div>
+  </div>
+  <div class="sw">&#x26A0; <strong>Routing bug (พ.ค. 2026):</strong> frontmatter <span class="ic">model:</span> ใน agent file อาจถูก ignore —
+  ใช้ <span class="ic">CLAUDE_CODE_SUBAGENT_MODEL=sonnet</span> env var แทนจนกว่า Anthropic จะ fix</div>
+</div></section>
+
+<!-- BLOCK 6: MEMORY -->
+<section class="section" id="b6"><div class="wrap">
+  <span class="eyebrow" style="color:#22c55e">Block 06</span>
+  <h2>&#x1F4BE; Memory — ความจำนอก Session</h2>
+  <p class="th-desc mb8">นี่คือ block ที่ทำให้ 5 blocks ก่อนหน้า "จำกัน" ข้ามรอบได้
+  ปัญหาพื้นฐานของ AI คือ <strong>ลืมทุก session</strong> — แต่ถ้าออกแบบให้เขียน state ลงไฟล์ก่อนจบ
+  session ถัดไปก็อ่านขึ้นมาทำงานต่อได้ทันที
+  กุญแจสำคัญ: <em>"The agent forgets, the repo doesn't."</em></p>
+
+  <div class="g2 mb16">
+    <div class="card" style="border-color:rgba(248,113,113,.2);background:rgba(248,113,113,.03)">
+      <div style="font-size:20px;margin-bottom:6px">&#x1F9E0;</div>
+      <div class="fw6 mb4" style="color:#f87171">ปัญหา: Agent มี Amnesia</div>
+      <p class="th-desc tx">ทุก conversation เริ่มใหม่ตั้งแต่ต้น agent ไม่รู้ว่าเมื่อวานทำอะไรไป
+      ถ้าไม่มี external state ข้อมูลหายทันทีที่ session จบ</p>
+      <div class="en-note mt8">Agent amnesia: every session starts blank. Without external state, nothing persists.</div>
+    </div>
+    <div class="card" style="border-color:rgba(34,197,94,.2);background:rgba(34,197,94,.03)">
+      <div style="font-size:20px;margin-bottom:6px">&#x1F5C4;</div>
+      <div class="fw6 mb4" style="color:#22c55e">วิธีแก้: Repo ไม่ลืม</div>
+      <p class="th-desc tx">ไฟล์ที่อยู่นอก conversation window ไม่หายไปไหน
+      ถ้า agent เขียน state ลงไฟล์ก่อน session จบ รอบถัดไปก็อ่านได้ทันที</p>
+      <div class="en-note mt8">The filesystem is the memory. Write state to disk before session ends. Read it on next start.</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>4 Memory Tiers — ชั้นของความจำ อายุขัยต่างกัน</span></div>
+  <div class="fl fj gap6 mb16">
+    <div class="card" style="border-color:rgba(248,113,113,.2)"><div class="fl fia gap10"><span style="font-size:20px">&#x1F4A8;</span><div style="flex:1"><div class="fl fia gap8"><span class="fw6" style="color:#f87171">Tier 1 — Process Memory</span><span class="pill" style="background:rgba(248,113,113,.1);color:#f87171;font-size:8px">ตาย session จบ</span></div><p class="th-desc tx mt4">context window ของ agent ใน session นี้ — ห้าม rely ข้ามรอบ ข้อมูลหายทันทีที่ session จบ</p></div></div></div>
+    <div class="card" style="border-color:rgba(59,130,246,.2)"><div class="fl fia gap10"><span style="font-size:20px">&#x1F4C1;</span><div style="flex:1"><div class="fl fia gap8"><span class="fw6" style="color:#3b82f6">Tier 2 — Project Memory</span><span class="pill" style="background:rgba(59,130,246,.1);color:#3b82f6;font-size:8px">อยู่ตราบ repo อยู่</span></div><p class="th-desc tx mt4">ไฟล์ใน repo — CLAUDE.md, docs/specs, BUGS.md, docs/adr · commit ก่อน session จบทุกครั้ง</p></div></div></div>
+    <div class="card" style="border-color:rgba(245,158,11,.2)"><div class="fl fia gap10"><span style="font-size:20px">&#x1F4CB;</span><div style="flex:1"><div class="fl fia gap8"><span class="fw6" style="color:#f59e0b">Tier 3 — Task Memory</span><span class="pill" style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:8px">อยู่ตราบ ticket มีชีวิต</span></div><p class="th-desc tx mt4">YouTrack tickets — state, history, comments, PR links · single source of truth ของ loop ทั้งหมด</p></div></div></div>
+    <div class="card" style="border-color:rgba(167,139,250,.2)"><div class="fl fia gap10"><span style="font-size:20px">&#x1F9E0;</span><div style="flex:1"><div class="fl fia gap8"><span class="fw6" style="color:#a78bfa">Tier 4 — Knowledge Memory</span><span class="pill" style="background:rgba(167,139,250,.1);color:#a78bfa;font-size:8px">compound ตลอดชีวิต project</span></div><p class="th-desc tx mt4">BUGS.md, ADRs, CLAUDE.md prohibitions, skill files — สะสมและฉลาดขึ้นทุก sprint</p></div></div></div>
+  </div>
+
+  <div class="divider"><span>Spec State Machine — วงจรชีวิตของ spec</span></div>
+  <p class="th-desc mb10">ทุก spec ผ่านสถานะต่างๆ ก่อนถึงมือ agent — สถานะเหล่านี้เป็น memory ที่บอกว่างานอยู่ที่ไหน</p>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+    <span style="font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:100px;background:rgba(100,116,139,.1);border:1px solid rgba(100,116,139,.3);color:#94a3b8">draft · ร่าง</span>
+    <span style="color:var(--text4);align-self:center">&#x2192;</span>
+    <span style="font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:100px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:#fbbf24">revising · กำลังแก้</span>
+    <span style="color:var(--text4);align-self:center">&#x2192;</span>
+    <span style="font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:100px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);color:#60a5fa">approved · อนุมัติแล้ว</span>
+    <span style="color:var(--text4);align-self:center">&#x2192;</span>
+    <span style="font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:100px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#4ade80">ready_for_code · พร้อม</span>
+    <span style="color:var(--text4);align-self:center">|</span>
+    <span style="font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:100px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:#f87171">rejected · ปฏิเสธ</span>
+    <span style="color:var(--text4);align-self:center">|</span>
+    <span style="font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:100px;background:rgba(71,85,105,.1);border:1px solid rgba(71,85,105,.3);color:#64748b">stale · ค้าง &gt;7d</span>
+  </div>
+
+  <div class="card" style="border-color:rgba(34,197,94,.2);background:rgba(34,197,94,.03)">
+    <div style="font-family:var(--mono);font-size:9px;color:#22c55e;margin-bottom:10px;text-transform:uppercase">Golden Rules of Loop Memory — กฎทองของ loop memory</div>
+    <div class="fl fj gap6">
+      <div class="fl fia gap10"><span style="font-family:var(--mono);font-size:10px;color:#f59e0b;background:rgba(245,158,11,.1);padding:2px 7px;border-radius:3px;flex-shrink:0;white-space:nowrap">ก่อน session จบ</span><span class="th-desc tx">commit ทุก state change ลงไฟล์หรือ YouTrack ก่อนออก</span></div>
+      <div class="fl fia gap10"><span style="font-family:var(--mono);font-size:10px;color:#f87171;background:rgba(248,113,113,.1);padding:2px 7px;border-radius:3px;flex-shrink:0;white-space:nowrap">หลัง agent fail</span><span class="th-desc tx">เขียน rule ใหม่เข้า CLAUDE.md ทันที — Hashimoto pattern ทำให้ failure ไม่ซ้ำ</span></div>
+      <div class="fl fia gap10"><span style="font-family:var(--mono);font-size:10px;color:#a78bfa;background:rgba(167,139,250,.1);padding:2px 7px;border-radius:3px;flex-shrink:0;white-space:nowrap">ทุก architecture decision</span><span class="th-desc tx">เขียน ADR เก็บไว้ใน docs/adr/ — ป้องกัน agent ตั้งคำถามซ้ำหรือ reverse decisions</span></div>
+      <div class="fl fia gap10"><span style="font-family:var(--mono);font-size:10px;color:#3b82f6;background:rgba(59,130,246,.1);padding:2px 7px;border-radius:3px;flex-shrink:0;white-space:nowrap">ทุก spec cycle</span><span class="th-desc tx">เก็บ version ไว้ทุกครั้ง อย่า overwrite spec ที่ approved แล้ว</span></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ADDY EXTENDED -->
+<section class="section" id="addy"><div class="wrap">
+  <span class="eyebrow" style="color:#a78bfa">ส่วนที่ 3 — Addy Osmani Extended</span>
+  <h2>&#x1F4D6; 7 สิ่งที่ Missing จากซีรีส์</h2>
+  <p class="th-desc mb8">Addy Osmani เขียนบทความ 3 ชิ้นที่ครอบคลุมรายละเอียดที่ deeper กว่า 6 building blocks
+  มีหลายเรื่องที่ loop ส่วนใหญ่พลาด และเมื่อนำมาใช้กับ Pedpro จะทำให้ระบบแน่นขึ้นมาก</p>
+  <p style="font-size:11px;color:var(--text4);margin-bottom:28px">Sources: addyo.substack.com/p/loop-engineering · addyo.substack.com/p/long-running-agents · addyosmani.com/blog/agent-harness-engineering</p>
+
+  <!-- 01 /goal vs /loop -->
+  <div class="card mb12" style="border-color:rgba(167,139,250,.3);background:rgba(167,139,250,.04)">
+    <div class="fl fia gap12 mb12">
+      <span style="font-size:24px">&#x1F3AF;</span>
+      <div><div class="fw6" style="font-size:15px;color:#a78bfa">01 · /goal vs /loop — เงื่อนไขสิ้นสุดคือ design problem</div>
+      <p class="th-desc tx mt4">สองคำสั่งที่คนมักสับสน: /loop รันตาม cadence แต่ /goal รันจนกว่า condition จริงๆ จะเป็นจริง
+      และสำคัญกว่า — มี separate model ตรวจว่าเสร็จหรือยัง ไม่ให้ตัวเดียวกันตัดสินตัวเอง</p></div>
+    </div>
+    <div class="quote mb12">"/goal keeps going until a condition you wrote is actually true, and after every turn a separate small model checks whether you are done, so the agent that wrote the code isn't the one grading it."
+    <div class="th-trans">แปล: /goal ทำงานต่อจนกว่า condition ที่คุณเขียนจะเป็นจริง และหลังทุก turn มี model ตัวเล็กแยกต่างหากมาตรวจว่าเสร็จหรือยัง ทำให้ agent ที่เขียนโค้ดไม่ใช่คนตัดสินตัวเอง</div></div>
+    <div class="g2 mb10">
+      <div class="card" style="border-color:rgba(59,130,246,.2)"><div class="fw6 mb4" style="color:#3b82f6;font-size:12px">/loop — รันตาม cadence (จังหวะ)</div><p class="th-desc tx">รันซ้ำตาม schedule ที่กำหนด เช่น ทุก 5 นาที Pedpro มีอยู่แล้วผ่าน heartbeat.mjs</p></div>
+      <div class="card" style="border-color:rgba(167,139,250,.2)"><div class="fw6 mb4" style="color:#a78bfa;font-size:12px">/goal — รันจนกว่า condition จะจริง</div><p class="th-desc tx">รันต่อจนกว่าจะผ่าน condition ที่กำหนด เช่น "typecheck pass + lint clean + Bruno honored" <strong>Pedpro ยังขาดอยู่</strong></p></div>
+    </div>
+    <div class="sw mb10">&#x26A0; <strong>Pedpro gap:</strong> task ทุกอย่างยังจบตาม human approve ผ่าน Telegram ไม่มี machine-verifiable done condition</div>
+    <pre>## done_condition.md — เพิ่มใน .claude/agents/worker.md
+- [ ] npx vue-tsc --noEmit &#x2192; exit 0  (TypeScript ไม่มี error)
+- [ ] npm run lint &#x2192; exit 0             (lint ผ่าน)
+- [ ] bruno-spec-lookup: no endpoint drift  (API ไม่ drift)
+- [ ] All existing tests pass               (test ทุกอันยังผ่าน)
+# checker subagent ตรวจ condition เหล่านี้ทุก turn
+# ถ้า fail &#x2192; worker ทำงานต่อ ไม่ประกาศ "done" เอง</pre>
+  </div>
+
+  <!-- 02 Triage Inbox -->
+  <div class="card mb12" style="border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)">
+    <div class="fl fia gap12 mb12">
+      <span style="font-size:24px">&#x1F4E5;</span>
+      <div><div class="fw6" style="font-size:15px;color:#f59e0b">02 · Triage Inbox Pattern — inbox รับงาน</div>
+      <p class="th-desc tx mt4">loop ที่ดีไม่ใช่แค่ "ทำงานเมื่อมีงาน" แต่ต้องรายงานด้วยว่า "scan แล้วไม่พบอะไร"
+      ทำให้รู้ว่า loop ยัง healthy ไม่ใช่พัง และ surface signal ที่น่าสนใจให้ human เห็น</p></div>
+    </div>
+    <div class="quote mb12">"The runs that find something go to a Triage inbox, and the runs that find nothing just archive themselves which is nice. OpenAI uses them for daily issue triage, summarizing CI failures, writing commit briefings."
+    <div class="th-trans">แปล: รอบที่พบงานไปที่ Triage inbox ส่วนรอบที่ไม่พบอะไรก็ archive ตัวเองซึ่งดีมาก OpenAI ใช้ internally สำหรับงานน่าเบื่อเช่น triage issue รายวัน สรุป CI failure เขียน commit briefing</div></div>
+    <div class="sw mb10">&#x26A0; <strong>Pedpro gap:</strong> heartbeat.mjs ปัจจุบัน idle เงียบๆ เมื่อไม่มี ticket ไม่มี structured output ทำให้ไม่รู้ว่า loop ทำงานหรือพัง</div>
+    <pre>// heartbeat.mjs — เพิ่ม triage output
+const result = await youtrack.query({ status: 'ReadyForAgent' });
+
+if (result.tickets.length === 0) {
+  // archive run — ไม่ใช่แค่ return เฉยๆ
+  await log.append({
+    time: new Date().toISOString(),
+    run: 'no-work',
+    summary: 'scan complete — 0 tickets found'
+  });
+  return; // exit clean, ให้ cron ยิงรอบถัดไป
+}
+
+// มีงาน &#x2192; triage + notify
+const queue = await triageSkill.prioritize(result.tickets);
+await telegram.notify(`&#x1F4CB; ${queue.length} tickets queued: ${queue.map(t=>t.id).join(', ')}`);</pre>
+  </div>
+
+  <!-- 03 Intent Debt -->
+  <div class="card mb12" style="border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.04)">
+    <div class="fl fia gap12 mb12">
+      <span style="font-size:24px">&#x1F4B8;</span>
+      <div><div class="fw6" style="font-size:15px;color:#22c55e">03 · Intent Debt — หนี้ของ intent ที่ไม่เขียนไว้</div>
+      <p class="th-desc tx mt4">ทุก session ที่ไม่มี skill agent จะ "fill holes" ด้วยการเดา — สะสมเป็น "intent debt"
+      Skills เป็นการชำระหนี้ทีละน้อย และยิ่งมี skills มากยิ่ง compound — agent ฉลาดขึ้นทุกรอบโดยไม่ต้องบอก</p></div>
+    </div>
+    <div class="quote mb12">"An agent starts every session cold and it will fill any hole in your intent with a confident guess. Without skills the loop re-derives your whole project from zero every cycle, with skills it kind of compounds."
+    <div class="th-trans">แปล: agent เริ่มทุก session แบบ cold และจะ fill ทุก hole ใน intent ด้วย confident guess ถ้าไม่มี skills loop จะ re-derive project ทั้งหมดจากศูนย์ทุกรอบ ถ้ามีมันจะ compound</div></div>
+    <div class="g3 mb10">
+      <div class="card" style="border-color:rgba(248,113,113,.2)"><div class="fw6 mb4" style="color:#f87171;font-size:11px">&#x2717; Without Skill</div><p style="font-size:11px;color:var(--text3)">agent เดา: import path อาจผิด, API schema อาจผิด, convention อาจผิด — re-derive + เสีย token ทุก session</p></div>
+      <div class="card" style="border-color:rgba(34,197,94,.2)"><div class="fw6 mb4" style="color:#22c55e;font-size:11px">&#x2713; With Skill</div><p style="font-size:11px;color:var(--text3)">อ่าน convention จาก skill file — ทำถูกตั้งแต่ turn แรก ไม่ต้อง guess ไม่เสีย token กับ re-derivation</p></div>
+      <div class="card" style="border-color:rgba(167,139,250,.2)"><div class="fw6 mb4" style="color:#a78bfa;font-size:11px">&#x1F504; Compounding</div><p style="font-size:11px;color:var(--text3)">skills + Hashimoto rules = agent ฉลาดขึ้นทุก sprint โดยอัตโนมัติ debt ลดทุกรอบ</p></div>
+    </div>
+    <div class="si">&#x1F4A1; <strong>Pedpro gap:</strong> ยังขาด <span class="ic">bruno-contract</span> (enforce query Bruno spec ก่อน modify endpoint) และ <span class="ic">pedpro-tdd</span> (Nuxt-specific test patterns)</div>
+  </div>
+
+  <!-- 04 Skill vs Plugin -->
+  <div class="card mb12" style="border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.04)">
+    <div class="fl fia gap12 mb12">
+      <span style="font-size:24px">&#x1F4E6;</span>
+      <div><div class="fw6" style="font-size:15px;color:#3b82f6">04 · Skill vs Plugin — รูปแบบ vs วิธีแจกจ่าย</div>
+      <p class="th-desc tx mt4">Skill คือวิธีเขียน ใช้ได้ใน repo นี้ · Plugin คือวิธี ship มัน แชร์ข้าม repos
+      ออกแบบ self-contained ตั้งแต่ตอนนี้เพื่อ plugin-ready ในอนาคตเมื่อ Pedpro โตขึ้น</p></div>
+    </div>
+    <div class="quote mb12">"The skill is the authoring format and a plugin is how you ship it. When you want to share a skill across repos or bundle a few together you package them as a plugin."
+    <div class="th-trans">แปล: Skill คือ format ในการเขียน Plugin คือวิธี ship มัน เมื่ออยากแชร์ skill ข้าม repos หรือ bundle หลายอันรวมกัน ก็ package เป็น plugin</div></div>
+    <pre># Plugin-ready skill structure — ออกแบบให้ self-contained ตั้งแต่ตอนนี้
+.claude/skills/
+  scrutinize/
+    SKILL.md        # self-contained — ไม่ reference path อื่น
+    checklist.md    # Vue + Bruno + TypeScript checklist
+  bruno-contract/
+    SKILL.md
+  pedpro-tdd/
+    SKILL.md
+    nuxt-patterns.md  # Nuxt-specific test patterns
+
+# เมื่อต้องการ share กับ project อื่นในอนาคต:
+# บัดล skills เหล่านี้เป็น plugin "pedpro-skills" ได้เลย</pre>
+  </div>
+
+  <!-- 05 Three Problems -->
+  <div class="card mb12" style="border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.04)">
+    <div class="fl fia gap12 mb12">
+      <span style="font-size:24px">&#x26A0;&#xFE0F;</span>
+      <div><div class="fw6" style="font-size:15px;color:#f87171">05 · 3 ปัญหาที่แย่ขึ้นเมื่อ loop ดีขึ้น</div>
+      <p class="th-desc tx mt4">นี่คือ counterintuitive truth ที่สำคัญมาก: loop ที่ smooth ขึ้น ไม่ได้แปลว่าปัญหาลดลง
+      มี 3 ปัญหาที่ยิ่ง loop เร็วยิ่งแย่ขึ้น ถ้าไม่มี safeguard</p></div>
+    </div>
+    <div class="quote mb12">"Three problems actually get sharper as the loop gets better, not easier: Verification is still on you. Your understanding still rots if you allow it. The comfortable posture is the dangerous one."
+    <div class="th-trans">แปล: มีสาม problem ที่ยิ่ง loop ดีขึ้นยิ่งแหลมคม ไม่ใช่ง่ายขึ้น: Verification ยังอยู่ที่คุณ ความเข้าใจยัง rot ถ้าคุณยอมให้มันเป็นอย่างนั้น และท่าทีที่สบายใจคือท่าทีที่อันตรายที่สุด</div></div>
+    <div class="g3 mb12">
+      <div class="card" style="border-color:rgba(248,113,113,.2)">
+        <div class="fw6 mb4" style="color:#f87171;font-size:12px">Verification Rot</div>
+        <p class="th-desc tx">loop ที่รัน unattended = loop ที่ทำ mistake unattended ด้วย
+        verifier subagent บอกว่า "done" แต่นั่นเป็นแค่ claim ไม่ใช่ proof</p>
+      </div>
+      <div class="card" style="border-color:rgba(245,158,11,.2)">
+        <div class="fw6 mb4" style="color:#f59e0b;font-size:12px">Comprehension Debt</div>
+        <p class="th-desc tx">ยิ่ง loop ship code เร็วขึ้น ยิ่ง gap กว้างขึ้นระหว่างสิ่งที่ exist กับสิ่งที่คุณเข้าใจ
+        Addy เรียกว่า "comprehension debt"</p>
+      </div>
+      <div class="card" style="border-color:rgba(167,139,250,.2)">
+        <div class="fw6 mb4" style="color:#a78bfa;font-size:12px">Cognitive Surrender</div>
+        <p class="th-desc tx">เมื่อ loop รันได้เอง น่าดึงดูดมากที่จะหยุดมี opinion รับอะไรก็ได้ที่ loop ให้
+        Addy เรียกว่า "cognitive surrender" — อันตรายที่สุด</p>
+      </div>
+    </div>
+    <div class="sw">&#x26A0; <strong>Pedpro fix:</strong> ส่ง diff summary ใน Telegram ก่อน /approve ทุกครั้ง (+/- lines, reviewer verdict, should-fix items)
+    เพื่อ<strong>บังคับ</strong> human อ่าน changes จริงๆ ก่อนกด approve</div>
+  </div>
+
+  <!-- 06 Long-running -->
+  <div class="card mb12" style="border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.04)">
+    <div class="fl fia gap12 mb12">
+      <span style="font-size:24px">&#x23F3;</span>
+      <div><div class="fw6" style="font-size:15px;color:#22c55e">06 · Long-running Agents — agent ที่ทำงานข้าม session</div>
+      <p class="th-desc tx mt4">task บางอย่างใหญ่เกิน 1 session จะจบ Addy แนะนำ 3 pattern:
+      Ralph Loop ป้องกัน agent หยุดก่อนเวลา, Test Ratchet ป้องกัน agent ลบ test, progress file ทำให้ session ถัดไป pick up ได้ทันที</p></div>
+    </div>
+    <div class="quote mb12">"CLAUDE.md as a living plan the agent edits as it learns, the Ralph loop — a for loop that kicks the agent back into context whenever it claims completion and asks if it's really done. The agent itself is amnesiac, but the filesystem isn't."
+    <div class="th-trans">แปล: CLAUDE.md เป็นแผนที่มีชีวิตที่ agent แก้ไขขณะเรียนรู้ Ralph loop คือ for loop ที่เตะ agent กลับเข้า context เมื่อใดก็ตามที่มัน claim ว่าเสร็จ และถามว่าเสร็จจริงๆ ไหม ตัว agent เองมี amnesia แต่ filesystem ไม่มี</div></div>
+    <div class="g3 mb10">
+      <div class="card" style="border-color:rgba(34,197,94,.2)"><div class="fw6 mb4" style="color:#22c55e;font-size:12px">Ralph Loop</div><p class="th-desc tx">intercept "done" claim ของ agent → re-inject prompt ใน fresh context พร้อม state จาก disk → agent ทำงานต่อ</p></div>
+      <div class="card" style="border-color:rgba(245,158,11,.2)"><div class="fw6 mb4" style="color:#f59e0b;font-size:12px">Test Ratchet</div><p class="th-desc tx">Anthropic rule: "it is unacceptable to remove or edit tests" ป้องกัน failure mode ที่พบบ่อยที่สุด: agent ลบ test ที่ fail เพื่อให้ CI pass</p></div>
+      <div class="card" style="border-color:rgba(59,130,246,.2)"><div class="fw6 mb4" style="color:#3b82f6;font-size:12px">Progress File</div><p class="th-desc tx">claude-progress.txt เขียนก่อน session จบ บอก "ทำถึงไหนแล้ว ยังเหลืออะไร" session ถัดไปอ่านแล้วทำงานต่อได้ทันที</p></div>
+    </div>
+    <div class="sw mb10">&#x26A0; <strong>Pedpro gap:</strong> task ใหญ่เช่น BotLine ยังไม่มี progress file convention session หลุดปุ๊บ agent ถัดไปเริ่มใหม่จาก scratch</div>
+    <pre>## เพิ่มใน CLAUDE.md — 2 rules สำคัญ:
+
+# Test Ratchet — ป้องกัน agent ลบ test เพื่อให้ CI pass
+NEVER comment out, skip, or delete tests to make CI pass.
+If a test fails, fix the code — not the test.
+
+# Progress File — สำหรับ task ที่ span หลาย session
+Before ending any multi-session task, write claude-progress.txt:
+  Task: PEDPRO-XXX / Completed: [...] / Remaining: [...] / Blockers: [...]</pre>
+  </div>
+
+  <!-- 07 Harness Gap -->
+  <div class="card mb24" style="border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)">
+    <div class="fl fia gap12 mb12">
+      <span style="font-size:24px">&#x1F528;</span>
+      <div><div class="fw6" style="font-size:15px;color:#f59e0b">07 · 60% Failure = Harness Gap — ไม่ใช่ model problem</div>
+      <p class="th-desc tx mt4">เมื่อ agent ทำผิด คนส่วนใหญ่ blame model แล้วรอ version ใหม่
+      แต่จริงๆ 60% ของปัญหาอยู่ที่ harness ไม่ใช่ model — แก้ได้ตอนนี้เลย</p></div>
+    </div>
+    <div class="quote mb12">"LangChain 2026 report: around 60% of agent failures trace to the harness rather than the model. Viv's team moved a coding agent from Top 30 to Top 5 by changing only the harness."
+    <div class="th-trans">แปล: รายงาน LangChain 2026: ประมาณ 60% ของ agent failures มาจาก harness ไม่ใช่ model ทีมของ Viv ขยับ coding agent จากอันดับ 30 ไป Top 5 ด้วยการเปลี่ยนแค่ harness</div></div>
+    <div class="g2 mb10">
+      <div class="card" style="border-color:rgba(34,197,94,.2)"><div class="fw6 mb4" style="color:#22c55e;font-size:12px">Harness Problem — แก้ได้ตอนนี้ (~60%)</div><p class="th-desc tx">agent ไม่รู้ convention → เพิ่มใน CLAUDE.md | ทำ destructive action → เพิ่ม Hook | หยุดก่อนเสร็จ → Ralph loop</p></div>
+      <div class="card" style="border-color:rgba(245,158,11,.2)"><div class="fw6 mb4" style="color:#f59e0b;font-size:12px">Model Problem — รอได้ (~40%)</div><p class="th-desc tx">reasoning ผิดในงานซับซ้อนมาก, hallucinate API ที่ไม่มีจริง, context window หมดเร็วเกินไป</p></div>
+    </div>
+    <pre>#!/bin/bash
+# .claude/hooks/post-tool-use.sh — enforcement layer
+# รันหลัง Write/Edit tool ทุกครั้ง เป็นกำแพงด่านสุดท้าย
+
+# TypeScript check
+if npx vue-tsc --noEmit 2>&1 | grep -q "error TS"; then
+  echo "HOOK FAIL: TypeScript errors found" >&2; exit 1
+fi
+
+# Test Ratchet — ห้าม agent ลบ/comment test
+if git diff --staged | grep -E "^-.*\.(test|spec)\." | grep -v "^---"; then
+  echo "HOOK FAIL: Tests deleted/modified — fix the code, not the test" >&2; exit 2
+fi
+
+# Bruno contract warning
+if git diff --staged | grep -q "server/api/"; then
+  echo "HOOK WARN: API file changed — run bruno-contract skill" >&2
+fi</pre>
+  </div>
+
+  <!-- Priority Table -->
+  <div class="divider"><span>Priority Order — ลำดับการทำสำหรับ Pedpro</span></div>
+  <div class="fl fj gap8">
+    <div class="card" style="border-color:rgba(245,158,11,.2)">
+      <div style="font-family:var(--mono);font-size:9px;color:#f59e0b;margin-bottom:10px;text-transform:uppercase">ทำได้เลย — ใช้เวลาไม่กี่ชั่วโมง</div>
+      <div class="fl fj gap6">
+        <div class="fl fia gap10"><span>&#x1F528;</span><span style="font-family:var(--mono);font-size:10px;color:#f59e0b;min-width:180px">Test Ratchet rule</span><span class="th-desc tx">เพิ่ม CLAUDE.md: "NEVER remove/comment out tests"</span></div>
+        <div class="fl fia gap10"><span>&#x1F4E5;</span><span style="font-family:var(--mono);font-size:10px;color:#f59e0b;min-width:180px">Triage log output</span><span class="tx" style="color:var(--text3)">เพิ่ม archive branch ใน heartbeat.mjs</span></div>
+        <div class="fl fia gap10"><span>&#x1F4CA;</span><span style="font-family:var(--mono);font-size:10px;color:#f59e0b;min-width:180px">Diff summary ใน Telegram</span><span class="tx" style="color:var(--text3)">ส่ง +/- lines + verdict ก่อน /approve link</span></div>
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(59,130,246,.2)">
+      <div style="font-family:var(--mono);font-size:9px;color:#3b82f6;margin-bottom:10px;text-transform:uppercase">Phase 2 — เขียน skill/hook ใหม่ (1-2 สัปดาห์)</div>
+      <div class="fl fj gap6">
+        <div class="fl fia gap10"><span>&#x1F3AF;</span><span style="font-family:var(--mono);font-size:10px;color:#3b82f6;min-width:180px">/goal stop condition</span><span class="tx" style="color:var(--text3)">นิยาม done_condition.md ต่อ ticket type</span></div>
+        <div class="fl fia gap10"><span>&#x1F50C;</span><span style="font-family:var(--mono);font-size:10px;color:#3b82f6;min-width:180px">Bruno contract skill</span><span class="tx" style="color:var(--text3)">เขียน .claude/agents/bruno-contract.md</span></div>
+        <div class="fl fia gap10"><span>&#x23F3;</span><span style="font-family:var(--mono);font-size:10px;color:#3b82f6;min-width:180px">progress.txt convention</span><span class="tx" style="color:var(--text3)">เพิ่ม rule ใน CLAUDE.md + /handoff skill</span></div>
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(167,139,250,.2)">
+      <div style="font-family:var(--mono);font-size:9px;color:#a78bfa;margin-bottom:10px;text-transform:uppercase">Phase 3 — Enforcement layer (เมื่อพร้อม)</div>
+      <div class="fl fj gap6">
+        <div class="fl fia gap10"><span>&#x1FA9D;</span><span style="font-family:var(--mono);font-size:10px;color:#a78bfa;min-width:180px">Post-tool-use hook</span><span class="tx" style="color:var(--text3)">post-tool-use.sh: typecheck + ratchet + Bruno warn</span></div>
+        <div class="fl fia gap10"><span>&#x1F4E6;</span><span style="font-family:var(--mono);font-size:10px;color:#a78bfa;min-width:180px">Plugin-ready structure</span><span class="tx" style="color:var(--text3)">restructure .claude/skills/ ให้ self-contained</span></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<!-- GLOSSARY -->
+<section class="section" id="glossary"><div class="wrap">
+  <span class="eyebrow" style="color:#22c55e">ส่วนที่ 4</span>
+  <h2>&#x1F4D6; Glossary — คำศัพท์ที่ใช้ในคู่มือนี้</h2>
+  <p class="th-desc mb24">คำศัพท์เทคนิคทั้งหมดที่ปรากฏใน Loop Engineering — เรียงตามหมวดหมู่
+  แต่ละคำมีคำแปลไทย คำอธิบาย และตัวอย่างใน context ของ Pedpro</p>
+
+  <div class="divider"><span>Core Concepts — แนวคิดหลัก</span></div>
+  <div class="gloss-grid mb20">
+    <div class="gloss-card">
+      <div class="gloss-term">Loop Engineering</div>
+      <div class="gloss-cat" style="color:#7c3aed">Core</div>
+      <div class="gloss-th">วิศวกรรม Loop</div>
+      <div class="gloss-desc">การออกแบบระบบที่ส่ง prompt ให้ AI agent แทนตัวคุณ แทนที่จะ prompt เอง ระบบวนซ้ำ (loop) จนกว่า condition จะเป็นจริง</div>
+      <div class="gloss-example">เปรียบเทียบ: เหมือน factory line ที่คุณออกแบบสายพาน แต่ไม่ต้องยืนทำงานเอง</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Harness</div>
+      <div class="gloss-cat" style="color:#7c3aed">Core</div>
+      <div class="gloss-th">สภาพแวดล้อมของ agent</div>
+      <div class="gloss-desc">ทุกสิ่งที่ wrap รอบ model — CLAUDE.md, skills, hooks, tools, sandboxes Harness ที่ดีทำให้ model ธรรมดาทำงานได้ดีกว่า model เก่งที่ไม่มี harness</div>
+      <div class="gloss-example">Pedpro: CLAUDE.md + .claude/agents/ + heartbeat.mjs รวมกัน = harness</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Prompt Engineering</div>
+      <div class="gloss-cat" style="color:#94a3b8">Level 1</div>
+      <div class="gloss-th">วิศวกรรม Prompt</div>
+      <div class="gloss-desc">การออกแบบ prompt ที่ดีเพื่อให้ agent ตอบถูกต้อง ระดับพื้นฐานที่สุด — ยังต้องมีคนพิมพ์ prompt ทุกครั้ง</div>
+      <div class="gloss-example">การพิมพ์ "implement BotLine UI ตาม spec" ใน Claude Code คือ prompt engineering</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Harness Engineering</div>
+      <div class="gloss-cat" style="color:#2dd4bf">Level 2</div>
+      <div class="gloss-th">วิศวกรรม Harness</div>
+      <div class="gloss-desc">การออกแบบ "สภาพแวดล้อม" ที่ agent อาศัยอยู่ agent ฉลาดขึ้นมาก แต่คนยังต้อง trigger เอง ทำงานทีละ task</div>
+      <div class="gloss-example">การเขียน CLAUDE.md, skills, hooks สำหรับ Pedpro คือ harness engineering</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Agent Amnesia</div>
+      <div class="gloss-cat" style="color:#f87171">Problem</div>
+      <div class="gloss-th">ความจำสูญหายของ agent</div>
+      <div class="gloss-desc">ปัญหาพื้นฐาน: ทุก conversation เริ่มใหม่ agent ไม่รู้ว่าเมื่อวานทำอะไรไป ต้องแก้ด้วย external state</div>
+      <div class="gloss-example">agent ถามว่า "PEDPRO-142 คืออะไร" ทั้งที่เพิ่งทำ task นั้นเสร็จในรอบก่อน</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Intent Debt</div>
+      <div class="gloss-cat" style="color:#22c55e">Concept</div>
+      <div class="gloss-th">หนี้ของ intent ที่ไม่เขียนไว้</div>
+      <div class="gloss-desc">สะสมขึ้นทุกครั้งที่ agent ต้อง "เดา" convention แทนที่จะอ่านจาก skill — ยิ่งมาก ยิ่งเสีย token และ hallucinate มากขึ้น</div>
+      <div class="gloss-example">agent เดาว่า import path คือ @/components แต่จริงๆ Pedpro ใช้ page-local explicit import</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>Building Blocks — ส่วนประกอบ</span></div>
+  <div class="gloss-grid mb20">
+    <div class="gloss-card">
+      <div class="gloss-term">Automation</div>
+      <div class="gloss-cat" style="color:#f59e0b">Block 01</div>
+      <div class="gloss-th">ระบบอัตโนมัติ / heartbeat</div>
+      <div class="gloss-desc">กลไกที่ทำให้ loop ตื่นขึ้นมาทำงานโดยไม่ต้องรอคนสั่ง มี 3 แบบ: schedule, event, condition</div>
+      <div class="gloss-example">Pedpro: cron ทุก 5 นาที ดึง YouTrack ticket เหมือนหัวใจที่เต้นตาม rhythm</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Worktree</div>
+      <div class="gloss-cat" style="color:#22c55e">Block 02</div>
+      <div class="gloss-th">พื้นที่ทำงานแยกกัน</div>
+      <div class="gloss-desc">Git feature ที่สร้าง working directory แยกบน branch ต่างกัน ทำให้ agent หลายตัวทำงานพร้อมกันโดยไม่ conflict ไฟล์</div>
+      <div class="gloss-example">agent A อยู่ใน ~/pedpro-wt/feat/PEDPRO-142 agent B อยู่ใน ~/pedpro-wt/feat/PEDPRO-143</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Skill</div>
+      <div class="gloss-cat" style="color:#3b82f6">Block 03</div>
+      <div class="gloss-th">ทักษะ / ความรู้นำกลับมาใช้</div>
+      <div class="gloss-desc">folder ที่มี SKILL.md อธิบาย workflow ที่ agent ทำซ้ำบ่อย triggered โดย description match หรือเรียกตรงๆ</div>
+      <div class="gloss-example">/scrutinize skill: รัน code review ก่อน merge ทุกครั้ง</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Connector</div>
+      <div class="gloss-cat" style="color:#ec4899">Block 04</div>
+      <div class="gloss-th">ตัวเชื่อมต่อ</div>
+      <div class="gloss-desc">สะพานระหว่าง agent กับ service ภายนอก ผ่าน MCP, REST, หรือ deterministic middleware loop ที่ไม่มี connector ทำงานได้แค่กับ filesystem</div>
+      <div class="gloss-example">YouTrack MCP ให้ agent อ่าน/เขียน ticket โดยตรง ไม่ต้อง paste ID</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Sub-agent</div>
+      <div class="gloss-cat" style="color:#a78bfa">Block 05</div>
+      <div class="gloss-th">ผู้ช่วยเฉพาะทาง</div>
+      <div class="gloss-desc">agent ลูกที่รับงานเฉพาะทาง แต่ละตัวมี scope แคบ context ตรงงาน และ model tier ที่เหมาะสม</div>
+      <div class="gloss-example">typescript-reviewer เป็น sub-agent ที่ตรวจโค้ดเท่านั้น ไม่มี Write tool</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">External State</div>
+      <div class="gloss-cat" style="color:#22c55e">Block 06</div>
+      <div class="gloss-th">สถานะภายนอก / memory นอก session</div>
+      <div class="gloss-desc">ข้อมูลที่เขียนลงไฟล์หรือ issue board เพื่อ persist ข้าม session แก้ปัญหา agent amnesia</div>
+      <div class="gloss-example">YouTrack ticket status, CLAUDE.md rules, claude-progress.txt, BUGS.md</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>Technical Terms — คำศัพท์เทคนิค</span></div>
+  <div class="gloss-grid mb20">
+    <div class="gloss-card">
+      <div class="gloss-term">MCP</div>
+      <div class="gloss-cat" style="color:#3b82f6">Protocol</div>
+      <div class="gloss-th">Model Context Protocol</div>
+      <div class="gloss-desc">มาตรฐานกลางที่ Anthropic กำหนดสำหรับการเชื่อม AI model กับ external services schema-typed, bidirectional</div>
+      <div class="gloss-example">YouTrack, GitHub, Google Drive ล้วนมี MCP server ที่ Claude Code เชื่อมได้</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Race Condition</div>
+      <div class="gloss-cat" style="color:#f87171">Bug Pattern</div>
+      <div class="gloss-th">การแย่งทรัพยากรพร้อมกัน</div>
+      <div class="gloss-desc">เกิดเมื่อ agent 2 ตัวพยายาม claim/modify สิ่งเดียวกันพร้อมกัน ป้องกันด้วย Claim step ก่อน dispatch</div>
+      <div class="gloss-example">agent A และ B ทั้งคู่ claim PEDPRO-142 → เกิด race condition</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Hallucination</div>
+      <div class="gloss-cat" style="color:#f87171">AI Problem</div>
+      <div class="gloss-th">การสร้างข้อมูลเท็จ</div>
+      <div class="gloss-desc">เมื่อ AI model "เดา" แล้วเอ้าท์พุตข้อมูลที่ไม่มีอยู่จริงด้วยความมั่นใจสูง ลดได้ด้วย skills, narrow scope, และ reviewer sub-agent</div>
+      <div class="gloss-example">agent เรียก API endpoint ที่ไม่มีใน Bruno spec เพราะเดาจากชื่อ</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Context Window</div>
+      <div class="gloss-cat" style="color:#3b82f6">AI Term</div>
+      <div class="gloss-th">หน้าต่าง context / ความจำ session</div>
+      <div class="gloss-desc">ขนาดสูงสุดของ text ที่ model เห็นในครั้งเดียว Claude Sonnet มี 200k tokens ยิ่ง context เยอะ ยิ่ง cost สูง</div>
+      <div class="gloss-example">CLAUDE.md ยาวมาก = กิน context ทุก session ไม่ว่าจะทำงานอะไร</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Context Rot</div>
+      <div class="gloss-cat" style="color:#f87171">Problem</div>
+      <div class="gloss-th">การเสื่อมคุณภาพเมื่อ context เต็ม</div>
+      <div class="gloss-desc">เมื่อ context window เต็มมากขึ้น model reasoning แย่ลง แก้ด้วย compaction, tool offloading, และ context resets</div>
+      <div class="gloss-example">session ยาวๆ มักทำ agent ตอบผิดมากขึ้นเรื่อยๆ ใน turns ท้ายๆ</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Hook</div>
+      <div class="gloss-cat" style="color:#f59e0b">Mechanism</div>
+      <div class="gloss-th">ตะขอ / script ที่รันอัตโนมัติ</div>
+      <div class="gloss-desc">script ที่รันอัตโนมัติตาม lifecycle event เช่น PostToolUse, PreToolUse ใช้ enforce rules แบบ deterministic ไม่ใช่ trust LLM</div>
+      <div class="gloss-example">PostToolUse hook รัน vue-tsc ทุกครั้งที่ agent แก้ไฟล์</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">ADR</div>
+      <div class="gloss-cat" style="color:#a78bfa">Documentation</div>
+      <div class="gloss-th">Architecture Decision Record</div>
+      <div class="gloss-desc">บันทึก "ทำไมถึงตัดสินใจแบบนี้" สำหรับ architecture decisions สำคัญ ป้องกัน agent หรือคนตั้งคำถามซ้ำหรือ reverse decisions</div>
+      <div class="gloss-example">docs/adr/001-flat-directory.md อธิบายว่าทำไม Pedpro ใช้ flat directory ไม่ใช่ Nuxt default</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Deterministic</div>
+      <div class="gloss-cat" style="color:#22c55e">Property</div>
+      <div class="gloss-th">ทำนายผลได้แน่นอน</div>
+      <div class="gloss-desc">code หรือ logic ที่ให้ผลลัพธ์เดิมเสมอสำหรับ input เดิม ตรงข้ามกับ LLM ที่อาจให้ผลต่างกันแต่ละครั้ง routing logic ต้อง deterministic เสมอ</div>
+      <div class="gloss-example">if (ticket.type === 'Bug') use fixer-agent ←ผลลัพธ์แน่นอน 100%</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>Addy's Named Concepts — concept ที่ Addy ตั้งชื่อเอง</span></div>
+  <div class="gloss-grid mb20">
+    <div class="gloss-card">
+      <div class="gloss-term">Triage Inbox</div>
+      <div class="gloss-cat" style="color:#f59e0b">Pattern</div>
+      <div class="gloss-th">กล่องข้อความ triage</div>
+      <div class="gloss-desc">pattern ที่ automation runs ที่พบงานส่ง result ไปที่ inbox สำหรับ human รอ ส่วน runs ที่ไม่พบอะไรก็ archive ตัวเอง ทำให้ human เห็นแค่สิ่งที่ต้องทำ</div>
+      <div class="gloss-example">Pedpro: heartbeat พบ 3 tickets → notify Telegram "3 tickets queued" | ไม่พบ → log "no-work"</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Ralph Loop</div>
+      <div class="gloss-cat" style="color:#22c55e">Pattern</div>
+      <div class="gloss-th">วงจร Ralph / loop ที่ไม่ยอมให้หยุด</div>
+      <div class="gloss-desc">pattern สำหรับ long-running agents: loop ที่ intercept "done" claim ของ agent แล้ว re-inject prompt ใน fresh context พร้อม state จาก disk บังคับให้ทำต่อ</div>
+      <div class="gloss-example">agent บอก "PEDPRO-142 เสร็จแล้ว" → checker พบ typecheck fail → ralph loop เตะกลับ "ยังไม่เสร็จ แก้ด้วย"</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Test Ratchet</div>
+      <div class="gloss-cat" style="color:#f59e0b">Rule</div>
+      <div class="gloss-th">กลไกล็อค test</div>
+      <div class="gloss-desc">rule ที่ห้าม agent ลบหรือ comment out tests แม้ CI จะ fail แก้ปัญหา failure mode ที่พบบ่อยที่สุด: agent ลบ test ที่ fail เพื่อให้ CI "ผ่าน"</div>
+      <div class="gloss-example">agent เจอ failing test → hook block → "fix the code, not the test" → agent แก้ logic แทน</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Cognitive Surrender</div>
+      <div class="gloss-cat" style="color:#a78bfa">Anti-pattern</div>
+      <div class="gloss-th">การยอมแพ้ทางความคิด</div>
+      <div class="gloss-desc">เมื่อ loop ทำงานได้ดี human หยุดมี opinion รับ output ทุกอย่างโดยไม่ตั้งคำถาม อันตรายมากเพราะ loop ยังทำผิดได้</div>
+      <div class="gloss-example">approve PR โดยไม่อ่าน diff เพราะ "reviewer agent บอกว่าผ่านแล้ว"</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Comprehension Debt</div>
+      <div class="gloss-cat" style="color:#f59e0b">Problem</div>
+      <div class="gloss-th">หนี้ความเข้าใจ</div>
+      <div class="gloss-desc">ยิ่ง loop ship code เร็ว ยิ่ง gap กว้างขึ้นระหว่างสิ่งที่ exist ใน codebase กับสิ่งที่คุณเข้าใจจริงๆ อันตรายเมื่อมี bug ที่ต้องแก้</div>
+      <div class="gloss-example">loop เขียน 10 components ใน 1 วัน แต่คุณอ่านแค่ PR title ไม่รู้ logic จริงๆ</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Harness Gap</div>
+      <div class="gloss-cat" style="color:#f59e0b">Concept</div>
+      <div class="gloss-th">ช่องว่างของ harness</div>
+      <div class="gloss-desc">ช่องว่างระหว่างสิ่งที่ model ทำได้กับสิ่งที่คุณเห็น LangChain 2026 พบว่า 60% ของ agent failures มาจากนี้ ไม่ใช่ model ตัวเอง</div>
+      <div class="gloss-example">agent เดา import path ผิดซ้ำๆ → ไม่ใช่ model โง่ → ขาด rule ใน CLAUDE.md</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>Pedpro-specific Terms — คำศัพท์เฉพาะ Pedpro</span></div>
+  <div class="gloss-grid">
+    <div class="gloss-card">
+      <div class="gloss-term">Bruno Spec</div>
+      <div class="gloss-cat" style="color:#3b82f6">Pedpro</div>
+      <div class="gloss-th">API spec ของ Pedpro</div>
+      <div class="gloss-desc">ไฟล์ .bru ใน bruno-api/ directory คือ source of truth ของ API contract ทุกครั้งที่แก้ endpoint ต้อง consult Bruno spec ก่อนเสมอ</div>
+      <div class="gloss-example">bruno-api/botline/create-bot.bru บอก request schema และ response schema ของ endpoint</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Flat Directory Structure</div>
+      <div class="gloss-cat" style="color:#3b82f6">Pedpro</div>
+      <div class="gloss-th">โครงสร้าง directory แบบแบน</div>
+      <div class="gloss-desc">Pedpro ใช้ flat structure ที่ root (ไม่ใช่ Nuxt 4 default app/ layout) ~/และ @/ aliases ชี้ที่ project root page-local components ต้อง import explicit</div>
+      <div class="gloss-example">import BotCard from './components/BotCard.vue' (ไม่ใช่ @/components/BotCard)</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">YouTrack MCP</div>
+      <div class="gloss-cat" style="color:#3b82f6">Pedpro</div>
+      <div class="gloss-th">การเชื่อมต่อ YouTrack ผ่าน MCP</div>
+      <div class="gloss-desc">connector หลักของ Pedpro ทำให้ agent อ่าน/อัปเดต ticket โดยตรง เป็น state owner ของทั้ง loop</div>
+      <div class="gloss-example">agent query tickets status='ReadyForAgent' → claim → implement → update status='PendingApproval'</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">API Drift</div>
+      <div class="gloss-cat" style="color:#f87171">Risk</div>
+      <div class="gloss-th">การเบี่ยงเบนของ API</div>
+      <div class="gloss-desc">เมื่อ implementation เบี่ยงออกจาก Bruno spec — request/response schema ไม่ตรงกัน ทำให้ client/server ไม่ตรงกัน ป้องกันด้วย bruno-contract skill</div>
+      <div class="gloss-example">handler ส่ง response field ชื่อ "userId" แต่ Bruno spec บอกควรเป็น "user_id"</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Hermes Agent</div>
+      <div class="gloss-cat" style="color:#3b82f6">Pedpro</div>
+      <div class="gloss-th">Orchestrator agent</div>
+      <div class="gloss-desc">ชื่อที่ใช้เรียก orchestration layer ใน Pedpro — รัน heartbeat, ต่อ YouTrack MCP, ส่ง Telegram notification และ route งานให้ Claude Code sub-agents</div>
+      <div class="gloss-example">heartbeat.mjs คือ simplified version ของ Hermes Agent pattern</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Spec State Machine</div>
+      <div class="gloss-cat" style="color:#3b82f6">Pedpro</div>
+      <div class="gloss-th">เครื่องสถานะของ spec</div>
+      <div class="gloss-desc">วงจรชีวิตของ feature spec ตั้งแต่ draft → revising → approved → ready_for_code หรือ rejected/stale agent จะ implement เมื่อถึง ready_for_code เท่านั้น</div>
+      <div class="gloss-example">Telegram /approve → spec state เปลี่ยนจาก approved → ready_for_code → heartbeat pick up</div>
+    </div>
+  </div>
+</div></section>
+
+<!-- FINALE -->
+<div id="finale"><div class="wrap">
+  <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:24px">
+    <span style="font-family:var(--mono);font-size:10px;color:#f59e0b;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);padding:4px 10px;border-radius:100px">&#x1F493; Automations</span>
+    <span style="font-family:var(--mono);font-size:10px;color:#22c55e;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);padding:4px 10px;border-radius:100px">&#x1F33F; Worktrees</span>
+    <span style="font-family:var(--mono);font-size:10px;color:#3b82f6;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);padding:4px 10px;border-radius:100px">&#x1F4DA; Skills</span>
+    <span style="font-family:var(--mono);font-size:10px;color:#ec4899;background:rgba(236,72,153,.08);border:1px solid rgba(236,72,153,.2);padding:4px 10px;border-radius:100px">&#x1F50C; Connectors</span>
+    <span style="font-family:var(--mono);font-size:10px;color:#a78bfa;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);padding:4px 10px;border-radius:100px">&#x1F916; Sub-agents</span>
+    <span style="font-family:var(--mono);font-size:10px;color:#22c55e;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);padding:4px 10px;border-radius:100px">&#x1F4BE; Memory</span>
+  </div>
+  <p class="fq">"Two people can build the exact same loop and get completely opposite results. One uses it to move faster on work they understand deeply. The other uses it to avoid understanding the work at all. The loop doesn't know the difference. You do."</p>
+  <p style="font-family:var(--mono);font-size:10px;color:var(--text4);margin-bottom:8px">Addy Osmani · Loop Engineering · Jun 08, 2026</p>
+  <p class="th-desc" style="font-size:12px;color:var(--text4);margin-bottom:28px">แปล: คนสองคนสร้าง loop เดียวกันแล้วได้ผลลัพธ์ตรงข้ามกันสมบูรณ์ คนหนึ่งใช้มันเพื่อทำงานที่ตัวเองเข้าใจลึกให้เร็วขึ้น อีกคนใช้มันเพื่อหลีกเลี่ยงการเข้าใจงาน Loop ไม่รู้ความต่าง แต่คุณรู้</p>
+  <div class="quote" style="max-width:500px;margin:0 auto">
+    "Build the loop. But build it like someone who intends to stay the engineer, not just the person who presses go."
+    <div class="th-trans">แปล: สร้าง loop เถอะ แต่สร้างแบบคนที่ตั้งใจจะ stay เป็น engineer ไม่ใช่แค่คนที่กดปุ่ม go</div>
+  </div>
+  <p style="font-family:var(--mono);font-size:9px;color:var(--text4);margin-top:32px;letter-spacing:.05em">PEDPRO EDITION · Loop Engineering Complete Guide · Thai Translation Included</p>
+</div></div>
+
+</body></html>
