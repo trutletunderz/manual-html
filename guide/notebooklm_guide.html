@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คู่มือการใช้งาน NotebookLM 2026 - ฉบับสมบูรณ์ (Full Guide & Workshops)</title>
+    <style>
+        /* UI/UX Optimized Design System (Tailwind 4 Dark Palette) */
+        :root {
+            --bg-main: #09090b;       /* Zinc 950 */
+            --bg-surface: #18181b;    /* Zinc 900 */
+            --bg-card: #27272a;       /* Zinc 800 */
+            --border-muted: #3f3f46;  /* Zinc 700 */
+            
+            --text-primary: #fafafa;  /* Zinc 50 */
+            --text-secondary: #a1a1aa;/* Zinc 400 */
+            --text-muted: #71717a;    /* Zinc 500 */
+            
+            --accent-blue: #3b82f6;
+            --accent-blue-bg: rgba(59, 130, 246, 0.1);
+            
+            --accent-emerald: #10b981;
+            --accent-emerald-bg: rgba(16, 185, 129, 0.1);
+            
+            --accent-amber: #f59e0b;
+            --accent-amber-bg: rgba(245, 158, 11, 0.1);
+            
+            --accent-purple: #a855f7;
+            --accent-purple-bg: rgba(168, 85, 247, 0.1);
+            
+            --accent-rose: #f43f5e;
+            --accent-rose-bg: rgba(244, 63, 94, 0.1);
+            
+            --accent-cyan: #06b6d4;
+            --accent-cyan-bg: rgba(6, 182, 212, 0.1);
+            
+            --accent-red: #ef4444;
+            --accent-red-bg: rgba(239, 68, 68, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-main); color: var(--text-primary); line-height: 1.7; padding: 40px 24px; }
+        .container { max-width: 1012px; margin: 0 auto; }
+
+        header { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border-muted); text-align: center; }
+        .badge-container { display: flex; gap: 8px; margin-bottom: 16px; justify-content: center; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+        
+        .badge-primary { background-color: var(--accent-blue-bg); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.2); }
+        .badge-success { background-color: var(--accent-emerald-bg); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .badge-rose { background-color: var(--accent-rose-bg); color: var(--accent-rose); border: 1px solid rgba(244, 63, 94, 0.2); }
+        .badge-cyan { background-color: var(--accent-cyan-bg); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.2); }
+        .badge-amber { background-color: var(--accent-amber-bg); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.2); }
+
+        h1 { font-size: 2.75rem; font-weight: 800; letter-spacing: -0.025em; color: var(--text-primary); margin-bottom: 12px; }
+        .subtitle { color: var(--text-secondary); font-size: 1.125rem; max-width: 800px; margin: 0 auto; }
+
+        h2 { font-size: 1.85rem; font-weight: 700; color: var(--text-primary); margin-top: 64px; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 1px solid var(--border-muted); border-left: 5px solid var(--accent-blue); padding-left: 16px; }
+        h3 { font-size: 1.35rem; font-weight: 600; color: var(--text-primary); margin-top: 36px; margin-bottom: 16px; }
+        h4 { font-size: 1.1rem; font-weight: 600; color: var(--text-secondary); margin-top: 24px; margin-bottom: 8px; }
+        p { color: var(--text-secondary); margin-bottom: 20px; font-size: 1rem; }
+        strong { color: var(--text-primary); font-weight: 600; }
+
+        ul, ol { margin-left: 24px; margin-bottom: 16px; color: var(--text-secondary); }
+        li { margin-bottom: 10px; padding-left: 4px; }
+        li::marker { color: var(--accent-blue); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 24px 0; }
+        .card { background-color: var(--bg-surface); border: 1px solid var(--border-muted); border-radius: 12px; padding: 24px; transition: border-color 0.2s; }
+        .card:hover { border-color: var(--text-muted); }
+        .card-icon { font-size: 1.5rem; margin-bottom: 12px; }
+        .card-title { font-size: 1.15rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+        .example-box { background-color: var(--accent-emerald-bg); border-left: 3px solid var(--accent-emerald); padding: 12px 16px; margin-top: 12px; border-radius: 0 6px 6px 0; font-size: 0.95rem; color: var(--text-secondary); }
+        .example-label { color: var(--accent-emerald); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+
+        .callout { border-radius: 12px; padding: 20px; margin: 28px 0; border: 1px solid transparent; }
+        .callout-info { background-color: var(--accent-blue-bg); border-color: rgba(59, 130, 246, 0.25); }
+        .callout-info h4 { color: var(--accent-blue); margin-top: 0; margin-bottom: 8px; }
+        .callout-warning { background-color: var(--accent-amber-bg); border-color: rgba(245, 158, 11, 0.25); }
+        .callout-warning h4 { color: var(--accent-amber); margin-top: 0; margin-bottom: 8px; }
+        .callout-purple { background-color: var(--accent-purple-bg); border-color: rgba(168, 85, 247, 0.25); }
+        .callout-purple h4 { color: var(--accent-purple); margin-top: 0; margin-bottom: 8px; }
+        .callout-rose { background-color: var(--accent-rose-bg); border-color: rgba(244, 63, 94, 0.25); }
+        .callout-rose h4 { color: var(--accent-rose); margin-top: 0; margin-bottom: 8px; }
+        .callout-emerald { background-color: var(--accent-emerald-bg); border-color: rgba(16, 185, 129, 0.25); }
+        .callout-emerald h4 { color: var(--accent-emerald); margin-top: 0; margin-bottom: 8px; }
+
+        .limit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 24px 0; }
+        .limit-card { background-color: var(--bg-surface); border: 1px solid var(--border-muted); border-radius: 12px; padding: 20px; text-align: center; }
+        .limit-value { font-size: 1.75rem; font-weight: 800; color: var(--accent-blue); margin-bottom: 4px; }
+        .limit-label { font-size: 0.875rem; color: var(--text-secondary); font-weight: 500; }
+
+        .timeline { display: flex; flex-direction: column; gap: 20px; margin-top: 24px; margin-bottom: 40px; }
+        .timeline-step { background-color: var(--bg-surface); border: 1px solid var(--border-muted); border-radius: 12px; padding: 24px; transition: all 0.2s ease; }
+        .timeline-step:hover { border-color: var(--text-muted); transform: translateY(-2px); }
+        .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        
+        .step-pill { display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; }
+        .pill-blue { background-color: var(--accent-blue-bg); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.2); }
+        .pill-emerald { background-color: var(--accent-emerald-bg); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .pill-amber { background-color: var(--accent-amber-bg); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .pill-purple { background-color: var(--accent-purple-bg); color: var(--accent-purple); border: 1px solid rgba(168, 85, 247, 0.2); }
+        .pill-rose { background-color: var(--accent-rose-bg); color: var(--accent-rose); border: 1px solid rgba(244, 63, 94, 0.2); }
+        .pill-cyan { background-color: var(--accent-cyan-bg); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.2); }
+
+        .step-title { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
+
+        .step-list { margin-top: 24px; margin-bottom: 40px; }
+        .step-item { background-color: var(--bg-surface); border: 1px solid var(--border-muted); border-radius: 12px; padding: 24px; margin-bottom: 20px; position: relative; }
+        .step-number { display: inline-flex; align-items: center; justify-content: center; background-color: var(--accent-blue); color: #fff; font-weight: 700; font-size: 0.9rem; padding: 2px 10px; border-radius: 6px; margin-bottom: 12px; }
+
+        code { background-color: var(--bg-card); color: var(--accent-rose); padding: 2px 6px; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.9em; }
+        .ui-action { background-color: var(--bg-card); color: var(--text-primary); padding: 3px 8px; border-radius: 6px; font-size: 0.875rem; font-weight: 600; border: 1px solid var(--border-muted); display: inline-block; }
+        .citation-demo { display: inline-flex; align-items: center; justify-content: center; background-color: #064e3b; color: #34d399; font-size: 0.75rem; font-weight: 700; width: 18px; height: 18px; border-radius: 4px; margin: 0 4px; cursor: pointer; }
+        
+        .prompt-box { background-color: rgba(0,0,0,0.3); border-left: 4px solid var(--text-muted); padding: 16px; border-radius: 0 8px 8px 0; font-family: ui-monospace, monospace; font-size: 0.95rem; color: var(--text-secondary); margin: 16px 0; }
+        .prompt-box strong { color: var(--text-primary); }
+
+
+        /* Workshop Styles */
+        .workshop-card { background: linear-gradient(to bottom right, var(--bg-surface), var(--bg-main)); border: 1px solid var(--border-muted); border-radius: 16px; padding: 32px; margin-bottom: 32px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .workshop-card::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; }
+        
+        /* Specific Workshop Colors */
+        .ws-business::before { background-color: var(--accent-emerald); }
+        .ws-academic::before { background-color: var(--accent-blue); }
+        .ws-master::before { background: linear-gradient(to bottom, var(--accent-blue), var(--accent-emerald), var(--accent-amber)); } /* Master Workshop Gradient */
+        
+        .ws-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 8px; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
+        .ws-scenario { font-size: 1.05rem; color: var(--text-secondary); margin-bottom: 24px; padding: 16px; background-color: var(--bg-card); border-radius: 8px; border: 1px dashed var(--border-muted); }
+        
+        .task-list { list-style: none; margin-left: 0; counter-reset: ws-counter; }
+        .task-list li { position: relative; padding-left: 54px; margin-bottom: 24px; }
+        .task-list li::before { 
+            counter-increment: ws-counter; 
+            content: "Step " counter(ws-counter); 
+            position: absolute; 
+            left: 0; 
+            top: -2px; 
+            padding: 4px 8px; 
+            border-radius: 6px; 
+            background-color: var(--bg-card); 
+            border: 1px solid var(--border-muted); 
+            font-size: 0.75rem; 
+            font-weight: 800; 
+            color: var(--text-primary); 
+        }
+        
+        .ws-business .task-list li::before { border-color: var(--accent-emerald); color: var(--accent-emerald); background-color: var(--accent-emerald-bg); }
+        .ws-academic .task-list li::before { border-color: var(--accent-blue); color: var(--accent-blue); background-color: var(--accent-blue-bg); }
+        .ws-master .task-list li::before { border-color: var(--accent-amber); color: var(--accent-amber); background-color: var(--accent-amber-bg); }
+        
+        .func-tag { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; background-color: #3f3f46; color: #e4e4e7; text-transform: uppercase; margin-bottom: 8px; margin-right: 6px; }
+
+        footer { margin-top: 80px; padding-top: 32px; border-top: 1px solid var(--border-muted); text-align: center; color: var(--text-muted); font-size: 0.875rem; padding-bottom: 40px; }
+
+        /* Workshop specific styles */
+        .workshop-card { border-left: 4px solid var(--accent-amber); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="badge-container">
+                <span class="badge badge-primary">Official 2026 Edition</span>
+                <span class="badge badge-rose">New Features</span>
+                <span class="badge badge-amber">Workshops Included</span>
+            </div>
+            <h1>คู่มือการใช้งาน NotebookLM ฉบับสมบูรณ์</h1>
+            <p class="subtitle">ครอบคลุมทุกฟังก์ชันตั้งแต่เริ่มต้น จนถึง Workshop ประยุกต์ใช้งานจริง (Step-by-Step 1-7)</p>
+        </header>
+
+        <!-- PART 1: INTRO & GETTING STARTED -->
+        <section id="part1">
+            <h2>บทเกริ่นนำ: ปลดล็อกพลัง NotebookLM สู่การใช้งานจริง</h2>
+            <p><strong>NotebookLM</strong> ไม่ใช่แค่แชทบอททั่วไป แต่เป็นระบบพื้นที่ทำงานอัจฉริยะ (AI-Powered Workspace) ที่จะทำงานบนฐานข้อมูลหรือเอกสารที่คุณกำหนดให้เท่านั้น ปัญหาของการใช้ AI ทั่วไปคืออาการ "หลอน" (Hallucination) หรือตอบข้อมูลมั่ว แต่สำหรับ NotebookLM คำตอบทุกอย่างจะถูกจำกัดให้อยู่ในแหล่งข้อมูลของคุณ ทำให้มีความแม่นยำสูงและนำไปอ้างอิงเชิงวิชาการหรือเชิงธุรกิจได้ทันที</p>
+            
+            <h2>ส่วนที่ 1: ปูพื้นฐานการเริ่มต้นใช้งาน (Getting Started)</h2>
+            <div class="callout callout-info">
+                <h4>ℹ️ ขีดจำกัดพลังประมวลผล (อัปเดตปี 2026)</h4>
+                <p>ขับเคลื่อนด้วยเอนจิน <strong>Gemini 3.5</strong> รองรับ Context Window สูงสุดถึง 1 ล้าน Token ต่อหนึ่ง Notebook (เทียบเท่ากับหนังสือ 3-4 เล่ม) มีระบบบันทึกประวัติการแชท (Saved Conversation) และพิมพ์คำสั่งได้สูงสุดถึง 10,000 ตัวอักษรต่อครั้ง</p>
+            </div>
+            <div class="callout callout-warning">
+                <h4>🔒 Data Privacy (ความเป็นส่วนตัวสูงสุด)</h4>
+                <p>ข้อมูลทั้งหมดที่คุณนำเข้าจะถูกเก็บรักษาเป็นความลับเฉพาะบุคคล (Private to you) โดย Google จะไม่มีการนำไปเทรน (Train) โมเดล AI สาธารณะอย่างเด็ดขาด</p>
+            </div>
+
+            <div class="step-list">
+                <div class="step-item">
+                    <div class="step-number">STEP 1</div>
+                    <div class="step-title">การเข้าสู่ระบบเข้าใช้งานพื้นที่ทำงาน</div>
+                    <ol>
+                        <li>เปิดเว็บเบราว์เซอร์ เข้าไปที่ <code>notebooklm.google.com</code></li>
+                        <li>คลิกปุ่ม <span class="ui-action">Try NotebookLM</span></li>
+                        <li>ล็อกอินด้วยบัญชี Google ของคุณ</li>
+                    </ol>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">STEP 2</div>
+                    <div class="step-title">สำรวจหน้าแรก (Dashboard UI)</div>
+                    <ul>
+                        <li><strong>My Notebooks:</strong> โปรเจกต์ทั้งหมดที่คุณเคยสร้างไว้</li>
+                        <li><strong>Example Notebooks:</strong> เทมเพลตตัวอย่างที่ Google เตรียมไว้ให้</li>
+                        <li><strong>ปุ่ม + (New Notebook):</strong> สำหรับเปิดสร้างสมุดบันทึกเล่มใหม่</li>
+                    </ul>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">STEP 3</div>
+                    <div class="step-title">ขั้นตอนการเปิดพื้นที่ทำงานและตั้งชื่อ</div>
+                    <ol>
+                        <li>คลิก <span class="ui-action">New Notebook</span> เพื่อสร้าง Workspace เปล่า</li>
+                        <li>ปิดป๊อปอัป "Add Sources" ไปก่อน</li>
+                        <li>คลิกที่ <code>Untitled Notebook</code> มุมบนซ้าย เพื่อเปลี่ยนชื่อโปรเจกต์ แล้วกด Enter</li>
+                    </ol>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">STEP 4</div>
+                    <div class="step-title">ทำความเข้าใจ 3 โซนบนหน้า Workspace</div>
+                    <ul>
+                        <li><strong>1. Source Panel (ซ้าย):</strong> ตู้เก็บเอกสาร ติ๊กเลือกไฟล์เพื่อจำกัดวงค้นหา</li>
+                        <li><strong>2. Chat & Note Board (กลาง):</strong> ประกอบด้วยกล่องแชทด้านล่าง และพื้นที่แปะการ์ดโน้ตด้านบน</li>
+                        <li><strong>3. Studio Panel (ขวาบน):</strong> แผงควบคุมขั้นสูงสำหรับสร้าง Audio/Video, Mind Maps และ Quizzes</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- PART 2: SOURCE MANAGEMENT -->
+        <section id="part2">
+            <h2>ส่วนที่ 2: การนำเข้าและจัดการแหล่งข้อมูล (Source Management)</h2>
+            
+            <h3>📊 ขีดจำกัดและโควตาของแหล่งข้อมูล</h3>
+            <div class="limit-grid">
+                <div class="limit-card">
+                    <div class="limit-value">50 ไฟล์</div>
+                    <div class="limit-label">สูงสุดต่อ 1 Notebook</div>
+                </div>
+                <div class="limit-card">
+                    <div class="limit-value">500,000</div>
+                    <div class="limit-label">คำ (Words) สูงสุดต่อไฟล์</div>
+                </div>
+                <div class="limit-card">
+                    <div class="limit-value">100 หน้า</div>
+                    <div class="limit-label">สูงสุดสำหรับ Google Slides</div>
+                </div>
+                <div class="limit-card">
+                    <div class="limit-value">20 MB</div>
+                    <div class="limit-label">ขนาดไฟล์อัปโหลดเครื่องโลคอล</div>
+                </div>
+            </div>
+
+            <h3>2.1 การอัปโหลดไฟล์ภายในเครื่อง (Local Files)</h3>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-blue">STEP 1</span>
+                        <div class="step-title">เปิดหน้าต่างอัปโหลด</div>
+                    </div>
+                    <p>คลิกที่ปุ่ม <span class="ui-action">+ Add source</span> บริเวณแถบซ้ายมือ</p>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-blue">STEP 2</span>
+                        <div class="step-title">เลือกไฟล์และรอทำ OCR</div>
+                    </div>
+                    <p>ลากไฟล์ PDF, DOCX, TXT, CSV, ePub หรือรูปภาพมาวาง ระบบจะทำ OCR รูปภาพเป็นข้อความอัตโนมัติ รอจนขึ้นเครื่องหมายถูกสีเขียว</p>
+                </div>
+            </div>
+
+            <h3>2.2 การเชื่อมโยงไฟล์จาก Google Workspace</h3>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-blue">STEP 1</span>
+                        <div class="step-title">เลือกคลัง Google Drive</div>
+                    </div>
+                    <p>ในเมนู Add Source เลือก <span class="ui-action">Google Docs</span>, <span class="ui-action">Google Slides</span> หรือ <span class="ui-action">Google Sheets</span></p>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-blue">STEP 2</span>
+                        <div class="step-title">ค้นหาและ Sync</div>
+                    </div>
+                    <p>ค้นหาไฟล์ใน Drive ของคุณ เลือกแล้วกด <span class="ui-action">Insert</span> เพื่อทำสำเนาเข้าสู่ NotebookLM</p>
+                </div>
+            </div>
+
+            <h3>2.3 สื่อบันทึกเสียง เว็บไซต์ และวิดีโอ</h3>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-blue">STEP 1</span>
+                        <div class="step-title">ถอดเสียงอัตโนมัติ (Audio Transcripts)</div>
+                    </div>
+                    <p>เลือก <span class="ui-action">Audio File</span> แล้วอัปโหลด MP3/WAV AI จะถอดเสียงสัมภาษณ์เป็นข้อความให้ทันที</p>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-blue">STEP 2</span>
+                        <div class="step-title">ถอดบทความเว็บและ YouTube</div>
+                    </div>
+                    <p>วาง URL ของหน้าเว็บ หรือวิดีโอ YouTube ลงในช่อง <span class="ui-action">Website</span> / <span class="ui-action">YouTube</span> ระบบจะคัดลอกข้อความและซับไตเติลมาเป็น Sourceอ้างอิง</p>
+                </div>
+            </div>
+
+            <h3>2.4 ระบบวิจัยค้นหาอัตโนมัติ (Deep Research 2026)</h3>
+            <div class="callout callout-purple">
+                <h4>🧠 Agentic Source Retrieval</h4>
+                <p>AI Agent จะวิ่งไปสืบค้นข้อมูลจากอินเทอร์เน็ต และสังเคราะห์กลับมาเป็นไฟล์เอกสารใหม่ให้คุณโดยอัตโนมัติ</p>
+            </div>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-purple">STEP 1</span>
+                        <div class="step-title">พิมพ์หัวข้อวิจัย</div>
+                    </div>
+                    <p>เลือกเมนู <span class="ui-action">Deep Research Search</span> แล้วพิมพ์คำค้นหาที่ต้องการ (เช่น "สรุปกฎหมายปกครองใหม่ 2026")</p>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-purple">STEP 2</span>
+                        <div class="step-title">คัดกรองลิงก์และแปลงเป็น Source</div>
+                    </div>
+                    <p>ติ๊กเลือกแหล่งเว็บที่น่าเชื่อถือ แล้วกด <span class="ui-action">Convert to Source Artifact</span> เพื่อรับไฟล์สรุป</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PART 3: WORKSPACE & CHAT -->
+        <section id="part3">
+            <h2>ส่วนที่ 3: ระบบการถาม-ตอบ และจัดการข้อมูล (Workspace & Chat)</h2>
+
+            <div class="callout callout-emerald">
+                <h4>🛡️ ระบบ Inline Citations</h4>
+                <p>ทุกคำตอบจะมีตัวเลขกำกับ <span class="citation-demo">1</span> เมื่อคลิกที่ตัวเลข ระบบจะเปิดเอกสารต้นฉบับและไฮไลต์บรรทัดหลักฐานให้ทันที ป้องกันอาการ AI มโนคำตอบ</p>
+            </div>
+
+            <h3>3.1 การกรองแหล่งข้อมูลและตรวจอ้างอิง</h3>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-blue">STEP 1</span>
+                        <div class="step-title">การเลือก Sources เจาะจง</div>
+                    </div>
+                    <p>ใน Source Panel ซ้ายมือ ติ๊กเลือกเฉพาะไฟล์ที่ต้องการให้ AI โฟกัสคำตอบ</p>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-blue">STEP 2</span>
+                        <div class="step-title">พิมพ์คำถามและตรวจ Citation</div>
+                    </div>
+                    <p>พิมพ์คำถามในกล่องแชท เมื่อ AI ตอบกลับ ให้คลิกที่ <strong>ป้ายหมายเลขดัชนี</strong> ท้ายประโยค เพื่ออ่านข้อความจริงจากต้นฉบับ</p>
+                </div>
+            </div>
+
+            <h3>3.2 บันทึกโน้ต (Saved Notes)</h3>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-amber">STEP 1</span>
+                        <div class="step-title">กดบันทึกลงบอร์ด</div>
+                    </div>
+                    <p>คลิก <span class="ui-action">Save to Note</span> มุมขวาล่างของคำตอบ เพื่อแปะเป็น "การ์ดโน้ตสีส้ม" บน Note Board ตรงกลาง</p>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-amber">STEP 2</span>
+                        <div class="step-title">รวมโน้ต (Multi-Note Selection)</div>
+                    </div>
+                    <p>ติ๊กถูกเลือกการ์ดโน้ต 2 ใบขึ้นไป แล้วกดคำสั่ง <span class="ui-action">Combine notes</span> หรือพิมพ์สั่งแชทต่อยอดจากกลุ่มโน้ตนั้น</p>
+                </div>
+            </div>
+
+            <h3>3.3 คู่มือการเรียนรู้ (Learning Guide)</h3>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-purple">STEP 1</span>
+                        <div class="step-title">สร้างแบบทดสอบ</div>
+                    </div>
+                    <p>คลิก <span class="ui-action">Studio</span> ขวาบน > เลือก <span class="ui-action">Learning Guide</span> > กด <span class="ui-action">Generate Quiz</span></p>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-purple">STEP 2</span>
+                        <div class="step-title">ตอบและประเมินผล</div>
+                    </div>
+                    <p>พิมพ์คำตอบส่งไปให้ AI ตรวจให้คะแนน พร้อมรับคำอธิบายเฉลยที่อ้างอิงจากเอกสาร</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PART 4: STUDIO -->
+        <section id="part4">
+            <h2>ส่วนที่ 4: ฟีเจอร์ Studio การสร้างผลงาน (Artifact Generation)</h2>
+            <p>เปลี่ยนข้อมูลดิบให้กลายเป็นสื่อที่ย่อยง่ายผ่านแผง <strong>Studio</strong> มุมขวาบนของจอ</p>
+
+            <h3>4.1 Audio Overviews (พอดแคสต์ 2 พิธีกร AI)</h3>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-purple">STEP 1</span>
+                        <div class="step-title">Customize พอดแคสต์</div>
+                    </div>
+                    <p>คลิก <span class="ui-action">Customize</span> ใต้ Audio Overview เพื่อป้อน Prompt กำกับทิศทาง (เช่น "อธิบายให้เด็กประถมฟังเข้าใจง่าย")</p>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-purple">STEP 2</span>
+                        <div class="step-title">Generate และฟังออฟไลน์</div>
+                    </div>
+                    <p>กด <span class="ui-action">Generate</span> รอ 3-5 นาที เมื่อเครื่องเล่นเสียงปรากฏ คุณสามารถกดจุดสามจุดเพื่อ <span class="ui-action">Download</span> เป็นไฟล์ .wav ได้</p>
+                </div>
+            </div>
+
+            <h3>4.2 Cinematic Video Overviews (New 2026)</h3>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-rose">STEP 1</span>
+                        <div class="step-title">สร้างวิดีโอสารคดี</div>
+                    </div>
+                    <p>เลื่อนลงมาคลิก <span class="ui-action">Create Video</span> > เลือกภาษา (รองรับไทย) และ Visual Style (สารคดี, อธิบาย, ไดนามิก)</p>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-rose">STEP 2</span>
+                        <div class="step-title">Export นำไปใช้งาน</div>
+                    </div>
+                    <p>กด <span class="ui-action">Generate Video</span> เมื่อเรนเดอร์เสร็จ สามารถคลิก <span class="ui-action">Export</span> ดาวน์โหลดเป็น 1080p MP4</p>
+                </div>
+            </div>
+
+            <h3>4.3 Visual Mind Maps & Flashcards</h3>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-amber">STEP 1</span>
+                        <div class="step-title">Mind Map (แผนผังความคิด)</div>
+                    </div>
+                    <p>เลือก <span class="ui-action">Mind Map</span> ใน Studio แผนผังจะปรากฏบนบอร์ด ให้คลิกที่ <strong>Node (วงกลม)</strong> เพื่อแตกกิ่งเจาะลึกเนื้อหา แล้วเซฟเป็นรูปภาพ</p>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-blue">STEP 2</span>
+                        <div class="step-title">Flashcards พร้อม Progress Tracking</div>
+                    </div>
+                    <p>ในแท็บ Study Tools กด <span class="ui-action">Create Flashcards</span> กด <strong>Flip Card</strong> เพื่อดูเฉลย ระบบจะจำสถานะการตอบถูกผิดเพื่อนำมาทบทวนให้ใหม่ในวันถัดไป</p>
+                </div>
+            </div>
+
+            <h3>4.4 AI-Suggested Reports</h3>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-emerald">STEP 1</span>
+                        <div class="step-title">กดสร้างปุ่มลัดเอกสาร</div>
+                    </div>
+                    <p>ด้านล่างสุดของ Studio จะมีปุ่มลัด เช่น <span class="ui-action">FAQ</span>, <span class="ui-action">Briefing Doc</span>, <span class="ui-action">Timeline</span> กดเพื่อสร้างรายงานทันที แล้วคลิก <span class="ui-action">Copy to Google Docs</span> เพื่อส่งออก</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PART 5: COLLABORATION -->
+        <section id="part5">
+            <h2>ส่วนที่ 5: การจัดการ Notebook และการทำงานร่วมกัน</h2>
+
+            <h3>5.1 การแชร์ให้ทีมงาน (Sharing)</h3>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-blue">STEP 1</span>
+                        <div class="step-title">เชิญอีเมลทีมงาน</div>
+                    </div>
+                    <p>คลิกปุ่ม <span class="ui-action">Share</span> มุมขวาบน พิมพ์อีเมลทีม แล้วเลือกระดับสิทธิ์:</p>
+                    <ul>
+                        <li><strong>Viewer:</strong> อ่านและแชทถามได้ แต่แก้ไข/ลบไฟล์ไม่ได้</li>
+                        <li><strong>Editor:</strong> จัดการลบ/เพิ่มแหล่งข้อมูล และการ์ดโน้ตได้ทั้งหมด</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>5.2 การ Sync ข้อมูลอัปเดต</h3>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-emerald">STEP 1</span>
+                        <div class="step-title">ดึงข้อมูลล่าสุดจาก Google Drive</div>
+                    </div>
+                    <p>หาก Google Docs ต้นฉบับถูกแก้ไข ให้คลิก <strong>ไอคอนลูกศรหมุนวน (Sync)</strong> หลังชื่อไฟล์ใน Source Panel เพื่อให้ AI โหลดข้อมูลชุดใหม่</p>
+                </div>
+            </div>
+
+            <h3>5.3 จัดการโควตาไฟล์และการลบ</h3>
+            <div class="callout callout-red">
+                <h4>⚠️ การเคลียร์พื้นที่</h4>
+                <p>การลบไฟล์ออกจาก Source Panel ไม่ส่งผลกระทบต่อไฟล์ต้นฉบับในคอม แต่จะทำให้ประวัติแชทเก่าเสียจุดเชื่อมโยง (Citation Link)</p>
+            </div>
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-red">STEP 1</span>
+                        <div class="step-title">ลบไฟล์เพื่อคืนโควตา</div>
+                    </div>
+                    <p>Hover เมาส์ที่ชื่อไฟล์ กดจุด 3 จุด <code>...</code> แล้วเลือก <span class="ui-action">Delete source</span> เพื่อคืนโควตา (จำกัด 50 ไฟล์)</p>
+                </div>
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span class="step-pill pill-amber">STEP 2</span>
+                        <div class="step-title">การเคลียร์ประวัติแชท</div>
+                    </div>
+                    <p>กดจุดสามจุดมุมขวาของกล่องแชท เลือก <span class="ui-action">Clear Chat</span> เพื่อรีเซ็ตบริบทคำถาม (การ์ดบนบอร์ดจะไม่หายไป)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PART 6: PRO SKILLS -->
+        <section id="part6">
+            <h2>ส่วนที่ 6: เทคนิคการใช้งานขั้นสูง และ Use Cases ยอดฮิต</h2>
+
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="step-header"><span class="step-pill pill-purple">TECHNIQUE 1</span><div class="step-title">Information Synthesis (สายวิเคราะห์)</div></div>
+                    <p>นำคลิป YouTube ผู้บริหาร + ไฟล์ PDF รายงานประจำปี มากด Select All แล้วใช้ Prompt หา Insight</p>
+                    <div class="prompt-box"><strong>Prompt Idea:</strong> "จากบทสัมภาษณ์ใน YouTube และข้อมูลตัวเลขใน PDF ให้วิเคราะห์หา 'ความขัดแย้ง' พร้อมระบุข้อเสนอแนะที่สอดคล้องกัน"</div>
+                </div>
+
+                <div class="timeline-step">
+                    <div class="step-header"><span class="step-pill pill-blue">TECHNIQUE 2</span><div class="step-title">Student Study Loop (สายการศึกษา)</div></div>
+                    <p>ให้ AI ทำงานเป็นติวเตอร์จำลองข้อสอบแบบ Active Recall</p>
+                    <div class="prompt-box"><strong>Prompt Idea:</strong> "จำลองตัวเองเป็นอาจารย์มหาวิทยาลัย ออกข้อสอบปรนัย 10 ข้อ จากบทที่ 2 และ 3 เน้นข้อสอบวิเคราะห์สถานการณ์ ถามทีละข้อ และเฉลยพร้อมอธิบาย"</div>
+                </div>
+
+                <div class="timeline-step">
+                    <div class="step-header"><span class="step-pill pill-emerald">TECHNIQUE 3</span><div class="step-title">Meeting Recap (สายทำงานออฟฟิศ)</div></div>
+                    <p>โยนไฟล์เสียงประชุมเข้าไป แล้วให้ AI สกัดสิ่งที่ต้องทำต่อเป็นตาราง</p>
+                    <div class="prompt-box"><strong>Prompt Idea:</strong> "สกัด Action Items ทั้งหมดจากการประชุมครั้งนี้ ทำเป็นตาราง (Markdown) ประกอบด้วย: ชื่องาน | ผู้รับผิดชอบ | วันกำหนดส่ง | ความสำคัญ"</div>
+                </div>
+
+                <div class="timeline-step">
+                    <div class="step-header"><span class="step-pill pill-cyan">TECHNIQUE 4</span><div class="step-title">Prompt-Driven Architecture (สาย Dev)</div></div>
+                    <p>โยนรูปกระดาษจดบรีฟลูกค้า และประวัติแชทไลน์ให้ AI วางโครงสร้างระบบก่อนเริ่มเขียนโค้ด</p>
+                    <div class="prompt-box"><strong>Prompt Idea:</strong> "จากบรีฟงานลูกค้าทั้งหมด ให้ออกแบบ Database Schema สำหรับระบบ E-commerce นี้ โดยเขียนเป็นรูปแบบ JSON Format ที่พร้อมนำไปใช้งานต่อ พร้อมอธิบาย Relations"</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PART 7: WORKSHOPS -->
+        <section id="part7">
+            <h2>ส่วนที่ 7: 🚀 เวิร์กชอปประยุกต์ใช้งานจริง (Masterclass Workshops)</h2>
+            <p>รวมทุกกระบวนการตั้งแต่ต้นจนจบ (End-to-End) เพื่อให้คุณเห็นภาพการผสานฟีเจอร์ต่างๆ เข้าด้วยกันในการทำงานจริง</p>
+
+            <!-- Workshop 1 -->
+            <div class="timeline">
+                <div class="timeline-step workshop-card">
+                    <div class="step-header">
+                        <span class="step-pill pill-amber">CASE 1: BUSINESS</span>
+                        <div class="step-title">การเปิดตัวสินค้าใหม่ (Product Launch Campaign)</div>
+                    </div>
+                    <p><strong>สถานการณ์:</strong> คุณเป็นผู้จัดการฝ่ายการตลาดที่ต้องเตรียมแผนเปิดตัวสินค้า แหล่งข้อมูลของคุณกระจัดกระจายอยู่หลายที่</p>
+                    <hr style="border-color: var(--border-muted); margin: 16px 0;">
+                    <ol>
+                        <li><strong>รวบรวม (Gather):</strong> คุณซิงค์ไฟล์ <code>Google Slides</code> (แผนงานเดิม) เข้ามา จากนั้นแปะลิงก์ <code>YouTube</code> (รีวิวสินค้าของคู่แข่ง) และใช้โหมด <code>Deep Research 2026</code> พิมพ์ค้นหางานวิจัยตลาดพฤติกรรมผู้บริโภคปีล่าสุด</li>
+                        <li><strong>วิเคราะห์ (Process):</strong> คุณติ๊กเลือกไฟล์ทั้งหมดใน Source Panel แล้วไปที่ Studio กดสร้าง <code>Mind Map</code> เพื่อดูความเชื่อมโยงของแผนงานทั้งหมด และกดปุ่ม <code>Share</code> เชิญผู้ช่วยของคุณเข้ามาเป็น Editor เพื่อช่วยกันดู</li>
+                        <li><strong>เจาะลึก (Q&A):</strong> คุณพิมพ์ถามในกล่องแชทว่า <em>"จากรีวิวคู่แข่ง มีฟีเจอร์ไหนที่เขาถูกด่าเยอะที่สุด และแผนงานของเราอุดช่องโหว่นั้นหรือยัง?"</em> คุณตรวจสอบความถูกต้องของคำตอบผ่าน <code>Inline Citations</code> และกด <code>Save to Note</code> เก็บไว้</li>
+                        <li><strong>สร้างผลงาน (Artifact):</strong> สุดท้าย คุณเข้าไปที่ Studio กดสร้าง <code>Cinematic Video Overview</code> (เลือกสไตล์สารคดี เรนเดอร์ 1080p) เพื่อนำวิดีโอสรุปพร้อมภาพแอนิเมชันไปเปิดโชว์บอร์ดผู้บริหารในวันรุ่งขึ้น</li>
+                    </ol>
+                </div>
+
+                <!-- Workshop 2 -->
+                <div class="timeline-step workshop-card">
+                    <div class="step-header">
+                        <span class="step-pill pill-amber">CASE 2: EDUCATION</span>
+                        <div class="step-title">การเตรียมสอบประมวลความรู้ ป.โท (Master's Survival)</div>
+                    </div>
+                    <p><strong>สถานการณ์:</strong> คุณเป็นนักศึกษาปริญญาโทที่ต้องสอบ Comprehensive และมีเวลาอ่านหนังสือจำกัด</p>
+                    <hr style="border-color: var(--border-muted); margin: 16px 0;">
+                    <ol>
+                        <li><strong>รวบรวม (Gather):</strong> คุณอัปโหลด Textbooks เล่มหนาเป็นไฟล์ <code>PDF</code> และ <code>ePub</code> เข้าสู่ระบบ พร้อมกับอัปโหลดไฟล์ <code>Audio (.mp3)</code> ที่แอบบันทึกเสียงอาจารย์สอนในคลาส เพื่อให้ระบบทำ Audio Transcript ถอดเป็นตัวหนังสือให้ทั้งหมด</li>
+                        <li><strong>ติวหนังสือ (Study Mode):</strong> คุณเปิดโหมด <code>Learning Guide</code> ให้ระบบสร้าง <code>Flashcards</code> ให้คุณเล่นทายคำศัพท์ก่อนนอน (ระบบจดจำข้อที่คุณผิด เพื่อนำมาถามซ้ำในวันพรุ่งนี้) จากนั้นสั่งให้ AI สร้าง <code>Quiz</code> ปรนัย 20 ข้อ และคุณพิมพ์ตอบลงไปในแชทให้ AI ตรวจให้คะแนน</li>
+                        <li><strong>ใช้เวลาว่างให้เป็นประโยชน์ (Commuting):</strong> วันรุ่งขึ้น คุณใช้ฟีเจอร์ <code>Audio Overview</code> สั่ง Customize ว่า <em>"จัดรายการสรุปเนื้อหาวิชานี้ให้หน่อย ขอสไตล์ดุดันแบบอาจารย์มหาวิทยาลัย"</em> จากนั้นดาวน์โหลดไฟล์เสียงมาเปิดฟังในรถระหว่างขับรถกลับพะเยา</li>
+                    </ol>
+                </div>
+
+                <!-- Workshop 3 -->
+                <div class="timeline-step workshop-card">
+                    <div class="step-header">
+                        <span class="step-pill pill-amber">CASE 3: TECHNOLOGY</span>
+                        <div class="step-title">วางโครงสร้างระบบแอปพลิเคชัน (Tech Startup Architecture)</div>
+                    </div>
+                    <p><strong>สถานการณ์:</strong> คุณเป็น Solo Developer ที่รับงานจากลูกค้า แต่ลูกค้าบรีฟงานเปลี่ยนไปมาจนสับสน</p>
+                    <hr style="border-color: var(--border-muted); margin: 16px 0;">
+                    <ol>
+                        <li><strong>รวบรวม (Gather):</strong> คุณใช้มือถือถ่ายรูปกระดานไวท์บอร์ดที่ประชุมกับลูกค้า แล้วอัปโหลดเป็นไฟล์ภาพ <code>JPEG</code> (ให้ระบบทำ OCR) จากนั้นดึง <code>Google Docs</code> ที่เป็นเอกสารสัญญา และอัปโหลดไฟล์ <code>CSV</code> ที่รวมประวัติการแชทไลน์ของลูกค้า</li>
+                        <li><strong>จัดการบริบท (Context Selection):</strong> หากลูกค้าเข้าไปแก้ไฟล์สัญญาใน Google Docs คุณมากดปุ่ม <code>Sync</code> ลูกศรหมุนวน เพื่ออัปเดตข้อมูล จากนั้นคุณตั้งคำถามแยกย่อยทีละฟีเจอร์ และกด <code>Save to Note</code> เก็บการ์ดความต้องการของลูกค้าไว้บนบอร์ด 4-5 ใบ</li>
+                        <li><strong>สร้างโครงสร้าง (Architecture):</strong> คุณลากคลุมติ๊กเลือกการ์ดโน้ตทั้ง 5 ใบนั้น แล้วกด <code>Combine Notes</code> พร้อมใส่ Prompt ว่า <em>"ออกแบบ Database Schema รูปแบบ JSON"</em> </li>
+                        <li><strong>ส่งมอบ (Delivery):</strong> เพื่อให้ลูกค้าสบายใจ คุณไปที่แท็บ Studio กดคำสั่ง <code>Briefing Doc</code> (AI-Suggested Reports) ระบบจะเจนเอกสารสรุปความคืบหน้าอย่างเป็นทางการให้คุณกด Copy ส่งให้ลูกค้าอ่านได้ทันที</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+        <!-- PART 7: END-TO-END WORKSHOPS -->
+        <section id="part7">
+            <!-- <h2>ส่วนที่ 7: เวิร์กชอปประยุกต์ใช้งานจริง (End-to-End Workshops)</h2> -->
+            <p>มาทดสอบความเข้าใจด้วยการลงมือทำผ่าน 3 สถานการณ์จำลอง ที่บังคับให้คุณใช้ฟังก์ชันของ NotebookLM ทำงานร่วมกันแบบครบวงจร</p>
+
+            <!-- Workshop 1 -->
+            <div class="workshop-card ws-business">
+                <div class="ws-title">💼 เวิร์กชอป 1: สายธุรกิจและการตลาด</div>
+                <div class="ws-scenario"><strong>สถานการณ์:</strong> คุณคือ Marketing Manager ที่ต้องเตรียมตัวเปิดพรีเซนต์แผน "เปิดตัวสินค้าใหม่" ให้กับทีมเซลส์และผู้บริหารภายในเวลาอันจำกัด</div>
+                
+                <ul class="task-list">
+                    <li>
+                        <div class="func-tag">Deep Research</div>
+                        <div class="func-tag">Add Source</div>
+                        <strong>ตั้งต้นข้อมูล:</strong> ใช้ฟีเจอร์ Deep Research ค้นหา "เทรนด์ตลาดสินค้าชนิดนี้ปีล่าสุด" นำเข้ามาเป็น Source ที่ 1 จากนั้นอัปโหลดไฟล์ Google Docs (สเปกสินค้าของบริษัท) เป็น Source ที่ 2
+                    </li>
+                    <li>
+                        <div class="func-tag">Select Sources</div>
+                        <div class="func-tag">Mind Map</div>
+                        <strong>จับประเด็นและวางโครง:</strong> ติ๊กเลือก Source ทั้งสองไฟล์ เปิดแผง Studio แล้วสั่งสร้าง Mind Map เพื่อดูภาพรวมว่าสเปกสินค้าเราตอบโจทย์เทรนด์ตลาดตรงจุดไหนบ้าง
+                    </li>
+                    <li>
+                        <div class="func-tag">Customize</div>
+                        <div class="func-tag">Audio Overview</div>
+                        <strong>ทำสื่อบรีฟทีมเซลส์:</strong> ในแผง Studio หัวข้อ Audio Overview กด Customize พิมพ์คำสั่งว่า <em>"จัดพอดแคสต์ 5 นาที อธิบายจุดขายสินค้าใหม่เพื่อบรีฟให้พนักงานขายนำไปใช้คุยกับลูกค้า เน้นน้ำเสียงตื่นเต้นและฮึกเหิม"</em> กด Generate แล้วดาวน์โหลดส่งเข้าไลน์กลุ่มเซลส์
+                    </li>
+                    <li>
+                        <div class="func-tag">Share</div>
+                        <strong>การส่งต่องาน:</strong> กดปุ่ม Share เชิญอีเมลผู้บริหารเข้ามาเป็น Viewer เพื่อให้ผู้บริหารสามารถเข้ามาอ่านเอกสารและแชทถามคำถามเกี่ยวกับแคมเปญนี้กับบอทได้โดยตรง
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Workshop 2 -->
+            <div class="workshop-card ws-academic">
+                <div class="ws-title">🎓 เวิร์กชอป 2: สายวิชาการและนักศึกษา</div>
+                <div class="ws-scenario"><strong>สถานการณ์:</strong> คุณเป็นนักศึกษาปริญญาโทที่ต้องทำวิจัยวรรณกรรม (Literature Review) และเตรียมตัวสอบป้องกันวิทยานิพนธ์ (Thesis Defense)</div>
+                
+                <ul class="task-list">
+                    <li>
+                        <div class="func-tag">Local Files</div>
+                        <div class="func-tag">YouTube</div>
+                        <strong>รวบรวมคลังปัญญา:</strong> อัปโหลดไฟล์ PDF งานวิจัยที่เกี่ยวข้อง 5 ฉบับ และก๊อปลิงก์ YouTube คลิปบรรยายของศาสตราจารย์ต่างประเทศมาใส่ในระบบ (ให้ AI ถอดซับไตเติลให้)
+                    </li>
+                    <li>
+                        <div class="func-tag">Inline Citations</div>
+                        <div class="func-tag">Save to Note</div>
+                        <strong>เขียนเปรียบเทียบ:</strong> พิมพ์ถามบอทว่า <em>"งานวิจัย 5 ฉบับนี้ มีจุดเห็นต่างกันในเรื่องใดบ้าง?"</em> เมื่อบอทตอบ ให้คลิกดูตัวเลข Citation เพื่อเช็กความถูกต้อง จากนั้นกด Save to Note แปะเก็บบทสรุปไว้บนบอร์ด
+                    </li>
+                    <li>
+                        <div class="func-tag">Flashcards</div>
+                        <div class="func-tag">Learning Guide</div>
+                        <strong>ติวเข้มก่อนสอบ:</strong> เปิด Studio สั่งทำ Flashcards ท่องจำทฤษฎีสำคัญ และใช้ Learning Guide สั่งบอทว่า <em>"จำลองเป็นคณะกรรมการสอบวิทยานิพนธ์ ยิงคำถามต้อนให้จนมุมทีละข้อ"</em> เพื่อฝึกตอบโต้
+                    </li>
+                    <li>
+                        <div class="func-tag">AI Report</div>
+                        <strong>ทำเอกสารแจกกรรมการ:</strong> ใช้ฟีเจอร์ AI-Suggested Report เลือกกดสร้าง Briefing Doc เพื่อทำบทคัดย่อ 1 หน้ากระดาษ เตรียมปรินต์แจกกรรมการในวันสอบ
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Workshop 3 -->
+            <div class="workshop-card ws-tech">
+                <div class="ws-title">💻 เวิร์กชอป 3: สายไอทีและนักพัฒนาซอฟต์แวร์</div>
+                <div class="ws-scenario"><strong>สถานการณ์:</strong> คุณเป็น Lead Developer เพิ่งประชุมรับ Requirement การทำแอปพลิเคชันจากลูกค้าเสร็จ และต้องแปลงมันเป็นสเปกสำหรับทำงานต่อ</div>
+                
+                <ul class="task-list">
+                    <li>
+                        <div class="func-tag">Audio File</div>
+                        <div class="func-tag">Google Sheets</div>
+                        <strong>เคลียร์บรีฟดิบ:</strong> โยนไฟล์เสียงอัดบันทึกการประชุม (MP3) เข้าสู่ระบบ พร้อมกับเชื่อมไฟล์ Google Sheets รายชื่อฟีเจอร์เดิมที่ลูกค้าเคยส่งมา
+                    </li>
+                    <li>
+                        <div class="func-tag">Combine Notes</div>
+                        <div class="func-tag">Chat</div>
+                        <strong>แปลงเป็น Data Structure:</strong> ให้บอทสกัดฟีเจอร์ใหม่จากไฟล์เสียง สั่ง Save to Note แล้วคลิกเลือก Note นั้นคู่กับ Sheets เดิม กด Combine เขียน Prompt สั่งว่า <em>"อัปเดตฟีเจอร์ใหม่ผสานกับของเดิม แล้วร่าง API Endpoints (JSON) ของระบบนี้"</em>
+                    </li>
+                    <li>
+                        <div class="func-tag">Video Overview</div>
+                        <strong>ทำสื่อให้ลูกค้า (Non-tech):</strong> นำสเปกทั้งหมดมาสร้าง Video Overview โดยตั้งค่าเป็นสไตล์ Explainer เพื่อส่งให้ลูกค้าที่ไม่ใช่สายไอที ดูเป็นวิดีโอสรุปว่าระบบแอปนี้จะทำงานอย่างไร (ประหยัดเวลาทำสไลด์)
+                    </li>
+                    <li>
+                        <div class="func-tag">Sync</div>
+                        <strong>รับมือลูกค้ารื้อบรีฟ:</strong> 2 วันต่อมา ลูกค้าเข้าไปแก้ข้อมูลใน Google Sheets เพิ่มเติม คุณแค่เข้า NotebookLM แล้วกดไอคอน Sync หลังชื่อไฟล์ ระบบจะอัปเดต Requirement ใหม่ให้ทันที
+                    </li>
+                </ul>
+            </div>
+
+            <div class="workshop-card ws-master">
+                <div class="ws-title">🔥 Master Workshop: จากงานวิจัยสู่ธุรกิจ (Academic ➔ Business Pitch)</div>
+                <div class="ws-scenario">
+                    <strong>สถานการณ์ (Scenario):</strong> คุณคือ "นักวิจัย ป.โท" (สายวิชาการ) ที่คิดค้นนวัตกรรมอาหารเสริมตัวใหม่สำเร็จ และคุณต้องการนำงานวิจัยนี้ไปต่อยอดเปิดบริษัท Startup (สายธุรกิจ) คุณมีเวลา 2 วันในการเตรียมตัว Pitching ขอทุนจากนักลงทุน (VC)
+                </div>
+                
+                <ul class="task-list">
+                    <li>
+                        <div class="func-tag">Local Files</div>
+                        <div class="func-tag">Deep Research</div>
+                        <strong>สร้างฐานข้อมูลไฮบริด (Hybrid Knowledge Base):</strong><br>
+                        เริ่มต้นด้วยการอัปโหลดไฟล์ PDF งานวิจัยวิทยานิพนธ์ของคุณ (ข้อมูลเชิงลึกฝั่งวิชาการ) จากนั้นใช้ฟีเจอร์ <span class="ui-action">Deep Research Search</span> สั่งให้ AI วิ่งไปค้นหาข้อมูลอินเทอร์เน็ตด้วยคำสั่ง: <em>"เทรนด์ตลาดอาหารเสริมและรายชื่อคู่แข่งในประเทศไทยปี 2026"</em> แล้วกด Convert to Source (คุณจะได้ทั้งข้อมูลวิชาการและข้อมูลธุรกิจอยู่ใน Notebook เดียวกัน)
+                    </li>
+                    <li>
+                        <div class="func-tag">Select Sources</div>
+                        <div class="func-tag">Mind Map</div>
+                        <strong>วิเคราะห์จุดแข็ง (SWOT) และโครงสร้างโมเดลธุรกิจ:</strong><br>
+                        เลือกติ๊ก Source ทั้งสองฝั่ง เปิดแผง Studio แล้วกดสร้าง <span class="ui-action">Mind Map</span> เพื่อให้ AI กางแผนผังเปรียบเทียบข้อดีงานวิจัยคุณกับคู่แข่ง จากนั้นในกล่องแชท ให้สั่ง:
+                        <div class="prompt-box">
+                            <strong>Prompt:</strong> "อ่านงานวิจัยของฉันเปรียบเทียบกับคู่แข่ง แล้วสรุปจุดแข็ง จุดอ่อน โอกาส และอุปสรรค (SWOT Analysis) ออกมาเป็นตาราง เพื่อใช้ทำโมเดลธุรกิจ"
+                        </div>
+                    </li>
+                    <li>
+                        <div class="func-tag">Audio Overview</div>
+                        <div class="func-tag">Video Overview</div>
+                        <strong>แปลงงานวิจัยยากๆ เป็นสื่อการตลาด (Marketing Materials):</strong><br>
+                        การให้นักลงทุนอ่านงานวิจัย 100 หน้าเป็นไปไม่ได้! <br>
+                        1. ไปที่ <strong>Audio Overview</strong> กด Customize สั่งว่า: <em>"จัดพอดแคสต์ 3 นาที พิธีกรสัมภาษณ์ความเจ๋งของนวัตกรรมนี้ เน้นภาษาเข้าใจง่าย ขายฝันให้นักลงทุนอยากร่วมทุน"</em> (โหลดเก็บไว้เปิดโหมโรง)<br>
+                        2. ไปที่ <strong>Video Overview</strong> สร้างวิดีโอสไตล์ <em>Explainer</em> เพื่อเอาไปเปิดขึ้นโปรเจกเตอร์อธิบายสรรพคุณสินค้าในวันพรีเซนต์
+                    </li>
+                    <li>
+                        <div class="func-tag">Flashcards</div>
+                        <div class="func-tag">AI Report</div>
+                        <strong>ซ้อมรับมือคำถามโหดๆ จากนักลงทุน (Pitch Prep):</strong><br>
+                        ไปที่ Study Tools > <span class="ui-action">Create Flashcards</span> ระบบจะสุ่มคำถามเชิงธุรกิจผสมวิชาการมาให้คุณซ้อมตอบ (Active Recall) <br>
+                        ปิดท้ายด้วยการกดปุ่ม <span class="ui-action">Briefing Doc</span> เพื่อสร้างเอกสาร Executive Summary 1 หน้ากระดาษ ส่งออกไปที่ Google Docs เตรียมปรินต์แจกนักลงทุนในวันงาน!
+                    </li>
+                </ul>
+            </div>
+
+            <hr style="border-color: var(--border-muted); margin: 40px 0;">
+
+            <div class="workshop-card ws-business">
+                <div class="ws-title">💼 เวิร์กชอป A: สายธุรกิจเพียวๆ (Marketing Campaign)</div>
+                <div class="ws-scenario"><strong>สถานการณ์:</strong> คุณคือ Marketing Manager ที่ต้องย่อยสเปกสินค้ายาวเหยียด เพื่อบรีฟให้ทีมเซลส์นำไปขายภายใน 1 ชั่วโมง</div>
+                <ul class="task-list">
+                    <li>
+                        <div class="func-tag">Google Docs</div>
+                        <strong>ตั้งต้นข้อมูล:</strong> ดึงไฟล์เอกสารสเปกสินค้าจากทีม R&D ผ่าน Google Drive
+                    </li>
+                    <li>
+                        <div class="func-tag">AI Report (FAQ)</div>
+                        <strong>สกัดข้อมูลเป็นคู่มือ:</strong> กดปุ่มสร้าง <span class="ui-action">FAQ</span> เพื่อให้ AI เดาคำถามที่ลูกค้ามักจะถาม พร้อมเตรียมคำตอบสวยๆ ไว้ให้เซลส์
+                    </li>
+                    <li>
+                        <div class="func-tag">Share</div>
+                        <strong>แชร์พื้นที่ทำงาน:</strong> กด Share เชิญอีเมลทีมเซลส์เข้ามาเป็น Viewer เพื่อให้เซลส์แต่ละคนพิมพ์แชทถามบอทหาวิธีขายในสไตล์ของตัวเองได้เลย
+                    </li>
+                </ul>
+            </div>
+
+            <div class="workshop-card ws-academic">
+                <div class="ws-title">🎓 เวิร์กชอป B: สายวิชาการเพียวๆ (Exam & Thesis)</div>
+                <div class="ws-scenario"><strong>สถานการณ์:</strong> นักศึกษาที่ต้องอ่าน Paper งานวิจัยภาษาอังกฤษ 5 ฉบับ เพื่อเตรียมสอบปลายภาค</div>
+                <ul class="task-list">
+                    <li>
+                        <div class="func-tag">Local Files (PDF)</div>
+                        <strong>รวบรวมคลังปัญญา:</strong> อัปโหลดไฟล์ PDF งานวิจัยทั้งหมดเข้าสู่ระบบ
+                    </li>
+                    <li>
+                        <div class="func-tag">Inline Citations</div>
+                        <strong>หักล้างข้อโต้แย้ง:</strong> พิมพ์ถามบอทว่า <em>"งานวิจัย 5 ฉบับนี้ มีจุดเห็นต่างกันในเรื่องใดบ้าง?"</em> เมื่อบอทตอบ ให้คลิกดูตัวเลข Citation เพื่อเช็กบรรทัดอ้างอิงให้ชัวร์
+                    </li>
+                    <li>
+                        <div class="func-tag">Learning Guide</div>
+                        <strong>ติวเข้มก่อนสอบ:</strong> เปิด <span class="ui-action">Learning Guide</span> สั่งบอททำโจทย์ Quiz จำลองข้อสอบวิเคราะห์สถานการณ์เพื่อฝึกตอบโต้
+                    </li>
+                </ul>
+            </div>
+
+        </section>
+
+        <!-- FOOTER -->
+        <footer>
+            <p>🎉 ขอแสดงความยินดี! คุณได้เรียนรู้คู่มือการใช้งาน NotebookLM ฉบับเจาะลึก 2026 ครบถ้วนสมบูรณ์แล้ว <br>ถึงเวลาสร้าง Workspace ของคุณเองและปลดล็อกประสิทธิภาพการทำงานไปอีกระดับ!</p>
+        </footer>
+    </div>
+</body>
+</html>
