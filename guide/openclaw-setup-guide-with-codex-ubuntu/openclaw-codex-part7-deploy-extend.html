@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw × Codex — Part 7: Docker · Multi-Gateway · Plugin/Skill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0f12;--bg-soft:#14171c;--bg-card:#171b21;--bg-code:#0a0c0f;
+    --line:#262c34;--line-soft:#1d2229;
+    --text:#e7e9ee;--text-dim:#9aa3b0;--text-faint:#69727f;
+    --claw:#FF5A36;--claw-glow:rgba(255,90,54,.13);
+    --acc:#10b981;--acc-soft:#5eead4;--acc-glow:rgba(16,185,129,.15);
+    --gold:#ffb454;--green:#4ade80;--cyan:#38bdf8;--warn:#fbbf24;--danger:#f87171;--blue:#3b82f6;
+    --mono:'JetBrains Mono',ui-monospace,monospace;--disp:'Chakra Petch',sans-serif;--body:'IBM Plex Sans Thai',sans-serif;
+    --sb:300px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(900px 500px at 88% -8%, var(--acc-glow), transparent 60%),radial-gradient(700px 400px at -5% 5%, var(--claw-glow), transparent 55%);
+    background-attachment:fixed;}
+  ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:#2a313a;border-radius:6px;border:2px solid var(--bg)}::-webkit-scrollbar-thumb:hover{background:#3a434f}
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--acc),var(--cyan));z-index:100;transition:width .1s linear;box-shadow:0 0 12px var(--acc)}
+  .wrap{display:flex;min-height:100vh}
+  aside{width:var(--sb);flex:0 0 var(--sb);position:sticky;top:0;height:100vh;overflow-y:auto;background:linear-gradient(180deg,#0b0d10,#0e1115);border-right:1px solid var(--line);padding:26px 18px 60px}
+  main{flex:1;min-width:0;padding:54px clamp(20px,5vw,76px) 120px;max-width:1000px}
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+  .brand .logo{font-size:30px;filter:drop-shadow(0 2px 6px var(--claw-glow))}
+  .brand .name{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:.5px}
+  .brand .name b{color:var(--claw)}
+  .brand-sub{font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:0 0 22px 41px;letter-spacing:1px}
+  .part-pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--acc-soft);background:var(--acc-glow);border:1px solid rgba(16,185,129,.34);padding:5px 11px;border-radius:30px;margin-bottom:20px;letter-spacing:1px}
+  .nav-group{margin-bottom:22px}
+  .nav-group h4{font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;color:var(--text-faint);text-transform:uppercase;margin-bottom:9px;padding-left:10px}
+  nav a{display:flex;align-items:center;gap:9px;color:var(--text-dim);text-decoration:none;font-size:13.5px;padding:7px 11px;border-radius:8px;border-left:2px solid transparent;transition:.15s}
+  nav a .nx{font-family:var(--mono);font-size:11px;color:var(--text-faint);min-width:20px}
+  nav a:hover{color:var(--text);background:var(--bg-soft)}
+  nav a.active{color:var(--acc-soft);background:var(--acc-glow);border-left-color:var(--acc)}
+  nav a.active .nx{color:var(--acc-soft)}
+  .nav-future{margin-top:26px;padding-top:18px;border-top:1px dashed var(--line)}
+  .nav-future .roadmap-item{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-faint);padding:6px 11px}
+  .nav-future .roadmap-item .tag{font-family:var(--mono);font-size:9px;border:1px solid var(--line);border-radius:4px;padding:2px 5px;margin-left:auto}
+  .nav-future .roadmap-item.done .tag{color:var(--green);border-color:rgba(74,222,128,.4)}
+  .nav-future .roadmap-item.cur .tag{color:var(--acc-soft);border-color:rgba(16,185,129,.4)}
+  .hero{margin-bottom:50px}
+  .hero .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--acc-soft);margin-bottom:14px}
+  h1{font-family:var(--disp);font-weight:700;font-size:clamp(28px,5vw,44px);line-height:1.15;letter-spacing:.3px;margin-bottom:16px}
+  h1 .grad{background:linear-gradient(120deg,var(--acc),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:17px;color:var(--text-dim);max-width:66ch}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+  .meta-chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:7px 13px;border-radius:8px}
+  .meta-chip b{color:var(--text)}.meta-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  section{margin-bottom:58px;scroll-margin-top:30px}
+  h2{font-family:var(--disp);font-weight:700;font-size:26px;letter-spacing:.3px;margin-bottom:8px;display:flex;align-items:baseline;gap:13px}
+  h2 .num{font-family:var(--mono);font-size:15px;color:var(--acc-soft);font-weight:700}
+  .sec-sub{color:var(--text-dim);margin-bottom:24px;font-size:15.5px}
+  h3{font-family:var(--disp);font-weight:600;font-size:18.5px;margin:30px 0 12px;color:var(--text);display:flex;align-items:center;gap:9px}
+  h3::before{content:"";width:5px;height:18px;background:var(--acc);border-radius:3px;display:inline-block}
+  .divider{display:flex;align-items:center;gap:14px;margin:46px 0 30px}
+  .divider .dt{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:3px;color:var(--acc-soft);white-space:nowrap}
+  .divider .dl{flex:1;height:1px;background:linear-gradient(90deg,var(--acc),transparent)}
+  p{margin-bottom:13px;color:var(--text)}p.dim{color:var(--text-dim)}
+  a.link{color:var(--acc-soft);text-decoration:none;border-bottom:1px dashed rgba(94,234,212,.4)}a.link:hover{border-bottom-style:solid}
+  strong{color:#fff;font-weight:600}em{color:var(--acc-soft);font-style:normal}
+  code.inline{font-family:var(--mono);font-size:13px;background:var(--bg-code);color:var(--gold);padding:2px 7px;border-radius:5px;border:1px solid var(--line-soft)}
+  ul,ol{margin:6px 0 16px 4px;padding-left:22px}li{margin-bottom:8px;color:var(--text)}li::marker{color:var(--acc-soft)}
+  ul.mech li::marker{content:"▸  ";color:var(--acc-soft)}
+  .code{position:relative;margin:16px 0 20px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--bg-code)}
+  .code-head{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .code-head .dots{display:flex;gap:6px}.code-head .dots i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .code-head .dots i:nth-child(1){background:#ff5f57}.code-head .dots i:nth-child(2){background:#febc2e}.code-head .dots i:nth-child(3){background:#28c840}
+  .code-head .title{font-family:var(--mono);font-size:11.5px;color:var(--text-faint);margin-left:6px}
+  .code-head .copy{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:4px 11px;border-radius:6px;cursor:pointer;transition:.15s}
+  .code-head .copy:hover{color:var(--acc-soft);border-color:var(--acc)}.code-head .copy.done{color:var(--green);border-color:rgba(74,222,128,.4)}
+  pre{padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.65}
+  pre code{font-family:var(--mono);white-space:pre}
+  .c-cmd{color:#e7e9ee}.c-flag{color:var(--cyan)}.c-str{color:var(--green)}.c-cmt{color:var(--text-faint);font-style:italic}.c-key{color:var(--acc-soft)}.c-prompt{color:var(--acc-soft);user-select:none}.c-kw{color:#c792ea}.c-fn{color:var(--gold)}
+  .callout{display:flex;gap:13px;padding:15px 17px;border-radius:11px;margin:18px 0;border:1px solid var(--line);background:var(--bg-card);font-size:14.5px}
+  .callout .ico{font-size:19px;flex:0 0 auto;line-height:1.4}.callout .body{color:var(--text-dim)}.callout .body b{color:var(--text)}
+  .callout.note{border-color:rgba(56,189,248,.32);background:rgba(56,189,248,.06)}.callout.note .ico{color:var(--cyan)}
+  .callout.warn{border-color:rgba(251,191,36,.34);background:rgba(251,191,36,.06)}.callout.warn .ico{color:var(--warn)}
+  .callout.pit{border-color:rgba(248,113,113,.34);background:rgba(248,113,113,.06)}.callout.pit .ico{color:var(--danger)}
+  .callout.tip{border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.05)}.callout.tip .ico{color:var(--green)}
+  .callout.why{border-color:rgba(16,185,129,.4);background:var(--acc-glow)}.callout.why .ico{color:var(--acc-soft)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:20px 0}
+  .card{background:var(--bg-card);border:1px solid var(--line);border-radius:13px;padding:18px;transition:.18s}
+  .card:hover{border-color:rgba(16,185,129,.45);transform:translateY(-2px)}
+  .card .ci{font-size:24px;margin-bottom:10px}.card h5{font-family:var(--disp);font-weight:600;font-size:16px;margin-bottom:6px;color:#fff}
+  .card p{font-size:13.5px;color:var(--text-dim);margin:0}.card .lbl{font-family:var(--mono);font-size:10.5px;color:var(--acc-soft);letter-spacing:1px}
+  .tbl{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .tbl th{background:var(--bg-soft);text-align:left;padding:11px 14px;font-family:var(--mono);font-size:12px;color:var(--acc-soft);letter-spacing:.5px;border-bottom:1px solid var(--line)}
+  .tbl td{padding:11px 14px;border-bottom:1px solid var(--line-soft);color:var(--text-dim);vertical-align:top}
+  .tbl tr:last-child td{border-bottom:none}.tbl td code{font-family:var(--mono);font-size:12px;color:var(--gold);white-space:nowrap}.tbl td b{color:var(--text)}
+  .step{display:flex;gap:16px;margin-bottom:14px}
+  .step .sn{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--acc-glow);border:1px solid rgba(16,185,129,.45);color:var(--acc-soft);font-family:var(--mono);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .step .sc{flex:1;min-width:0;padding-top:2px}.step .sc b{color:#fff}
+  .ascii{font-family:var(--mono);font-size:12.5px;color:var(--text-dim);background:var(--bg-code);border:1px solid var(--line);border-radius:11px;padding:18px;overflow-x:auto;line-height:1.5;margin:18px 0}
+  .ascii b{color:var(--acc-soft)}.ascii .c{color:var(--claw)}
+  .pager{display:flex;gap:14px;margin-top:60px;padding-top:28px;border-top:1px solid var(--line)}
+  .pager a{flex:1;text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--bg-card);transition:.18s}
+  .pager a:hover{border-color:var(--acc);background:var(--acc-glow)}
+  .pager .pl{font-family:var(--mono);font-size:11px;color:var(--text-faint);letter-spacing:1px}
+  .pager .pt{font-family:var(--disp);font-weight:600;font-size:16px;color:var(--text);margin-top:5px}
+  .pager a.next{text-align:right}.pager a.disabled{opacity:.4;pointer-events:none}
+  .mobile-bar{display:none}
+  @media(max-width:880px){
+    aside{display:none}main{padding:24px 18px 80px}
+    .mobile-bar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;background:rgba(13,15,18,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:13px 16px;margin:-24px -18px 24px}
+    .mobile-bar .logo{font-size:22px}.mobile-bar .nm{font-family:var(--disp);font-weight:700;font-size:16px}.mobile-bar .nm b{color:var(--claw)}
+    .pager{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="wrap">
+
+<aside>
+  <div class="brand"><span class="logo">🦞</span><span class="name">Open<b>Claw</b></span></div>
+  <div class="brand-sub">× CODEX · UBUNTU GUIDE</div>
+  <div class="part-pill">🐳 PART 7 — DEPLOY & EXTEND</div>
+  <nav>
+    <div class="nav-group">
+      <h4>Docker Deploy</h4>
+      <a href="#docker-why"><span class="nx">00</span> เมื่อไหร่ควรใช้ Docker</a>
+      <a href="#docker-run"><span class="nx">01</span> รัน gateway ใน Docker</a>
+      <a href="#docker-persist"><span class="nx">02</span> Persistence + เน็ตเวิร์ก</a>
+      <a href="#docker-health"><span class="nx">03</span> Health + Observability</a>
+    </div>
+    <div class="nav-group">
+      <h4>Multi-Gateway</h4>
+      <a href="#multi"><span class="nx">04</span> แยกหลาย gateway</a>
+    </div>
+    <div class="nav-group">
+      <h4>สร้าง Skill / Plugin</h4>
+      <a href="#skill"><span class="nx">05</span> สร้าง Skill เอง</a>
+      <a href="#plugin-build"><span class="nx">06</span> สร้าง Plugin (tool)</a>
+      <a href="#plugin-policy"><span class="nx">07</span> Plugin policy + slots</a>
+    </div>
+    <div class="nav-group">
+      <h4>ปิดท้าย</h4>
+      <a href="#more"><span class="nx">08</span> อื่นๆ + ที่ไปต่อ</a>
+    </div>
+    <div class="nav-future">
+      <div class="roadmap-item done"><span>🦞</span> 1 ติดตั้ง+Codex <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>✈️</span> 2 Telegram <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>🎮</span> 3 Discord <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>⚡</span> 4 ขั้นสูง <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>🩺</span> 5 เจาะลึก <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>🔐</span> 6 Security/Memory <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item cur"><span>🐳</span> 7 Deploy/Extend <span class="tag">ตอนนี้</span></div>
+    </div>
+  </nav>
+</aside>
+
+<main>
+  <div class="mobile-bar"><span class="logo">🐳</span><span class="nm">Open<b>Claw</b> × Deploy</span></div>
+
+  <div class="hero">
+    <div class="eyebrow">PART 7 · จาก "ใช้เป็น" สู่ "deploy + ต่อยอดเอง"</div>
+    <h1>Docker · Multi-Gateway<br><span class="grad">สร้าง Skill / Plugin เอง</span></h1>
+    <p class="lead">
+      Part นี้สำหรับสายที่อยาก deploy แบบมืออาชีพและขยายความสามารถ OpenClaw ด้วยมือตัวเอง —
+      รัน gateway ใน container, แยกหลาย gateway ตาม trust boundary, และเขียน skill/plugin (TypeScript SDK)
+      ให้ agent ใช้ tool ที่คุณสร้างเอง
+    </p>
+    <div class="meta-row">
+      <span class="meta-chip"><span class="dot"></span> เสริมจาก Part 1-6</span>
+      <span class="meta-chip">🐳 Docker Compose</span>
+      <span class="meta-chip">🔀 Multi-gateway</span>
+      <span class="meta-chip">🔧 Plugin SDK</span>
+    </div>
+  </div>
+
+  <div class="divider"><span class="dt">PART A · DOCKER DEPLOY</span><span class="dl"></span></div>
+
+  <!-- 00 -->
+  <section id="docker-why">
+    <h2><span class="num">00</span> Docker — ใช้เมื่อไหร่ดี (และไม่ดี)</h2>
+    <p class="sec-sub">Docker เป็น "ทางเลือก" ไม่ใช่ทางบังคับ · เข้าใจว่าเหมาะกับเคสไหน</p>
+    <div class="cards">
+      <div class="card"><div class="ci">✅</div><div class="lbl">ใช้เมื่อ</div><h5>ต้องการแยก/ใช้ซ้ำได้</h5><p>อยากได้ gateway แยกโดด ทิ้งง่าย, รันบน host ที่ไม่อยากลงของในเครื่อง, deploy ซ้ำได้</p></div>
+      <div class="card"><div class="ci">❌</div><div class="lbl">ไม่ต้อง</div><h5>dev loop เร็ว ๆ</h5><p>รันบนเครื่องตัวเองพัฒนาเร็ว ๆ → ใช้ install ปกติ (Part 1) ดีกว่า</p></div>
+      <div class="card"><div class="ci">📦</div><div class="lbl">หมายเหตุ</div><h5>sandbox ≠ ต้อง Docker ทั้งตัว</h5><p>tool sandbox ใช้ Docker เป็น backend ได้โดยไม่ต้องเอา gateway ทั้งตัวลง container</p></div>
+    </div>
+    <div class="callout warn">
+      <span class="ico">💾</span>
+      <div class="body"><b>ต้องการ RAM ≥ 2 GB ตอน build image</b> — host 1 GB อาจโดน OOM-kill (<code class="inline">exit 137</code>) ตอน <code class="inline">pnpm install</code> · ถ้า build บน VPS เล็ก ให้ใช้ pre-built image แทน</div>
+    </div>
+  </section>
+
+  <!-- 01 -->
+  <section id="docker-run">
+    <h2><span class="num">01</span> รัน Gateway ใน Docker</h2>
+    <p class="sec-sub">วิธีง่ายสุดคือใช้ setup script · ต้องมี Docker + Docker Compose v2</p>
+
+    <h3>วิธีเร็ว — setup script + pre-built image</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — จาก repo root</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmt"># ใช้ image สำเร็จรูป (ไม่ต้อง build เอง เหมาะกับ VPS เล็ก)</span>
+<span class="c-prompt">$ </span><span class="c-cmd">export OPENCLAW_IMAGE=<span class="c-str">"ghcr.io/openclaw/openclaw:latest"</span></span>
+<span class="c-prompt">$ </span><span class="c-cmd">./scripts/docker/setup.sh</span></code></pre>
+    </div>
+    <p class="dim">script จะ: ถาม API key → สร้าง gateway token เขียนลง <code class="inline">.env</code> → สร้างโฟลเดอร์ key → start gateway ผ่าน Compose → ทำ onboarding ให้</p>
+
+    <h3>เปิด Control UI + ต่อ channel</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — หลัง gateway ขึ้น</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmt"># เปิด http://127.0.0.1:18789/ แล้ววาง token จาก .env ใน Settings</span>
+<span class="c-prompt">$ </span><span class="c-cmd">docker compose run --rm openclaw-cli dashboard --no-open</span>   <span class="c-cmt"># ขอลิงก์ใหม่</span>
+
+<span class="c-cmt"># ต่อ channel ผ่าน CLI container</span>
+<span class="c-prompt">$ </span><span class="c-cmd">docker compose run --rm openclaw-cli channels add --channel telegram --token <span class="c-str">"&lt;token&gt;"</span></span>
+<span class="c-prompt">$ </span><span class="c-cmd">docker compose run --rm openclaw-cli channels add --channel discord --token <span class="c-str">"&lt;token&gt;"</span></span></code></pre>
+    </div>
+    <div class="callout why">
+      <span class="ico">🔗</span>
+      <div class="body"><b>ทำไมมี 2 container (gateway + cli):</b> <code class="inline">openclaw-cli</code> ใช้ <code class="inline">network_mode: "service:openclaw-gateway"</code> เพื่อเรียก gateway ผ่าน <code class="inline">127.0.0.1</code> ได้ · มันเป็น <b>post-start tool</b> — คำสั่ง onboarding ก่อน gateway ขึ้น ต้องรันผ่าน <code class="inline">openclaw-gateway</code> ด้วย <code class="inline">--no-deps --entrypoint node</code></div>
+    </div>
+    <div class="callout pit">
+      <span class="ico">🔑</span>
+      <div class="body"><b>Codex OAuth บน Docker headless:</b> wizard จะเปิด URL ให้ — ใน Docker/headless ให้ copy <u>redirect URL ที่ปลายทาง</u> มาวางกลับใน wizard เพื่อจบ auth (เพราะไม่มี browser ใน container)</div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section id="docker-persist">
+    <h2><span class="num">02</span> Persistence + เน็ตเวิร์ก (จุดพลาดบ่อย)</h2>
+    <p class="sec-sub">container ถูกแทนที่ได้ — ข้อมูลต้องอยู่นอก container</p>
+    <h3>อะไรถูก mount ออกมา (รอด container replacement)</h3>
+    <table class="tbl">
+      <tr><th>path ในเครื่อง</th><th>map ไปที่ container</th><th>เก็บอะไร</th></tr>
+      <tr><td><code>OPENCLAW_CONFIG_DIR</code></td><td><code>/home/node/.openclaw</code></td><td>config, auth-profiles, .env</td></tr>
+      <tr><td><code>OPENCLAW_WORKSPACE_DIR</code></td><td><code>.../workspace</code></td><td>workspace ของ agent</td></tr>
+      <tr><td><code>OPENCLAW_AUTH_PROFILE_SECRET_DIR</code></td><td><code>/home/node/.config/openclaw</code></td><td>key เข้ารหัส auth (เก็บแยกจาก config)</td></tr>
+    </table>
+    <div class="callout pit">
+      <span class="ico">👤</span>
+      <div class="body"><b>EACCES / permission error:</b> image รันเป็น user <code class="inline">node</code> (uid 1000) · ถ้าเจอ error สิทธิ์บน bind mount ให้ <code class="inline">sudo chown -R 1000:1000 /path/to/config /path/to/workspace</code> · plugin ที่ owner ไม่ตรงจะถูกบล็อก ("suspicious ownership")</div>
+    </div>
+    <h3>เน็ตเวิร์ก 2 กับดักสำคัญ</h3>
+    <ul class="mech">
+      <li><strong>bind LAN vs loopback:</strong> setup script ตั้ง <code class="inline">OPENCLAW_GATEWAY_BIND=lan</code> เพื่อให้ host เปิด <code class="inline">127.0.0.1:18789</code> ได้ผ่าน port publishing · ใช้ค่า bind mode (<code class="inline">lan</code>/<code class="inline">loopback</code>) ไม่ใช่ <code class="inline">0.0.0.0</code></li>
+      <li><strong>provider บน host:</strong> ใน container <code class="inline">127.0.0.1</code> = ตัว container เอง! ถ้า Ollama/LM Studio รันบน host ต้องใช้ <code class="inline">http://host.docker.internal:11434</code> และให้ service bind <code class="inline">0.0.0.0</code></li>
+    </ul>
+    <div class="callout warn">
+      <span class="ico">🔥</span>
+      <div class="body"><b>VPS + Docker = ระวัง firewall:</b> port ที่ publish ผ่าน Docker วิ่งผ่าน <code class="inline">DOCKER-USER</code> chain ไม่ใช่ <code class="inline">INPUT</code> ปกติ · ต้องตั้ง rule ใน <code class="inline">DOCKER-USER</code> (ดู Part 6 + เอกสาร security) ไม่งั้น UFW อาจไม่กันอย่างที่คิด</div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="docker-health">
+    <h2><span class="num">03</span> Health Check + Observability</h2>
+    <p class="sec-sub">รู้ว่า gateway สุขภาพดีไหม + ส่ง metric/trace ออกได้</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — health probes (ไม่ต้อง auth)</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">curl -fsS http://127.0.0.1:18789/healthz</span>   <span class="c-cmt"># liveness</span>
+<span class="c-prompt">$ </span><span class="c-cmd">curl -fsS http://127.0.0.1:18789/readyz</span>    <span class="c-cmt"># readiness</span></code></pre>
+    </div>
+    <p class="dim">image มี <code class="inline">HEALTHCHECK</code> ในตัว ping <code class="inline">/healthz</code> — ถ้า fail ซ้ำ Docker จะ mark <code class="inline">unhealthy</code> แล้ว orchestrator restart ให้</p>
+    <h3>Observability (OpenTelemetry + Prometheus)</h3>
+    <ul class="mech">
+      <li><strong>OTel:</strong> ติดตั้ง <code class="inline">@openclaw/diagnostics-otel</code> → ตั้ง <code class="inline">OTEL_EXPORTER_OTLP_ENDPOINT</code> → ส่ง trace/metric ออกแบบ outbound (ไม่ต้อง publish port)</li>
+      <li><strong>Prometheus:</strong> ติดตั้ง <code class="inline">diagnostics-prometheus</code> → scrape ที่ <code class="inline">/api/diagnostics/prometheus</code> (มี gateway auth ป้องกัน — อย่าเปิด <code class="inline">/metrics</code> public)</li>
+    </ul>
+    <div class="callout note">
+      <span class="ico">🐚</span>
+      <div class="body">อยากจัดการ Docker ง่ายขึ้น ลง <b>ClawDock</b> helper → ได้คำสั่ง <code class="inline">clawdock-start</code>, <code class="inline">clawdock-dashboard</code> ฯลฯ</div>
+    </div>
+  </section>
+
+  <div class="divider"><span class="dt">PART B · MULTI-GATEWAY</span><span class="dl"></span></div>
+
+  <!-- 04 -->
+  <section id="multi">
+    <h2><span class="num">04</span> แยกหลาย Gateway ตาม Trust Boundary</h2>
+    <p class="sec-sub">เมื่อ 1 gateway ไม่พอ — เพราะมีหลายระดับความเชื่อใจที่ต้องแยกขาด</p>
+    <p>
+      จาก Part 6: OpenClaw <strong>ไม่ใช่</strong> ระบบ multi-tenant — 1 gateway = 1 trust boundary · ดังนั้นถ้าคุณมีงานหลายระดับความเสี่ยง
+      วิธีที่ถูกต้องคือ <strong>แยก gateway คนละตัว</strong> (ในอุดมคติคนละ OS user / host) ไม่ใช่ยัดทุกอย่างใน gateway เดียว
+    </p>
+    <div class="ascii">
+<b>เครื่อง/VPS A — ส่วนตัว (เต็มสิทธิ์)</b>
+  └─ gateway #1  ·  agent: <span class="c">personal</span> (sandbox off, exec full)
+       └─ Telegram DM ส่วนตัว · ห้อง Codex โปรเจกต์
+
+<b>เครื่อง/VPS B — งานสาธารณะ/ทีม (จำกัด)</b>
+  └─ gateway #2  ·  agent: <span class="c">public</span> (sandbox all, no fs/exec)
+       └─ Discord server ทีม · tool policy เข้ม
+</div>
+    <h3>เหตุผลที่ต้องแยก (ไม่ใช่แค่ "เผื่อ")</h3>
+    <ul class="mech">
+      <li><strong>credential แยกกัน</strong> — gateway สาธารณะไม่มี API key/บัญชีส่วนตัว ถ้าโดน injection ก็เผาไม่ถึงของส่วนตัว</li>
+      <li><strong>disk = trust boundary</strong> — ใครอ่าน <code class="inline">~/.openclaw</code> ได้ = เห็น transcript/secret ทั้งหมด · แยก OS user กันการอ่านข้ามกัน</li>
+      <li><strong>tool authority แยก</strong> — ถ้าหลายคนคุย agent ตัวเดียว = ทุกคนสั่ง tool ชุดเดียวกันได้ · แยก gateway = แยกอำนาจ</li>
+    </ul>
+    <div class="callout note">
+      <span class="ico">🔀</span>
+      <div class="body">บนเครื่องเดียวก็แยกได้ด้วยการรันหลาย gateway คนละ port/config dir (ดู <a class="link" href="https://docs.openclaw.ai/gateway/multiple-gateways" target="_blank">Multiple gateways</a>) แต่ <b>คนละ OS user/host แข็งแรงกว่า</b> สำหรับความเชื่อใจที่ต่างกันจริง ๆ</div>
+    </div>
+    <div class="callout tip">
+      <span class="ico">📡</span>
+      <div class="body">อยากคุมหลาย gateway จากที่เดียว → ใช้ remote gateway + Tailscale (gateway ยัง loopback, Tailscale คุม access) ตามแนวทาง Part 6</div>
+    </div>
+  </section>
+
+  <div class="divider"><span class="dt">PART C · สร้าง SKILL / PLUGIN เอง</span><span class="dl"></span></div>
+
+  <!-- 05 -->
+  <section id="skill">
+    <h2><span class="num">05</span> สร้าง Skill เอง (ไม่ต้องเขียนโค้ดหนัก)</h2>
+    <p class="sec-sub">Skill = ความสามารถที่เขียนเป็นไฟล์ <code class="inline">SKILL.md</code> + ทรัพยากรประกอบ — เบากว่า plugin</p>
+    <p>Skill เหมาะเมื่ออยากเพิ่ม "วิธีทำงานเฉพาะ" ให้ agent โดยไม่ต้องเขียน TypeScript · มันโหลดผ่าน skills watcher และ skill ที่ตั้ง user-invocable จะกลายเป็น slash command อัตโนมัติ</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">โครงสร้าง skill</span><button class="copy">คัดลอก</button></div>
+<pre><code>my-skill/
+├── SKILL.md          <span class="c-cmt"># หัวใจ: คำอธิบาย + วิธีใช้ + เมื่อไหร่ใช้</span>
+├── scripts/          <span class="c-cmt"># (ออปชัน) สคริปต์ที่ skill เรียก</span>
+└── resources/        <span class="c-cmt"># (ออปชัน) template/ข้อมูลประกอบ</span></code></pre>
+    </div>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">SKILL.md — โครงตัวอย่าง</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmt">---
+name: pedpro-spec-check
+description: ตรวจสเปก Bruno ว่าตรงกับฟอร์มที่จะสร้าง
+user-invocable: true
+---</span>
+
+<span class="c-key"># Pedpro Spec Check</span>
+
+เมื่อผู้ใช้ขอสร้าง/แก้ฟอร์ม ให้:
+1. อ่านไฟล์ .bru ที่เกี่ยวข้องใน bruno-api/
+2. เทียบ field กับสเปก — ห้ามเดา field เอง
+3. รายงานส่วนที่ไม่ตรงเป็น checklist</code></pre>
+    </div>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — ติดตั้ง + เรียกใช้</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw plugins install ./my-skill</span>   <span class="c-cmt"># หรือ clawhub:&lt;pkg&gt; ถ้าเผยแพร่แล้ว</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw gateway restart</span>
+<span class="c-cmt"># ในแชต: /pedpro-spec-check</span></code></pre>
+    </div>
+    <div class="callout why">
+      <span class="ico">⚡</span>
+      <div class="body"><b>ทำไม skill บาง command ทำงานเร็ว+แน่นอน:</b> ถ้า skill ประกาศ <code class="inline">command-dispatch: tool</code> มันจะรันตรงเข้า tool โดย<u>ไม่ผ่านโมเดล</u> — deterministic เหมือน slash command · skill ที่ไม่ประกาศจะถูกตีความโดย agent</div>
+    </div>
+    <div class="callout warn">
+      <span class="ico">🔐</span>
+      <div class="body"><b>skill = trusted code:</b> การแก้ <code class="inline">SKILL.md</code> อัปเดต snapshot ใน turn ถัดไป (skills watcher) · จำกัดคนที่แก้โฟลเดอร์ skill ได้ — มันคือโค้ดที่ agent จะทำตาม</div>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section id="plugin-build">
+    <h2><span class="num">06</span> สร้าง Plugin (tool) ด้วย SDK</h2>
+    <p class="sec-sub">เมื่ออยากให้ agent มี tool ใหม่ที่เขียน logic เอง (TypeScript/ESM) · ไม่ต้อง fork repo OpenClaw</p>
+    <p>ต้องการ: Node ≥ 22, รู้ TypeScript (ESM) · เผยแพร่ผ่าน ClawHub/npm แล้วผู้ใช้ <code class="inline">openclaw plugins install</code> ได้เลย</p>
+    <h3>2 ไฟล์ที่ต้องมี</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">package.json</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span>
+  <span class="c-key">"name"</span>: <span class="c-str">"@myorg/openclaw-my-plugin"</span>,
+  <span class="c-key">"version"</span>: <span class="c-str">"1.0.0"</span>,
+  <span class="c-key">"type"</span>: <span class="c-str">"module"</span>,
+  <span class="c-key">"openclaw"</span>: { <span class="c-key">"extensions"</span>: [<span class="c-str">"./index.ts"</span>] }
+<span class="c-cmd">}</span></code></pre>
+    </div>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">index.ts — register tool</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-kw">import</span> { definePluginEntry } <span class="c-kw">from</span> <span class="c-str">"openclaw/plugin-sdk/plugin-entry"</span>;
+<span class="c-kw">import</span> { Type } <span class="c-kw">from</span> <span class="c-str">"@sinclair/typebox"</span>;
+
+<span class="c-kw">export default</span> <span class="c-fn">definePluginEntry</span>({
+  <span class="c-key">id</span>: <span class="c-str">"my-plugin"</span>,
+  <span class="c-key">name</span>: <span class="c-str">"My Plugin"</span>,
+  <span class="c-key">description</span>: <span class="c-str">"Adds a custom tool"</span>,
+  <span class="c-fn">register</span>(api) {
+    api.<span class="c-fn">registerTool</span>({
+      <span class="c-key">name</span>: <span class="c-str">"my_tool"</span>,
+      <span class="c-key">description</span>: <span class="c-str">"Do a thing"</span>,
+      <span class="c-key">parameters</span>: Type.<span class="c-fn">Object</span>({ input: Type.<span class="c-fn">String</span>() }),
+      <span class="c-kw">async</span> <span class="c-fn">execute</span>(_id, params) {
+        <span class="c-kw">return</span> { content: [{ type: <span class="c-str">"text"</span>, text: <span class="c-str">`Got: </span>${params.input}<span class="c-str">`</span> }] };
+      },
+    });
+  },
+});</code></pre>
+    </div>
+    <h3>ทดสอบ + ตรวจว่าโหลดจริง</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw plugins install --link ./my-plugin</span>   <span class="c-cmt"># dev: link local</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw gateway restart</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw plugins inspect my-plugin --runtime --json</span>  <span class="c-cmt"># พิสูจน์ว่า runtime register tool จริง</span></code></pre>
+    </div>
+    <table class="tbl">
+      <tr><th>อยากเพิ่ม</th><th>เรียก API</th></tr>
+      <tr><td>tool ให้ agent เรียก</td><td><code>api.registerTool(...)</code></td></tr>
+      <tr><td>model provider ใหม่</td><td><code>api.registerProvider(...)</code></td></tr>
+      <tr><td>channel ใหม่</td><td><code>api.registerChannel(...)</code> (<code>defineChannelPluginEntry</code>)</td></tr>
+      <tr><td>slash command</td><td><code>api.registerCommand(...)</code></td></tr>
+      <tr><td>event hook</td><td><code>api.registerHook(...)</code></td></tr>
+      <tr><td>HTTP route / CLI</td><td><code>api.registerHttpRoute / registerCli</code></td></tr>
+    </table>
+    <div class="callout why">
+      <span class="ico">🎚️</span>
+      <div class="body"><b>required vs optional tool:</b> tool ปกติ "ใช้ได้เสมอ" · ตั้ง <code class="inline">{ optional: true }</code> สำหรับ tool ที่มี side effect/ต้องลง binary เพิ่ม — ผู้ใช้ต้อง opt-in ผ่าน <code class="inline">tools.allow: ["my_tool"]</code> · เหตุผล: กัน tool อันตรายเปิดเองโดยไม่ตั้งใจ</div>
+    </div>
+    <div class="callout pit">
+      <span class="ico">📦</span>
+      <div class="body"><b>import ให้ถูก:</b> import จาก subpath เจาะจง <code class="inline">openclaw/plugin-sdk/&lt;subpath&gt;</code> เสมอ · <u>อย่า</u> import จาก root <code class="inline">openclaw/plugin-sdk</code> (deprecated) · และอย่า import plugin ตัวเองผ่าน SDK path (ใช้ local barrel)</div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="plugin-policy">
+    <h2><span class="num">07</span> Plugin Policy + Slots</h2>
+    <p class="sec-sub">คุมว่า plugin ตัวไหนโหลด/ไม่โหลด — และใครคุมหมวดที่มีได้ตัวเดียว</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json — plugin policy</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span> <span class="c-key">plugins</span>: {
+  <span class="c-key">enabled</span>: <span class="c-str">true</span>,
+  <span class="c-key">allow</span>: [<span class="c-str">"voice-call"</span>, <span class="c-str">"my-plugin"</span>],   <span class="c-cmt">// allowlist เด็ดขาด (นอกลิสต์ไม่โหลด)</span>
+  <span class="c-key">deny</span>: [<span class="c-str">"untrusted-plugin"</span>],            <span class="c-cmt">// deny ชนะ allow เสมอ</span>
+  <span class="c-key">slots</span>: { <span class="c-key">memory</span>: <span class="c-str">"memory-core"</span> },     <span class="c-cmt">// เลือก 1 ตัวสำหรับหมวดผูกขาด</span>
+  <span class="c-key">entries</span>: {
+    <span class="c-str">"my-plugin"</span>: { <span class="c-key">enabled</span>: <span class="c-str">true</span>, <span class="c-key">config</span>: { <span class="c-comment">/* ... */</span> } }
+  }
+} <span class="c-cmd">}</span></code></pre>
+    </div>
+    <ul class="mech">
+      <li><code class="inline">plugins.deny</code> <strong>ชนะ</strong> allow และ per-plugin enable เสมอ — ใช้ปิดเด็ดขาด</li>
+      <li><code class="inline">plugins.allow</code> เป็น allowlist เด็ดขาด — tool ของ plugin นอกลิสต์ใช้ไม่ได้ แม้ <code class="inline">tools.allow: ["*"]</code></li>
+      <li><code class="inline">plugins.slots.&lt;slot&gt;</code> เลือก 1 ตัวสำหรับหมวดผูกขาด (เช่น memory, context engine) — slot จะ force-enable ตัวที่เลือก</li>
+      <li>plugin จาก workspace ปิดโดยปริยาย — ต้อง allow/enable ก่อน (เหตุผลความปลอดภัย: กันโค้ดใน workspace รันเอง)</li>
+    </ul>
+    <div class="callout note">
+      <span class="ico">🔄</span>
+      <div class="body">install/update/uninstall plugin <b>ต้อง restart gateway</b> · gateway ที่ managed จะ restart เองเมื่อ install record เปลี่ยน · ตรวจด้วย <code class="inline">openclaw plugins inspect &lt;id&gt; --runtime --json</code> (<code class="inline">plugins list</code> อ่านแค่ config เย็น ไม่พิสูจน์ว่า runtime โหลดจริง)</div>
+    </div>
+    <div class="callout warn">
+      <span class="ico">⚠️</span>
+      <div class="body"><b>plugin รัน in-process กับ gateway = trusted code:</b> ลงเฉพาะที่ไว้ใจ · pin เวอร์ชันเป๊ะ (<code class="inline">@scope/pkg@1.2.3</code>) · ตรวจโค้ดบนดิสก์ก่อนเปิด · ใช้ <code class="inline">security.installPolicy</code> ถ้าต้องคุมการติดตั้งระดับ host</div>
+    </div>
+  </section>
+
+  <div class="divider"><span class="dt">PART D · ปิดท้าย</span><span class="dl"></span></div>
+
+  <!-- 08 -->
+  <section id="more">
+    <h2><span class="num">08</span> อื่นๆ + ที่ไปต่อ</h2>
+    <p class="sec-sub">ฟีเจอร์/หัวข้อที่เหลือ ซึ่งต่อยอดได้จากที่เรียนมา</p>
+    <div class="cards">
+      <div class="card"><div class="ci">☁️</div><div class="lbl">HOSTING</div><h5>เจ้าอื่น ๆ</h5><p>มี guide เฉพาะ: Hetzner, DigitalOcean, GCP, Fly.io, Railway, Kubernetes, Raspberry Pi</p></div>
+      <div class="card"><div class="ci">🔌</div><div class="lbl">MCP</div><h5>ต่อ MCP server</h5><p><code class="inline">/mcp set</code> ดึง tool ของโปรเจกต์เข้ามาเหมือนใน Claude Code</p></div>
+      <div class="card"><div class="ci">🌊</div><div class="lbl">TASKFLOW</div><h5>workflow หลายขั้น</h5><p>ClawFlow / Task flow จัดงานเป็น pipeline หลาย stage</p></div>
+      <div class="card"><div class="ci">🧪</div><div class="lbl">CHANNEL/PROVIDER</div><h5>plugin ขั้นสูง</h5><p>เขียน channel/provider plugin เพื่อต่อแพลตฟอร์ม/โมเดลที่ยังไม่มี</p></div>
+    </div>
+    <div class="callout tip">
+      <span class="ico">📚</span>
+      <div class="body">เอกสารทางการครบ (มีภาษาไทย): <a class="link" href="https://docs.openclaw.ai/install/docker" target="_blank">Docker</a> · <a class="link" href="https://docs.openclaw.ai/plugins/building-plugins" target="_blank">Building Plugins</a> · <a class="link" href="https://docs.openclaw.ai/tools/creating-skills" target="_blank">Creating Skills</a> · <a class="link" href="https://docs.openclaw.ai/gateway/multiple-gateways" target="_blank">Multiple Gateways</a> · ดัชนีรวม <a class="link" href="https://docs.openclaw.ai/llms.txt" target="_blank">llms.txt</a></div>
+    </div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="summary">
+    <h2><span class="num">✓</span> สรุป Part 7 + ทั้งซีรีส์</h2>
+    <div class="cards">
+      <div class="card"><div class="ci">🐳</div><h5>Deploy เป็น</h5><p>รัน gateway ใน Docker + persistence + health + observability</p></div>
+      <div class="card"><div class="ci">🔀</div><h5>แยก gateway</h5><p>ตาม trust boundary — credential/disk/tool authority แยกขาด</p></div>
+      <div class="card"><div class="ci">🔧</div><h5>ต่อยอดเอง</h5><p>เขียน skill (SKILL.md) + plugin (SDK) ให้ agent มี tool ใหม่</p></div>
+    </div>
+    <p>
+      ครบ <strong>7 Part</strong> แล้ว — จากติดตั้งบน Ubuntu จนถึง deploy ด้วย Docker และเขียน plugin ของตัวเอง ·
+      จุดร้อยเรียงทั้งซีรีส์: <strong>เริ่มแคบแล้วค่อยเปิด</strong> (Part 6 security), <strong>เข้าใจ "ทำไม" ก่อน "ทำยังไง"</strong> (Part 5),
+      และ <strong>ใช้โมเดล/runtime ให้ตรงงาน</strong> (Codex ตั้งแต่ Part 1) — ทุกอย่างประกอบกันเป็น agent ที่ทำงานแทนคุณได้จริงและปลอดภัย
+    </p>
+  </section>
+
+  <div class="pager">
+    <a class="prev" href="#docker-why"><div class="pl">← Part 6</div><div class="pt">🔐 Security/Memory</div></a>
+    <a class="next disabled"><div class="pl">จบครบ 7 Part ✓</div><div class="pt">🦞 The lobster way</div></a>
+  </div>
+</main>
+</div>
+
+<script>
+  document.querySelectorAll('.code').forEach(block=>{
+    const btn=block.querySelector('.copy');if(!btn)return;
+    btn.addEventListener('click',()=>{
+      const code=block.querySelector('pre').innerText;
+      navigator.clipboard.writeText(code).then(()=>{
+        const t=btn.textContent;btn.textContent='✓ คัดลอกแล้ว';btn.classList.add('done');
+        setTimeout(()=>{btn.textContent=t;btn.classList.remove('done')},1500);
+      });
+    });
+  });
+  const prog=document.getElementById('progress');
+  window.addEventListener('scroll',()=>{const h=document.documentElement;prog.style.width=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100+'%';});
+  const links=[...document.querySelectorAll('nav a[href^="#"]')];const map={};
+  links.forEach(l=>{const id=l.getAttribute('href').slice(1);const s=document.getElementById(id);if(s)map[id]=l;});
+  const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const l=map[e.target.id];if(l)l.classList.add('active');}});},{rootMargin:'-15% 0px -75% 0px'});
+  Object.keys(map).forEach(id=>{const s=document.getElementById(id);if(s)obs.observe(s);});
+</script>
+</body>
+</html>

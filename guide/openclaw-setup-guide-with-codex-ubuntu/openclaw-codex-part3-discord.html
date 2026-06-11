@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw × Codex — Part 3: เชื่อมต่อ Discord</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0f12;--bg-soft:#14171c;--bg-card:#171b21;--bg-code:#0a0c0f;
+    --line:#262c34;--line-soft:#1d2229;
+    --text:#e7e9ee;--text-dim:#9aa3b0;--text-faint:#69727f;
+    --claw:#FF5A36;--claw-glow:rgba(255,90,54,.14);
+    --dc:#5865F2;--dc-soft:#8b95f7;--dc-glow:rgba(88,101,242,.16);
+    --gold:#ffb454;--green:#4ade80;--cyan:#38bdf8;--warn:#fbbf24;--danger:#f87171;
+    --mono:'JetBrains Mono',ui-monospace,monospace;--disp:'Chakra Petch',sans-serif;--body:'IBM Plex Sans Thai',sans-serif;
+    --sb:300px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(900px 500px at 88% -8%, var(--dc-glow), transparent 60%),radial-gradient(700px 400px at -5% 5%, var(--claw-glow), transparent 55%);
+    background-attachment:fixed;}
+  ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:#2a313a;border-radius:6px;border:2px solid var(--bg)}::-webkit-scrollbar-thumb:hover{background:#3a434f}
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--dc),#a8b1ff);z-index:100;transition:width .1s linear;box-shadow:0 0 12px var(--dc)}
+  .wrap{display:flex;min-height:100vh}
+  aside{width:var(--sb);flex:0 0 var(--sb);position:sticky;top:0;height:100vh;overflow-y:auto;background:linear-gradient(180deg,#0b0d10,#0e1115);border-right:1px solid var(--line);padding:26px 18px 60px}
+  main{flex:1;min-width:0;padding:54px clamp(20px,5vw,76px) 120px;max-width:1000px}
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+  .brand .logo{font-size:30px;filter:drop-shadow(0 2px 6px var(--claw-glow))}
+  .brand .name{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:.5px}
+  .brand .name b{color:var(--claw)}
+  .brand-sub{font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:0 0 22px 41px;letter-spacing:1px}
+  .part-pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dc-soft);background:var(--dc-glow);border:1px solid rgba(88,101,242,.34);padding:5px 11px;border-radius:30px;margin-bottom:20px;letter-spacing:1px}
+  .nav-group{margin-bottom:22px}
+  .nav-group h4{font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;color:var(--text-faint);text-transform:uppercase;margin-bottom:9px;padding-left:10px}
+  nav a{display:flex;align-items:center;gap:9px;color:var(--text-dim);text-decoration:none;font-size:13.5px;padding:7px 11px;border-radius:8px;border-left:2px solid transparent;transition:.15s}
+  nav a .nx{font-family:var(--mono);font-size:11px;color:var(--text-faint);min-width:20px}
+  nav a:hover{color:var(--text);background:var(--bg-soft)}
+  nav a.active{color:var(--dc-soft);background:var(--dc-glow);border-left-color:var(--dc)}
+  nav a.active .nx{color:var(--dc-soft)}
+  .nav-future{margin-top:26px;padding-top:18px;border-top:1px dashed var(--line)}
+  .nav-future .roadmap-item{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-faint);padding:6px 11px}
+  .nav-future .roadmap-item .tag{font-family:var(--mono);font-size:9px;border:1px solid var(--line);border-radius:4px;padding:2px 5px;margin-left:auto}
+  .nav-future .roadmap-item.done .tag{color:var(--green);border-color:rgba(74,222,128,.4)}
+  .nav-future .roadmap-item.cur .tag{color:var(--dc-soft);border-color:rgba(88,101,242,.4)}
+  .hero{margin-bottom:50px}
+  .hero .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--dc-soft);margin-bottom:14px}
+  h1{font-family:var(--disp);font-weight:700;font-size:clamp(30px,5vw,46px);line-height:1.15;letter-spacing:.3px;margin-bottom:16px}
+  h1 .grad{background:linear-gradient(120deg,var(--dc),#a8b1ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:17px;color:var(--text-dim);max-width:65ch}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+  .meta-chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:7px 13px;border-radius:8px}
+  .meta-chip b{color:var(--text)}.meta-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  section{margin-bottom:58px;scroll-margin-top:30px}
+  h2{font-family:var(--disp);font-weight:700;font-size:27px;letter-spacing:.3px;margin-bottom:8px;display:flex;align-items:baseline;gap:13px}
+  h2 .num{font-family:var(--mono);font-size:15px;color:var(--dc-soft);font-weight:700}
+  .sec-sub{color:var(--text-dim);margin-bottom:24px;font-size:15.5px}
+  h3{font-family:var(--disp);font-weight:600;font-size:18.5px;margin:30px 0 12px;color:var(--text);display:flex;align-items:center;gap:9px}
+  h3::before{content:"";width:5px;height:18px;background:var(--dc);border-radius:3px;display:inline-block}
+  p{margin-bottom:13px;color:var(--text)}p.dim{color:var(--text-dim)}
+  a.link{color:var(--dc-soft);text-decoration:none;border-bottom:1px dashed rgba(139,149,247,.4)}a.link:hover{border-bottom-style:solid}
+  strong{color:#fff;font-weight:600}
+  code.inline{font-family:var(--mono);font-size:13px;background:var(--bg-code);color:var(--gold);padding:2px 7px;border-radius:5px;border:1px solid var(--line-soft)}
+  ul,ol{margin:6px 0 16px 4px;padding-left:22px}li{margin-bottom:8px;color:var(--text)}li::marker{color:var(--dc-soft)}
+  ul.mech li::marker{content:"▸  ";color:var(--dc-soft)}
+  .code{position:relative;margin:16px 0 20px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--bg-code)}
+  .code-head{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .code-head .dots{display:flex;gap:6px}.code-head .dots i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .code-head .dots i:nth-child(1){background:#ff5f57}.code-head .dots i:nth-child(2){background:#febc2e}.code-head .dots i:nth-child(3){background:#28c840}
+  .code-head .title{font-family:var(--mono);font-size:11.5px;color:var(--text-faint);margin-left:6px}
+  .code-head .copy{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:4px 11px;border-radius:6px;cursor:pointer;transition:.15s}
+  .code-head .copy:hover{color:var(--dc-soft);border-color:var(--dc)}.code-head .copy.done{color:var(--green);border-color:rgba(74,222,128,.4)}
+  pre{padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.65}
+  pre code{font-family:var(--mono);white-space:pre}
+  .c-cmd{color:#e7e9ee}.c-flag{color:var(--cyan)}.c-str{color:var(--green)}.c-cmt{color:var(--text-faint);font-style:italic}.c-key{color:var(--dc-soft)}.c-prompt{color:var(--dc-soft);user-select:none}
+  .callout{display:flex;gap:13px;padding:15px 17px;border-radius:11px;margin:18px 0;border:1px solid var(--line);background:var(--bg-card);font-size:14.5px}
+  .callout .ico{font-size:19px;flex:0 0 auto;line-height:1.4}.callout .body{color:var(--text-dim)}.callout .body b{color:var(--text)}
+  .callout.note{border-color:rgba(56,189,248,.32);background:rgba(56,189,248,.06)}.callout.note .ico{color:var(--cyan)}
+  .callout.warn{border-color:rgba(251,191,36,.34);background:rgba(251,191,36,.06)}.callout.warn .ico{color:var(--warn)}
+  .callout.pit{border-color:rgba(248,113,113,.34);background:rgba(248,113,113,.06)}.callout.pit .ico{color:var(--danger)}
+  .callout.tip{border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.05)}.callout.tip .ico{color:var(--green)}
+  .callout.codex{border-color:rgba(88,101,242,.4);background:var(--dc-glow)}.callout.codex .ico{color:var(--dc-soft)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:20px 0}
+  .card{background:var(--bg-card);border:1px solid var(--line);border-radius:13px;padding:18px;transition:.18s}
+  .card:hover{border-color:rgba(88,101,242,.45);transform:translateY(-2px)}
+  .card .ci{font-size:24px;margin-bottom:10px}.card h5{font-family:var(--disp);font-weight:600;font-size:16px;margin-bottom:6px;color:#fff}
+  .card p{font-size:13.5px;color:var(--text-dim);margin:0}.card .lbl{font-family:var(--mono);font-size:10.5px;color:var(--dc-soft);letter-spacing:1px}
+  .step{display:flex;gap:16px;margin-bottom:14px}
+  .step .sn{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--dc-glow);border:1px solid rgba(88,101,242,.45);color:var(--dc-soft);font-family:var(--mono);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .step .sc{flex:1;min-width:0;padding-top:2px}.step .sc b{color:#fff}
+  .tbl{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .tbl th{background:var(--bg-soft);text-align:left;padding:11px 14px;font-family:var(--mono);font-size:12px;color:var(--dc-soft);letter-spacing:.5px;border-bottom:1px solid var(--line)}
+  .tbl td{padding:11px 14px;border-bottom:1px solid var(--line-soft);color:var(--text-dim);vertical-align:top}
+  .tbl tr:last-child td{border-bottom:none}.tbl td code{font-family:var(--mono);font-size:12.5px;color:var(--gold);white-space:nowrap}.tbl td b{color:var(--text)}
+  .perm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;margin:16px 0}
+  .perm{display:flex;align-items:center;gap:9px;background:var(--bg-card);border:1px solid var(--line);border-radius:9px;padding:10px 13px;font-size:13.5px}
+  .perm .pk{width:18px;height:18px;border-radius:5px;background:var(--dc-glow);border:1px solid rgba(88,101,242,.4);color:var(--dc-soft);font-size:11px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .perm.opt .pk{background:transparent;color:var(--text-faint);border-color:var(--line)}
+  .perm.opt{color:var(--text-dim)}
+  .pager{display:flex;gap:14px;margin-top:60px;padding-top:28px;border-top:1px solid var(--line)}
+  .pager a{flex:1;text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--bg-card);transition:.18s}
+  .pager a:hover{border-color:var(--dc);background:var(--dc-glow)}
+  .pager .pl{font-family:var(--mono);font-size:11px;color:var(--text-faint);letter-spacing:1px}
+  .pager .pt{font-family:var(--disp);font-weight:600;font-size:16px;color:var(--text);margin-top:5px}
+  .pager a.next{text-align:right}.pager a.disabled{opacity:.4;pointer-events:none}
+  .mobile-bar{display:none}
+  @media(max-width:880px){
+    aside{display:none}main{padding:24px 18px 80px}
+    .mobile-bar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;background:rgba(13,15,18,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:13px 16px;margin:-24px -18px 24px}
+    .mobile-bar .logo{font-size:22px}.mobile-bar .nm{font-family:var(--disp);font-weight:700;font-size:16px}.mobile-bar .nm b{color:var(--claw)}
+    .pager{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="wrap">
+
+<aside>
+  <div class="brand"><span class="logo">🦞</span><span class="name">Open<b>Claw</b></span></div>
+  <div class="brand-sub">× CODEX · UBUNTU GUIDE</div>
+  <div class="part-pill">🎮 PART 3 / 4 — DISCORD</div>
+  <nav>
+    <div class="nav-group">
+      <h4>ตั้งค่าฝั่ง Discord</h4>
+      <a href="#intro"><span class="nx">00</span> เป้าหมาย Part นี้</a>
+      <a href="#app"><span class="nx">01</span> สร้าง app + bot</a>
+      <a href="#intents"><span class="nx">02</span> เปิด Intents</a>
+      <a href="#token"><span class="nx">03</span> เอา Bot Token</a>
+      <a href="#invite"><span class="nx">04</span> Invite เข้า server</a>
+      <a href="#ids"><span class="nx">05</span> เอา Server/User ID</a>
+    </div>
+    <div class="nav-group">
+      <h4>เชื่อมกับ OpenClaw</h4>
+      <a href="#config"><span class="nx">06</span> ใส่ token + start</a>
+      <a href="#pairing"><span class="nx">07</span> Pairing (DM)</a>
+      <a href="#workspace"><span class="nx">08</span> Guild workspace</a>
+    </div>
+    <div class="nav-group">
+      <h4>ขั้นสูง</h4>
+      <a href="#codex-acp"><span class="nx">09</span> ผูกห้องกับ Codex 🔥</a>
+      <a href="#extras"><span class="nx">10</span> Slash / Voice / Stream</a>
+      <a href="#trouble"><span class="nx">11</span> แก้ปัญหา</a>
+    </div>
+    <div class="nav-future">
+      <div class="roadmap-item done"><span>🦞</span> Part 1 — ติดตั้ง + Codex <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>✈️</span> Part 2 — Telegram <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item cur"><span>🎮</span> Part 3 — Discord <span class="tag">ตอนนี้</span></div>
+      <div class="roadmap-item"><span>⚡</span> Part 4 — คำสั่ง + ขั้นสูง <span class="tag">ถัดไป</span></div>
+    </div>
+  </nav>
+</aside>
+
+<main>
+  <div class="mobile-bar"><span class="logo">🎮</span><span class="nm">Open<b>Claw</b> × Discord</span></div>
+
+  <div class="hero">
+    <div class="eyebrow">PART 3 · channel ที่ทรงพลังที่สุด</div>
+    <h1>เชื่อม OpenClaw เข้ากับ<br><span class="grad">Discord</span> เป็น workspace</h1>
+    <p class="lead">
+      Discord คือ channel ที่ทรงพลังที่สุดของ OpenClaw — แต่ละห้อง (channel) เป็น session แยกของตัวเอง มี context/memory เป็นของตัวเอง
+      รองรับ thread, slash command, voice และ component UI · ที่สำคัญสำหรับสายโค้ด: <b>ผูกห้องเข้ากับ Codex แบบ persistent</b> ให้ทำงานในโปรเจกต์จริงได้
+    </p>
+    <div class="meta-row">
+      <span class="meta-chip"><span class="dot"></span> ต่อจาก Part 2</span>
+      <span class="meta-chip">🧩 1 ห้อง = 1 session</span>
+      <span class="meta-chip">🔌 ผ่าน Discord gateway (WebSocket)</span>
+      <span class="meta-chip">🔥 รองรับ Codex ACP</span>
+    </div>
+  </div>
+
+  <!-- 00 -->
+  <section id="intro">
+    <h2><span class="num">00</span> เป้าหมาย + ทำไม Discord</h2>
+    <p class="sec-sub">โครงสร้าง session ของ Discord คือสิ่งที่ทำให้มันเหนือกว่า channel อื่น</p>
+    <p>
+      ต่างจาก Telegram ที่ DM รวมเป็น session เดียว — บน Discord <strong>แต่ละ channel ในเซิร์ฟเวอร์คือ session แยกขาดจากกัน</strong>
+      (session key รูปแบบ <code class="inline">agent:&lt;agentId&gt;:discord:channel:&lt;channelId&gt;</code>) คุณจึงตั้ง <code class="inline">#coding</code>, <code class="inline">#research</code>, <code class="inline">#pedpro</code>
+      แยกบริบทกันได้ และยังผูก agent คนละตัวต่อห้อง/ต่อ role ได้ด้วย
+    </p>
+    <div class="cards">
+      <div class="card"><div class="ci">🧩</div><div class="lbl">SESSIONS</div><h5>ห้องละ context</h5><p>แต่ละ channel มี memory/session ของตัวเอง</p></div>
+      <div class="card"><div class="ci">⚡</div><div class="lbl">SLASH</div><h5>Slash commands</h5><p>native commands + model picker แบบ interactive</p></div>
+      <div class="card"><div class="ci">🎙️</div><div class="lbl">VOICE</div><h5>Voice channel</h5><p>เข้าห้องเสียง คุยด้วยเสียงได้ (/vc)</p></div>
+      <div class="card"><div class="ci">🔥</div><div class="lbl">ACP</div><h5>Codex persistent</h5><p>ผูกห้องเข้ากับ Codex ในโปรเจกต์จริง</p></div>
+    </div>
+  </section>
+
+  <!-- 01 -->
+  <section id="app">
+    <h2><span class="num">01</span> สร้าง Application + Bot</h2>
+    <p class="sec-sub">แนะนำสร้าง server ส่วนตัวของตัวเองก่อน (เลือก Create My Own → For me and my friends)</p>
+    <div class="step"><div class="sn">1</div><div class="sc">เปิด <a class="link" href="https://discord.com/developers/applications" target="_blank">Discord Developer Portal</a> → กด <b>New Application</b> ตั้งชื่อ เช่น "OpenClaw"</div></div>
+    <div class="step"><div class="sn">2</div><div class="sc">เมนูซ้ายเลือก <b>Bot</b> → ตั้ง <b>Username</b> ตามชื่อ agent ที่อยากให้โชว์</div></div>
+    <div class="callout note">
+      <span class="ico">🏠</span>
+      <div class="body">ยังไม่มี server? สร้างก่อนใน Discord app (ปุ่ม + ด้านซ้ายล่าง → Create My Own → For me and my friends) — แนะนำให้ใช้ server ส่วนตัวที่มีคุณกับ bot</div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section id="intents">
+    <h2><span class="num">02</span> เปิด Privileged Gateway Intents</h2>
+    <p class="sec-sub">อยู่ในหน้า Bot เลื่อนลงไปหา "Privileged Gateway Intents" — ขั้นนี้ลืมบ่อยที่สุดและทำให้ bot ไม่ตอบ</p>
+    <div class="perm-grid">
+      <div class="perm"><span class="pk">✓</span> <b style="color:#fff">Message Content Intent</b> — จำเป็น</div>
+      <div class="perm"><span class="pk">✓</span> Server Members Intent — แนะนำ (จำเป็นถ้าใช้ role allowlist / จับคู่ชื่อ→ID)</div>
+      <div class="perm opt"><span class="pk">○</span> Presence Intent — ไม่บังคับ (ใช้เฉพาะ presence)</div>
+    </div>
+    <div class="callout pit">
+      <span class="ico">🚨</span>
+      <div class="body"><b>ถ้าลืมเปิด Message Content Intent → bot จะไม่เห็นข้อความเลย</b> และต้อง <u>restart Gateway</u> ทุกครั้งหลังเปลี่ยน intents</div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="token">
+    <h2><span class="num">03</span> เอา Bot Token</h2>
+    <p class="sec-sub">ยังอยู่ในหน้า Bot</p>
+    <div class="step"><div class="sn">1</div><div class="sc">เลื่อนขึ้นไปกด <b>Reset Token</b></div></div>
+    <div class="step"><div class="sn">2</div><div class="sc">คัดลอก token ที่ได้เก็บไว้ — นี่คือ <b>Bot Token</b></div></div>
+    <div class="callout note">
+      <span class="ico">ℹ️</span>
+      <div class="body">ชื่อปุ่มว่า "Reset" แต่ครั้งแรกมันคือการ <b>สร้าง</b> token ครั้งแรก ไม่ได้รีเซ็ตอะไร — ไม่ต้องตกใจ</div>
+    </div>
+    <div class="callout pit">
+      <span class="ico">🔐</span>
+      <div class="body">Token = ความลับเหมือนรหัสผ่าน · เก็บไว้ในที่ปลอดภัย อย่า commit ขึ้น Git ถ้าหลุดให้ Reset ใหม่ทันที</div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="invite">
+    <h2><span class="num">04</span> สร้าง Invite URL + เชิญ bot เข้า server</h2>
+    <p class="sec-sub">เมนูซ้ายเลือก <b>OAuth2</b> → เลื่อนไปหา "OAuth2 URL Generator"</p>
+    <h3>เลือก Scopes</h3>
+    <div class="perm-grid">
+      <div class="perm"><span class="pk">✓</span> <code class="inline">bot</code></div>
+      <div class="perm"><span class="pk">✓</span> <code class="inline">applications.commands</code></div>
+    </div>
+    <h3>เลือก Bot Permissions (ชุดพื้นฐาน)</h3>
+    <div class="perm-grid">
+      <div class="perm"><span class="pk">✓</span> View Channels</div>
+      <div class="perm"><span class="pk">✓</span> Send Messages</div>
+      <div class="perm"><span class="pk">✓</span> Read Message History</div>
+      <div class="perm"><span class="pk">✓</span> Embed Links</div>
+      <div class="perm"><span class="pk">✓</span> Attach Files</div>
+      <div class="perm opt"><span class="pk">○</span> Add Reactions (ไม่บังคับ)</div>
+      <div class="perm opt"><span class="pk">○</span> Send Messages in Threads (ถ้าใช้ thread/forum)</div>
+    </div>
+    <div class="step"><div class="sn">→</div><div class="sc">คัดลอก URL ที่ generate ด้านล่าง → เปิดในเบราว์เซอร์ → เลือก server ของคุณ → กด <b>Continue / Authorize</b> · เสร็จแล้วจะเห็น bot อยู่ใน server</div></div>
+    <div class="callout tip">
+      <span class="ico">🛡️</span>
+      <div class="body"><b>หลักการ least-privilege:</b> เปิดเฉพาะสิทธิ์ที่จำเป็น — อย่าให้ Administrator เพราะถ้า token หลุด ความเสียหายจะจำกัด</div>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="ids">
+    <h2><span class="num">05</span> เอา Server ID + User ID</h2>
+    <p class="sec-sub">ต้องเปิด Developer Mode ใน Discord ก่อนถึงจะ copy ID ได้</p>
+    <div class="step"><div class="sn">1</div><div class="sc">เปิด Developer Mode: <b>User Settings</b> (ฟันเฟือง) → <b>Advanced</b> → เปิด <b>Developer Mode</b></div></div>
+    <div class="step"><div class="sn">2</div><div class="sc">คลิกขวาที่ <b>ไอคอน server</b> ด้านซ้าย → <b>Copy Server ID</b></div></div>
+    <div class="step"><div class="sn">3</div><div class="sc">คลิกขวาที่ <b>avatar ของตัวเอง</b> → <b>Copy User ID</b></div></div>
+    <div class="step"><div class="sn">4</div><div class="sc">เปิดให้ bot DM คุณได้ (เพื่อทำ pairing): คลิกขวา <b>ไอคอน server</b> → <b>Privacy Settings</b> → เปิด <b>Direct Messages</b></div></div>
+    <div class="callout note">
+      <span class="ico">📝</span>
+      <div class="body">เก็บ 3 อย่างนี้ไว้ด้วยกัน: <b>Bot Token</b> + <b>Server ID</b> + <b>User ID</b> — ใช้ในขั้นถัดไปทั้งหมด</div>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section id="config">
+    <h2><span class="num">06</span> ใส่ token ให้ OpenClaw + สตาร์ท</h2>
+    <p class="sec-sub">วิธีแนะนำคือเก็บ token ใน env แล้วชี้ config ไปหา (ปลอดภัยกว่าเขียน token ลงไฟล์)</p>
+
+    <h3>ตั้ง env + เขียน config (วิธีทางการ)</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — env + config patch</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">export DISCORD_BOT_TOKEN=</span><span class="c-str">"YOUR_BOT_TOKEN"</span>
+
+<span class="c-cmt"># เขียนไฟล์ patch แล้ว apply</span>
+<span class="c-prompt">$ </span><span class="c-cmd">cat &gt; discord.patch.json5 &lt;&lt;<span class="c-str">'JSON5'</span>
+{
+  channels: {
+    discord: {
+      enabled: true,
+      token: { source: "env", provider: "default", id: "DISCORD_BOT_TOKEN" },
+    },
+  },
+}
+JSON5</span>
+
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw config patch <span class="c-flag">--file</span> ./discord.patch.json5 <span class="c-flag">--dry-run</span></span>   <span class="c-cmt"># ดูก่อนว่าจะเปลี่ยนอะไร</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw config patch <span class="c-flag">--file</span> ./discord.patch.json5</span>            <span class="c-cmt"># apply จริง</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw gateway restart</span></code></pre>
+    </div>
+    <ul class="mech">
+      <li><code class="inline">token: { source: "env", ... }</code> = SecretRef ชี้ไปที่ env แทนที่จะเก็บ token ดิบในไฟล์ (จะใส่ token ตรง ๆ ก็ได้ แต่ไม่แนะนำ)</li>
+      <li>ถ้ารันเป็น service ให้เก็บ env ใน <code class="inline">~/.openclaw/.env</code> เพื่อให้ service resolve ได้หลัง restart</li>
+      <li>env <code class="inline">DISCORD_BOT_TOKEN</code> ใช้ได้กับ "บัญชี default" เท่านั้น · config ชนะ env</li>
+    </ul>
+    <div class="callout warn">
+      <span class="ico">⏱️</span>
+      <div class="body">ถ้าโดน Discord rate-limit ตอน startup ให้ใส่ <code class="inline">channels.discord.applicationId</code> (เลข Application ID จาก Developer Portal) เพื่อให้ข้าม REST lookup ตอนเริ่ม</div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="pairing">
+    <h2><span class="num">07</span> Pairing — DM bot ครั้งแรก</h2>
+    <p class="sec-sub">Discord DM ใช้ <code class="inline">pairing</code> เป็นค่าเริ่มต้น เหมือน Telegram</p>
+    <div class="step"><div class="sn">1</div><div class="sc">รอ Gateway ขึ้น READY แล้ว <b>DM หา bot</b> ใน Discord</div></div>
+    <div class="step"><div class="sn">2</div><div class="sc">bot จะตอบกลับเป็น <b>รหัส pairing</b></div></div>
+    <div class="step"><div class="sn">3</div><div class="sc">approve รหัสที่ฝั่ง server:</div></div>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — pairing</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw pairing list discord</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw pairing approve discord <span class="c-flag">&lt;CODE&gt;</span></span></code></pre>
+    </div>
+    <div class="step"><div class="sn">4</div><div class="sc">กลับไป DM กับ bot อีกครั้ง — agent (Codex) จะตอบแล้ว 🎉</div></div>
+    <div class="callout warn"><span class="ico">⏰</span><div class="body">รหัส pairing หมดอายุใน <b>1 ชั่วโมง</b></div></div>
+    <div class="callout tip">
+      <span class="ico">💬</span>
+      <div class="body"><b>ทริค:</b> ถ้าต่อ Telegram (Part 2) ไว้แล้ว สั่งจากตรงนั้นได้เลย เช่น "อนุมัติรหัส pairing ของ Discord นี้: <code class="inline">&lt;CODE&gt;</code>"</div>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section id="workspace">
+    <h2><span class="num">08</span> ตั้งทั้ง server เป็น workspace</h2>
+    <p class="sec-sub">หลัง DM ใช้ได้แล้ว — เปิดให้ agent ตอบในทุกห้องของ server</p>
+    <p>ใส่ Server ID + User ID (จากข้อ 05) ลง allowlist ของ guild:</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json — guild workspace</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span>
+  <span class="c-key">channels</span>: { <span class="c-key">discord</span>: {
+    <span class="c-key">groupPolicy</span>: <span class="c-str">"allowlist"</span>,
+    <span class="c-key">guilds</span>: {
+      <span class="c-key">YOUR_SERVER_ID</span>: {
+        <span class="c-key">requireMention</span>: <span class="c-str">false</span>,        <span class="c-cmt">// ตอบทุกข้อความ (server ส่วนตัว)</span>
+        <span class="c-key">users</span>: [<span class="c-str">"YOUR_USER_ID"</span>]        <span class="c-cmt">// ใครในกลุ่มสั่งได้</span>
+      }
+    }
+  } }
+<span class="c-cmd">}</span></code></pre>
+    </div>
+    <ul class="mech">
+      <li><code class="inline">groupPolicy: "allowlist"</code> = ค่าปลอดภัยพื้นฐาน · guild ต้อง match ใน <code class="inline">guilds</code></li>
+      <li><code class="inline">requireMention</code> ค่าเริ่มต้น <code class="inline">true</code> (ต้อง @mention) — server ส่วนตัวมักตั้ง <code class="inline">false</code> ให้ตอบทุกข้อความ</li>
+      <li>ถ้า guild มี block <code class="inline">channels</code> = อนุญาตเฉพาะห้องที่ระบุ · ถ้าไม่มี = ทุกห้องในกลุ่มนั้นได้หมด</li>
+    </ul>
+
+    <div class="callout pit">
+      <span class="ico">🤐</span>
+      <div class="body"><b>กับดักสำคัญที่สุดของ Discord:</b> ในห้องกลุ่ม คำตอบ final ของ agent <u>เป็น private โดยปริยาย</u> — agent ต้องเรียก <code class="inline">message</code> tool เองเพื่อโพสต์ให้เห็น<br><br>
+        ถ้าเห็น bot "พิมพ์อยู่" + log มี token usage แต่ไม่มีข้อความโผล่ ให้ดู log หา <code class="inline">didSendViaMessagingTool: false</code> — แปลว่าโมเดลตอบแบบ private แทนที่จะเรียก tool<br><br>
+        <b>แก้ได้ 2 ทาง:</b> (1) ใช้โมเดลที่เรียก tool เก่ง — Codex/<code class="inline">openai/gpt-5.5</code> ทำได้ดี หรือ (2) คืนพฤติกรรมเดิม: ตั้ง <code class="inline">messages.groupChat.visibleReplies: "automatic"</code>
+      </div>
+    </div>
+    <div class="callout note">
+      <span class="ico">🧠</span>
+      <div class="body"><b>เรื่อง memory:</b> ไฟล์ <code class="inline">MEMORY.md</code> โหลดเฉพาะใน DM session เท่านั้น · ห้องกลุ่มไม่ auto-load — ถ้าต้องการ context ร่วมทุกห้อง ให้ใส่ใน <code class="inline">AGENTS.md</code> / <code class="inline">USER.md</code> (inject ทุก session)</div>
+    </div>
+  </section>
+
+  <!-- 09 CODEX ACP -->
+  <section id="codex-acp">
+    <h2><span class="num">09</span> 🔥 ผูกห้อง Discord เข้ากับ Codex (ACP)</h2>
+    <p class="sec-sub">หัวข้อสำหรับสายโค้ดโดยเฉพาะ — เปลี่ยนห้อง Discord ให้เป็น "หน้าต่างคุยกับ Codex" ที่ทำงานในโปรเจกต์จริงต่อเนื่อง</p>
+    <p>
+      OpenClaw รัน Codex เป็น <strong>ACP agent แบบ persistent</strong> ที่ผูกกับ working directory ของโปรเจกต์ได้
+      แล้ว bind เข้ากับห้อง Discord ห้องหนึ่ง — ทุกข้อความในห้องนั้นจะวิ่งเข้า session Codex เดิม ทำให้มันจำ context งานต่อเนื่องเหมือนเปิด Codex ค้างไว้ในห้องแชต
+    </p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json — Codex ACP binding</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span>
+  <span class="c-key">agents</span>: {
+    <span class="c-key">list</span>: [
+      {
+        <span class="c-key">id</span>: <span class="c-str">"codex"</span>,
+        <span class="c-key">runtime</span>: {
+          <span class="c-key">type</span>: <span class="c-str">"acp"</span>,
+          <span class="c-key">acp</span>: {
+            <span class="c-key">agent</span>: <span class="c-str">"codex"</span>,
+            <span class="c-key">backend</span>: <span class="c-str">"acpx"</span>,
+            <span class="c-key">mode</span>: <span class="c-str">"persistent"</span>,
+            <span class="c-key">cwd</span>: <span class="c-str">"/workspace/pedpro"</span>      <span class="c-cmt">// โฟลเดอร์โปรเจกต์จริง</span>
+          }
+        }
+      }
+    ]
+  },
+  <span class="c-key">bindings</span>: [
+    {
+      <span class="c-key">type</span>: <span class="c-str">"acp"</span>,
+      <span class="c-key">agentId</span>: <span class="c-str">"codex"</span>,
+      <span class="c-key">match</span>: {
+        <span class="c-key">channel</span>: <span class="c-str">"discord"</span>,
+        <span class="c-key">accountId</span>: <span class="c-str">"default"</span>,
+        <span class="c-key">peer</span>: { <span class="c-key">kind</span>: <span class="c-str">"channel"</span>, <span class="c-key">id</span>: <span class="c-str">"YOUR_CHANNEL_ID"</span> }
+      },
+      <span class="c-key">acp</span>: { <span class="c-key">label</span>: <span class="c-str">"codex-main"</span> }
+    }
+  ],
+  <span class="c-key">channels</span>: { <span class="c-key">discord</span>: { <span class="c-key">guilds</span>: {
+    <span class="c-key">YOUR_SERVER_ID</span>: { <span class="c-key">channels</span>: {
+      <span class="c-key">YOUR_CHANNEL_ID</span>: { <span class="c-key">requireMention</span>: <span class="c-str">false</span> }
+    } }
+  } } }
+<span class="c-cmd">}</span></code></pre>
+    </div>
+    <h3>หรือสั่งสด ๆ จากในห้องด้วย slash command</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">Discord — ในห้องที่ต้องการ</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">/acp spawn codex --bind here</span>   <span class="c-cmt"># ผูกห้องนี้กับ Codex session ในที่</span>
+<span class="c-cmd">/new</span>                          <span class="c-cmt"># รีเซ็ต session เดิมในห้องที่ผูกไว้</span>
+<span class="c-cmd">/unfocus</span>                      <span class="c-cmt"># ยกเลิกการผูก thread</span></code></pre>
+    </div>
+    <div class="callout codex">
+      <span class="ico">🔥</span>
+      <div class="body"><b>เคสใช้งานจริง:</b> ตั้งห้อง <code class="inline">#pedpro-codex</code> ผูกกับ Codex ที่ <code class="inline">cwd</code> ชี้ไปโฟลเดอร์ repo → พิมพ์งานจากมือถือ เช่น "เพิ่ม validation ให้ฟอร์ม BotLine ตาม Bruno spec" แล้ว Codex ทำงานในโปรเจกต์จริงให้ ขณะคุณไม่ได้นั่งหน้าจอ</div>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section id="extras">
+    <h2><span class="num">10</span> Slash · Voice · Streaming</h2>
+    <p class="sec-sub">ฟีเจอร์เด่นเฉพาะของ Discord (สรุปสั้น เจาะลึกใน Part 4)</p>
+
+    <h3>Slash commands</h3>
+    <p>เปิดอัตโนมัติ (<code class="inline">commands.native: "auto"</code>) คำสั่งเป็น ephemeral (เห็นคนเดียว) โดยปริยาย ตัวอย่าง:</p>
+    <ul class="mech">
+      <li><code class="inline">/model</code>, <code class="inline">/models</code> — เปิด picker เลือก provider/model/runtime แบบ dropdown</li>
+      <li><code class="inline">/focus &lt;target&gt;</code> / <code class="inline">/unfocus</code> — ผูก/ปลด thread กับ session</li>
+      <li><code class="inline">/agents</code> — ดู run ที่ทำงานอยู่ + สถานะ binding</li>
+    </ul>
+
+    <h3>Voice channel</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">Discord — voice</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">/vc join channel:&lt;voice-channel-id&gt;</span>
+<span class="c-cmd">/vc status</span>
+<span class="c-cmd">/vc leave</span></code></pre>
+    </div>
+    <p class="dim">ต้องให้สิทธิ์ Connect/Speak ในห้องเสียง + เปิด <code class="inline">channels.discord.voice.enabled: true</code> · voice message ต้องมี <code class="inline">ffmpeg</code> + <code class="inline">ffprobe</code> บนเครื่อง</p>
+
+    <h3>Streaming</h3>
+    <p><code class="inline">channels.discord.streaming</code> ค่าเริ่มต้น <b><code class="inline">off</code></b> (ต่างจาก Telegram) เพราะการแก้ข้อความ preview บน Discord ชน rate limit ง่าย — เปิดเป็น <code class="inline">block</code> หรือ <code class="inline">progress</code> ได้ถ้าต้องการเห็นความคืบหน้า</p>
+  </section>
+
+  <!-- 11 -->
+  <section id="trouble">
+    <h2><span class="num">11</span> แก้ปัญหา Discord</h2>
+    <table class="tbl">
+      <tr><th>อาการ</th><th>สาเหตุ</th><th>วิธีแก้</th></tr>
+      <tr><td><b>bot ไม่เห็นข้อความเลย</b></td><td>ไม่ได้เปิด Message Content Intent</td><td>เปิด intent ใน Developer Portal → <b>restart Gateway</b></td></tr>
+      <tr><td><b>ไม่ตอบในห้องกลุ่ม</b></td><td>guild/channel ไม่อยู่ใน allowlist / requireMention ผิดที่</td><td>เช็ก <code>groupPolicy</code> + <code>guilds</code> + ตำแหน่ง <code>requireMention</code></td></tr>
+      <tr><td><b>พิมพ์อยู่แต่ไม่มีข้อความ</b></td><td>โมเดลตอบ private ไม่เรียก message tool</td><td>ใช้โมเดล tool-calling เก่ง หรือ <code>visibleReplies: "automatic"</code></td></tr>
+      <tr><td><b>DM ไม่ทำงาน</b></td><td>ปิด DM / dmPolicy disabled / รอ approve</td><td>เปิด Privacy → Direct Messages + ทำ pairing</td></tr>
+      <tr><td><b>role allowlist ไม่ทำงาน</b></td><td>ไม่ได้เปิด Server Members Intent</td><td>เปิด intent นั้น → restart</td></tr>
+    </table>
+    <div class="callout tip">
+      <span class="ico">🧰</span>
+      <div class="body">ชุดวินิจฉัย: <code class="inline">openclaw doctor</code> → <code class="inline">openclaw channels status --probe</code> → <code class="inline">openclaw logs --follow</code></div>
+    </div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="summary">
+    <h2><span class="num">✓</span> สรุป Part 3</h2>
+    <div class="cards">
+      <div class="card"><div class="ci">🎮</div><h5>bot อยู่ใน server</h5><p>สร้าง app + เปิด intent + invite + pair</p></div>
+      <div class="card"><div class="ci">🧩</div><h5>workspace</h5><p>ทุกห้องเป็น session แยก context ของตัวเอง</p></div>
+      <div class="card"><div class="ci">🔥</div><h5>Codex ในห้อง</h5><p>ผูกห้องเข้ากับ Codex ACP ทำงานในโปรเจกต์จริง</p></div>
+    </div>
+    <p>ตอนนี้คุณมี OpenClaw + Codex ที่คุยได้ทั้งผ่าน CLI, Telegram และ Discord แล้ว — Part 4 (ตอนสุดท้าย) จะลงลึกเรื่อง <strong>การสั่งงานขั้นสูง</strong>: คำสั่ง Codex (<code class="inline">/codex bind/threads/resume/steer/stop</code>), การจัดการหลาย session/agent, exec approvals, AgentSkills จาก ClawHub, การตั้ง cron/heartbeat และ workflow สำหรับ dev</p>
+  </section>
+
+  <div class="pager">
+    <a class="prev" href="#intro"><div class="pl">← Part 2</div><div class="pt">✈️ Telegram</div></a>
+    <a class="next" href="#intro"><div class="pl">ถัดไป →</div><div class="pt">Part 4 · คำสั่ง + ขั้นสูง ⚡</div></a>
+  </div>
+</main>
+</div>
+
+<script>
+  document.querySelectorAll('.code').forEach(block=>{
+    const btn=block.querySelector('.copy');if(!btn)return;
+    btn.addEventListener('click',()=>{
+      const code=block.querySelector('pre').innerText;
+      navigator.clipboard.writeText(code).then(()=>{
+        const t=btn.textContent;btn.textContent='✓ คัดลอกแล้ว';btn.classList.add('done');
+        setTimeout(()=>{btn.textContent=t;btn.classList.remove('done')},1500);
+      });
+    });
+  });
+  const prog=document.getElementById('progress');
+  window.addEventListener('scroll',()=>{const h=document.documentElement;prog.style.width=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100+'%';});
+  const links=[...document.querySelectorAll('nav a[href^="#"]')];const map={};
+  links.forEach(l=>{const id=l.getAttribute('href').slice(1);const s=document.getElementById(id);if(s)map[id]=l;});
+  const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const l=map[e.target.id];if(l)l.classList.add('active');}});},{rootMargin:'-15% 0px -75% 0px'});
+  Object.keys(map).forEach(id=>{const s=document.getElementById(id);if(s)obs.observe(s);});
+</script>
+</body>
+</html>

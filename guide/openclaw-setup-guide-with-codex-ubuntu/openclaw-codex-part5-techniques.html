@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw × Codex — Part 5: เทคนิค + แก้ปัญหาเชิงลึก</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0f12;--bg-soft:#14171c;--bg-card:#171b21;--bg-code:#0a0c0f;
+    --line:#262c34;--line-soft:#1d2229;
+    --text:#e7e9ee;--text-dim:#9aa3b0;--text-faint:#69727f;
+    --claw:#FF5A36;--claw-glow:rgba(255,90,54,.13);
+    --acc:#14b8a6;--acc-soft:#5eead4;--acc-glow:rgba(20,184,166,.15);
+    --gold:#ffb454;--green:#4ade80;--cyan:#38bdf8;--warn:#fbbf24;--danger:#f87171;--purple:#a78bfa;
+    --mono:'JetBrains Mono',ui-monospace,monospace;--disp:'Chakra Petch',sans-serif;--body:'IBM Plex Sans Thai',sans-serif;
+    --sb:300px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(900px 500px at 88% -8%, var(--acc-glow), transparent 60%),radial-gradient(700px 400px at -5% 5%, var(--claw-glow), transparent 55%);
+    background-attachment:fixed;}
+  ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:#2a313a;border-radius:6px;border:2px solid var(--bg)}::-webkit-scrollbar-thumb:hover{background:#3a434f}
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--acc),var(--cyan));z-index:100;transition:width .1s linear;box-shadow:0 0 12px var(--acc)}
+  .wrap{display:flex;min-height:100vh}
+  aside{width:var(--sb);flex:0 0 var(--sb);position:sticky;top:0;height:100vh;overflow-y:auto;background:linear-gradient(180deg,#0b0d10,#0e1115);border-right:1px solid var(--line);padding:26px 18px 60px}
+  main{flex:1;min-width:0;padding:54px clamp(20px,5vw,76px) 120px;max-width:1000px}
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+  .brand .logo{font-size:30px;filter:drop-shadow(0 2px 6px var(--claw-glow))}
+  .brand .name{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:.5px}
+  .brand .name b{color:var(--claw)}
+  .brand-sub{font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:0 0 22px 41px;letter-spacing:1px}
+  .part-pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--acc-soft);background:var(--acc-glow);border:1px solid rgba(20,184,166,.34);padding:5px 11px;border-radius:30px;margin-bottom:20px;letter-spacing:1px}
+  .nav-group{margin-bottom:22px}
+  .nav-group h4{font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;color:var(--text-faint);text-transform:uppercase;margin-bottom:9px;padding-left:10px}
+  nav a{display:flex;align-items:center;gap:9px;color:var(--text-dim);text-decoration:none;font-size:13.5px;padding:7px 11px;border-radius:8px;border-left:2px solid transparent;transition:.15s}
+  nav a .nx{font-family:var(--mono);font-size:11px;color:var(--text-faint);min-width:20px}
+  nav a:hover{color:var(--text);background:var(--bg-soft)}
+  nav a.active{color:var(--acc-soft);background:var(--acc-glow);border-left-color:var(--acc)}
+  nav a.active .nx{color:var(--acc-soft)}
+  .nav-future{margin-top:26px;padding-top:18px;border-top:1px dashed var(--line)}
+  .nav-future .roadmap-item{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-faint);padding:6px 11px}
+  .nav-future .roadmap-item .tag{font-family:var(--mono);font-size:9px;border:1px solid var(--line);border-radius:4px;padding:2px 5px;margin-left:auto}
+  .nav-future .roadmap-item.done .tag{color:var(--green);border-color:rgba(74,222,128,.4)}
+  .nav-future .roadmap-item.cur .tag{color:var(--acc-soft);border-color:rgba(20,184,166,.4)}
+  .hero{margin-bottom:50px}
+  .hero .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--acc-soft);margin-bottom:14px}
+  h1{font-family:var(--disp);font-weight:700;font-size:clamp(30px,5vw,46px);line-height:1.15;letter-spacing:.3px;margin-bottom:16px}
+  h1 .grad{background:linear-gradient(120deg,var(--acc),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:17px;color:var(--text-dim);max-width:66ch}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+  .meta-chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:7px 13px;border-radius:8px}
+  .meta-chip b{color:var(--text)}.meta-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  section{margin-bottom:58px;scroll-margin-top:30px}
+  h2{font-family:var(--disp);font-weight:700;font-size:27px;letter-spacing:.3px;margin-bottom:8px;display:flex;align-items:baseline;gap:13px}
+  h2 .num{font-family:var(--mono);font-size:15px;color:var(--acc-soft);font-weight:700}
+  .sec-sub{color:var(--text-dim);margin-bottom:24px;font-size:15.5px}
+  h3{font-family:var(--disp);font-weight:600;font-size:18.5px;margin:30px 0 12px;color:var(--text);display:flex;align-items:center;gap:9px}
+  h3::before{content:"";width:5px;height:18px;background:var(--acc);border-radius:3px;display:inline-block}
+  p{margin-bottom:13px;color:var(--text)}p.dim{color:var(--text-dim)}
+  a.link{color:var(--acc-soft);text-decoration:none;border-bottom:1px dashed rgba(94,234,212,.4)}a.link:hover{border-bottom-style:solid}
+  strong{color:#fff;font-weight:600}em{color:var(--acc-soft);font-style:normal}
+  code.inline{font-family:var(--mono);font-size:13px;background:var(--bg-code);color:var(--gold);padding:2px 7px;border-radius:5px;border:1px solid var(--line-soft)}
+  ul,ol{margin:6px 0 16px 4px;padding-left:22px}li{margin-bottom:8px;color:var(--text)}li::marker{color:var(--acc-soft)}
+  ul.mech li::marker{content:"▸  ";color:var(--acc-soft)}
+  .code{position:relative;margin:16px 0 20px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--bg-code)}
+  .code-head{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .code-head .dots{display:flex;gap:6px}.code-head .dots i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .code-head .dots i:nth-child(1){background:#ff5f57}.code-head .dots i:nth-child(2){background:#febc2e}.code-head .dots i:nth-child(3){background:#28c840}
+  .code-head .title{font-family:var(--mono);font-size:11.5px;color:var(--text-faint);margin-left:6px}
+  .code-head .copy{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:4px 11px;border-radius:6px;cursor:pointer;transition:.15s}
+  .code-head .copy:hover{color:var(--acc-soft);border-color:var(--acc)}.code-head .copy.done{color:var(--green);border-color:rgba(74,222,128,.4)}
+  pre{padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.65}
+  pre code{font-family:var(--mono);white-space:pre}
+  .c-cmd{color:#e7e9ee}.c-flag{color:var(--cyan)}.c-str{color:var(--green)}.c-cmt{color:var(--text-faint);font-style:italic}.c-key{color:var(--acc-soft)}.c-prompt{color:var(--acc-soft);user-select:none}.c-slash{color:var(--purple)}
+  .callout{display:flex;gap:13px;padding:15px 17px;border-radius:11px;margin:18px 0;border:1px solid var(--line);background:var(--bg-card);font-size:14.5px}
+  .callout .ico{font-size:19px;flex:0 0 auto;line-height:1.4}.callout .body{color:var(--text-dim)}.callout .body b{color:var(--text)}
+  .callout.note{border-color:rgba(56,189,248,.32);background:rgba(56,189,248,.06)}.callout.note .ico{color:var(--cyan)}
+  .callout.warn{border-color:rgba(251,191,36,.34);background:rgba(251,191,36,.06)}.callout.warn .ico{color:var(--warn)}
+  .callout.pit{border-color:rgba(248,113,113,.34);background:rgba(248,113,113,.06)}.callout.pit .ico{color:var(--danger)}
+  .callout.tip{border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.05)}.callout.tip .ico{color:var(--green)}
+  .callout.why{border-color:rgba(20,184,166,.4);background:var(--acc-glow)}.callout.why .ico{color:var(--acc-soft)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:20px 0}
+  .card{background:var(--bg-card);border:1px solid var(--line);border-radius:13px;padding:18px;transition:.18s}
+  .card:hover{border-color:rgba(20,184,166,.45);transform:translateY(-2px)}
+  .card .ci{font-size:24px;margin-bottom:10px}.card h5{font-family:var(--disp);font-weight:600;font-size:16px;margin-bottom:6px;color:#fff}
+  .card p{font-size:13.5px;color:var(--text-dim);margin:0}.card .lbl{font-family:var(--mono);font-size:10.5px;color:var(--acc-soft);letter-spacing:1px}
+  .tbl{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .tbl th{background:var(--bg-soft);text-align:left;padding:11px 14px;font-family:var(--mono);font-size:12px;color:var(--acc-soft);letter-spacing:.5px;border-bottom:1px solid var(--line)}
+  .tbl td{padding:11px 14px;border-bottom:1px solid var(--line-soft);color:var(--text-dim);vertical-align:top}
+  .tbl tr:last-child td{border-bottom:none}.tbl td code{font-family:var(--mono);font-size:12px;color:var(--gold);white-space:nowrap}.tbl td b{color:var(--text)}
+  /* root-cause block */
+  .rca{border:1px solid var(--line);border-radius:13px;margin:18px 0;overflow:hidden;background:var(--bg-card)}
+  .rca .rca-h{display:flex;align-items:center;gap:10px;padding:13px 16px;background:rgba(248,113,113,.07);border-bottom:1px solid var(--line)}
+  .rca .rca-h .sym{font-family:var(--disp);font-weight:600;font-size:15.5px;color:#fff}
+  .rca .rca-h .badge{font-family:var(--mono);font-size:10px;color:var(--danger);border:1px solid rgba(248,113,113,.4);border-radius:5px;padding:2px 7px;margin-left:auto;white-space:nowrap}
+  .rca .rca-b{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+  .rca .row{display:flex;gap:11px;align-items:flex-start;font-size:14px}
+  .rca .row .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.5px;flex:0 0 86px;padding-top:2px}
+  .rca .row.cause .k{color:var(--warn)}.rca .row.why .k{color:var(--acc-soft)}.rca .row.fix .k{color:var(--green)}
+  .rca .row .v{color:var(--text-dim);flex:1}.rca .row .v b{color:var(--text)}
+  .rca .row .v code{font-family:var(--mono);font-size:12px;background:var(--bg-code);color:var(--gold);padding:1px 6px;border-radius:5px;border:1px solid var(--line-soft)}
+  .pager{display:flex;gap:14px;margin-top:60px;padding-top:28px;border-top:1px solid var(--line)}
+  .pager a{flex:1;text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--bg-card);transition:.18s}
+  .pager a:hover{border-color:var(--acc);background:var(--acc-glow)}
+  .pager .pl{font-family:var(--mono);font-size:11px;color:var(--text-faint);letter-spacing:1px}
+  .pager .pt{font-family:var(--disp);font-weight:600;font-size:16px;color:var(--text);margin-top:5px}
+  .pager a.next{text-align:right}.pager a.disabled{opacity:.4;pointer-events:none}
+  .mobile-bar{display:none}
+  @media(max-width:880px){
+    aside{display:none}main{padding:24px 18px 80px}
+    .mobile-bar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;background:rgba(13,15,18,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:13px 16px;margin:-24px -18px 24px}
+    .mobile-bar .logo{font-size:22px}.mobile-bar .nm{font-family:var(--disp);font-weight:700;font-size:16px}.mobile-bar .nm b{color:var(--claw)}
+    .pager{flex-direction:column}.rca .row{flex-direction:column;gap:2px}.rca .row .k{flex:0 0 auto}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="wrap">
+
+<aside>
+  <div class="brand"><span class="logo">🦞</span><span class="name">Open<b>Claw</b></span></div>
+  <div class="brand-sub">× CODEX · UBUNTU GUIDE</div>
+  <div class="part-pill">🩺 PART 5 — DEEP DIVE</div>
+  <nav>
+    <div class="nav-group">
+      <h4>กรอบความคิด</h4>
+      <a href="#intro"><span class="nx">00</span> ทำไมระบบถึงพัง</a>
+    </div>
+    <div class="nav-group">
+      <h4>เลือก Model</h4>
+      <a href="#model-layers"><span class="nx">01</span> Model vs Runtime</a>
+      <a href="#model-choose"><span class="nx">02</span> เลือกตัวไหน ทำไม</a>
+      <a href="#thinking"><span class="nx">03</span> Thinking + ความเร็ว</a>
+    </div>
+    <div class="nav-group">
+      <h4>Subagent ลงลึก</h4>
+      <a href="#sub-how"><span class="nx">04</span> ทำงานยังไง</a>
+      <a href="#sub-context"><span class="nx">05</span> isolated vs fork</a>
+      <a href="#sub-orch"><span class="nx">06</span> Orchestrator + คุมต้นทุน</a>
+      <a href="#sub-pitfall"><span class="nx">07</span> กับดัก subagent</a>
+    </div>
+    <div class="nav-group">
+      <h4>แก้ปัญหาเชิงสาเหตุ</h4>
+      <a href="#token-tech"><span class="nx">08</span> เทคนิคประหยัด token</a>
+      <a href="#rca"><span class="nx">09</span> ตารางสาเหตุราก</a>
+      <a href="#diag"><span class="nx">10</span> ชุดเครื่องมือวินิจฉัย</a>
+    </div>
+    <div class="nav-future">
+      <div class="roadmap-item done"><span>🦞</span> Part 1 — ติดตั้ง + Codex <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>✈️</span> Part 2 — Telegram <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>🎮</span> Part 3 — Discord <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>⚡</span> Part 4 — ขั้นสูง <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item cur"><span>🩺</span> Part 5 — เจาะลึก <span class="tag">ตอนนี้</span></div>
+    </div>
+  </nav>
+</aside>
+
+<main>
+  <div class="mobile-bar"><span class="logo">🩺</span><span class="nm">Open<b>Claw</b> × Deep Dive</span></div>
+
+  <div class="hero">
+    <div class="eyebrow">PART 5 · เข้าใจ "ทำไม" ไม่ใช่แค่ "ทำยังไง"</div>
+    <h1>เทคนิค เลือก <span class="grad">Model</span><br>Subagent + แก้ปัญหาเชิงสาเหตุ</h1>
+    <p class="lead">
+      Part เสริมนี้ไม่ได้บอกแค่ "กดอะไร" แต่อธิบาย <em>เกิดจากอะไร ทำไมถึงเป็นแบบนั้น</em> — เพราะเมื่อเข้าใจกลไกเบื้องหลัง
+      คุณจะเดาปัญหาใหม่ ๆ ออกเอง เลือก model ได้ตรงงาน และใช้ subagent กระจายงานอย่างคุ้มค่าโดยไม่เผา token
+    </p>
+    <div class="meta-row">
+      <span class="meta-chip"><span class="dot"></span> เสริมจาก Part 1-4</span>
+      <span class="meta-chip">🧠 Model selection</span>
+      <span class="meta-chip">🤖 Subagent</span>
+      <span class="meta-chip">🔍 Root-cause</span>
+    </div>
+  </div>
+
+  <!-- 00 -->
+  <section id="intro">
+    <h2><span class="num">00</span> ทำไมระบบถึงพัง — กรอบความคิด</h2>
+    <p class="sec-sub">ปัญหาเกือบทุกอย่างเกิดที่ "ชั้นใดชั้นหนึ่ง" ใน 4 ชั้น · รู้ว่ามันอยู่ชั้นไหน = แก้ได้เร็ว</p>
+    <p>
+      จำโครงสร้างจาก Part 1 ได้ไหม — <strong>Channel → Provider → Model → Runtime</strong> · เวลาเกิดปัญหา ให้ถามตัวเองว่า "อาการนี้อยู่ชั้นไหน"
+      เพราะแต่ละชั้นมีสาเหตุและจุดแก้คนละที่:
+    </p>
+    <div class="cards">
+      <div class="card"><div class="ci">💬</div><div class="lbl">CHANNEL</div><h5>เข้า/ออกไม่ได้</h5><p>token ผิด, intent ไม่เปิด, allowlist, privacy mode → bot เงียบ ไม่เห็นข้อความ</p></div>
+      <div class="card"><div class="ci">🔑</div><div class="lbl">PROVIDER</div><h5>auth/โควต้า</h5><p>login หมดอายุ, โควต้าหมด, key ผิด → ตอบ error หรือไม่ตอบ</p></div>
+      <div class="card"><div class="ci">🧠</div><div class="lbl">MODEL</div><h5>not allowed</h5><p>โมเดลไม่อยู่ใน allowlist, ref เขียนผิด → ปฏิเสธคำสั่งเงียบ ๆ</p></div>
+      <div class="card"><div class="ci">⚙️</div><div class="lbl">RUNTIME</div><h5>harness fail</h5><p>Codex/ACP ใช้ไม่ได้, sandbox, exec policy → run ค้างหรือ fail closed</p></div>
+    </div>
+    <div class="callout why">
+      <span class="ico">🧭</span>
+      <div class="body"><b>กฎทอง:</b> Gateway โหลด config <u>ตอน start</u> แล้วถือไว้ใน memory — ดังนั้นอาการ "แก้ config แล้วไม่เปลี่ยน" เกือบทั้งหมดเกิดจาก<b>ลืม restart</b> ไม่ใช่ config ผิด · จุดนี้คือสาเหตุอันดับ 1 ของทุกปัญหา</div>
+    </div>
+  </section>
+
+  <!-- 01 -->
+  <section id="model-layers">
+    <h2><span class="num">01</span> แยก Model กับ Runtime ให้ขาด</h2>
+    <p class="sec-sub">คนเลือก model ผิดเพราะสับสนสองคำนี้ — มันคนละหน้าที่</p>
+    <table class="tbl">
+      <tr><th>คำ</th><th>ตอบคำถามว่า</th><th>ตัวอย่าง</th></tr>
+      <tr><td><b>Model</b></td><td>ใช้ "สมอง" ตัวไหน คุณภาพ/ราคา/context เท่าไหร่</td><td><code>openai/gpt-5.5</code>, <code>anthropic/claude-opus-4-8</code></td></tr>
+      <tr><td><b>Runtime</b></td><td>ใคร "รันลูป agent" ให้</td><td><code>codex</code> harness, <code>claude-cli</code>, <code>openclaw</code>, <code>acp</code></td></tr>
+    </table>
+    <p>
+      เหตุผลที่ต้องแยก: คุณเลือก model <code class="inline">openai/gpt-5.5</code> ได้ แล้วยังเลือกได้อีกว่าจะให้ <em>Codex harness</em> เป็นคนรัน (ค่าเริ่มต้น)
+      หรือให้ built-in <code class="inline">openclaw</code> runtime รัน — model เดียวกันแต่พฤติกรรมการรัน tool/agentic loop ต่างกัน
+    </p>
+    <ul class="mech">
+      <li><strong>OpenAI model → Codex runtime อัตโนมัติ</strong> (ถ้าไม่ override) — นี่คือเหตุผลที่ Part 1 ตั้งแค่ model ก็พอ</li>
+      <li>ถ้าระบุ runtime <code class="inline">"codex"</code> ชัด ๆ แล้ว harness ใช้ไม่ได้ → <em>fail closed</em> (ไม่แอบสลับ) เพราะออกแบบให้เห็น error ชัดดีกว่าเงียบ ๆ</li>
+      <li>เช็กว่าใครรันอยู่จริง: <code class="inline">/status</code> → บรรทัด <b>Runtime</b> บอก <code class="inline">OpenAI Codex</code> / CLI / ACP / OpenClaw Default</li>
+    </ul>
+  </section>
+
+  <!-- 02 -->
+  <section id="model-choose">
+    <h2><span class="num">02</span> เลือก model ตัวไหน เพราะอะไร</h2>
+    <p class="sec-sub">หลักคิด: จับคู่ "ความยากของงาน" กับ "คุณภาพ/ราคา/ความเร็ว" ของโมเดล</p>
+    <table class="tbl">
+      <tr><th>ลักษณะงาน</th><th>เลือก</th><th>เหตุผล (ทำไม)</th></tr>
+      <tr><td>เขียน/แก้โค้ด, agentic, เรียก tool เยอะ</td><td><b>Codex</b> <code>openai/gpt-5.5</code></td><td>Codex harness ออกแบบมาเพื่อ coding + เรียก tool ได้เสถียร (สำคัญมากบน Discord กลุ่ม ดูข้อ 09)</td></tr>
+      <tr><td>วางแผน/สถาปัตยกรรม/คิดซับซ้อน</td><td>โมเดลแรง + <code>/think high</code></td><td>งานวางแผนได้ประโยชน์จาก reasoning depth มากกว่าความเร็ว</td></tr>
+      <tr><td>งานซ้ำ ๆ ปริมาณมาก (จัด tag, สรุปสั้น)</td><td>โมเดลเล็ก/เร็ว (mini/haiku-class)</td><td>คุณภาพพอ + ถูกกว่ามาก = คุมต้นทุนเวลาทำพร้อมกันหลายงาน</td></tr>
+      <tr><td>งานของ subagent</td><td>โมเดลถูกกว่า main</td><td>subagent มี context แยกของตัวเอง = นับ token เพิ่ม ถ้าใช้โมเดลแพงทุกตัวจะบานปลาย</td></tr>
+    </table>
+    <div class="callout why">
+      <span class="ico">💸</span>
+      <div class="body"><b>ทำไม subagent แพงกว่าที่คิด:</b> subagent แต่ละตัวมี <em>context window แยก</em> ของมันเอง — ยิ่ง spawn เยอะ ยิ่งคูณ token · นี่คือเหตุผลที่ควรตั้ง <code class="inline">agents.defaults.subagents.model</code> เป็นโมเดลถูก แล้วเก็บโมเดลแพงไว้ที่ main</div>
+    </div>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json — main แพง / sub ถูก</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span>
+  <span class="c-key">agents</span>: {
+    <span class="c-key">defaults</span>: {
+      <span class="c-key">model</span>: <span class="c-str">"openai/gpt-5.5"</span>,          <span class="c-cmt">// main: คุณภาพสูง</span>
+      <span class="c-key">subagents</span>: {
+        <span class="c-key">model</span>: <span class="c-str">"openai/gpt-5.4-mini"</span>     <span class="c-cmt">// sub: ถูกกว่า คุมต้นทุน</span>
+      }
+    }
+  }
+<span class="c-cmd">}</span></code></pre>
+    </div>
+    <div class="callout note">
+      <span class="ico">📊</span>
+      <div class="body">ดูโควต้าคงเหลือก่อนสั่งงานหนัก: <code class="inline">/status</code> โชว์ "% left" ของ provider ปัจจุบัน · ตั้ง <code class="inline">models.providers.*.models[].cost</code> เพื่อให้ระบบประเมินค่าใช้จ่ายต่อ run ได้</div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="thinking">
+    <h2><span class="num">03</span> Thinking levels + โหมดเร็ว</h2>
+    <p class="sec-sub">ปรับ "ความลึกการคิด" กับ "ความเร็ว" แยกกัน — เลือกตามว่างานต้องการอะไร</p>
+    <h3>/think — ความลึกของ reasoning</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">ในแชต</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-slash">/think off</span>      <span class="c-cmt"># ตอบไว ไม่ต้องคิดมาก (งานง่าย)</span>
+<span class="c-slash">/think medium</span>   <span class="c-cmt"># สมดุล</span>
+<span class="c-slash">/think high</span>     <span class="c-cmt"># คิดลึก (debug ยาก, ออกแบบ)</span>
+<span class="c-slash">/think xhigh</span>    <span class="c-cmt"># ลึกสุด (แลกกับช้า + token เยอะ)</span></code></pre>
+    </div>
+    <p class="dim">ตัวเลือกที่ใช้ได้ขึ้นกับ model/provider · ส่งเดี่ยว ๆ = ติดถาวรกับ session, แทรกในข้อความ = ใช้ครั้งเดียว</p>
+
+    <h3>/fast — ความเร็วระดับ service</h3>
+    <p>
+      <code class="inline">/fast on</code> ทำงานต่างกันตาม provider เพราะ map ไป API คนละแบบ:
+    </p>
+    <ul class="mech">
+      <li><strong>OpenAI / Codex</strong> → <code class="inline">service_tier=priority</code> (จองคิวลำดับสูงบน endpoint)</li>
+      <li><strong>Anthropic ตรง</strong> → <code class="inline">service_tier=auto</code> หรือ <code class="inline">standard_only</code></li>
+    </ul>
+    <div class="callout why">
+      <span class="ico">🎚️</span>
+      <div class="body"><b>ทำไม think กับ fast ไม่ใช่เรื่องเดียวกัน:</b> <code class="inline">/think</code> คุมว่าโมเดล "คิดกี่ขั้น" (คุณภาพ) ส่วน <code class="inline">/fast</code> คุมว่า request "ถูกจัดคิวเร็วแค่ไหน" (latency) — งานคิดหนักอาจตั้ง <code class="inline">/think high</code> แต่ <code class="inline">/fast off</code> ก็ได้</div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="sub-how">
+    <h2><span class="num">04</span> Subagent ทำงานยังไง (กลไก)</h2>
+    <p class="sec-sub">เข้าใจกลไกก่อน จะใช้ถูกและ debug เป็น</p>
+    <p>
+      subagent คือ "agent run เบื้องหลัง" ที่ถูก spawn จาก run หลัก · มันรันใน session แยกของตัวเอง
+      (<code class="inline">agent:&lt;id&gt;:subagent:&lt;uuid&gt;</code>) ทำงานเสร็จแล้ว <strong>announce ผลกลับ</strong> มาหา session ที่สั่ง
+    </p>
+    <h3>ทำไมต้องมี subagent</h3>
+    <ul class="mech">
+      <li><strong>ขนานงาน</strong> — งานวิจัย/งานยาว/tool ช้า ไม่ block run หลัก (run หลักตอบเรื่องอื่นต่อได้)</li>
+      <li><strong>แยกออกจากกัน (isolation)</strong> — แต่ละตัว context แยก เพื่อไม่ปนเปื้อนกัน</li>
+      <li><strong>กัน misuse</strong> — subagent <em>ไม่ได้</em> tool ส่งข้อความ/tool ระบบโดยปริยาย</li>
+    </ul>
+    <div class="callout why">
+      <span class="ico">🔇</span>
+      <div class="body"><b>ทำไม subagent โพสต์ข้อความให้ user เองไม่ได้:</b> มันไม่มี <code class="inline">message</code> tool โดยเจตนา — มันแค่ส่งผลลัพธ์ (เป็น "หลักฐาน") กลับให้ agent หลัก แล้ว<b>agent หลักเป็นคนตัดสินใจ</b>ว่าจะตอบ user ยังไง · เหตุผล: ป้องกัน subagent หลายตัวยิงข้อความซ้อนกันมั่ว และกันไม่ให้ output ของ child กลายเป็นคำสั่งที่ override นโยบายได้</div>
+    </div>
+
+    <h3>ทำไมห้าม "poll" รอผล</h3>
+    <p>
+      <code class="inline">sessions_spawn</code> เป็น <strong>non-blocking</strong> — คืน run id ทันที แล้ว completion เป็นแบบ <strong>push</strong> (ผลวิ่งกลับมาเอง)
+      ดังนั้นถ้าจะรอผล ให้ใช้ <code class="inline">sessions_yield</code> (จบ turn แล้วรอ event) <em>ไม่ใช่</em>วน loop เรียก <code class="inline">/subagents list</code> ซ้ำ ๆ
+    </p>
+    <div class="callout pit">
+      <span class="ico">🔁</span>
+      <div class="body"><b>ทำไม poll loop เป็นปัญหา:</b> มันเปลือง turn + token ไปเปล่า ๆ (ถามสถานะวนไป) ทั้งที่ผลจะ push กลับมาเองอยู่แล้ว · ที่แย่กว่าคือบางทีทำให้ agent "ติดอยู่ในลูปรอ" — ใช้ <code class="inline">sessions_yield</code> คือคำตอบที่ถูก</div>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="sub-context">
+    <h2><span class="num">05</span> isolated vs fork — เลือกผิด = เปลือง</h2>
+    <p class="sec-sub">subagent มี 2 โหมด context · default คือ isolated และมีเหตุผล</p>
+    <table class="tbl">
+      <tr><th>โหมด</th><th>ใช้เมื่อ</th><th>พฤติกรรม + ทำไม</th></tr>
+      <tr><td><code>isolated</code> <b>(default)</b></td><td>งานวิจัยใหม่, งานอิสระ, งานที่บรีฟด้วยข้อความได้หมด</td><td>สร้าง transcript เปล่าให้ child = <b>ประหยัด token</b> เพราะไม่ลากบทสนทนาเดิมมาด้วย</td></tr>
+      <tr><td><code>fork</code></td><td>งานที่ต้องพึ่ง context/ผล tool/คำสั่งละเอียดที่อยู่ใน transcript เดิม</td><td>แตกแขนง transcript ปัจจุบันเข้า child = แพงกว่า ใช้เท่าที่จำเป็น</td></tr>
+    </table>
+    <div class="callout why">
+      <span class="ico">🌱</span>
+      <div class="body"><b>ทำไม default เป็น isolated:</b> เพราะการ fork ลาก context ทั้งก้อนเข้าไป = token เพิ่มทันที · เอกสารแนะนำให้ <em>เขียน task prompt ให้ชัด</em>แทนการ fork — fork มีไว้สำหรับงานที่อ้างอิงบทสนทนาก่อนหน้าจริง ๆ ไม่ใช่ทางลัดแทนการเขียนโจทย์ให้ดี</div>
+    </div>
+    <div class="callout note">
+      <span class="ico">📄</span>
+      <div class="body"><b>subagent เห็นไฟล์ context แค่ไหน:</b> มัน inject เฉพาะ <code class="inline">AGENTS.md</code> + <code class="inline">TOOLS.md</code> เท่านั้น — <u>ไม่</u>เอา persona/identity/<code class="inline">USER.md</code>/<code class="inline">MEMORY.md</code> มาด้วย · เหตุผล: ไม่ให้ child โคลนตัวตนและ memory ของ parent (กันความซับซ้อน + token)</div>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section id="sub-orch">
+    <h2><span class="num">06</span> Orchestrator pattern + คุมต้นทุน</h2>
+    <p class="sec-sub">เมื่อต้องการ "หัวหน้างาน" ที่กระจายงานให้ลูกน้องหลายตัว</p>
+    <p>ค่าเริ่มต้น subagent <em>spawn ลูกของตัวเองไม่ได้</em> (<code class="inline">maxSpawnDepth: 1</code>) · ตั้งเป็น <code class="inline">2</code> เพื่อเปิด orchestrator pattern: main → orchestrator → worker</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json — orchestrator</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span>
+  <span class="c-key">agents</span>: { <span class="c-key">defaults</span>: { <span class="c-key">subagents</span>: {
+    <span class="c-key">maxSpawnDepth</span>: <span class="c-str">2</span>,        <span class="c-cmt">// ให้ sub spawn ลูกได้ 1 ชั้น (default 1)</span>
+    <span class="c-key">maxChildrenPerAgent</span>: <span class="c-str">5</span>, <span class="c-cmt">// ลูกพร้อมกันสูงสุด/ตัว (กัน fan-out บาน)</span>
+    <span class="c-key">maxConcurrent</span>: <span class="c-str">8</span>,       <span class="c-cmt">// เพดานขนานรวม (safety valve)</span>
+    <span class="c-key">runTimeoutSeconds</span>: <span class="c-str">900</span>   <span class="c-cmt">// timeout ต่อ run (0 = ไม่จำกัด)</span>
+  } } }
+<span class="c-cmd">}</span></code></pre>
+    </div>
+    <table class="tbl">
+      <tr><th>Depth</th><th>บทบาท</th><th>spawn ลูกได้ไหม</th></tr>
+      <tr><td><b>0</b></td><td>Main agent</td><td>ได้เสมอ</td></tr>
+      <tr><td><b>1</b></td><td>Sub-agent (เป็น orchestrator ถ้า depth≥2)</td><td>ได้เฉพาะเมื่อ <code>maxSpawnDepth ≥ 2</code></td></tr>
+      <tr><td><b>2</b></td><td>Worker (ใบ)</td><td>ไม่ได้เด็ดขาด</td></tr>
+    </table>
+    <ul class="mech">
+      <li><strong>Cascade stop:</strong> <code class="inline">/stop</code> ที่ main หยุด depth-1 ทั้งหมด <em>และไล่หยุด</em> depth-2 ให้ด้วย — เหตุผล: กัน worker ค้างทำงานต่อหลังหัวหน้าถูกสั่งหยุด</li>
+      <li><strong>maxChildrenPerAgent</strong> กัน "runaway fan-out" — orchestrator ตัวเดียวสร้างลูก 50 ตัวพร้อมกันไม่ได้</li>
+      <li>depth สูงสุด 5 แต่ <strong>แนะนำแค่ 2</strong> สำหรับเคสส่วนใหญ่ (ลึกกว่านั้น debug ยากและซับซ้อนเกินจำเป็น)</li>
+    </ul>
+  </section>
+
+  <!-- 07 -->
+  <section id="sub-pitfall">
+    <h2><span class="num">07</span> กับดัก subagent ที่ต้องระวัง</h2>
+    <p class="sec-sub">สาเหตุที่ subagent "หาย" หรือ "ไม่ตอบกลับ" — และทำไม</p>
+    <div class="rca">
+      <div class="rca-h"><span class="sym">subagent เสร็จแล้วแต่ไม่มีผลกลับมา</span><span class="badge">ANNOUNCE LOST</span></div>
+      <div class="rca-b">
+        <div class="row cause"><span class="k">สาเหตุ</span><span class="v">Gateway restart ระหว่างที่ผล "กำลังจะ announce กลับ"</span></div>
+        <div class="row why"><span class="k">ทำไม</span><span class="v">การ announce เป็น <b>best-effort</b> และ pending announce อยู่ใน memory ของ process — รีสตาร์ทเมื่อไหร่ก็หาย</span></div>
+        <div class="row fix"><span class="k">แก้/เลี่ยง</span><span class="v">อย่ารีสตาร์ทระหว่างมี subagent run ค้าง · งานสำคัญให้ใช้ <code>cleanup: "keep"</code> แล้วตามดู transcript ด้วย <code>/subagents info</code></span></div>
+      </div>
+    </div>
+    <div class="rca">
+      <div class="rca-h"><span class="sym">agent ติดอยู่ในลูป "รอ subagent"</span><span class="badge">POLL LOOP</span></div>
+      <div class="rca-b">
+        <div class="row cause"><span class="k">สาเหตุ</span><span class="v">โมเดลวนเรียก <code>/subagents list</code> / <code>sleep</code> เพื่อรอผล</span></div>
+        <div class="row why"><span class="k">ทำไม</span><span class="v">completion เป็นแบบ push อยู่แล้ว — การ poll จึงเปล่าประโยชน์และกิน turn/token</span></div>
+        <div class="row fix"><span class="k">แก้</span><span class="v">ใช้ <code>sessions_yield</code> (จบ turn รอ event) แทน poll · ใส่คำสั่งนี้ใน AGENTS.md ให้ agent รู้ว่าห้าม poll</span></div>
+      </div>
+    </div>
+    <div class="rca">
+      <div class="rca-h"><span class="sym">spawn ไม่ได้ / โดนปฏิเสธ</span><span class="badge">TOOL POLICY</span></div>
+      <div class="rca-b">
+        <div class="row cause"><span class="k">สาเหตุ</span><span class="v"><code>sessions_spawn</code> ไม่อยู่ใน tool profile ของ agent นั้น</span></div>
+        <div class="row why"><span class="k">ทำไม</span><span class="v">profile <code>messaging</code> ไม่เปิด spawn (มีเฉพาะ <code>coding</code>/<code>full</code>) — เพื่อกัน agent ที่ไว้แชตเฉย ๆ ไป spawn งานหนัก</span></div>
+        <div class="row fix"><span class="k">แก้</span><span class="v">ตั้ง <code>tools.profile: "coding"</code> หรือ <code>tools.alsoAllow: ["sessions_spawn","sessions_yield","subagents"]</code> · เช็กด้วย <code>/tools</code></span></div>
+      </div>
+    </div>
+    <div class="callout note">
+      <span class="ico">🗄️</span>
+      <div class="body"><b>subagent session หายไปเอง?</b> ปกติ — มัน auto-archive หลัง <code class="inline">archiveAfterMinutes</code> (default 60 นาที) โดย rename transcript เป็น <code class="inline">*.deleted.&lt;timestamp&gt;</code> ไว้ (ไม่ได้ลบจริง) เพื่อไม่ให้ session เก่าค้างเต็มระบบ</div>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section id="token-tech">
+    <h2><span class="num">08</span> เทคนิคประหยัด token + เร่งความเร็ว</h2>
+    <p class="sec-sub">เข้าใจว่า "อะไรทำให้ช้า/แพง" แล้วแก้ที่ต้นเหตุ</p>
+    <h3>ทำไม session ยิ่งคุยยิ่งช้า + แพง</h3>
+    <p>ทุกข้อความใน session ถูกส่งกลับเข้าโมเดลเป็น context — <strong>ยิ่งคุยยาว context ยิ่งบวม</strong> ทำให้ช้าลงและ token ต่อ turn สูงขึ้นเรื่อย ๆ</p>
+    <ul class="mech">
+      <li><code class="inline">/new</code> เมื่อขึ้นงานใหม่ที่ไม่เกี่ยวกับงานเดิม → <em>ทำไม:</em> ตัด context เก่าที่ไม่จำเป็นออก ไม่ลากไปคิดด้วยทุก turn</li>
+      <li><code class="inline">/compact</code> เมื่องานเดียวยาวมาก → <em>ทำไม:</em> ย่อบทสนทนาให้สั้นลงแต่ยังเก็บสาระ</li>
+      <li><code class="inline">/context detail</code> เพื่อดูว่า "อะไรกินที่" → <em>ทำไม:</em> เห็นขนาดต่อไฟล์/tool/skill ว่าตัวไหนบวม</li>
+      <li>ปิด tool/skill ที่ไม่ใช้ + ใช้ MCP เท่าที่จำเป็น → <em>ทำไม:</em> tool definition ก็กิน context เหมือนกัน</li>
+      <li>งานขนาน → ใช้ subagent <code class="inline">isolated</code> + โมเดลถูก → <em>ทำไม:</em> ไม่ลาก context หลักไปคูณ</li>
+    </ul>
+    <div class="callout tip">
+      <span class="ico">📐</span>
+      <div class="body"><b>หลักวาง AGENTS.md:</b> ใส่ convention/กฎที่ต้องใช้ทุก session ไว้ในไฟล์นี้ (lean เข้าไว้) — มัน inject ทุก session แต่ถ้ายาวเกินก็กิน context ทุกครั้ง · เก็บ note ยาว ๆ ไว้ใน <code class="inline">MEMORY.md</code> แล้วให้ agent ดึงเมื่อต้องใช้แทน</div>
+    </div>
+  </section>
+
+  <!-- 09 -->
+  <section id="rca">
+    <h2><span class="num">09</span> ตารางแก้ปัญหาเชิงสาเหตุ</h2>
+    <p class="sec-sub">อาการ → สาเหตุ → <em>ทำไมถึงเกิด</em> → วิธีแก้ · เรียงตามชั้นที่เกิด</p>
+
+    <div class="rca">
+      <div class="rca-h"><span class="sym">แก้ config แล้วไม่มีอะไรเปลี่ยน</span><span class="badge">อันดับ 1</span></div>
+      <div class="rca-b">
+        <div class="row cause"><span class="k">สาเหตุ</span><span class="v">ลืม restart Gateway</span></div>
+        <div class="row why"><span class="k">ทำไม</span><span class="v">Gateway อ่าน config เข้า memory ตอน start แล้วถือไว้ — ไม่ได้อ่านไฟล์ใหม่ทุกข้อความ</span></div>
+        <div class="row fix"><span class="k">แก้</span><span class="v"><code>openclaw gateway restart</code> ทุกครั้งหลังแก้ <code>openclaw.json</code></span></div>
+      </div>
+    </div>
+
+    <div class="rca">
+      <div class="rca-h"><span class="sym">Discord: bot พิมพ์อยู่แต่ไม่มีข้อความโผล่</span><span class="badge">CHANNEL · MODEL</span></div>
+      <div class="rca-b">
+        <div class="row cause"><span class="k">สาเหตุ</span><span class="v">โมเดลตอบแบบ private ไม่เรียก <code>message</code> tool (<code>didSendViaMessagingTool: false</code>)</span></div>
+        <div class="row why"><span class="k">ทำไม</span><span class="v">ในห้องกลุ่ม Discord final reply เป็น private โดยปริยาย — agent ต้องเรียก tool เองถึงจะโพสต์ · ถ้าโมเดลเรียก tool ไม่เก่งก็จะตอบลอย ๆ</span></div>
+        <div class="row fix"><span class="k">แก้</span><span class="v">ใช้โมเดล tool-calling เก่ง (Codex/<code>gpt-5.5</code>) หรือ <code>messages.groupChat.visibleReplies: "automatic"</code></span></div>
+      </div>
+    </div>
+
+    <div class="rca">
+      <div class="rca-h"><span class="sym">Discord: bot ไม่เห็นข้อความในห้องเลย</span><span class="badge">CHANNEL</span></div>
+      <div class="rca-b">
+        <div class="row cause"><span class="k">สาเหตุ</span><span class="v">ไม่ได้เปิด Message Content Intent</span></div>
+        <div class="row why"><span class="k">ทำไม</span><span class="v">Discord บังคับ opt-in intent นี้เพื่อความเป็นส่วนตัว — ถ้าไม่เปิด bot จะได้รับแต่ event ไม่มีเนื้อข้อความ</span></div>
+        <div class="row fix"><span class="k">แก้</span><span class="v">เปิด intent ใน Developer Portal → <b>restart Gateway</b> (ต้อง restart เพราะ intent ตั้งตอนเชื่อม gateway)</span></div>
+      </div>
+    </div>
+
+    <div class="rca">
+      <div class="rca-h"><span class="sym">401 Unauthorized (Telegram/Discord)</span><span class="badge">PROVIDER · AUTH</span></div>
+      <div class="rca-b">
+        <div class="row cause"><span class="k">สาเหตุ</span><span class="v">token ผิด / มีช่องว่าง-ขึ้นบรรทัด / ถูก revoke</span></div>
+        <div class="row why"><span class="k">ทำไม</span><span class="v">แพลตฟอร์มตรวจ token ตอน <code>getMe</code>/connect — ผิดนิดเดียวก็ปฏิเสธทั้งหมด</span></div>
+        <div class="row fix"><span class="k">แก้</span><span class="v">copy token ใหม่จาก BotFather / Reset Token → อัปเดต config/env → restart</span></div>
+      </div>
+    </div>
+
+    <div class="rca">
+      <div class="rca-h"><span class="sym">Telegram: getUpdates 409 conflict</span><span class="badge">CHANNEL</span></div>
+      <div class="rca-b">
+        <div class="row cause"><span class="k">สาเหตุ</span><span class="v">มี gateway/สคริปต์อื่นใช้ bot token เดียวกัน poll พร้อมกัน</span></div>
+        <div class="row why"><span class="k">ทำไม</span><span class="v">Telegram อนุญาตให้ <b>poller เดียวต่อ token</b> เท่านั้น — ตัวที่สองชนกัน</span></div>
+        <div class="row fix"><span class="k">แก้</span><span class="v">หยุด instance/สคริปต์ที่ใช้ token ซ้ำ ให้เหลือ poller เดียว</span></div>
+      </div>
+    </div>
+
+    <div class="rca">
+      <div class="rca-h"><span class="sym">Telegram: network / "fetch failed"</span><span class="badge">CHANNEL · เครือข่าย</span></div>
+      <div class="rca-b">
+        <div class="row cause"><span class="k">สาเหตุ</span><span class="v">DNS/HTTPS ไป <code>api.telegram.org</code> มีปัญหา (มัก IPv6)</span></div>
+        <div class="row why"><span class="k">ทำไม</span><span class="v">Node 22+ เปิด <code>autoSelectFamily</code> และบาง host resolve IPv6 ก่อน ถ้า IPv6 egress พัง = หลุด ๆ ติด ๆ</span></div>
+        <div class="row fix"><span class="k">แก้</span><span class="v">ตั้ง <code>channels.telegram.network.autoSelectFamily: false</code> หรือบังคับ <code>ipv4first</code> · บน VPS ที่ egress ไม่นิ่งอาจตั้ง proxy</span></div>
+      </div>
+    </div>
+
+    <div class="rca">
+      <div class="rca-h"><span class="sym">"Model provider/model is not allowed"</span><span class="badge">MODEL</span></div>
+      <div class="rca-b">
+        <div class="row cause"><span class="k">สาเหตุ</span><span class="v">โมเดลไม่อยู่ใน allowlist ของ agent</span></div>
+        <div class="row why"><span class="k">ทำไม</span><span class="v">OpenClaw กันการเผลอสลับไปโมเดลที่ไม่ได้ตั้งใจ/ไม่ได้ตั้งค่า auth ไว้</span></div>
+        <div class="row fix"><span class="k">แก้</span><span class="v"><code>openclaw config set agents.defaults.models '{"openai/gpt-5.5":{}}' --strict-json --merge</code></span></div>
+      </div>
+    </div>
+
+    <div class="rca">
+      <div class="rca-h"><span class="sym">Discord streaming โดน rate limit</span><span class="badge">RUNTIME · CHANNEL</span></div>
+      <div class="rca-b">
+        <div class="row cause"><span class="k">สาเหตุ</span><span class="v">การแก้ข้อความ preview ถี่เกินขีดจำกัดของ Discord</span></div>
+        <div class="row why"><span class="k">ทำไม</span><span class="v">Discord จำกัด rate การ edit ข้อความ — นี่คือเหตุผลที่ <code>streaming</code> ของ Discord ตั้ง <code>off</code> เป็นค่าเริ่มต้น</span></div>
+        <div class="row fix"><span class="k">แก้</span><span class="v">ใช้ <code>block</code>/<code>progress</code> แทน <code>partial</code> หรือคง <code>off</code> ถ้าหลายบอทใช้ account เดียวกัน</span></div>
+      </div>
+    </div>
+
+    <div class="rca">
+      <div class="rca-h"><span class="sym">VPS: service หยุดหลัง logout SSH</span><span class="badge">RUNTIME · ระบบ</span></div>
+      <div class="rca-b">
+        <div class="row cause"><span class="k">สาเหตุ</span><span class="v">systemd "user service" หยุดเมื่อ session ผู้ใช้จบ</span></div>
+        <div class="row why"><span class="k">ทำไม</span><span class="v">user service ผูกกับ login session โดยปริยาย เว้นแต่เปิด "linger"</span></div>
+        <div class="row fix"><span class="k">แก้</span><span class="v"><code>loginctl enable-linger $USER</code></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section id="diag">
+    <h2><span class="num">10</span> ชุดเครื่องมือวินิจฉัย — ใช้ตัวไหนตอนไหน</h2>
+    <p class="sec-sub">ไล่ตามลำดับนี้ จะแคบปัญหาลงได้เร็ว</p>
+    <table class="tbl">
+      <tr><th>เครื่องมือ</th><th>ใช้ตอบคำถามว่า</th><th>เมื่อไหร่</th></tr>
+      <tr><td><code>openclaw doctor</code></td><td>config มีปัญหาตรงไหน + แก้ยังไง</td><td>เริ่มทุกครั้งที่ติดปัญหา · <code>--fix</code> แก้อัตโนมัติ</td></tr>
+      <tr><td><code>openclaw gateway status</code></td><td>Gateway รันอยู่จริงไหม</td><td>เมื่อ "ไม่ตอบเลย"</td></tr>
+      <tr><td><code>openclaw channels status --probe</code></td><td>channel เชื่อม + สิทธิ์ครบไหม</td><td>เมื่อ channel ใดเงียบ (probe เช็ก ID ตัวเลขได้)</td></tr>
+      <tr><td><code>openclaw logs --follow</code></td><td>เกิดอะไรขึ้นจริง ๆ (skip reasons, error)</td><td>เมื่อ doctor ไม่บอกชัด · อ่าน reason ที่ message ถูกข้าม</td></tr>
+      <tr><td><code>/status</code> (ในแชต)</td><td>runtime + model + โควต้าคงเหลือ</td><td>เมื่อสงสัยว่าใช้โมเดล/runtime อะไรอยู่</td></tr>
+      <tr><td><code>/context detail</code></td><td>context กินที่ตรงไหน</td><td>เมื่อช้า/ token พุ่ง</td></tr>
+      <tr><td><code>/tools</code></td><td>agent นี้ใช้ tool อะไรได้บ้างตอนนี้</td><td>เมื่อ spawn/tool ไม่ทำงาน</td></tr>
+      <tr><td><code>openclaw security audit</code></td><td>การตั้งค่าเสี่ยง (allowlist หละหลวม)</td><td>หลังเพิ่ม channel/skill ใหม่</td></tr>
+    </table>
+    <div class="callout why">
+      <span class="ico">🔍</span>
+      <div class="body"><b>ลำดับคิดที่เร็วที่สุด:</b> (1) restart แล้วยัง? → (2) <code class="inline">doctor</code> บอกอะไร? → (3) อาการอยู่ <em>ชั้นไหน</em> (Channel/Provider/Model/Runtime)? → (4) <code class="inline">logs --follow</code> ดู reason จริง · 90% ของปัญหาจบใน 4 ขั้นนี้</div>
+    </div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="summary">
+    <h2><span class="num">✓</span> สรุป Part 5</h2>
+    <div class="cards">
+      <div class="card"><div class="ci">🧠</div><h5>เลือก model เป็น</h5><p>จับคู่งานกับคุณภาพ/ราคา/ความเร็ว · main แพง sub ถูก</p></div>
+      <div class="card"><div class="ci">🤖</div><h5>ใช้ subagent คุ้ม</h5><p>isolated เป็นหลัก, push ไม่ poll, คุม depth/cost</p></div>
+      <div class="card"><div class="ci">🔍</div><h5>แก้ปัญหาที่ราก</h5><p>รู้ว่าอาการอยู่ชั้นไหน เกิดจากอะไร</p></div>
+    </div>
+    <p>
+      หัวใจของ Part นี้: <strong>เมื่อเข้าใจ "ทำไม" คุณจะแก้ปัญหาที่ไม่เคยเจอได้เอง</strong> — config ถูก cache ตอน start (จึงต้อง restart),
+      subagent มี context แยก (จึงต้องคุมต้นทุน), completion เป็น push (จึงห้าม poll), Discord final reply เป็น private (จึงต้องโมเดลเรียก tool เก่ง)
+    </p>
+    <div class="callout tip">
+      <span class="ico">📚</span>
+      <div class="body">ครบทั้ง 5 Part แล้ว — เก็บไฟล์ทั้งหมดไว้เปิดทำตามเป็นชุด · อ้างอิงเชิงลึกเพิ่มเติมที่ <a class="link" href="https://docs.openclaw.ai/th" target="_blank">docs.openclaw.ai (ภาษาไทย)</a> และ repo ทางการบน GitHub</div>
+    </div>
+  </section>
+
+  <div class="pager">
+    <a class="prev" href="#intro"><div class="pl">← Part 4</div><div class="pt">⚡ คำสั่ง + ขั้นสูง</div></a>
+    <a class="next disabled"><div class="pl">จบครบ 5 Part ✓</div><div class="pt">🦞 The lobster way</div></a>
+  </div>
+</main>
+</div>
+
+<script>
+  document.querySelectorAll('.code').forEach(block=>{
+    const btn=block.querySelector('.copy');if(!btn)return;
+    btn.addEventListener('click',()=>{
+      const code=block.querySelector('pre').innerText;
+      navigator.clipboard.writeText(code).then(()=>{
+        const t=btn.textContent;btn.textContent='✓ คัดลอกแล้ว';btn.classList.add('done');
+        setTimeout(()=>{btn.textContent=t;btn.classList.remove('done')},1500);
+      });
+    });
+  });
+  const prog=document.getElementById('progress');
+  window.addEventListener('scroll',()=>{const h=document.documentElement;prog.style.width=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100+'%';});
+  const links=[...document.querySelectorAll('nav a[href^="#"]')];const map={};
+  links.forEach(l=>{const id=l.getAttribute('href').slice(1);const s=document.getElementById(id);if(s)map[id]=l;});
+  const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const l=map[e.target.id];if(l)l.classList.add('active');}});},{rootMargin:'-15% 0px -75% 0px'});
+  Object.keys(map).forEach(id=>{const s=document.getElementById(id);if(s)obs.observe(s);});
+</script>
+</body>
+</html>

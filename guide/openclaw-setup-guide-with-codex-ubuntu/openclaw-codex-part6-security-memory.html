@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw × Codex — Part 6: Security + Memory/Dreaming</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0f12;--bg-soft:#14171c;--bg-card:#171b21;--bg-code:#0a0c0f;
+    --line:#262c34;--line-soft:#1d2229;
+    --text:#e7e9ee;--text-dim:#9aa3b0;--text-faint:#69727f;
+    --claw:#FF5A36;--claw-glow:rgba(255,90,54,.13);
+    --acc:#8b5cf6;--acc-soft:#b09bf7;--acc-glow:rgba(139,92,246,.16);
+    --gold:#ffb454;--green:#4ade80;--cyan:#38bdf8;--warn:#fbbf24;--danger:#f87171;--pink:#f472b6;
+    --mono:'JetBrains Mono',ui-monospace,monospace;--disp:'Chakra Petch',sans-serif;--body:'IBM Plex Sans Thai',sans-serif;
+    --sb:300px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(900px 500px at 88% -8%, var(--acc-glow), transparent 60%),radial-gradient(700px 400px at -5% 5%, var(--claw-glow), transparent 55%);
+    background-attachment:fixed;}
+  ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:#2a313a;border-radius:6px;border:2px solid var(--bg)}::-webkit-scrollbar-thumb:hover{background:#3a434f}
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--acc),var(--pink));z-index:100;transition:width .1s linear;box-shadow:0 0 12px var(--acc)}
+  .wrap{display:flex;min-height:100vh}
+  aside{width:var(--sb);flex:0 0 var(--sb);position:sticky;top:0;height:100vh;overflow-y:auto;background:linear-gradient(180deg,#0b0d10,#0e1115);border-right:1px solid var(--line);padding:26px 18px 60px}
+  main{flex:1;min-width:0;padding:54px clamp(20px,5vw,76px) 120px;max-width:1000px}
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+  .brand .logo{font-size:30px;filter:drop-shadow(0 2px 6px var(--claw-glow))}
+  .brand .name{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:.5px}
+  .brand .name b{color:var(--claw)}
+  .brand-sub{font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:0 0 22px 41px;letter-spacing:1px}
+  .part-pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--acc-soft);background:var(--acc-glow);border:1px solid rgba(139,92,246,.34);padding:5px 11px;border-radius:30px;margin-bottom:20px;letter-spacing:1px}
+  .nav-group{margin-bottom:22px}
+  .nav-group h4{font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;color:var(--text-faint);text-transform:uppercase;margin-bottom:9px;padding-left:10px}
+  nav a{display:flex;align-items:center;gap:9px;color:var(--text-dim);text-decoration:none;font-size:13.5px;padding:7px 11px;border-radius:8px;border-left:2px solid transparent;transition:.15s}
+  nav a .nx{font-family:var(--mono);font-size:11px;color:var(--text-faint);min-width:20px}
+  nav a:hover{color:var(--text);background:var(--bg-soft)}
+  nav a.active{color:var(--acc-soft);background:var(--acc-glow);border-left-color:var(--acc)}
+  nav a.active .nx{color:var(--acc-soft)}
+  .nav-future{margin-top:26px;padding-top:18px;border-top:1px dashed var(--line)}
+  .nav-future .roadmap-item{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-faint);padding:6px 11px}
+  .nav-future .roadmap-item .tag{font-family:var(--mono);font-size:9px;border:1px solid var(--line);border-radius:4px;padding:2px 5px;margin-left:auto}
+  .nav-future .roadmap-item.done .tag{color:var(--green);border-color:rgba(74,222,128,.4)}
+  .nav-future .roadmap-item.cur .tag{color:var(--acc-soft);border-color:rgba(139,92,246,.4)}
+  .hero{margin-bottom:50px}
+  .hero .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--acc-soft);margin-bottom:14px}
+  h1{font-family:var(--disp);font-weight:700;font-size:clamp(30px,5vw,46px);line-height:1.15;letter-spacing:.3px;margin-bottom:16px}
+  h1 .grad{background:linear-gradient(120deg,var(--acc),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:17px;color:var(--text-dim);max-width:66ch}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+  .meta-chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:7px 13px;border-radius:8px}
+  .meta-chip b{color:var(--text)}.meta-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  section{margin-bottom:58px;scroll-margin-top:30px}
+  h2{font-family:var(--disp);font-weight:700;font-size:27px;letter-spacing:.3px;margin-bottom:8px;display:flex;align-items:baseline;gap:13px}
+  h2 .num{font-family:var(--mono);font-size:15px;color:var(--acc-soft);font-weight:700}
+  .sec-sub{color:var(--text-dim);margin-bottom:24px;font-size:15.5px}
+  h3{font-family:var(--disp);font-weight:600;font-size:18.5px;margin:30px 0 12px;color:var(--text);display:flex;align-items:center;gap:9px}
+  h3::before{content:"";width:5px;height:18px;background:var(--acc);border-radius:3px;display:inline-block}
+  .divider{display:flex;align-items:center;gap:14px;margin:46px 0 30px}
+  .divider .dt{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:3px;color:var(--acc-soft);white-space:nowrap}
+  .divider .dl{flex:1;height:1px;background:linear-gradient(90deg,var(--acc),transparent)}
+  p{margin-bottom:13px;color:var(--text)}p.dim{color:var(--text-dim)}
+  a.link{color:var(--acc-soft);text-decoration:none;border-bottom:1px dashed rgba(176,155,247,.4)}a.link:hover{border-bottom-style:solid}
+  strong{color:#fff;font-weight:600}em{color:var(--acc-soft);font-style:normal}
+  code.inline{font-family:var(--mono);font-size:13px;background:var(--bg-code);color:var(--gold);padding:2px 7px;border-radius:5px;border:1px solid var(--line-soft)}
+  ul,ol{margin:6px 0 16px 4px;padding-left:22px}li{margin-bottom:8px;color:var(--text)}li::marker{color:var(--acc-soft)}
+  ul.mech li::marker{content:"▸  ";color:var(--acc-soft)}
+  .code{position:relative;margin:16px 0 20px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--bg-code)}
+  .code-head{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .code-head .dots{display:flex;gap:6px}.code-head .dots i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .code-head .dots i:nth-child(1){background:#ff5f57}.code-head .dots i:nth-child(2){background:#febc2e}.code-head .dots i:nth-child(3){background:#28c840}
+  .code-head .title{font-family:var(--mono);font-size:11.5px;color:var(--text-faint);margin-left:6px}
+  .code-head .copy{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:4px 11px;border-radius:6px;cursor:pointer;transition:.15s}
+  .code-head .copy:hover{color:var(--acc-soft);border-color:var(--acc)}.code-head .copy.done{color:var(--green);border-color:rgba(74,222,128,.4)}
+  pre{padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.65}
+  pre code{font-family:var(--mono);white-space:pre}
+  .c-cmd{color:#e7e9ee}.c-flag{color:var(--cyan)}.c-str{color:var(--green)}.c-cmt{color:var(--text-faint);font-style:italic}.c-key{color:var(--acc-soft)}.c-prompt{color:var(--acc-soft);user-select:none}.c-slash{color:var(--pink)}
+  .callout{display:flex;gap:13px;padding:15px 17px;border-radius:11px;margin:18px 0;border:1px solid var(--line);background:var(--bg-card);font-size:14.5px}
+  .callout .ico{font-size:19px;flex:0 0 auto;line-height:1.4}.callout .body{color:var(--text-dim)}.callout .body b{color:var(--text)}
+  .callout.note{border-color:rgba(56,189,248,.32);background:rgba(56,189,248,.06)}.callout.note .ico{color:var(--cyan)}
+  .callout.warn{border-color:rgba(251,191,36,.34);background:rgba(251,191,36,.06)}.callout.warn .ico{color:var(--warn)}
+  .callout.pit{border-color:rgba(248,113,113,.34);background:rgba(248,113,113,.06)}.callout.pit .ico{color:var(--danger)}
+  .callout.tip{border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.05)}.callout.tip .ico{color:var(--green)}
+  .callout.why{border-color:rgba(139,92,246,.4);background:var(--acc-glow)}.callout.why .ico{color:var(--acc-soft)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:20px 0}
+  .card{background:var(--bg-card);border:1px solid var(--line);border-radius:13px;padding:18px;transition:.18s}
+  .card:hover{border-color:rgba(139,92,246,.45);transform:translateY(-2px)}
+  .card .ci{font-size:24px;margin-bottom:10px}.card h5{font-family:var(--disp);font-weight:600;font-size:16px;margin-bottom:6px;color:#fff}
+  .card p{font-size:13.5px;color:var(--text-dim);margin:0}.card .lbl{font-family:var(--mono);font-size:10.5px;color:var(--acc-soft);letter-spacing:1px}
+  .tbl{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .tbl th{background:var(--bg-soft);text-align:left;padding:11px 14px;font-family:var(--mono);font-size:12px;color:var(--acc-soft);letter-spacing:.5px;border-bottom:1px solid var(--line)}
+  .tbl td{padding:11px 14px;border-bottom:1px solid var(--line-soft);color:var(--text-dim);vertical-align:top}
+  .tbl tr:last-child td{border-bottom:none}.tbl td code{font-family:var(--mono);font-size:12px;color:var(--gold);white-space:nowrap}.tbl td b{color:var(--text)}
+  .layer-flow{display:flex;align-items:stretch;gap:0;margin:22px 0;flex-wrap:wrap}
+  .lf{flex:1;min-width:150px;background:var(--bg-card);border:1px solid var(--line);border-radius:11px;padding:15px;position:relative}
+  .lf .ln{font-family:var(--mono);font-size:11px;color:var(--acc-soft);letter-spacing:1px;margin-bottom:6px}
+  .lf h5{font-family:var(--disp);font-size:15px;color:#fff;margin-bottom:5px}
+  .lf p{font-size:12.5px;color:var(--text-dim);margin:0}
+  .lf-arrow{display:flex;align-items:center;color:var(--acc-soft);font-size:20px;padding:0 6px}
+  @media(max-width:700px){.lf-arrow{transform:rotate(90deg);padding:6px 0;width:100%;justify-content:center}}
+  .pager{display:flex;gap:14px;margin-top:60px;padding-top:28px;border-top:1px solid var(--line)}
+  .pager a{flex:1;text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--bg-card);transition:.18s}
+  .pager a:hover{border-color:var(--acc);background:var(--acc-glow)}
+  .pager .pl{font-family:var(--mono);font-size:11px;color:var(--text-faint);letter-spacing:1px}
+  .pager .pt{font-family:var(--disp);font-weight:600;font-size:16px;color:var(--text);margin-top:5px}
+  .pager a.next{text-align:right}.pager a.disabled{opacity:.4;pointer-events:none}
+  .mobile-bar{display:none}
+  @media(max-width:880px){
+    aside{display:none}main{padding:24px 18px 80px}
+    .mobile-bar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;background:rgba(13,15,18,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:13px 16px;margin:-24px -18px 24px}
+    .mobile-bar .logo{font-size:22px}.mobile-bar .nm{font-family:var(--disp);font-weight:700;font-size:16px}.mobile-bar .nm b{color:var(--claw)}
+    .pager{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="wrap">
+
+<aside>
+  <div class="brand"><span class="logo">🦞</span><span class="name">Open<b>Claw</b></span></div>
+  <div class="brand-sub">× CODEX · UBUNTU GUIDE</div>
+  <div class="part-pill">🔐 PART 6 — SECURITY & MEMORY</div>
+  <nav>
+    <div class="nav-group">
+      <h4>Security</h4>
+      <a href="#threat"><span class="nx">00</span> Threat model</a>
+      <a href="#injection"><span class="nx">01</span> Prompt injection</a>
+      <a href="#baseline"><span class="nx">02</span> Hardened baseline</a>
+      <a href="#approvals"><span class="nx">03</span> Exec approvals</a>
+      <a href="#sandbox"><span class="nx">04</span> Sandbox + profiles</a>
+      <a href="#secrets"><span class="nx">05</span> ความลับ + audit</a>
+    </div>
+    <div class="nav-group">
+      <h4>Memory / Dreaming</h4>
+      <a href="#workspace"><span class="nx">06</span> Workspace files</a>
+      <a href="#mem-engine"><span class="nx">07</span> Memory engine</a>
+      <a href="#dreaming"><span class="nx">08</span> Dreaming system</a>
+    </div>
+    <div class="nav-group">
+      <h4>อื่นๆ</h4>
+      <a href="#extras"><span class="nx">09</span> Heartbeat/Hooks/Backup</a>
+    </div>
+    <div class="nav-future">
+      <div class="roadmap-item done"><span>🦞</span> Part 1 — ติดตั้ง + Codex <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>✈️</span> Part 2 — Telegram <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>🎮</span> Part 3 — Discord <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>⚡</span> Part 4 — ขั้นสูง <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>🩺</span> Part 5 — เจาะลึก <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item cur"><span>🔐</span> Part 6 — Security/Memory <span class="tag">ตอนนี้</span></div>
+    </div>
+  </nav>
+</aside>
+
+<main>
+  <div class="mobile-bar"><span class="logo">🔐</span><span class="nm">Open<b>Claw</b> × Security</span></div>
+
+  <div class="hero">
+    <div class="eyebrow">PART 6 · ปลอดภัย + ความจำของ agent</div>
+    <h1>Security Hardening<br>+ <span class="grad">Memory / Dreaming</span></h1>
+    <p class="lead">
+      agent ที่รันคำสั่งบนเครื่องคุณได้ = มีดสองคม · Part นี้แบ่งเป็นสองครึ่ง — <strong>Security</strong> (ใครคุยได้ ทำอะไรได้ แตะอะไรได้)
+      และ <strong>Memory/Dreaming</strong> (agent จำอะไร เก็บยังไง กลั่นกรองความจำเองได้อย่างไร) พร้อมอธิบายว่าทำไมแต่ละกลไกถึงออกแบบมาแบบนั้น
+    </p>
+    <div class="meta-row">
+      <span class="meta-chip"><span class="dot"></span> เสริมจาก Part 1-5</span>
+      <span class="meta-chip">🔐 Threat model</span>
+      <span class="meta-chip">🧠 Memory engine</span>
+      <span class="meta-chip">💤 Dreaming</span>
+    </div>
+  </div>
+
+  <div class="divider"><span class="dt">PART A · SECURITY</span><span class="dl"></span></div>
+
+  <!-- 00 -->
+  <section id="threat">
+    <h2><span class="num">00</span> Threat model — เข้าใจก่อนป้องกัน</h2>
+    <p class="sec-sub">OpenClaw ออกแบบบนสมมติฐาน "personal assistant" — <em>เจ้าของคนเดียว/ทีมที่ไว้ใจกัน ต่อ 1 gateway</em></p>
+    <p>
+      สิ่งที่ AI assistant ของคุณ "ทำได้": รันคำสั่ง shell, อ่าน/เขียนไฟล์, เข้าถึงเครือข่าย, ส่งข้อความ ·
+      ส่วนคนที่ทักหา bot ก็ "พยายามหลอก" ให้ทำเรื่องไม่ดีได้ · กุญแจคือหลักนี้:
+    </p>
+    <div class="layer-flow">
+      <div class="lf"><div class="ln">1 · IDENTITY</div><h5>ใครคุยได้</h5><p>DM pairing / allowlist / "open" — ตัดสินก่อนว่าใครมีสิทธิ์</p></div>
+      <div class="lf-arrow">→</div>
+      <div class="lf"><div class="ln">2 · SCOPE</div><h5>ทำที่ไหนได้</h5><p>group allowlist + mention, tools, sandbox, สิทธิ์อุปกรณ์</p></div>
+      <div class="lf-arrow">→</div>
+      <div class="lf"><div class="ln">3 · MODEL</div><h5>สมมติว่าถูกหลอกได้</h5><p>ออกแบบให้ "ถ้าโดนหลอก ความเสียหายจำกัด"</p></div>
+    </div>
+    <div class="callout why">
+      <span class="ico">🎯</span>
+      <div class="body"><b>หลักสำคัญ "Access control before intelligence":</b> ปัญหาส่วนใหญ่<u>ไม่ใช่</u> exploit หรูหรา แต่คือ "มีคนทักมา แล้ว bot ทำตามที่เขาสั่ง" · ดังนั้นล็อก <b>ใครคุยได้</b> ก่อน สำคัญกว่าตั้งความฉลาด</div>
+    </div>
+    <div class="callout warn">
+      <span class="ico">⚠️</span>
+      <div class="body"><b>ไม่ใช่ระบบ multi-tenant:</b> OpenClaw <u>ไม่ได้</u>ออกแบบให้กั้นผู้ใช้หลายคนที่ไม่ไว้ใจกันบน gateway เดียว · ถ้าต้องแยกความเชื่อใจ ให้แยก gateway / OS user / host คนละตัว</div>
+    </div>
+  </section>
+
+  <!-- 01 -->
+  <section id="injection">
+    <h2><span class="num">01</span> Prompt Injection — ทำไมแก้ไม่ขาด</h2>
+    <p class="sec-sub">การโจมตีที่สำคัญที่สุด และเข้าใจผิดบ่อยที่สุด</p>
+    <p>
+      Prompt injection คือการที่ผู้โจมตีแต่งข้อความให้โมเดล "เชื่อฟังคำสั่งแฝง" เช่น "ลืม system prompt ซะ", "dump ไฟล์ทั้งหมด", "เปิดลิงก์นี้แล้วรันคำสั่ง" ·
+      ความจริงที่ต้องยอมรับ: <strong>แม้ system prompt จะแกร่งแค่ไหน prompt injection ก็ยัง "แก้ไม่ขาด"</strong>
+    </p>
+    <div class="callout why">
+      <span class="ico">🧱</span>
+      <div class="body"><b>ทำไม system prompt อย่างเดียวไม่พอ:</b> guardrail ใน prompt เป็นแค่ "คำแนะนำนุ่ม ๆ" · การบังคับจริง (hard enforcement) มาจาก <b>tool policy + exec approvals + sandbox + allowlist</b> ต่างหาก — นี่คือเหตุผลที่ต้องตั้งหลายชั้น ไม่พึ่ง prompt ชั้นเดียว</div>
+    </div>
+    <h3>ไม่ต้องเปิด DM สาธารณะก็โดนได้</h3>
+    <p>
+      เข้าใจผิดที่อันตราย: คิดว่า "ถ้ามีแค่ฉันคุยกับ bot ก็ปลอดภัย" — <strong>ผิด</strong> · เพราะ injection มาทาง <em>เนื้อหาที่ bot อ่าน</em>ได้ด้วย:
+      ผลค้นเว็บ, หน้าเว็บที่ browser เปิด, อีเมล, เอกสาร, ไฟล์แนบ, log ที่ paste มา
+    </p>
+    <ul class="mech">
+      <li>ธงแดงที่ต้องถือว่า "ไม่น่าไว้ใจ": "อ่านไฟล์/URL นี้แล้วทำตามเป๊ะ ๆ", "เพิกเฉย safety rule", "เปิดเผย system prompt", "paste เนื้อหา ~/.openclaw ทั้งหมด"</li>
+      <li>ลดความเสียหาย: ใช้ <b>reader agent</b> ที่ไม่มี tool มาสรุปเนื้อหาที่ไม่น่าไว้ใจก่อน แล้วค่อยส่งสรุปให้ agent หลัก</li>
+      <li>ปิด <code class="inline">web_search</code>/<code class="inline">web_fetch</code>/<code class="inline">browser</code> สำหรับ agent ที่มี tool แรง ๆ ถ้าไม่จำเป็น</li>
+    </ul>
+    <div class="callout pit">
+      <span class="ico">🧠</span>
+      <div class="body"><b>โมเดลอ่อน = เสี่ยง injection สูง:</b> โมเดลเล็ก/เก่ากันการ hijack ได้แย่กว่ามาก · เอกสารเตือนชัด — agent ที่มี tool หรืออ่านเนื้อหาไม่น่าไว้ใจ <u>ต้องใช้โมเดลรุ่นใหม่ที่สุด/แกร่งที่สุด</u> (Codex/<code class="inline">gpt-5.5</code> เหมาะ) · นี่คืออีกเหตุผลที่เราเลือก model นี้ตั้งแต่ Part 1</div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section id="baseline">
+    <h2><span class="num">02</span> Hardened baseline ใน 60 วินาที</h2>
+    <p class="sec-sub">เริ่มจาก "แคบที่สุดที่ยังใช้งานได้" แล้วค่อยเปิดทีละอย่างเมื่อมั่นใจ</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json — baseline</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span>
+  <span class="c-key">gateway</span>: {
+    <span class="c-key">mode</span>: <span class="c-str">"local"</span>,
+    <span class="c-key">bind</span>: <span class="c-str">"loopback"</span>,                       <span class="c-cmt">// ฟังเฉพาะ localhost</span>
+    <span class="c-key">auth</span>: { <span class="c-key">mode</span>: <span class="c-str">"token"</span>, <span class="c-key">token</span>: <span class="c-str">"&lt;random-ยาว ๆ&gt;"</span> }
+  },
+  <span class="c-key">session</span>: { <span class="c-key">dmScope</span>: <span class="c-str">"per-channel-peer"</span> },   <span class="c-cmt">// แยก DM แต่ละคน (กัน context รั่ว)</span>
+  <span class="c-key">tools</span>: {
+    <span class="c-key">profile</span>: <span class="c-str">"messaging"</span>,
+    <span class="c-key">deny</span>: [<span class="c-str">"group:automation"</span>, <span class="c-str">"group:runtime"</span>, <span class="c-str">"group:fs"</span>, <span class="c-str">"sessions_spawn"</span>],
+    <span class="c-key">fs</span>: { <span class="c-key">workspaceOnly</span>: <span class="c-str">true</span> },     <span class="c-cmt">// จำกัดไฟล์ใน workspace</span>
+    <span class="c-key">exec</span>: { <span class="c-key">security</span>: <span class="c-str">"deny"</span>, <span class="c-key">ask</span>: <span class="c-str">"always"</span> },
+    <span class="c-key">elevated</span>: { <span class="c-key">enabled</span>: <span class="c-str">false</span> }
+  }
+<span class="c-cmd">}</span></code></pre>
+    </div>
+    <ul class="mech">
+      <li><code class="inline">bind: "loopback"</code> + <code class="inline">auth.token</code> → gateway ฟังเฉพาะเครื่อง + ทุก client ต้อง auth (gateway auth บังคับโดยปริยายอยู่แล้ว ถ้าไม่มี = ปฏิเสธ fail-closed)</li>
+      <li><code class="inline">dmScope: "per-channel-peer"</code> → ถ้ามีหลายคน DM แต่ละ channel+คน แยก session ป้องกัน context ข้ามคนรั่ว (เหตุผล: default <code class="inline">main</code> รวมทุก DM เพื่อ continuity)</li>
+      <li>ปิด tool runtime/automation/fs + exec deny + elevated off → "ความเสียหายจาก injection จำกัด" ตามหลักข้อ 00</li>
+    </ul>
+    <div class="callout tip">
+      <span class="ico">🔌</span>
+      <div class="body"><b>อย่าเปิด gateway ออกเน็ตตรง ๆ:</b> ถ้าต้องเข้าจากนอก ให้ใช้ <b>Tailscale Serve</b> (gateway ยังอยู่ loopback, Tailscale คุม access) ดีกว่า bind LAN/public · ไม่เปิดบน <code class="inline">0.0.0.0</code> แบบไม่มี auth เด็ดขาด</div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="approvals">
+    <h2><span class="num">03</span> Exec Approvals — ด่านกันคำสั่งอันตราย</h2>
+    <p class="sec-sub">เมื่อ agent (ที่อยู่ใน sandbox) จะรันคำสั่งบน host จริง — นี่คือ "safety interlock"</p>
+    <p>เก็บที่ <code class="inline">~/.openclaw/exec-approvals.json</code> · นโยบายมี 3 ปุ่มหลัก ทำงาน "เข้มกว่า" ระหว่าง <code class="inline">tools.exec.*</code> กับ approvals defaults:</p>
+    <table class="tbl">
+      <tr><th>ปุ่ม</th><th>ค่า</th><th>ความหมาย</th></tr>
+      <tr><td><code>security</code></td><td><code>deny</code> / <code>allowlist</code> / <code>full</code></td><td>บล็อกหมด / เฉพาะที่ allowlist / ปล่อยหมด (= elevated)</td></tr>
+      <tr><td><code>ask</code></td><td><code>off</code> / <code>on-miss</code> / <code>always</code></td><td>ไม่ถาม / ถามเมื่อไม่ match allowlist / ถามทุกครั้ง</td></tr>
+      <tr><td><code>askFallback</code></td><td><code>deny</code> / <code>allowlist</code> / <code>full</code></td><td>ถ้าต้องถามแต่ไม่มี UI ตอบ → ทำตามนี้ (default deny)</td></tr>
+    </table>
+    <h3>อนุมัติจากแชต</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">ในแชต (Telegram/Discord มีปุ่มกดด้วย)</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-slash">/approve &lt;id&gt; allow-once</span>    <span class="c-cmt"># รันครั้งเดียว</span>
+<span class="c-slash">/approve &lt;id&gt; allow-always</span>  <span class="c-cmt"># เพิ่มเข้า allowlist + รัน</span>
+<span class="c-slash">/approve &lt;id&gt; deny</span>          <span class="c-cmt"># ปฏิเสธ</span></code></pre>
+    </div>
+    <div class="callout why">
+      <span class="ico">🐍</span>
+      <div class="body"><b>ทำไมต้องมี <code class="inline">strictInlineEval</code>:</b> ถ้าคุณ allowlist <code class="inline">python</code>/<code class="inline">node</code> ไว้ ผู้โจมตีอาจสั่ง <code class="inline">python -c "&lt;โค้ดอันตราย&gt;"</code> ลอด allowlist ได้ · ตั้ง <code class="inline">tools.exec.strictInlineEval: true</code> → inline eval ยังต้องขออนุมัติเสมอ แม้ binary จะ allowlist แล้ว (defense-in-depth)</div>
+    </div>
+    <div class="callout note">
+      <span class="ico">🧊</span>
+      <div class="body"><b>safe bins (stdin-only):</b> <code class="inline">tools.exec.safeBins</code> เช่น <code class="inline">head/tail/tr/wc</code> รันได้โดยไม่ต้อง allowlist เพราะมันรับแต่ stream (ปฏิเสธ file arg) · <u>ห้าม</u>ใส่ interpreter (<code class="inline">python/node/bash</code>) ลง safeBins เด็ดขาด — เหตุผล: มันรันโค้ด/อ่านไฟล์ได้</div>
+    </div>
+    <div class="callout warn">
+      <span class="ico">⏰</span>
+      <div class="body">คำขออนุมัติที่ค้าง <b>หมดอายุใน 30 นาที</b> โดยปริยาย · ถ้าไม่มี UI/approver ตอบ → ตกไปที่ <code class="inline">askFallback</code></div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="sandbox">
+    <h2><span class="num">04</span> Sandbox + Per-agent Access Profiles</h2>
+    <p class="sec-sub">กั้น "agent แตะอะไรได้" — ใช้ร่วมกับ exec approvals เป็นชั้นบังคับจริง</p>
+    <p>มี 2 แนวทาง (ใช้ร่วมกันได้): รัน gateway ทั้งตัวใน <strong>Docker</strong> (container boundary) หรือใช้ <strong>tool sandbox</strong> (<code class="inline">agents.defaults.sandbox</code>, Docker เป็น backend default)</p>
+    <table class="tbl">
+      <tr><th>workspaceAccess</th><th>พฤติกรรม</th><th>เหมาะกับ</th></tr>
+      <tr><td><code>"none"</code> (default)</td><td>ไม่แตะ workspace จริง — รันใน sandbox workspace แยก</td><td>agent สาธารณะ/ไม่ไว้ใจ</td></tr>
+      <tr><td><code>"ro"</code></td><td>mount workspace แบบ read-only (ปิด write/edit/apply_patch)</td><td>agent อ่านอย่างเดียว</td></tr>
+      <tr><td><code>"rw"</code></td><td>mount read/write เต็ม</td><td>agent ส่วนตัวที่ไว้ใจ (เช่นห้อง Codex โปรเจกต์)</td></tr>
+    </table>
+    <h3>ตัวอย่าง: หลาย agent คนละระดับสิทธิ์</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json — per-agent profiles</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span> <span class="c-key">agents</span>: { <span class="c-key">list</span>: [
+  { <span class="c-key">id</span>: <span class="c-str">"personal"</span>, <span class="c-key">sandbox</span>: { <span class="c-key">mode</span>: <span class="c-str">"off"</span> } },          <span class="c-cmt">// ส่วนตัว: เต็มสิทธิ์</span>
+  { <span class="c-key">id</span>: <span class="c-str">"reader"</span>,
+    <span class="c-key">sandbox</span>: { <span class="c-key">mode</span>: <span class="c-str">"all"</span>, <span class="c-key">scope</span>: <span class="c-str">"agent"</span>, <span class="c-key">workspaceAccess</span>: <span class="c-str">"ro"</span> },
+    <span class="c-key">tools</span>: { <span class="c-key">allow</span>: [<span class="c-str">"read"</span>], <span class="c-key">deny</span>: [<span class="c-str">"write"</span>,<span class="c-str">"edit"</span>,<span class="c-str">"exec"</span>,<span class="c-str">"browser"</span>] } }, <span class="c-cmt">// อ่านอย่างเดียว</span>
+] } <span class="c-cmd">}</span></code></pre>
+    </div>
+    <div class="callout why">
+      <span class="ico">🔒</span>
+      <div class="body"><b>ทำไม sandbox เป็น opt-in (และผลของมัน):</b> ถ้า sandbox <em>ปิด</em> อยู่ → <code class="inline">host=auto</code> จะรันบน gateway host จริง · ส่วน <code class="inline">host=sandbox</code> จะ <em>fail closed</em> (ไม่มี sandbox ให้รัน) · เข้าใจจุดนี้กันความเข้าใจผิดว่า "นึกว่ามี sandbox อยู่แล้ว"</div>
+    </div>
+    <div class="callout pit">
+      <span class="ico">🌐</span>
+      <div class="body"><b>browser control = สิทธิ์ operator:</b> ถ้าให้ agent คุม browser ที่ login บัญชีคุณไว้ = มันเข้าถึงบัญชีนั้นได้ · ใช้ profile แยกเฉพาะ agent (default <code class="inline">openclaw</code>) อย่าชี้ไป profile ส่วนตัว · SSRF policy บล็อก private network โดยปริยาย</div>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="secrets">
+    <h2><span class="num">05</span> ความลับบนดิสก์ + Security Audit</h2>
+    <p class="sec-sub">ทุกอย่างใต้ <code class="inline">~/.openclaw/</code> ถือว่าอาจมีความลับ — disk access คือ trust boundary</p>
+    <h3>แผนที่ความลับ (รู้ไว้เวลา backup/audit)</h3>
+    <table class="tbl">
+      <tr><th>ไฟล์/โฟลเดอร์</th><th>เก็บอะไร</th></tr>
+      <tr><td><code>openclaw.json</code></td><td>config + อาจมี token/allowlist</td></tr>
+      <tr><td><code>credentials/**</code></td><td>credential ของ channel + pairing allowlist</td></tr>
+      <tr><td><code>agents/&lt;id&gt;/agent/auth-profiles.json</code></td><td>API key / OAuth token ของโมเดล</td></tr>
+      <tr><td><code>agents/&lt;id&gt;/agent/codex-home/**</code></td><td>state ของ Codex (บัญชี/config/thread)</td></tr>
+      <tr><td><code>agents/&lt;id&gt;/sessions/*.jsonl</code></td><td>บทสนทนา + tool output (อาจมีข้อมูลส่วนตัว)</td></tr>
+    </table>
+    <h3>ตั้ง permission + ตรวจสอบ</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — harden + audit</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">chmod 700 ~/.openclaw && chmod 600 ~/.openclaw/openclaw.json</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw security audit</span>          <span class="c-cmt"># สแกนการตั้งค่าเสี่ยง</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw security audit <span class="c-flag">--deep</span></span>   <span class="c-cmt"># + probe gateway สด</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw security audit <span class="c-flag">--fix</span></span>    <span class="c-cmt"># แก้ footgun ที่แก้ได้อัตโนมัติ (แคบ ๆ ปลอดภัย)</span></code></pre>
+    </div>
+    <p class="dim">audit เช็ก: ใครเข้าถึงได้ (DM/group/allowlist), tool blast radius, exec approval drift, network exposure, browser control, file permission, plugin ที่ไม่มี allowlist, โมเดลเก่า</p>
+    <h3>ถ้าเกิดเหตุ (Incident Response)</h3>
+    <ul class="mech">
+      <li><strong>Contain</strong> — หยุด gateway, ตั้ง <code class="inline">bind: "loopback"</code>, สลับ DM/group เสี่ยงเป็น <code class="inline">disabled</code>, ลบ <code class="inline">"*"</code> ออก</li>
+      <li><strong>Rotate</strong> — หมุน gateway token, remote secret, และ provider/API key ทั้งหมด แล้ว restart</li>
+      <li><strong>Audit</strong> — ดู log + transcript + การเปลี่ยน config ที่ขยายสิทธิ์ → รัน <code class="inline">security audit --deep</code> อีกรอบ</li>
+    </ul>
+    <div class="callout note">
+      <span class="ico">🚫</span>
+      <div class="body"><b>tool คุม control-plane ที่ควรปิดสำหรับ agent ที่รับเนื้อหาไม่น่าไว้ใจ:</b> <code class="inline">tools.deny: ["gateway","cron","sessions_spawn","sessions_send"]</code> — เพราะ <code class="inline">gateway</code> แก้ config ถาวรได้ และ <code class="inline">cron</code> ตั้งงานที่รันต่อหลังแชตจบ</div>
+    </div>
+  </section>
+
+  <div class="divider"><span class="dt">PART B · MEMORY & DREAMING</span><span class="dl"></span></div>
+
+  <!-- 06 -->
+  <section id="workspace">
+    <h2><span class="num">06</span> Workspace Bootstrap Files</h2>
+    <p class="sec-sub">ไฟล์ใน workspace ที่กำหนด "ตัวตน + ความรู้" ของ agent — รู้ว่าไฟล์ไหนทำอะไร = คุม agent ได้แม่น</p>
+    <table class="tbl">
+      <tr><th>ไฟล์</th><th>หน้าที่</th><th>หมายเหตุสำคัญ</th></tr>
+      <tr><td><code>SOUL.md</code></td><td>บุคลิก/น้ำเสียงของ agent</td><td>กำหนด "นิสัย" การตอบ</td></tr>
+      <tr><td><code>IDENTITY.md</code></td><td>ตัวตน/ชื่อ/บทบาท</td><td>ใครคือ agent นี้</td></tr>
+      <tr><td><code>USER.md</code></td><td>ข้อมูลเกี่ยวกับคุณ (ผู้ใช้)</td><td>inject ทุก session หลัก</td></tr>
+      <tr><td><code>AGENTS.md</code></td><td>กฎ/convention การทำงาน</td><td><b>inject ให้ subagent ด้วย</b> — วาง convention โปรเจกต์ที่นี่</td></tr>
+      <tr><td><code>TOOLS.md</code></td><td>คำแนะนำการใช้ tool</td><td><b>inject ให้ subagent ด้วย</b></td></tr>
+      <tr><td><code>MEMORY.md</code></td><td>ความจำระยะยาวที่กลั่นแล้ว</td><td>โหลดใน DM session · dreaming เขียนเพิ่มที่นี่</td></tr>
+      <tr><td><code>HEARTBEAT.md</code></td><td>คำสั่งสำหรับ heartbeat (งานเป็นจังหวะ)</td><td>ดูข้อ 09</td></tr>
+      <tr><td><code>BOOTSTRAP.md</code></td><td>ขั้นตอนเริ่มต้นครั้งแรก</td><td>ใช้ตอน bootstrapping</td></tr>
+    </table>
+    <div class="callout why">
+      <span class="ico">🧬</span>
+      <div class="body"><b>ทำไม subagent ได้แค่ AGENTS.md + TOOLS.md:</b> subagent <u>ไม่</u>โหลด SOUL/IDENTITY/USER/MEMORY ของ parent — เพราะไม่ต้องการให้ child "โคลนตัวตน + ความจำ" ของแม่ (เปลือง token + ทำให้ซับซ้อน) · นี่คือเหตุผลที่ <b>กฎโปรเจกต์ควรอยู่ใน AGENTS.md</b> ไม่ใช่ MEMORY.md ถ้าอยากให้ subagent เห็นด้วย</div>
+    </div>
+    <div class="callout tip">
+      <span class="ico">📐</span>
+      <div class="body">เก็บ AGENTS.md ให้ <b>lean</b> (กฎที่ต้องใช้ทุกครั้ง) เพราะมัน inject ทุก session = ยาวไป = กิน context ทุกครั้ง · note ยาว ๆ ที่ใช้บางครั้งให้อยู่ MEMORY.md แล้วให้ agent search เอา</div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="mem-engine">
+    <h2><span class="num">07</span> Memory Engine + Memory Search</h2>
+    <p class="sec-sub">agent ค้นความจำเก่ามาใช้ได้ผ่าน <code class="inline">memory_search</code> — มีหลาย engine ให้เลือก</p>
+    <div class="cards">
+      <div class="card"><div class="ci">🔧</div><div class="lbl">DEFAULT</div><h5>Builtin engine</h5><p>เครื่องมือค้นความจำในตัว ไม่ต้องตั้ง service ภายนอก</p></div>
+      <div class="card"><div class="ci">🧮</div><div class="lbl">ADVANCED</div><h5>QMD engine</h5><p>เครื่อง memory ที่ค้นเชิงความหมายลึกขึ้น</p></div>
+      <div class="card"><div class="ci">☁️</div><div class="lbl">EXTERNAL</div><h5>Honcho</h5><p>memory แบบ external service</p></div>
+    </div>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — memory CLI</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw memory status</span>            <span class="c-cmt"># สถานะ index</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw memory index <span class="c-flag">--force</span></span>     <span class="c-cmt"># reindex ไฟล์ memory</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw memory search <span class="c-flag">--query</span> <span class="c-str">"deploy notes"</span></span></code></pre>
+    </div>
+    <div class="callout note">
+      <span class="ico">🔍</span>
+      <div class="body">ทุกครั้งที่ <code class="inline">memory_search</code> เจอผล (recall hit) ระบบจะบันทึกไว้ที่ <code class="inline">memory/YYYY-MM-DD.md</code> และ <code class="inline">memory/.dreams/short-term-recall.json</code> — ข้อมูลนี้แหละที่ระบบ <b>dreaming</b> (ข้อ 08) เอาไปใช้ตัดสินว่าอะไรควรเก็บถาวร</div>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section id="dreaming">
+    <h2><span class="num">08</span> 💤 Dreaming System</h2>
+    <p class="sec-sub">การ "กลั่นความจำ" เบื้องหลัง — ทำไมเรียกว่า dreaming และทำงานยังไง</p>
+    <p>
+      Dreaming คือ pass การรวบรวมความจำเบื้องหลังใน plugin <code class="inline">memory-core</code> · เรียกว่า "ฝัน" เพราะ
+      <strong>ระบบย้อนกลับไปดูสิ่งที่เกิดขึ้นระหว่างวัน แล้วตัดสินว่าอะไรคุ้มที่จะเก็บเป็นความจำถาวร</strong> ·
+      มันเป็น <em>experimental, opt-in, ปิดโดยปริยาย</em>
+    </p>
+    <h3>3 ขั้นการทำงาน</h3>
+    <ul class="mech">
+      <li><strong>Recall tracking</strong> — เก็บทุก recall hit จาก <code class="inline">memory_search</code> (จำนวนครั้ง, คะแนน, query)</li>
+      <li><strong>Scheduled scoring</strong> — ตามรอบที่ตั้ง จัดอันดับด้วย "สัญญาณถ่วงน้ำหนัก" · <em>ทุก threshold ต้องผ่านพร้อมกัน</em></li>
+      <li><strong>Promotion</strong> — รายการที่ผ่านถูกเขียนเข้า <code class="inline">MEMORY.md</code> พร้อม timestamp</li>
+    </ul>
+    <h3>4 สัญญาณที่ใช้ตัดสิน (ทำไมเก็บ)</h3>
+    <table class="tbl">
+      <tr><th>สัญญาณ</th><th>น้ำหนัก</th><th>วัดอะไร</th></tr>
+      <tr><td><b>Frequency</b></td><td>0.35</td><td>ถูก recall บ่อยแค่ไหน</td></tr>
+      <tr><td><b>Relevance</b></td><td>0.35</td><td>คะแนน recall เฉลี่ยตอนถูกดึง</td></tr>
+      <tr><td><b>Diversity</b></td><td>0.15</td><td>มาจาก query ที่หลากหลายแค่ไหน</td></tr>
+      <tr><td><b>Recency</b></td><td>0.15</td><td>ถ่วงเวลา (half-life 14 วัน)</td></tr>
+    </table>
+    <div class="callout why">
+      <span class="ico">💡</span>
+      <div class="body"><b>ทำไมต้องใช้หลายสัญญาณ + ผ่านทุก gate:</b> เพื่อให้ <b>เฉพาะ context ที่ "ทนทานและซ้ำจริง"</b> ถูกเก็บถาวร ไม่ใช่รายละเอียดครั้งเดียวที่บังเอิญ recall — กัน MEMORY.md บวมด้วยขยะ</div>
+    </div>
+    <h3>โหมด (รอบ + เกณฑ์)</h3>
+    <table class="tbl">
+      <tr><th>โหมด</th><th>รอบ</th><th>minScore</th><th>recall</th><th>uniqueQ</th></tr>
+      <tr><td><code>off</code></td><td>ปิด</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td><code>core</code></td><td>ทุกวัน ตี 3</td><td>0.75</td><td>3</td><td>2</td></tr>
+      <tr><td><code>rem</code></td><td>ทุก 6 ชม.</td><td>0.85</td><td>4</td><td>3</td></tr>
+      <tr><td><code>deep</code></td><td>ทุก 12 ชม.</td><td>0.80</td><td>3</td><td>3</td></tr>
+    </table>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json — เปิด dreaming</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span> <span class="c-key">plugins</span>: { <span class="c-key">entries</span>: { <span class="c-str">"memory-core"</span>: { <span class="c-key">config</span>: {
+  <span class="c-key">dreaming</span>: { <span class="c-key">mode</span>: <span class="c-str">"core"</span> }    <span class="c-cmt">// core = กลั่นทุกคืนตี 3</span>
+} } } } <span class="c-cmd">}</span></code></pre>
+    </div>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">สั่งจากแชต / CLI</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-slash">/dreaming core|rem|deep|off</span>    <span class="c-cmt"># สลับโหมดจากแชต</span>
+<span class="c-slash">/dreaming status</span>                <span class="c-cmt"># ดูรอบถัดไป</span>
+
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw memory promote</span>          <span class="c-cmt"># พรีวิวรายการที่จะเก็บถาวร</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw memory promote <span class="c-flag">--apply</span></span>   <span class="c-cmt"># เขียนเข้า MEMORY.md จริง</span></code></pre>
+    </div>
+    <div class="callout note">
+      <span class="ico">⏰</span>
+      <div class="body">เมื่อเปิด dreaming, <code class="inline">memory-core</code> จัดรอบ schedule ให้เอง <b>ไม่ต้องตั้ง cron แยก</b> · ปรับเพิ่มได้ด้วย <code class="inline">dreaming.frequency</code> (cron), <code class="inline">timezone</code>, <code class="inline">minScore</code> ฯลฯ · เมื่อเปิดจะมีแท็บ <b>Dreams</b> ใน Control UI โชว์สถิติ</div>
+    </div>
+  </section>
+
+  <div class="divider"><span class="dt">PART C · อื่นๆ</span><span class="dl"></span></div>
+
+  <!-- 09 -->
+  <section id="extras">
+    <h2><span class="num">09</span> Heartbeat · Hooks · Backup</h2>
+    <p class="sec-sub">ระบบเสริมที่ทำให้ agent "มีชีวิต" และดูแลได้</p>
+    <div class="cards">
+      <div class="card"><div class="ci">💓</div><div class="lbl">HEARTBEAT</div><h5>เต้นเป็นจังหวะ</h5><p>ให้ agent "ตื่น" เป็นช่วง ๆ ทำงานตาม HEARTBEAT.md โดยไม่ต้องมีคนทัก (ต่างจาก cron ที่ผูกเวลาแน่นอน)</p></div>
+      <div class="card"><div class="ci">🪝</div><div class="lbl">HOOKS</div><h5>ผูกกับ event</h5><p>เช่น Gmail PubSub, webhook → trigger agent อัตโนมัติเมื่อมี event เข้า</p></div>
+      <div class="card"><div class="ci">📋</div><div class="lbl">STANDING ORDER</div><h5>คำสั่งประจำ</h5><p>คำสั่งที่ agent ยึดถือตลอด ทุก turn</p></div>
+      <div class="card"><div class="ci">🌊</div><div class="lbl">TASKFLOW</div><h5>งานหลายขั้น</h5><p>จัดงานเป็น flow หลาย stage (substrate)</p></div>
+    </div>
+    <div class="callout pit">
+      <span class="ico">🪝</span>
+      <div class="body"><b>Hook = ประตูรับ injection:</b> payload จาก hook (อีเมล/เอกสาร/เว็บ) คือ <u>เนื้อหาไม่น่าไว้ใจ</u> แม้จะมาจากระบบที่คุณคุม · งาน hook ให้ใช้โมเดลแกร่ง + tool policy เข้ม (<code class="inline">tools.profile: "messaging"</code> ขึ้นไป) + sandbox · อย่าเปิด <code class="inline">allowUnsafeExternalContent</code> ใน production</div>
+    </div>
+    <h3>Backup ก่อนเปลี่ยนใหญ่</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — backup</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw backup create</span>                  <span class="c-cmt"># สำรอง state ทั้งหมด</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw backup create <span class="c-flag">--only-config</span></span>     <span class="c-cmt"># เฉพาะ config</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw backup verify &lt;path&gt;</span>           <span class="c-cmt"># ตรวจ manifest</span></code></pre>
+    </div>
+    <div class="callout tip">
+      <span class="ico">🧾</span>
+      <div class="body"><b>Logging redaction:</b> เปิด <code class="inline">logging.redactSensitive: "tools"</code> ไว้ (ค่าเริ่มต้น) เพราะ log/transcript อาจหลุดความลับได้ · เพิ่ม pattern เองด้วย <code class="inline">logging.redactPatterns</code> · เวลาแชร์ diagnostic ใช้ <code class="inline">openclaw status --all</code> (redact แล้ว) แทน raw log</div>
+    </div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="summary">
+    <h2><span class="num">✓</span> สรุป Part 6</h2>
+    <div class="cards">
+      <div class="card"><div class="ci">🔐</div><h5>ปลอดภัยเป็นชั้น</h5><p>Identity → Scope → Model · prompt ชั้นเดียวไม่พอ ต้อง tool policy + approvals + sandbox</p></div>
+      <div class="card"><div class="ci">🧠</div><h5>คุมความจำ</h5><p>วางกฎใน AGENTS.md · note ยาวใน MEMORY.md · เลือก engine ตามงาน</p></div>
+      <div class="card"><div class="ci">💤</div><h5>Dreaming กลั่นเอง</h5><p>เก็บเฉพาะ context ที่ซ้ำ+ทนทาน กัน MEMORY.md บวม</p></div>
+    </div>
+    <p>
+      หัวใจของ Part นี้: <strong>ความปลอดภัยคือการจำกัด blast radius ไว้ก่อน</strong> (สมมติว่าโมเดลถูกหลอกได้เสมอ)
+      และ <strong>ความจำที่ดีคือความจำที่ "กลั่นแล้ว"</strong> ไม่ใช่เก็บทุกอย่าง · ทั้งสองอย่างทำงานร่วมกัน — agent ที่จำเก่งแต่ไม่ปลอดภัย = อันตราย, agent ที่ปลอดภัยแต่ความจำรก = ช้าและแพง
+    </p>
+    <div class="callout tip">
+      <span class="ico">📚</span>
+      <div class="body">อ้างอิงเชิงลึก: <a class="link" href="https://docs.openclaw.ai/gateway/security" target="_blank">Security</a> · <a class="link" href="https://docs.openclaw.ai/tools/exec-approvals" target="_blank">Exec Approvals</a> · <a class="link" href="https://docs.openclaw.ai/concepts/memory-dreaming" target="_blank">Dreaming</a> · ทั้งหมดมีเวอร์ชันภาษาไทยที่ <a class="link" href="https://docs.openclaw.ai/th" target="_blank">docs.openclaw.ai/th</a></div>
+    </div>
+  </section>
+
+  <div class="pager">
+    <a class="prev" href="#threat"><div class="pl">← Part 5</div><div class="pt">🩺 เทคนิค + แก้ปัญหา</div></a>
+    <a class="next disabled"><div class="pl">จบครบ 6 Part ✓</div><div class="pt">🦞 The lobster way</div></a>
+  </div>
+</main>
+</div>
+
+<script>
+  document.querySelectorAll('.code').forEach(block=>{
+    const btn=block.querySelector('.copy');if(!btn)return;
+    btn.addEventListener('click',()=>{
+      const code=block.querySelector('pre').innerText;
+      navigator.clipboard.writeText(code).then(()=>{
+        const t=btn.textContent;btn.textContent='✓ คัดลอกแล้ว';btn.classList.add('done');
+        setTimeout(()=>{btn.textContent=t;btn.classList.remove('done')},1500);
+      });
+    });
+  });
+  const prog=document.getElementById('progress');
+  window.addEventListener('scroll',()=>{const h=document.documentElement;prog.style.width=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100+'%';});
+  const links=[...document.querySelectorAll('nav a[href^="#"]')];const map={};
+  links.forEach(l=>{const id=l.getAttribute('href').slice(1);const s=document.getElementById(id);if(s)map[id]=l;});
+  const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const l=map[e.target.id];if(l)l.classList.add('active');}});},{rootMargin:'-15% 0px -75% 0px'});
+  Object.keys(map).forEach(id=>{const s=document.getElementById(id);if(s)obs.observe(s);});
+</script>
+</body>
+</html>

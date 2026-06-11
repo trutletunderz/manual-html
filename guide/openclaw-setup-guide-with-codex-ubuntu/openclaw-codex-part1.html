@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw + Codex บน Ubuntu — Part 1: ติดตั้งและเชื่อม Codex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0f12;
+    --bg-soft:#14171c;
+    --bg-card:#171b21;
+    --bg-code:#0a0c0f;
+    --line:#262c34;
+    --line-soft:#1d2229;
+    --text:#e7e9ee;
+    --text-dim:#9aa3b0;
+    --text-faint:#69727f;
+    --claw:#FF5A36;      /* lobster orange */
+    --claw-soft:#ff7a5c;
+    --claw-glow:rgba(255,90,54,.14);
+    --gold:#ffb454;
+    --green:#4ade80;
+    --cyan:#38bdf8;
+    --warn:#fbbf24;
+    --danger:#f87171;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --disp:'Chakra Petch',sans-serif;
+    --body:'IBM Plex Sans Thai',sans-serif;
+    --sb:300px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--body);
+    font-size:16px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 500px at 88% -8%, var(--claw-glow), transparent 60%),
+      radial-gradient(700px 400px at -5% 5%, rgba(56,189,248,.05), transparent 55%);
+    background-attachment:fixed;
+  }
+  /* scrollbar */
+  ::-webkit-scrollbar{width:11px;height:11px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:#2a313a;border-radius:6px;border:2px solid var(--bg)}
+  ::-webkit-scrollbar-thumb:hover{background:#3a434f}
+
+  /* ---------- progress bar ---------- */
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--claw),var(--gold));z-index:100;transition:width .1s linear;box-shadow:0 0 12px var(--claw)}
+
+  /* ---------- layout ---------- */
+  .wrap{display:flex;min-height:100vh}
+  aside{
+    width:var(--sb);flex:0 0 var(--sb);
+    position:sticky;top:0;height:100vh;overflow-y:auto;
+    background:linear-gradient(180deg,#0b0d10,#0e1115);
+    border-right:1px solid var(--line);
+    padding:26px 18px 60px;
+  }
+  main{flex:1;min-width:0;padding:54px clamp(20px,5vw,76px) 120px;max-width:1000px}
+
+  /* ---------- sidebar ---------- */
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+  .brand .logo{font-size:30px;filter:drop-shadow(0 2px 6px var(--claw-glow))}
+  .brand .name{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:.5px}
+  .brand .name b{color:var(--claw)}
+  .brand-sub{font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:0 0 22px 41px;letter-spacing:1px}
+
+  .part-pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--claw);background:var(--claw-glow);border:1px solid rgba(255,90,54,.3);padding:5px 11px;border-radius:30px;margin-bottom:20px;letter-spacing:1px}
+
+  .nav-group{margin-bottom:22px}
+  .nav-group h4{font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;color:var(--text-faint);text-transform:uppercase;margin-bottom:9px;padding-left:10px}
+  nav a{
+    display:flex;align-items:center;gap:9px;
+    color:var(--text-dim);text-decoration:none;
+    font-size:13.5px;padding:7px 11px;border-radius:8px;
+    border-left:2px solid transparent;transition:.15s;
+  }
+  nav a .nx{font-family:var(--mono);font-size:11px;color:var(--text-faint);min-width:20px}
+  nav a:hover{color:var(--text);background:var(--bg-soft)}
+  nav a.active{color:var(--claw-soft);background:var(--claw-glow);border-left-color:var(--claw)}
+  nav a.active .nx{color:var(--claw)}
+
+  .nav-future{margin-top:26px;padding-top:18px;border-top:1px dashed var(--line)}
+  .nav-future .roadmap-item{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-faint);padding:6px 11px}
+  .nav-future .roadmap-item .tag{font-family:var(--mono);font-size:9px;border:1px solid var(--line);border-radius:4px;padding:2px 5px;margin-left:auto}
+  .nav-future .roadmap-item.done .tag{color:var(--green);border-color:rgba(74,222,128,.4)}
+
+  /* ---------- hero ---------- */
+  .hero{margin-bottom:50px}
+  .hero .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--claw);margin-bottom:14px}
+  h1{font-family:var(--disp);font-weight:700;font-size:clamp(30px,5vw,46px);line-height:1.15;letter-spacing:.3px;margin-bottom:16px}
+  h1 .grad{background:linear-gradient(120deg,var(--claw),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:17px;color:var(--text-dim);max-width:65ch}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+  .meta-chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:7px 13px;border-radius:8px}
+  .meta-chip b{color:var(--text)}
+  .meta-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+
+  /* ---------- sections ---------- */
+  section{margin-bottom:58px;scroll-margin-top:30px}
+  h2{font-family:var(--disp);font-weight:700;font-size:27px;letter-spacing:.3px;margin-bottom:8px;display:flex;align-items:baseline;gap:13px}
+  h2 .num{font-family:var(--mono);font-size:15px;color:var(--claw);font-weight:700}
+  .sec-sub{color:var(--text-dim);margin-bottom:24px;font-size:15.5px}
+  h3{font-family:var(--disp);font-weight:600;font-size:18.5px;margin:30px 0 12px;color:var(--text);display:flex;align-items:center;gap:9px}
+  h3::before{content:"";width:5px;height:18px;background:var(--claw);border-radius:3px;display:inline-block}
+  p{margin-bottom:13px;color:var(--text)}
+  p.dim{color:var(--text-dim)}
+  a.link{color:var(--claw-soft);text-decoration:none;border-bottom:1px dashed rgba(255,122,92,.4)}
+  a.link:hover{border-bottom-style:solid}
+  strong{color:#fff;font-weight:600}
+  code.inline{font-family:var(--mono);font-size:13px;background:var(--bg-code);color:var(--gold);padding:2px 7px;border-radius:5px;border:1px solid var(--line-soft)}
+  ul,ol{margin:6px 0 16px 4px;padding-left:22px}
+  li{margin-bottom:8px;color:var(--text)}
+  li::marker{color:var(--claw)}
+  ul.mech li::marker{content:"▸  ";color:var(--claw)}
+
+  /* ---------- code block ---------- */
+  .code{position:relative;margin:16px 0 20px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--bg-code)}
+  .code-head{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .code-head .dots{display:flex;gap:6px}
+  .code-head .dots i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .code-head .dots i:nth-child(1){background:#ff5f57}.code-head .dots i:nth-child(2){background:#febc2e}.code-head .dots i:nth-child(3){background:#28c840}
+  .code-head .title{font-family:var(--mono);font-size:11.5px;color:var(--text-faint);margin-left:6px}
+  .code-head .copy{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:4px 11px;border-radius:6px;cursor:pointer;transition:.15s}
+  .code-head .copy:hover{color:var(--claw-soft);border-color:var(--claw)}
+  .code-head .copy.done{color:var(--green);border-color:rgba(74,222,128,.4)}
+  pre{padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.65}
+  pre code{font-family:var(--mono);white-space:pre}
+  .c-cmd{color:#e7e9ee}
+  .c-flag{color:var(--cyan)}
+  .c-str{color:var(--green)}
+  .c-cmt{color:var(--text-faint);font-style:italic}
+  .c-key{color:var(--claw-soft)}
+  .c-prompt{color:var(--claw);user-select:none}
+
+  /* ---------- callouts ---------- */
+  .callout{display:flex;gap:13px;padding:15px 17px;border-radius:11px;margin:18px 0;border:1px solid var(--line);background:var(--bg-card);font-size:14.5px}
+  .callout .ico{font-size:19px;flex:0 0 auto;line-height:1.4}
+  .callout .body{color:var(--text-dim)}
+  .callout .body b{color:var(--text)}
+  .callout.note{border-color:rgba(56,189,248,.32);background:rgba(56,189,248,.06)}
+  .callout.note .ico{color:var(--cyan)}
+  .callout.warn{border-color:rgba(251,191,36,.34);background:rgba(251,191,36,.06)}
+  .callout.warn .ico{color:var(--warn)}
+  .callout.pit{border-color:rgba(248,113,113,.34);background:rgba(248,113,113,.06)}
+  .callout.pit .ico{color:var(--danger)}
+  .callout.tip{border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.05)}
+  .callout.tip .ico{color:var(--green)}
+
+  /* ---------- concept cards ---------- */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:20px 0}
+  .card{background:var(--bg-card);border:1px solid var(--line);border-radius:13px;padding:18px;transition:.18s}
+  .card:hover{border-color:rgba(255,90,54,.4);transform:translateY(-2px)}
+  .card .ci{font-size:24px;margin-bottom:10px}
+  .card h5{font-family:var(--disp);font-weight:600;font-size:16px;margin-bottom:6px;color:#fff}
+  .card p{font-size:13.5px;color:var(--text-dim);margin:0}
+  .card .lbl{font-family:var(--mono);font-size:10.5px;color:var(--claw);letter-spacing:1px}
+
+  /* ---------- layer diagram ---------- */
+  .layers{margin:22px 0}
+  .layer{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;margin-bottom:9px;background:var(--bg-card);position:relative;overflow:hidden}
+  .layer::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--claw)}
+  .layer .ltag{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--claw);min-width:96px;letter-spacing:.5px}
+  .layer .ltxt{font-size:14px;color:var(--text-dim)}
+  .layer .ltxt b{color:var(--text)}
+  .layer.l2::before{background:var(--gold)}.layer.l2 .ltag{color:var(--gold)}
+  .layer.l3::before{background:var(--cyan)}.layer.l3 .ltag{color:var(--cyan)}
+  .layer.l4::before{background:var(--green)}.layer.l4 .ltag{color:var(--green)}
+
+  /* ---------- steps ---------- */
+  .step{display:flex;gap:16px;margin-bottom:8px}
+  .step .sn{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--claw-glow);border:1px solid rgba(255,90,54,.4);color:var(--claw);font-family:var(--mono);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .step .sc{flex:1;min-width:0;padding-top:2px}
+
+  /* ---------- table ---------- */
+  .tbl{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .tbl th{background:var(--bg-soft);text-align:left;padding:11px 14px;font-family:var(--mono);font-size:12px;color:var(--claw);letter-spacing:.5px;border-bottom:1px solid var(--line)}
+  .tbl td{padding:11px 14px;border-bottom:1px solid var(--line-soft);color:var(--text-dim);vertical-align:top}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl td code{font-family:var(--mono);font-size:12.5px;color:var(--gold);white-space:nowrap}
+  .tbl td b{color:var(--text)}
+
+  /* ---------- footer nav ---------- */
+  .pager{display:flex;gap:14px;margin-top:60px;padding-top:28px;border-top:1px solid var(--line)}
+  .pager a{flex:1;text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--bg-card);transition:.18s}
+  .pager a:hover{border-color:var(--claw);background:var(--claw-glow)}
+  .pager .pl{font-family:var(--mono);font-size:11px;color:var(--text-faint);letter-spacing:1px}
+  .pager .pt{font-family:var(--disp);font-weight:600;font-size:16px;color:var(--text);margin-top:5px}
+  .pager a.next{text-align:right}
+  .pager a.disabled{opacity:.4;pointer-events:none}
+
+  .mobile-bar{display:none}
+  @media(max-width:880px){
+    aside{display:none}
+    main{padding:24px 18px 80px}
+    .mobile-bar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;background:rgba(13,15,18,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:13px 16px;margin:-24px -18px 24px}
+    .mobile-bar .logo{font-size:22px}
+    .mobile-bar .nm{font-family:var(--disp);font-weight:700;font-size:16px}
+    .mobile-bar .nm b{color:var(--claw)}
+    .pager{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="wrap">
+
+<!-- ============ SIDEBAR ============ -->
+<aside>
+  <div class="brand">
+    <span class="logo">🦞</span>
+    <span class="name">Open<b>Claw</b></span>
+  </div>
+  <div class="brand-sub">× CODEX · UBUNTU GUIDE</div>
+
+  <div class="part-pill">● PART 1 / 4 — FOUNDATION</div>
+
+  <nav>
+    <div class="nav-group">
+      <h4>ทำความเข้าใจก่อน</h4>
+      <a href="#intro"><span class="nx">00</span> OpenClaw คืออะไร</a>
+      <a href="#arch"><span class="nx">01</span> สถาปัตยกรรม 4 ชั้น</a>
+    </div>
+    <div class="nav-group">
+      <h4>ติดตั้งบน Ubuntu</h4>
+      <a href="#req"><span class="nx">02</span> ข้อกำหนดระบบ</a>
+      <a href="#node"><span class="nx">03</span> เตรียม Ubuntu + Node 24</a>
+      <a href="#install"><span class="nx">04</span> ติดตั้ง OpenClaw</a>
+      <a href="#onboard"><span class="nx">05</span> Onboarding + Daemon</a>
+      <a href="#verify"><span class="nx">06</span> ตรวจสอบการติดตั้ง</a>
+      <a href="#gateway"><span class="nx">07</span> จัดการ Gateway</a>
+    </div>
+    <div class="nav-group">
+      <h4>เชื่อมต่อ Codex</h4>
+      <a href="#codex-concept"><span class="nx">08</span> Provider vs Runtime</a>
+      <a href="#codex-auth"><span class="nx">09</span> Login Codex</a>
+      <a href="#codex-config"><span class="nx">10</span> ตั้งค่า model</a>
+      <a href="#codex-test"><span class="nx">11</span> ทดสอบ Codex</a>
+    </div>
+    <div class="nav-group">
+      <h4>ดูแลรักษา</h4>
+      <a href="#update"><span class="nx">12</span> อัปเดต / ช่องทาง</a>
+      <a href="#trouble"><span class="nx">13</span> แก้ปัญหาเบื้องต้น</a>
+    </div>
+
+    <div class="nav-future">
+      <div class="roadmap-item done"><span>🦞</span> Part 1 — ติดตั้ง + Codex <span class="tag">ตอนนี้</span></div>
+      <div class="roadmap-item"><span>✈️</span> Part 2 — Telegram <span class="tag">ถัดไป</span></div>
+      <div class="roadmap-item"><span>🎮</span> Part 3 — Discord <span class="tag">รอ</span></div>
+      <div class="roadmap-item"><span>⚡</span> Part 4 — คำสั่ง + ขั้นสูง <span class="tag">รอ</span></div>
+    </div>
+  </nav>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<main>
+  <div class="mobile-bar">
+    <span class="logo">🦞</span><span class="nm">Open<b>Claw</b> × Codex</span>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="eyebrow">คู่มือฉบับลงมือทำ · เริ่มต้น → ขั้นสูง</div>
+    <h1>ติดตั้ง <span class="grad">OpenClaw</span> บน Ubuntu<br>แล้วขับเคลื่อนด้วย <span class="grad">Codex</span></h1>
+    <p class="lead">
+      OpenClaw คือ AI agent ที่ "อยู่ประจำ" บนเครื่องของคุณ และคุยกับมันผ่านแชต (Telegram / Discord) ได้เหมือนคุยกับคน
+      Part 1 นี้จะพาตั้งแต่ติดตั้งบน Ubuntu จนเชื่อมสมองของมันเข้ากับ Codex ของ OpenAI — อธิบายทุกคำสั่ง ไม่ข้าม
+    </p>
+    <div class="meta-row">
+      <span class="meta-chip"><span class="dot"></span> เวอร์ชันล่าสุด <b>2026.6.x</b></span>
+      <span class="meta-chip">🖥️ <b>Ubuntu</b> 22.04 / 24.04</span>
+      <span class="meta-chip">⚙️ Runtime <b>Node 24</b></span>
+      <span class="meta-chip">🧠 Engine <b>Codex (GPT-5.5)</b></span>
+    </div>
+  </div>
+
+  <!-- 00 INTRO -->
+  <section id="intro">
+    <h2><span class="num">00</span> OpenClaw คืออะไร (และทำไมต้อง Codex)</h2>
+    <p class="sec-sub">ก่อนพิมพ์คำสั่งแรก เข้าใจภาพรวมก่อน จะได้ไม่งงว่ากำลังตั้งค่าอะไรอยู่</p>
+
+    <p>
+      <strong>OpenClaw</strong> เป็น open-source autonomous AI agent (License MIT) เดิมชื่อ Warelay → Clawdbot → Moltbot
+      และถูก OpenAI เข้าซื้อช่วงต้นปี 2026 จุดเด่นที่ต่างจาก chatbot ทั่วไปคือมันเป็น <strong>"messaging-first agent"</strong> —
+      แทนที่จะเปิดหน้าเว็บคุย คุณส่งข้อความหามันผ่าน Telegram, Discord, Slack ฯลฯ แล้วมันลงมือทำงานจริง (เรียก tool, รันคำสั่ง, จำ context ข้ามรอบได้)
+    </p>
+    <p class="dim">
+      ต่างจาก chatbot ตรงที่ agent มี <em>state</em> — มันจำได้ว่าเมื่อสองสเต็ปก่อนลองทำอะไรไป และทำไมถึงพลาด แล้ววนลูป
+      สังเกต → คิด → ลงมือ (เรียกเครื่องมือ) → ดูผล ไปเรื่อย ๆ จนงานเสร็จ
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="ci">🦞</div>
+        <div class="lbl">CORE</div>
+        <h5>Gateway</h5>
+        <p>โปรเซสหลักที่รันค้างไว้ตลอด คอยรับข้อความจากทุก channel แล้วส่งให้ agent</p>
+      </div>
+      <div class="card">
+        <div class="ci">💬</div>
+        <div class="lbl">FRONT-END</div>
+        <h5>Channels</h5>
+        <p>หน้าจอที่คุณใช้คุย: Telegram, Discord, Slack, WhatsApp, iMessage</p>
+      </div>
+      <div class="card">
+        <div class="ci">🧠</div>
+        <div class="lbl">BRAIN</div>
+        <h5>Model + Runtime</h5>
+        <p>สมองที่คิด — ในคู่มือนี้คือ Codex (GPT-5.5) ผ่าน Codex harness</p>
+      </div>
+      <div class="card">
+        <div class="ci">🧩</div>
+        <div class="lbl">PLUGINS</div>
+        <h5>AgentSkills</h5>
+        <p>ปลั๊กอินเสริมความสามารถ มีกว่า 100 ตัวจากชุมชนผ่าน ClawHub</p>
+      </div>
+    </div>
+
+    <div class="callout note">
+      <span class="ico">📖</span>
+      <div class="body"><b>เอกสารทางการมีภาษาไทย</b> — ถ้าอยากอ่านต้นฉบับเพิ่ม เปิด
+        <a class="link" href="https://docs.openclaw.ai/th/install" target="_blank">docs.openclaw.ai/th/install</a>
+        ส่วน repo อยู่ที่ <a class="link" href="https://github.com/openclaw/openclaw" target="_blank">github.com/openclaw/openclaw</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 01 ARCH -->
+  <section id="arch">
+    <h2><span class="num">01</span> สถาปัตยกรรม 4 ชั้น ที่ต้องแยกให้ออก</h2>
+    <p class="sec-sub">เอกสารทางการเตือนเองว่า "Provider, Model, Runtime, Channel เป็นคนละชั้นกัน" — คนตั้งค่าพังเพราะสับสน 4 คำนี้บ่อยที่สุด</p>
+
+    <div class="layers">
+      <div class="layer">
+        <span class="ltag">CHANNEL</span>
+        <span class="ltxt"><b>คุณคุยผ่านอะไร</b> — Telegram / Discord / CLI · เป็นแค่ "ปาก-หู" ไม่เกี่ยวกับสมอง</span>
+      </div>
+      <div class="layer l2">
+        <span class="ltag">PROVIDER</span>
+        <span class="ltxt"><b>เจ้าของโมเดล</b> — <code class="inline">openai</code>, <code class="inline">anthropic</code>, <code class="inline">google</code> · ใช้คุมเรื่อง auth/บัญชี</span>
+      </div>
+      <div class="layer l3">
+        <span class="ltag">MODEL</span>
+        <span class="ltxt"><b>โมเดลตัวไหน</b> — เขียนเป็น <code class="inline">provider/model</code> เช่น <code class="inline">openai/gpt-5.5</code></span>
+      </div>
+      <div class="layer l4">
+        <span class="ltag">RUNTIME</span>
+        <span class="ltxt"><b>รันลูป agent ด้วยอะไร</b> — <code class="inline">codex</code> harness / <code class="inline">claude-cli</code> / built-in <code class="inline">openclaw</code></span>
+      </div>
+    </div>
+
+    <p>
+      ประเด็นสำคัญสำหรับคู่มือนี้: เราจะเลือก <strong>Model = <code class="inline">openai/gpt-5.5</code></strong>
+      แล้วบอกให้ <strong>Runtime = Codex harness</strong> เป็นคนรันลูป งานนี้ OpenClaw ตั้งให้อัตโนมัติอยู่แล้ว —
+      ถ้าใช้ OpenAI model มันจะเลือก Codex runtime ให้เองโดยไม่ต้องตั้งอะไรเพิ่ม (เดี๋ยวลงรายละเอียดในข้อ 08)
+    </p>
+    <div class="callout tip">
+      <span class="ico">💡</span>
+      <div class="body"><b>คำว่า "harness"</b> ที่จะเจอบ่อย = ตัว implement ของ runtime · "Codex harness" ก็คือโค้ดที่ทำให้ <code class="inline">codex</code> runtime ทำงานได้นั่นเอง</div>
+    </div>
+  </section>
+
+  <!-- 02 REQ -->
+  <section id="req">
+    <h2><span class="num">02</span> ข้อกำหนดระบบ</h2>
+    <p class="sec-sub">เช็กให้ครบก่อน จะได้ไม่ติดกลางทาง</p>
+    <table class="tbl">
+      <tr><th>รายการ</th><th>ที่ต้องมี</th><th>หมายเหตุ</th></tr>
+      <tr><td><b>OS</b></td><td>Ubuntu 22.04 / 24.04 (หรือ WSL2)</td><td>คู่มือนี้อิง Ubuntu โดยตรง</td></tr>
+      <tr><td><b>Runtime</b></td><td><code>Node 24</code> (แนะนำ) หรือ <code>22.19+</code></td><td>installer script ลงให้อัตโนมัติ</td></tr>
+      <tr><td><b>สิทธิ์</b></td><td>ผู้ใช้ที่ <code>sudo</code> ได้</td><td>ไม่จำเป็นต้องเป็น root</td></tr>
+      <tr><td><b>บัญชี Codex</b></td><td>ChatGPT/Codex subscription หรือ OpenAI API key</td><td>เลือกอย่างใดอย่างหนึ่ง (ข้อ 09)</td></tr>
+      <tr><td><b>เครือข่าย</b></td><td>ออกเน็ตได้ (outbound)</td><td>ไม่ต้องเปิด public IP / webhook</td></tr>
+    </table>
+    <div class="callout note">
+      <span class="ico">🖥️</span>
+      <div class="body">ถ้าจะให้ agent ออนไลน์ <b>24 ชม.</b> แนะนำลงบน VPS เล็ก ๆ (เช่น Vultr/DigitalOcean) แทนเครื่องตั้งโต๊ะที่ปิด ๆ เปิด ๆ — ขั้นตอนติดตั้งเหมือนกันทุกประการ</div>
+    </div>
+  </section>
+
+  <!-- 03 NODE -->
+  <section id="node">
+    <h2><span class="num">03</span> เตรียม Ubuntu + ติดตั้ง Node 24</h2>
+    <p class="sec-sub">ถ้าใช้ installer script (ข้อ 04 วิธี A) ขั้นนี้ "ข้ามได้" เพราะ script ลง Node ให้เอง — แต่ถ้าอยากคุม Node เองหรือจะลงด้วย npm ให้ทำตามนี้</p>
+
+    <h3>3.1 อัปเดตระบบ + ลงเครื่องมือพื้นฐาน</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — เตรียมระบบ</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">sudo apt update && sudo apt upgrade -y</span>
+<span class="c-prompt">$ </span><span class="c-cmd">sudo apt install -y curl git build-essential</span></code></pre>
+    </div>
+    <ul class="mech">
+      <li><code class="inline">apt update</code> ดึงรายการแพ็กเกจล่าสุด · <code class="inline">apt upgrade -y</code> อัปเกรดของเดิม (<code class="inline">-y</code> = ตอบ yes อัตโนมัติ)</li>
+      <li><code class="inline">curl</code> ไว้ดึง installer · <code class="inline">git</code> ไว้กรณีลงจาก source · <code class="inline">build-essential</code> ให้ native module ของ Node คอมไพล์ได้</li>
+    </ul>
+
+    <h3>3.2 ติดตั้ง Node 24 ผ่าน NodeSource</h3>
+    <p class="dim">วิธีนี้ได้ Node เวอร์ชันใหม่กว่าที่มากับ Ubuntu (ของ apt มักเก่าเกินไป)</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — ติดตั้ง Node 24</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -</span>
+<span class="c-prompt">$ </span><span class="c-cmd">sudo apt install -y nodejs</span></code></pre>
+    </div>
+    <ul class="mech">
+      <li><code class="inline">-fsSL</code> = fail เงียบ ๆ ถ้า error (<code class="inline">f</code>), เงียบ (<code class="inline">s</code>), โชว์ error จริง (<code class="inline">S</code>), ตาม redirect (<code class="inline">L</code>)</li>
+      <li>สคริปต์ <code class="inline">setup_24.x</code> เพิ่ม repo ของ Node 24 เข้า apt · <code class="inline">sudo -E</code> ส่งต่อ environment เดิมเข้าไปด้วย</li>
+    </ul>
+
+    <h3>3.3 ยืนยันเวอร์ชัน</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — verify</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">node -v</span>   <span class="c-cmt"># ควรขึ้น v24.x.x</span>
+<span class="c-prompt">$ </span><span class="c-cmd">npm -v</span>    <span class="c-cmt"># npm มาพร้อม Node</span></code></pre>
+    </div>
+    <div class="callout pit">
+      <span class="ico">⚠️</span>
+      <div class="body"><b>กับดักที่เจอบ่อย:</b> ถ้าเคยลง Node เวอร์ชันเก่าจาก <code class="inline">apt install nodejs</code> มาก่อน อาจชนกัน ให้ <code class="inline">sudo apt remove nodejs npm</code> ก่อน แล้วค่อยลงใหม่ตาม 3.2</div>
+    </div>
+  </section>
+
+  <!-- 04 INSTALL -->
+  <section id="install">
+    <h2><span class="num">04</span> ติดตั้ง OpenClaw</h2>
+    <p class="sec-sub">มี 2 วิธีหลัก เลือกอย่างใดอย่างหนึ่ง — มือใหม่แนะนำวิธี A</p>
+
+    <h3>วิธี A — Installer Script (แนะนำ)</h3>
+    <p>วิธีเร็วสุด สคริปต์จะ detect OS, ลง Node ให้ถ้ายังไม่มี, ลง OpenClaw แล้วเปิด onboarding ต่อให้เลย</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — one-liner</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">curl -fsSL https://openclaw.ai/install.sh | bash</span></code></pre>
+    </div>
+    <p class="dim">ถ้าอยากลงเฉย ๆ <em>ยังไม่</em>ให้เปิด onboarding (จะตั้งค่าทีหลังเอง) ใส่ flag นี้:</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — ลงแต่ยังไม่ onboard</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">curl -fsSL https://openclaw.ai/install.sh | bash -s -- <span class="c-flag">--no-onboard</span></span></code></pre>
+    </div>
+
+    <h3>วิธี B — npm (เมื่อคุณคุม Node เอง)</h3>
+    <p>ถ้าทำข้อ 3 ลง Node 24 ไว้แล้ว ใช้วิธีนี้ตรง ๆ ได้:</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — npm global</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">npm install -g openclaw@latest</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw onboard <span class="c-flag">--install-daemon</span></span></code></pre>
+    </div>
+    <ul class="mech">
+      <li><code class="inline">-g</code> = ลงแบบ global (เรียก <code class="inline">openclaw</code> ได้จากทุกที่)</li>
+      <li><code class="inline">@latest</code> = บังคับเอาเวอร์ชันล่าสุดเสมอ ✅ ตรงตามที่ต้องการ</li>
+      <li><code class="inline">--install-daemon</code> = สั่งให้ติดตั้ง <b>systemd user service</b> เพื่อให้ Gateway รันค้างเอง (รายละเอียดข้อ 05)</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="ico">🔧</span>
+      <div class="body"><b>เจอ "openclaw: command not found"?</b> มักเป็นเพราะ path ของ npm global ไม่อยู่ใน <code class="inline">$PATH</code> — แก้ด้วยการเพิ่มบรรทัดนี้ลงท้าย <code class="inline">~/.bashrc</code> แล้วเปิด terminal ใหม่:
+        <div class="code" style="margin-top:10px">
+          <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.bashrc</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">export PATH=</span><span class="c-str">"$(npm prefix -g)/bin:$PATH"</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 ONBOARD -->
+  <section id="onboard">
+    <h2><span class="num">05</span> Onboarding + ตั้ง Daemon ให้รันค้าง</h2>
+    <p class="sec-sub">ขั้นนี้คือการ "ตั้งบ้าน" ให้ OpenClaw — สร้าง config และลงตัวรันเบื้องหลัง</p>
+
+    <p>คำสั่ง onboarding จะถามตอบเป็นขั้น ๆ (เลือก provider, สร้าง config ที่ <code class="inline">~/.openclaw/</code>):</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — onboarding</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw onboard <span class="c-flag">--install-daemon</span></span></code></pre>
+    </div>
+
+    <h3>เกิดอะไรขึ้นบ้างหลังรันคำสั่งนี้</h3>
+    <ul class="mech">
+      <li>สร้างโฟลเดอร์สถานะทั้งหมดที่ <code class="inline">~/.openclaw/</code> — เก็บ config, credentials, workspace, sessions</li>
+      <li>ไฟล์ตั้งค่าหลักคือ <code class="inline">~/.openclaw/openclaw.json</code> (เราจะแก้ไฟล์นี้บ่อยใน Part ถัด ๆ ไป)</li>
+      <li>ลง <b>systemd user service</b> ให้ Gateway รันค้างและ <em>กลับมาเองหลัง reboot</em></li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="ico">🔌</span>
+      <div class="body"><b>สำคัญมากบน VPS / server:</b> systemd "user service" ปกติจะหยุดเมื่อคุณ logout ออกจาก SSH ให้เปิด "linger" เพื่อให้มันรันต่อแม้ไม่มีใคร login:
+        <div class="code" style="margin-top:10px">
+          <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — ให้รันต่อหลัง logout</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">loginctl enable-linger $USER</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 VERIFY -->
+  <section id="verify">
+    <h2><span class="num">06</span> ตรวจสอบการติดตั้ง</h2>
+    <p class="sec-sub">3 คำสั่งทองที่ควรจำขึ้นใจ — ใช้เช็กสุขภาพระบบทุกครั้งที่สงสัย</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — health check</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw --version</span>        <span class="c-cmt"># ยืนยันว่า CLI ใช้ได้ + เวอร์ชันอะไร</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw doctor</span>           <span class="c-cmt"># สแกนหาปัญหา config / สิ่งที่ต้องแก้</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw gateway status</span>   <span class="c-cmt"># Gateway รันอยู่จริงไหม</span></code></pre>
+    </div>
+    <table class="tbl">
+      <tr><th>คำสั่ง</th><th>ดูอะไร</th></tr>
+      <tr><td><code>openclaw --version</code></td><td>เห็นเลขเวอร์ชัน = CLI ติดตั้งสำเร็จ ควรเป็นสาย <b>2026.6.x</b> ขึ้นไป</td></tr>
+      <tr><td><code>openclaw doctor</code></td><td>ตัวช่วยวินิจฉัย ถ้าเจอ legacy config มันจะบอก · มี <code>--fix</code> ให้แก้อัตโนมัติ (ใช้บ่อยในข้อ 10)</td></tr>
+      <tr><td><code>openclaw gateway status</code></td><td>บอกว่า Gateway ทำงานหรือไม่ + service name ที่ระบบใช้</td></tr>
+    </table>
+    <div class="callout tip">
+      <span class="ico">🩺</span>
+      <div class="body">ติดอะไรเมื่อไหร่ ให้รัน <code class="inline">openclaw doctor</code> เป็นอย่างแรกเสมอ — มันมักบอกตรง ๆ ว่าพังตรงไหนและสั่งแก้ยังไง</div>
+    </div>
+  </section>
+
+  <!-- 07 GATEWAY -->
+  <section id="gateway">
+    <h2><span class="num">07</span> จัดการ Gateway (หัวใจของระบบ)</h2>
+    <p class="sec-sub">Gateway = โปรเซสที่ต้องรันค้างไว้ ถ้ามันตาย = agent ไม่ตอบ ทุก channel เงียบหมด</p>
+
+    <h3>คำสั่งจัดการผ่าน OpenClaw เอง (แนะนำ)</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — gateway control</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw gateway</span>           <span class="c-cmt"># รัน Gateway แบบ foreground (เห็น log สด ๆ — ดีตอน debug)</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw gateway status</span>    <span class="c-cmt"># เช็กสถานะ</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw gateway restart</span>   <span class="c-cmt"># รีสตาร์ท (ใช้ทุกครั้งหลังแก้ config)</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw gateway install</span>   <span class="c-cmt"># ลง daemon ภายหลัง (ถ้าตอน onboard ไม่ได้ลง)</span></code></pre>
+    </div>
+
+    <h3>ดู log</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — logs</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw logs <span class="c-flag">--follow</span></span>     <span class="c-cmt"># ตาม log แบบ real-time (Ctrl+C เพื่อออก)</span></code></pre>
+    </div>
+
+    <h3>หรือคุมผ่าน systemd โดยตรง</h3>
+    <p class="dim">เพราะ daemon ลงเป็น systemd <b>user</b> service จึงต้องมี <code class="inline">--user</code> เสมอ (ชื่อ service ดูได้จาก <code class="inline">openclaw gateway status</code>):</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — systemctl --user</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">systemctl <span class="c-flag">--user</span> status openclaw</span>
+<span class="c-prompt">$ </span><span class="c-cmd">systemctl <span class="c-flag">--user</span> restart openclaw</span>
+<span class="c-prompt">$ </span><span class="c-cmd">journalctl <span class="c-flag">--user</span> -u openclaw -f</span>   <span class="c-cmt"># ดู log ผ่าน journald</span></code></pre>
+    </div>
+    <div class="callout pit">
+      <span class="ico">🔁</span>
+      <div class="body"><b>กฎเหล็ก:</b> แก้ <code class="inline">openclaw.json</code> เสร็จ <u>ต้อง restart Gateway เสมอ</u> ไม่งั้น config ใหม่ไม่ถูกโหลด — อาการคือ "ตั้งค่าแล้วแต่ไม่มีอะไรเปลี่ยน"</div>
+    </div>
+  </section>
+
+  <!-- 08 CODEX CONCEPT -->
+  <section id="codex-concept">
+    <h2><span class="num">08</span> เชื่อม Codex: เข้าใจก่อนตั้งค่า</h2>
+    <p class="sec-sub">ตรงนี้คือหัวใจของคู่มือ — อ่านช้า ๆ จะตั้งค่าได้ถูกตั้งแต่ครั้งแรก</p>
+
+    <p>OpenClaw ใช้ provider id เดียวคือ <code class="inline">openai</code> สำหรับ "ทุกแบบของ OpenAI" ไม่ว่าจะ login แบบ ChatGPT/Codex subscription หรือใช้ API key ตรง ๆ แล้วแยกการตัดสินใจออกเป็นชั้น ๆ:</p>
+
+    <ul class="mech">
+      <li><strong>Model ref ที่ใช้</strong> คือ <code class="inline">openai/gpt-5.5</code> (เขียนแบบนี้เสมอ ทั้งกรณี subscription และ API key)</li>
+      <li>เมื่อ agent รันด้วย OpenAI model มันจะ <strong>เลือก Codex runtime ให้อัตโนมัติ</strong> (ถ้าไม่ตั้ง runtime override) — นี่คือ "native Codex app-server harness"</li>
+      <li>Codex harness ต้องมี <b>bundled Codex plugin</b> ซึ่ง OpenClaw เปิดให้เองเมื่อเจอ ref ที่ขึ้นต้นด้วย <code class="inline">openai/*</code></li>
+    </ul>
+
+    <div class="callout note">
+      <span class="ico">🧭</span>
+      <div class="body"><b>เลือก auth ยังไง?</b><br>
+        • มี <b>ChatGPT/Codex subscription</b> อยู่แล้ว → login แบบ OAuth (จ่ายเหมารายเดือน ไม่คิดตาม token) — ข้อ 09 วิธี 1<br>
+        • อยากจ่ายตามการใช้งานจริง → ใช้ <b>OpenAI API key</b> — ข้อ 09 วิธี 2
+      </div>
+    </div>
+    <div class="callout warn">
+      <span class="ico">🗂️</span>
+      <div class="body"><b>เลิกใช้ของเก่า:</b> ถ้าเคยเห็น config เขียน <code class="inline">codex/&lt;model&gt;</code> แบบเก่า — มันคือ legacy แล้ว · รัน <code class="inline">openclaw doctor --fix</code> เพื่อแปลงเป็น <code class="inline">openai/*</code> ให้อัตโนมัติ</div>
+    </div>
+  </section>
+
+  <!-- 09 CODEX AUTH -->
+  <section id="codex-auth">
+    <h2><span class="num">09</span> Login เข้า Codex</h2>
+    <p class="sec-sub">เลือกวิธีเดียวตามชนิดบัญชีของคุณ</p>
+
+    <h3>วิธี 1 — ChatGPT / Codex subscription (OAuth)</h3>
+    <p>ทำตอน onboard ได้เลย หรือสั่งทีหลังก็ได้:</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — Codex OAuth login</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmt"># แบบทำตอน onboard:</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw onboard <span class="c-flag">--auth-choice</span> openai-codex</span>
+
+<span class="c-cmt"># หรือ login เพิ่มทีหลัง:</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw models auth login <span class="c-flag">--provider</span> openai-codex</span></code></pre>
+    </div>
+    <ul class="mech">
+      <li>จะมีลิงก์ให้เปิด browser แล้ว sign in ด้วยบัญชี ChatGPT — เหมือนตอน login Codex CLI ทั่วไป</li>
+      <li>ถ้าเครื่องนี้เคย <code class="inline">codex login</code> (Codex CLI) ไว้แล้ว OpenClaw จะ reuse บัญชีเดิมได้เลย</li>
+    </ul>
+
+    <h3>วิธี 2 — OpenAI API key (จ่ายตามใช้)</h3>
+    <p>ตั้ง environment variable ให้ Gateway เห็น key (วางใน <code class="inline">~/.bashrc</code> หรือไฟล์ env ของ service):</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — API key</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">export OPENAI_API_KEY=</span><span class="c-str">"sk-..."</span></code></pre>
+    </div>
+    <div class="callout pit">
+      <span class="ico">🔐</span>
+      <div class="body"><b>อย่าวาง API key / token ลงในไฟล์ที่ agent อ่านได้</b> เช่น workspace file — เก็บไว้ใน env หรือ credential store เท่านั้น และถ้าหลุดให้ revoke + หมุน key ใหม่ทันที</div>
+    </div>
+  </section>
+
+  <!-- 10 CODEX CONFIG -->
+  <section id="codex-config">
+    <h2><span class="num">10</span> ตั้งค่าโมเดลให้เป็น Codex (GPT-5.5)</h2>
+    <p class="sec-sub">บอก OpenClaw ว่า agent หลักให้ใช้ <code class="inline">openai/gpt-5.5</code></p>
+
+    <h3>วิธีเร็ว — สั่งผ่าน CLI</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — set default model</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw config set agents.defaults.model <span class="c-str">'"openai/gpt-5.5"'</span> <span class="c-flag">--json</span></span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw gateway restart</span></code></pre>
+    </div>
+    <p class="dim">แค่นี้ก็พอ — เพราะ OpenAI model จะเลือก Codex runtime ให้เองโดยอัตโนมัติ</p>
+
+    <h3>วิธีชัดเจน — เขียนใน <code style="font-size:.8em">openclaw.json</code> เอง</h3>
+    <p>เปิดไฟล์ด้วย editor (เช่น <code class="inline">nano ~/.openclaw/openclaw.json</code>) แล้วใส่โครงนี้ ถ้าอยาก "ปักหมุด" runtime ให้ชัด:</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json (JSON5)</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span>
+  <span class="c-key">models</span>: {
+    <span class="c-key">providers</span>: {
+      <span class="c-key">openai</span>: {
+        <span class="c-key">agentRuntime</span>: { <span class="c-key">id</span>: <span class="c-str">"codex"</span> }   <span class="c-cmt">// บังคับใช้ Codex harness</span>
+      }
+    }
+  },
+  <span class="c-key">agents</span>: {
+    <span class="c-key">defaults</span>: {
+      <span class="c-key">model</span>: <span class="c-str">"openai/gpt-5.5"</span>            <span class="c-cmt">// สมองหลักของ agent</span>
+    }
+  }
+<span class="c-cmd">}</span></code></pre>
+    </div>
+    <ul class="mech">
+      <li><code class="inline">agents.defaults.model</code> = โมเดลเริ่มต้นของทุก agent ที่ไม่ได้ระบุเอง</li>
+      <li><code class="inline">models.providers.openai.agentRuntime.id: "codex"</code> = สั่งชัด ๆ ว่า turn ของ OpenAI ให้รันผ่าน Codex harness</li>
+      <li>ถ้าระบุ <code class="inline">"codex"</code> ตรง ๆ แล้ว harness ใช้ไม่ได้ มันจะ <b>fail closed</b> (ไม่แอบสลับไปตัวอื่น) — เห็น error ชัดดีกว่าเงียบ ๆ</li>
+    </ul>
+    <div class="callout warn">
+      <span class="ico">🚫</span>
+      <div class="body"><b>เจอ "Model provider/model is not allowed"?</b> แปลว่าโมเดลยังไม่อยู่ใน allowlist · เพิ่มด้วย:
+        <div class="code" style="margin-top:10px">
+          <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw config set agents.defaults.models <span class="c-str">'{"openai/gpt-5.5":{}}'</span> <span class="c-flag">--strict-json --merge</span></span></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 CODEX TEST -->
+  <section id="codex-test">
+    <h2><span class="num">11</span> ทดสอบว่า Codex ทำงาน</h2>
+    <p class="sec-sub">ก่อนต่อ channel จริง ลองคุยกับ agent ผ่าน CLI ให้ชัวร์ว่าสมองเชื่อมแล้ว</p>
+
+    <h3>เช็กรายชื่อโมเดล + สถานะ</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — models</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw models status</span>     <span class="c-cmt"># ดูว่าตอนนี้ใช้ provider/model/runtime อะไร</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw models openai</span>     <span class="c-cmt"># ลิสต์โมเดลของ openai ที่เลือกได้</span></code></pre>
+    </div>
+
+    <h3>คุยกับ agent ผ่าน CLI</h3>
+    <p>ถ้าเห็นมันตอบกลับมาเป็นข้อความ = Gateway + Codex + agent ครบลูปแล้ว 🎉</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — chat ทดสอบ</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw chat</span>
+<span class="c-cmt"># แล้วพิมพ์: สวัสดี ช่วยบอกหน่อยว่าตอนนี้ใช้โมเดลอะไร</span></code></pre>
+    </div>
+    <div class="callout tip">
+      <span class="ico">✅</span>
+      <div class="body"><b>ผ่านแล้ว!</b> ตอนนี้คุณมี OpenClaw ที่ติดตั้งครบ + สมอง Codex พร้อมใช้งาน เหลือแค่ต่อ "ปาก-หู" ให้มัน — นั่นคือ Telegram / Discord ใน Part ถัดไป</div>
+    </div>
+  </section>
+
+  <!-- 12 UPDATE -->
+  <section id="update">
+    <h2><span class="num">12</span> อัปเดต & ช่องทางเวอร์ชัน</h2>
+    <p class="sec-sub">เน้นใช้เวอร์ชันล่าสุด → จำคำสั่งชุดนี้ไว้</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — update</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw update</span>                  <span class="c-cmt"># วิธีเร็วสุด: detect ชนิดติดตั้ง, ดึงล่าสุด, รัน doctor, รีสตาร์ท Gateway</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw update <span class="c-flag">--dry-run</span></span>        <span class="c-cmt"># ดูว่ามันจะทำอะไรบ้าง โดยยังไม่ลงมือจริง</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw update status <span class="c-flag">--json</span></span>    <span class="c-cmt"># เช็ก channel + เวอร์ชันที่มี</span></code></pre>
+    </div>
+    <table class="tbl">
+      <tr><th>Channel</th><th>คำสั่ง</th><th>เหมาะกับ</th></tr>
+      <tr><td><b>stable</b></td><td><code>openclaw update --channel stable</code></td><td>ใช้งานจริง — นิ่งที่สุด (ค่าเริ่มต้น)</td></tr>
+      <tr><td><b>beta</b></td><td><code>openclaw update --channel beta</code></td><td>อยากลองของใหม่ก่อน แต่ยังพอเสถียร</td></tr>
+      <tr><td><b>dev</b></td><td><code>openclaw update --channel dev</code></td><td>สาย bleeding-edge: สลับเป็น git checkout ที่ตาม <code>main</code></td></tr>
+    </table>
+    <div class="callout note">
+      <span class="ico">💾</span>
+      <div class="body">การ update <b>ไม่ยุ่ง</b>กับ config, credentials, workspace ของคุณใน <code class="inline">~/.openclaw</code> — เปลี่ยนแค่ตัวโค้ด OpenClaw เท่านั้น</div>
+    </div>
+  </section>
+
+  <!-- 13 TROUBLE -->
+  <section id="trouble">
+    <h2><span class="num">13</span> แก้ปัญหาเบื้องต้น</h2>
+    <p class="sec-sub">เช็กลิสต์ไล่ทีละข้อเมื่อเจอปัญหา</p>
+    <table class="tbl">
+      <tr><th>อาการ</th><th>สาเหตุที่พบบ่อย</th><th>วิธีแก้</th></tr>
+      <tr><td><b>openclaw: command not found</b></td><td>npm global bin ไม่อยู่ใน PATH</td><td>เพิ่ม PATH ตามกล่องเตือนข้อ 04 แล้วเปิด terminal ใหม่</td></tr>
+      <tr><td><b>ตั้งค่าแล้วไม่มีอะไรเปลี่ยน</b></td><td>ลืม restart Gateway</td><td><code>openclaw gateway restart</code></td></tr>
+      <tr><td><b>agent ไม่ตอบ</b></td><td>Gateway ไม่ได้รัน / auth พัง</td><td><code>openclaw gateway status</code> → <code>openclaw doctor</code></td></tr>
+      <tr><td><b>config เป็น codex/... เก่า</b></td><td>legacy ref</td><td><code>openclaw doctor --fix</code></td></tr>
+      <tr><td><b>service หยุดหลัง logout (VPS)</b></td><td>ยังไม่เปิด linger</td><td><code>loginctl enable-linger $USER</code></td></tr>
+    </table>
+    <div class="callout tip">
+      <span class="ico">🧰</span>
+      <div class="body">เครื่องมือวินิจฉัยหลัก 3 ตัว: <code class="inline">openclaw doctor</code> · <code class="inline">openclaw gateway status</code> · <code class="inline">openclaw logs --follow</code> — ไล่ตามลำดับนี้แก้ได้เกือบทุกเคส</div>
+    </div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="summary">
+    <h2><span class="num">✓</span> สรุป Part 1 — คุณทำอะไรไปแล้ว</h2>
+    <div class="cards">
+      <div class="card"><div class="ci">⚙️</div><h5>ติดตั้งครบ</h5><p>Node 24 + OpenClaw เวอร์ชันล่าสุด + Gateway daemon รันค้าง</p></div>
+      <div class="card"><div class="ci">🧠</div><h5>เชื่อม Codex</h5><p>login OpenAI + ตั้ง model เป็น <code class="inline">openai/gpt-5.5</code> ผ่าน Codex harness</p></div>
+      <div class="card"><div class="ci">🩺</div><h5>คุมระบบเป็น</h5><p>status / restart / logs / doctor / update ครบมือ</p></div>
+    </div>
+    <p>เหลือแค่ต่อ "ช่องทางคุย" ให้มัน — Part 2 จะพาสร้าง Telegram bot ผ่าน BotFather, ใส่ token, ตั้ง <code class="inline">dmPolicy</code>, ทำ pairing แล้วทักแชตคุยกับ agent จากมือถือได้จริง</p>
+  </section>
+
+  <!-- PAGER -->
+  <div class="pager">
+    <a class="prev disabled">
+      <div class="pl">← ก่อนหน้า</div>
+      <div class="pt">— เริ่มที่นี่ —</div>
+    </a>
+    <a class="next" href="#intro">
+      <div class="pl">ถัดไป →</div>
+      <div class="pt">Part 2 · เชื่อม Telegram ✈️</div>
+    </a>
+  </div>
+
+</main>
+</div>
+
+<script>
+  // ---- copy buttons ----
+  document.querySelectorAll('.code').forEach(block=>{
+    const btn=block.querySelector('.copy');
+    if(!btn)return;
+    btn.addEventListener('click',()=>{
+      const code=block.querySelector('pre').innerText;
+      navigator.clipboard.writeText(code).then(()=>{
+        const t=btn.textContent;btn.textContent='✓ คัดลอกแล้ว';btn.classList.add('done');
+        setTimeout(()=>{btn.textContent=t;btn.classList.remove('done')},1500);
+      });
+    });
+  });
+
+  // ---- progress bar ----
+  const prog=document.getElementById('progress');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const sc=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+    prog.style.width=sc+'%';
+  });
+
+  // ---- scroll-spy ----
+  const links=[...document.querySelectorAll('nav a[href^="#"]')];
+  const map={};links.forEach(l=>{const id=l.getAttribute('href').slice(1);const s=document.getElementById(id);if(s)map[id]=l;});
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const l=map[e.target.id];if(l)l.classList.add('active');
+      }
+    });
+  },{rootMargin:'-15% 0px -75% 0px'});
+  Object.keys(map).forEach(id=>{const s=document.getElementById(id);if(s)obs.observe(s);});
+</script>
+</body>
+</html>

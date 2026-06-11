@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw × Codex บน Ubuntu — คู่มือฉบับสมบูรณ์ (7 Parts)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c0f;--bg-soft:#14171c;--bg-card:#15191f;--bg-code:#0a0c0f;
+    --line:#242b33;--line-soft:#1b2026;
+    --text:#e7e9ee;--text-dim:#9aa3b0;--text-faint:#69727f;
+    --claw:#FF5A36;--claw-soft:#ff7a5c;--claw-glow:rgba(255,90,54,.16);
+    --p1:#FF5A36;--p2:#2aabee;--p3:#5865F2;--p4:#f5a623;--p5:#14b8a6;--p6:#8b5cf6;--p7:#10b981;
+    --gold:#ffb454;--green:#4ade80;
+    --mono:'JetBrains Mono',ui-monospace,monospace;--disp:'Chakra Petch',sans-serif;--body:'IBM Plex Sans Thai',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(1000px 600px at 80% -10%, var(--claw-glow), transparent 60%),
+      radial-gradient(800px 500px at 10% 8%, rgba(88,101,242,.07), transparent 55%),
+      radial-gradient(700px 500px at 50% 100%, rgba(20,184,166,.06), transparent 60%);
+    background-attachment:fixed;}
+  ::-webkit-scrollbar{width:11px}::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:#2a313a;border-radius:6px;border:2px solid var(--bg)}
+
+  .container{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* ---------- hero ---------- */
+  header{padding:80px 0 50px;text-align:center;position:relative}
+  .logo-big{font-size:72px;filter:drop-shadow(0 6px 24px var(--claw-glow));margin-bottom:8px;display:inline-block;animation:float 4s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  .kicker{font-family:var(--mono);font-size:13px;letter-spacing:3px;color:var(--claw);margin-bottom:18px}
+  h1{font-family:var(--disp);font-weight:700;font-size:clamp(34px,6vw,60px);line-height:1.1;letter-spacing:.5px;margin-bottom:20px}
+  h1 .g1{background:linear-gradient(120deg,var(--claw),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  h1 .g2{background:linear-gradient(120deg,var(--p3),var(--p5));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:18px;color:var(--text-dim);max-width:62ch;margin:0 auto 28px}
+  .badges{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:34px}
+  .badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;color:var(--text-dim);background:rgba(255,255,255,.025);border:1px solid var(--line);padding:8px 15px;border-radius:30px}
+  .badge b{color:var(--text)}
+  .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green)}
+  .cta{display:inline-flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:600;font-size:16px;color:#0a0c0f;background:linear-gradient(120deg,var(--claw),var(--gold));padding:14px 30px;border-radius:12px;text-decoration:none;transition:.2s;box-shadow:0 8px 30px var(--claw-glow)}
+  .cta:hover{transform:translateY(-2px);box-shadow:0 12px 38px var(--claw-glow)}
+
+  /* ---------- intro strip ---------- */
+  .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:50px 0}
+  .si{background:var(--bg-card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .si .ic{font-size:24px;margin-bottom:10px}
+  .si h4{font-family:var(--disp);font-weight:600;font-size:16px;color:#fff;margin-bottom:6px}
+  .si p{font-size:13.5px;color:var(--text-dim)}
+
+  /* ---------- section title ---------- */
+  .sec-title{display:flex;align-items:center;gap:16px;margin:64px 0 26px}
+  .sec-title h2{font-family:var(--disp);font-weight:700;font-size:24px;letter-spacing:.5px;white-space:nowrap}
+  .sec-title .ln{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+  .sec-title .n{font-family:var(--mono);font-size:12px;color:var(--text-faint)}
+
+  /* ---------- part cards ---------- */
+  .parts{display:flex;flex-direction:column;gap:16px}
+  .part{display:flex;align-items:stretch;gap:0;background:var(--bg-card);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;transition:.2s;position:relative}
+  .part:hover{transform:translateX(4px);border-color:var(--pc)}
+  .part .spine{width:6px;flex:0 0 6px;background:var(--pc)}
+  .part .pico{flex:0 0 92px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-right:1px solid var(--line);background:rgba(255,255,255,.012)}
+  .part .pico .em{font-size:32px}
+  .part .pico .pn{font-family:var(--mono);font-size:10.5px;color:var(--pc);font-weight:700;letter-spacing:1px}
+  .part .pbody{flex:1;min-width:0;padding:18px 22px;display:flex;flex-direction:column;justify-content:center}
+  .part .pbody h3{font-family:var(--disp);font-weight:600;font-size:19px;color:#fff;margin-bottom:5px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .part .pbody h3 .lvl{font-family:var(--mono);font-size:9.5px;color:var(--pc);border:1px solid var(--pc);border-radius:5px;padding:2px 7px;font-weight:700}
+  .part .pbody p{font-size:14px;color:var(--text-dim);margin:0}
+  .part .pbody .topics{margin-top:9px;display:flex;flex-wrap:wrap;gap:6px}
+  .part .pbody .topics span{font-family:var(--mono);font-size:11px;color:var(--text-faint);background:rgba(255,255,255,.03);border:1px solid var(--line-soft);border-radius:5px;padding:2px 8px}
+  .part .arrow{flex:0 0 auto;display:flex;align-items:center;padding-right:22px;color:var(--pc);font-size:22px;opacity:.6;transition:.2s}
+  .part:hover .arrow{opacity:1;transform:translateX(3px)}
+  .part.p1{--pc:var(--p1)}.part.p2{--pc:var(--p2)}.part.p3{--pc:var(--p3)}.part.p4{--pc:var(--p4)}.part.p5{--pc:var(--p5)}.part.p6{--pc:var(--p6)}.part.p7{--pc:var(--p7)}
+
+  /* ---------- quick reference ---------- */
+  .qref{background:var(--bg-card);border:1px solid var(--line);border-radius:16px;padding:8px 4px;margin-top:6px}
+  .qrow{display:flex;gap:14px;padding:13px 20px;border-bottom:1px solid var(--line-soft);align-items:baseline}
+  .qrow:last-child{border-bottom:none}
+  .qrow .qk{flex:0 0 190px;font-family:var(--disp);font-weight:600;font-size:14px;color:#fff}
+  .qrow .qv{flex:1;color:var(--text-dim);font-size:14px}
+  .qrow .qv code{font-family:var(--mono);font-size:12.5px;color:var(--gold);background:var(--bg-code);padding:2px 7px;border-radius:5px;border:1px solid var(--line-soft)}
+  @media(max-width:640px){.qrow{flex-direction:column;gap:3px}.qrow .qk{flex:0 0 auto}}
+
+  /* ---------- principles ---------- */
+  .princ{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:6px}
+  .pr{background:var(--bg-card);border:1px solid var(--line);border-radius:14px;padding:20px;position:relative;overflow:hidden}
+  .pr::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--prc)}
+  .pr .prn{font-family:var(--mono);font-size:11px;color:var(--prc);letter-spacing:1px;margin-bottom:8px}
+  .pr h4{font-family:var(--disp);font-weight:600;font-size:16px;color:#fff;margin-bottom:7px}
+  .pr p{font-size:13.5px;color:var(--text-dim)}
+  .pr:nth-child(1){--prc:var(--p1)}.pr:nth-child(2){--prc:var(--p5)}.pr:nth-child(3){--prc:var(--p6)}.pr:nth-child(4){--prc:var(--p7)}
+
+  /* ---------- footer ---------- */
+  footer{margin:70px 0 40px;padding-top:30px;border-top:1px solid var(--line);text-align:center;color:var(--text-faint);font-size:13px}
+  footer a{color:var(--claw-soft);text-decoration:none}
+  footer .links{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;font-family:var(--mono);font-size:12.5px}
+  footer .note{max-width:60ch;margin:0 auto;line-height:1.6}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="logo-big">🦞</div>
+    <div class="kicker">คู่มือฉบับลงมือทำ · เริ่มต้น → Production</div>
+    <h1><span class="g1">OpenClaw</span> × <span class="g2">Codex</span><br>บน Ubuntu</h1>
+    <p class="sub">
+      สร้าง AI agent ที่ "อยู่ประจำ" บนเครื่องคุณ ขับเคลื่อนด้วย Codex — คุยผ่าน Telegram/Discord,
+      สั่งงานในโปรเจกต์จริง, ปลอดภัย และต่อยอดเองได้ · คู่มือครบ 7 Part อ้างอิงเอกสารทางการเวอร์ชันล่าสุด
+    </p>
+    <div class="badges">
+      <span class="badge"><span class="dot"></span> เวอร์ชันล่าสุด <b>2026.6.x</b></span>
+      <span class="badge">⚙️ <b>Node 24</b></span>
+      <span class="badge">🧠 <b>Codex · GPT-5.5</b></span>
+      <span class="badge">📚 <b>7 Parts</b></span>
+    </div>
+    <a class="cta" href="openclaw-codex-part1.html">🦞 เริ่มที่ Part 1 — ติดตั้ง →</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- intro strip -->
+  <div class="strip">
+    <div class="si"><div class="ic">💬</div><h4>Messaging-first</h4><p>คุยกับ agent ผ่านแชตเหมือนคุยกับคน ไม่ต้องเปิดเว็บ</p></div>
+    <div class="si"><div class="ic">🧠</div><h4>สมอง Codex</h4><p><code style="font-family:var(--mono);font-size:.85em;color:var(--gold)">openai/gpt-5.5</code> ผ่าน Codex harness</p></div>
+    <div class="si"><div class="ic">🔐</div><h4>ปลอดภัยเป็นชั้น</h4><p>Identity → Scope → Model · จำกัด blast radius</p></div>
+    <div class="si"><div class="ic">🔧</div><h4>ต่อยอดเอง</h4><p>เขียน skill/plugin ให้ agent มี tool ใหม่</p></div>
+  </div>
+
+  <!-- TOC -->
+  <div class="sec-title"><h2>สารบัญ</h2><span class="ln"></span><span class="n">7 PARTS</span></div>
+
+  <div class="parts">
+
+    <a class="part p1" href="openclaw-codex-part1.html">
+      <div class="spine"></div>
+      <div class="pico"><span class="em">🦞</span><span class="pn">PART 1</span></div>
+      <div class="pbody">
+        <h3>ติดตั้ง + เชื่อม Codex <span class="lvl">FOUNDATION</span></h3>
+        <p>ติดตั้งบน Ubuntu, Node 24, onboarding + daemon, จัดการ Gateway, เชื่อมสมอง Codex</p>
+        <div class="topics"><span>install</span><span>Node 24</span><span>gateway</span><span>codex auth</span><span>model config</span></div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="part p2" href="openclaw-codex-part2-telegram.html">
+      <div class="spine"></div>
+      <div class="pico"><span class="em">✈️</span><span class="pn">PART 2</span></div>
+      <div class="pbody">
+        <h3>เชื่อมต่อ Telegram <span class="lvl">CHANNEL</span></h3>
+        <p>สร้าง bot ผ่าน BotFather, ใส่ token, dmPolicy, pairing, owner-only, ใช้ในกลุ่ม</p>
+        <div class="topics"><span>BotFather</span><span>dmPolicy</span><span>pairing</span><span>allowlist</span><span>groups</span></div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="part p3" href="openclaw-codex-part3-discord.html">
+      <div class="spine"></div>
+      <div class="pico"><span class="em">🎮</span><span class="pn">PART 3</span></div>
+      <div class="pbody">
+        <h3>เชื่อมต่อ Discord <span class="lvl">CHANNEL</span></h3>
+        <p>Developer Portal, intents, OAuth invite, guild workspace + ผูกห้องกับ Codex ACP</p>
+        <div class="topics"><span>intents</span><span>invite</span><span>guild</span><span>visibleReplies</span><span>Codex ACP</span></div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="part p4" href="openclaw-codex-part4-advanced.html">
+      <div class="spine"></div>
+      <div class="pico"><span class="em">⚡</span><span class="pn">PART 4</span></div>
+      <div class="pbody">
+        <h3>คำสั่ง + ขั้นสูง <span class="lvl">ADVANCED</span></h3>
+        <p>Directives, session commands, คำสั่ง Codex, subagents, exec approvals, skills, cron</p>
+        <div class="topics"><span>/think /fast</span><span>/codex</span><span>subagents</span><span>exec</span><span>cron</span></div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="part p5" href="openclaw-codex-part5-techniques.html">
+      <div class="spine"></div>
+      <div class="pico"><span class="em">🩺</span><span class="pn">PART 5</span></div>
+      <div class="pbody">
+        <h3>เทคนิค + แก้ปัญหาเชิงสาเหตุ <span class="lvl">DEEP DIVE</span></h3>
+        <p>เลือก model, subagent ลงลึก (isolated/fork/orchestrator), ตารางสาเหตุราก, วินิจฉัย</p>
+        <div class="topics"><span>model selection</span><span>isolated vs fork</span><span>root-cause</span><span>token</span></div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="part p6" href="openclaw-codex-part6-security-memory.html">
+      <div class="spine"></div>
+      <div class="pico"><span class="em">🔐</span><span class="pn">PART 6</span></div>
+      <div class="pbody">
+        <h3>Security + Memory/Dreaming <span class="lvl">HARDENING</span></h3>
+        <p>Threat model, prompt injection, hardened baseline, sandbox, workspace files, dreaming</p>
+        <div class="topics"><span>threat model</span><span>injection</span><span>sandbox</span><span>MEMORY.md</span><span>dreaming</span></div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="part p7" href="openclaw-codex-part7-deploy-extend.html">
+      <div class="spine"></div>
+      <div class="pico"><span class="em">🐳</span><span class="pn">PART 7</span></div>
+      <div class="pbody">
+        <h3>Docker · Multi-Gateway · Plugin <span class="lvl">DEPLOY</span></h3>
+        <p>รัน gateway ใน Docker, แยกหลาย gateway ตาม trust boundary, เขียน skill/plugin เอง</p>
+        <div class="topics"><span>docker</span><span>persistence</span><span>multi-gateway</span><span>SKILL.md</span><span>plugin SDK</span></div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+  </div>
+
+  <!-- key principles -->
+  <div class="sec-title"><h2>4 หลักคิดที่ร้อยเรียงทั้งเล่ม</h2><span class="ln"></span></div>
+  <div class="princ">
+    <div class="pr"><div class="prn">CONFIG</div><h4>แก้แล้วต้อง restart</h4><p>Gateway โหลด config เข้า memory ตอน start — สาเหตุอันดับ 1 ของทุกปัญหา</p></div>
+    <div class="pr"><div class="prn">MODEL</div><h4>ใช้ให้ตรงงาน</h4><p>Codex สำหรับ coding + tool-calling · main แพง subagent ถูก คุมต้นทุน</p></div>
+    <div class="pr"><div class="prn">SECURITY</div><h4>เริ่มแคบแล้วค่อยเปิด</h4><p>Identity → Scope → Model · สมมติว่าโมเดลถูกหลอกได้ จำกัด blast radius</p></div>
+    <div class="pr"><div class="prn">WHY</div><h4>เข้าใจ "ทำไม"</h4><p>รู้กลไกเบื้องหลัง = เดาปัญหาใหม่ออกเอง ไม่ต้องท่องวิธีแก้</p></div>
+  </div>
+
+  <!-- quick reference -->
+  <div class="sec-title"><h2>Quick Reference — จำขึ้นใจ</h2><span class="ln"></span></div>
+  <div class="qref">
+    <div class="qrow"><span class="qk">ติดตั้ง</span><span class="qv"><code>curl -fsSL https://openclaw.ai/install.sh | bash</code> หรือ <code>npm i -g openclaw@latest</code></span></div>
+    <div class="qrow"><span class="qk">เช็กสุขภาพ</span><span class="qv"><code>openclaw doctor</code> · <code>openclaw gateway status</code> · <code>openclaw logs --follow</code></span></div>
+    <div class="qrow"><span class="qk">เชื่อม Codex</span><span class="qv"><code>openclaw models auth login --provider openai-codex</code> + model <code>openai/gpt-5.5</code></span></div>
+    <div class="qrow"><span class="qk">Pairing</span><span class="qv"><code>openclaw pairing list &lt;channel&gt;</code> → <code>openclaw pairing approve &lt;channel&gt; &lt;CODE&gt;</code></span></div>
+    <div class="qrow"><span class="qk">หลังแก้ config</span><span class="qv"><code>openclaw gateway restart</code> — ทุกครั้ง ไม่มีข้อยกเว้น</span></div>
+    <div class="qrow"><span class="qk">ความปลอดภัย</span><span class="qv"><code>openclaw security audit --deep</code> · ตั้ง <code>dmPolicy: "allowlist"</code></span></div>
+    <div class="qrow"><span class="qk">อัปเดต</span><span class="qv"><code>openclaw update</code> (detect, ดึงล่าสุด, doctor, restart ให้อัตโนมัติ)</span></div>
+    <div class="qrow"><span class="qk">สำรองก่อนแก้ใหญ่</span><span class="qv"><code>openclaw backup create</code></span></div>
+  </div>
+
+  <footer>
+    <div class="links">
+      <a href="https://docs.openclaw.ai/th" target="_blank">📖 docs (ไทย)</a>
+      <a href="https://github.com/openclaw/openclaw" target="_blank">⌨️ GitHub</a>
+      <a href="https://docs.openclaw.ai/llms.txt" target="_blank">🗂️ llms.txt</a>
+    </div>
+    <p class="note">
+      คู่มือชุดนี้อ้างอิงเอกสารทางการ OpenClaw (เวอร์ชันล่าสุดสาย 2026.6.x) · เนื้อหาอาจเปลี่ยนตามรุ่นใหม่ —
+      ตรวจกับ docs ทางการเสมอก่อนใช้งานจริง · 🦞 The lobster way.
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>

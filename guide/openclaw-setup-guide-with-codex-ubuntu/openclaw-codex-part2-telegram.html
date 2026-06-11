@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw × Codex — Part 2: เชื่อมต่อ Telegram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0f12;--bg-soft:#14171c;--bg-card:#171b21;--bg-code:#0a0c0f;
+    --line:#262c34;--line-soft:#1d2229;
+    --text:#e7e9ee;--text-dim:#9aa3b0;--text-faint:#69727f;
+    --claw:#FF5A36;--claw-soft:#ff7a5c;--claw-glow:rgba(255,90,54,.14);
+    --tg:#2aabee;--tg-soft:#62c0f5;--tg-glow:rgba(42,171,238,.13);
+    --gold:#ffb454;--green:#4ade80;--cyan:#38bdf8;--warn:#fbbf24;--danger:#f87171;
+    --mono:'JetBrains Mono',ui-monospace,monospace;--disp:'Chakra Petch',sans-serif;--body:'IBM Plex Sans Thai',sans-serif;
+    --sb:300px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(900px 500px at 88% -8%, var(--tg-glow), transparent 60%),radial-gradient(700px 400px at -5% 5%, var(--claw-glow), transparent 55%);
+    background-attachment:fixed;}
+  ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:#2a313a;border-radius:6px;border:2px solid var(--bg)}::-webkit-scrollbar-thumb:hover{background:#3a434f}
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--tg),var(--cyan));z-index:100;transition:width .1s linear;box-shadow:0 0 12px var(--tg)}
+  .wrap{display:flex;min-height:100vh}
+  aside{width:var(--sb);flex:0 0 var(--sb);position:sticky;top:0;height:100vh;overflow-y:auto;background:linear-gradient(180deg,#0b0d10,#0e1115);border-right:1px solid var(--line);padding:26px 18px 60px}
+  main{flex:1;min-width:0;padding:54px clamp(20px,5vw,76px) 120px;max-width:1000px}
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+  .brand .logo{font-size:30px;filter:drop-shadow(0 2px 6px var(--claw-glow))}
+  .brand .name{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:.5px}
+  .brand .name b{color:var(--claw)}
+  .brand-sub{font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:0 0 22px 41px;letter-spacing:1px}
+  .part-pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--tg);background:var(--tg-glow);border:1px solid rgba(42,171,238,.3);padding:5px 11px;border-radius:30px;margin-bottom:20px;letter-spacing:1px}
+  .nav-group{margin-bottom:22px}
+  .nav-group h4{font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;color:var(--text-faint);text-transform:uppercase;margin-bottom:9px;padding-left:10px}
+  nav a{display:flex;align-items:center;gap:9px;color:var(--text-dim);text-decoration:none;font-size:13.5px;padding:7px 11px;border-radius:8px;border-left:2px solid transparent;transition:.15s}
+  nav a .nx{font-family:var(--mono);font-size:11px;color:var(--text-faint);min-width:20px}
+  nav a:hover{color:var(--text);background:var(--bg-soft)}
+  nav a.active{color:var(--tg-soft);background:var(--tg-glow);border-left-color:var(--tg)}
+  nav a.active .nx{color:var(--tg)}
+  .nav-future{margin-top:26px;padding-top:18px;border-top:1px dashed var(--line)}
+  .nav-future .roadmap-item{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-faint);padding:6px 11px}
+  .nav-future .roadmap-item .tag{font-family:var(--mono);font-size:9px;border:1px solid var(--line);border-radius:4px;padding:2px 5px;margin-left:auto}
+  .nav-future .roadmap-item.done .tag{color:var(--green);border-color:rgba(74,222,128,.4)}
+  .nav-future .roadmap-item.cur .tag{color:var(--tg);border-color:rgba(42,171,238,.4)}
+  .hero{margin-bottom:50px}
+  .hero .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--tg);margin-bottom:14px}
+  h1{font-family:var(--disp);font-weight:700;font-size:clamp(30px,5vw,46px);line-height:1.15;letter-spacing:.3px;margin-bottom:16px}
+  h1 .grad{background:linear-gradient(120deg,var(--tg),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:17px;color:var(--text-dim);max-width:65ch}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+  .meta-chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:7px 13px;border-radius:8px}
+  .meta-chip b{color:var(--text)}
+  .meta-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  section{margin-bottom:58px;scroll-margin-top:30px}
+  h2{font-family:var(--disp);font-weight:700;font-size:27px;letter-spacing:.3px;margin-bottom:8px;display:flex;align-items:baseline;gap:13px}
+  h2 .num{font-family:var(--mono);font-size:15px;color:var(--tg);font-weight:700}
+  .sec-sub{color:var(--text-dim);margin-bottom:24px;font-size:15.5px}
+  h3{font-family:var(--disp);font-weight:600;font-size:18.5px;margin:30px 0 12px;color:var(--text);display:flex;align-items:center;gap:9px}
+  h3::before{content:"";width:5px;height:18px;background:var(--tg);border-radius:3px;display:inline-block}
+  p{margin-bottom:13px;color:var(--text)}p.dim{color:var(--text-dim)}
+  a.link{color:var(--tg-soft);text-decoration:none;border-bottom:1px dashed rgba(98,192,245,.4)}a.link:hover{border-bottom-style:solid}
+  strong{color:#fff;font-weight:600}
+  code.inline{font-family:var(--mono);font-size:13px;background:var(--bg-code);color:var(--gold);padding:2px 7px;border-radius:5px;border:1px solid var(--line-soft)}
+  ul,ol{margin:6px 0 16px 4px;padding-left:22px}li{margin-bottom:8px;color:var(--text)}li::marker{color:var(--tg)}
+  ul.mech li::marker{content:"▸  ";color:var(--tg)}
+  .code{position:relative;margin:16px 0 20px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--bg-code)}
+  .code-head{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .code-head .dots{display:flex;gap:6px}.code-head .dots i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .code-head .dots i:nth-child(1){background:#ff5f57}.code-head .dots i:nth-child(2){background:#febc2e}.code-head .dots i:nth-child(3){background:#28c840}
+  .code-head .title{font-family:var(--mono);font-size:11.5px;color:var(--text-faint);margin-left:6px}
+  .code-head .copy{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:4px 11px;border-radius:6px;cursor:pointer;transition:.15s}
+  .code-head .copy:hover{color:var(--tg-soft);border-color:var(--tg)}.code-head .copy.done{color:var(--green);border-color:rgba(74,222,128,.4)}
+  pre{padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.65}
+  pre code{font-family:var(--mono);white-space:pre}
+  .c-cmd{color:#e7e9ee}.c-flag{color:var(--cyan)}.c-str{color:var(--green)}.c-cmt{color:var(--text-faint);font-style:italic}.c-key{color:var(--tg-soft)}.c-prompt{color:var(--tg);user-select:none}
+  .callout{display:flex;gap:13px;padding:15px 17px;border-radius:11px;margin:18px 0;border:1px solid var(--line);background:var(--bg-card);font-size:14.5px}
+  .callout .ico{font-size:19px;flex:0 0 auto;line-height:1.4}.callout .body{color:var(--text-dim)}.callout .body b{color:var(--text)}
+  .callout.note{border-color:rgba(56,189,248,.32);background:rgba(56,189,248,.06)}.callout.note .ico{color:var(--cyan)}
+  .callout.warn{border-color:rgba(251,191,36,.34);background:rgba(251,191,36,.06)}.callout.warn .ico{color:var(--warn)}
+  .callout.pit{border-color:rgba(248,113,113,.34);background:rgba(248,113,113,.06)}.callout.pit .ico{color:var(--danger)}
+  .callout.tip{border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.05)}.callout.tip .ico{color:var(--green)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:20px 0}
+  .card{background:var(--bg-card);border:1px solid var(--line);border-radius:13px;padding:18px;transition:.18s}
+  .card:hover{border-color:rgba(42,171,238,.4);transform:translateY(-2px)}
+  .card .ci{font-size:24px;margin-bottom:10px}.card h5{font-family:var(--disp);font-weight:600;font-size:16px;margin-bottom:6px;color:#fff}
+  .card p{font-size:13.5px;color:var(--text-dim);margin:0}.card .lbl{font-family:var(--mono);font-size:10.5px;color:var(--tg);letter-spacing:1px}
+  .step{display:flex;gap:16px;margin-bottom:14px}
+  .step .sn{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--tg-glow);border:1px solid rgba(42,171,238,.4);color:var(--tg);font-family:var(--mono);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .step .sc{flex:1;min-width:0;padding-top:2px}.step .sc b{color:#fff}
+  .tbl{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .tbl th{background:var(--bg-soft);text-align:left;padding:11px 14px;font-family:var(--mono);font-size:12px;color:var(--tg);letter-spacing:.5px;border-bottom:1px solid var(--line)}
+  .tbl td{padding:11px 14px;border-bottom:1px solid var(--line-soft);color:var(--text-dim);vertical-align:top}
+  .tbl tr:last-child td{border-bottom:none}.tbl td code{font-family:var(--mono);font-size:12.5px;color:var(--gold);white-space:nowrap}.tbl td b{color:var(--text)}
+  .pager{display:flex;gap:14px;margin-top:60px;padding-top:28px;border-top:1px solid var(--line)}
+  .pager a{flex:1;text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--bg-card);transition:.18s}
+  .pager a:hover{border-color:var(--tg);background:var(--tg-glow)}
+  .pager .pl{font-family:var(--mono);font-size:11px;color:var(--text-faint);letter-spacing:1px}
+  .pager .pt{font-family:var(--disp);font-weight:600;font-size:16px;color:var(--text);margin-top:5px}
+  .pager a.next{text-align:right}.pager a.disabled{opacity:.4;pointer-events:none}
+  .mobile-bar{display:none}
+  @media(max-width:880px){
+    aside{display:none}main{padding:24px 18px 80px}
+    .mobile-bar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;background:rgba(13,15,18,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:13px 16px;margin:-24px -18px 24px}
+    .mobile-bar .logo{font-size:22px}.mobile-bar .nm{font-family:var(--disp);font-weight:700;font-size:16px}.mobile-bar .nm b{color:var(--claw)}
+    .pager{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="wrap">
+
+<aside>
+  <div class="brand"><span class="logo">🦞</span><span class="name">Open<b>Claw</b></span></div>
+  <div class="brand-sub">× CODEX · UBUNTU GUIDE</div>
+  <div class="part-pill">✈️ PART 2 / 4 — TELEGRAM</div>
+  <nav>
+    <div class="nav-group">
+      <h4>เริ่มต้น</h4>
+      <a href="#intro"><span class="nx">00</span> เป้าหมาย Part นี้</a>
+      <a href="#botfather"><span class="nx">01</span> สร้าง bot ใน BotFather</a>
+      <a href="#token"><span class="nx">02</span> ใส่ token ให้ OpenClaw</a>
+    </div>
+    <div class="nav-group">
+      <h4>คุยกับ agent</h4>
+      <a href="#dmpolicy"><span class="nx">03</span> เข้าใจ dmPolicy</a>
+      <a href="#pairing"><span class="nx">04</span> Pairing ครั้งแรก</a>
+      <a href="#userid"><span class="nx">05</span> หา Telegram user ID</a>
+      <a href="#owner"><span class="nx">06</span> ล็อกเป็น owner-only</a>
+    </div>
+    <div class="nav-group">
+      <h4>ขั้นสูง</h4>
+      <a href="#groups"><span class="nx">07</span> ใช้งานในกลุ่ม</a>
+      <a href="#streaming"><span class="nx">08</span> Streaming + Codex</a>
+      <a href="#cli"><span class="nx">09</span> สั่งจาก CLI + เมนู</a>
+      <a href="#trouble"><span class="nx">10</span> แก้ปัญหา</a>
+    </div>
+    <div class="nav-future">
+      <div class="roadmap-item done"><span>🦞</span> Part 1 — ติดตั้ง + Codex <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item cur"><span>✈️</span> Part 2 — Telegram <span class="tag">ตอนนี้</span></div>
+      <div class="roadmap-item"><span>🎮</span> Part 3 — Discord <span class="tag">ถัดไป</span></div>
+      <div class="roadmap-item"><span>⚡</span> Part 4 — คำสั่ง + ขั้นสูง <span class="tag">รอ</span></div>
+    </div>
+  </nav>
+</aside>
+
+<main>
+  <div class="mobile-bar"><span class="logo">✈️</span><span class="nm">Open<b>Claw</b> × Telegram</span></div>
+
+  <div class="hero">
+    <div class="eyebrow">PART 2 · ต่อ "ปาก-หู" ให้ agent</div>
+    <h1>เชื่อม OpenClaw เข้ากับ<br><span class="grad">Telegram</span> แล้วคุยจากมือถือ</h1>
+    <p class="lead">
+      Part 1 เราติดตั้งและเชื่อมสมอง Codex เรียบร้อย — Part นี้จะต่อ Telegram เป็น channel แรก
+      เพราะมันคือวิธีที่เร็วที่สุดในการยืนยันว่า "Gateway + Codex + agent" ครบลูปจริง แล้วได้ผลลัพธ์คือ
+      ส่งข้อความหา agent จากมือถือได้ทุกที่ทุกเวลา
+    </p>
+    <div class="meta-row">
+      <span class="meta-chip"><span class="dot"></span> ต่อจาก Part 1</span>
+      <span class="meta-chip">⏱️ ใช้เวลา <b>~5 นาที</b></span>
+      <span class="meta-chip">🔌 ไม่ต้องเปิด <b>public IP / webhook</b></span>
+      <span class="meta-chip">📡 default mode <b>long polling</b></span>
+    </div>
+  </div>
+
+  <!-- 00 -->
+  <section id="intro">
+    <h2><span class="num">00</span> เป้าหมายของ Part นี้</h2>
+    <p class="sec-sub">มองภาพรวมก่อนว่า Telegram เชื่อมกับ OpenClaw ยังไง</p>
+    <p>
+      Telegram channel ของ OpenClaw ทำงานผ่าน <strong>bot</strong> ที่คุณสร้างเอง โดยใช้ไลบรารี grammY และโหมด <strong>long polling</strong> เป็นค่าเริ่มต้น —
+      หมายความว่า Gateway ของคุณเป็นฝ่าย "ออกไปถาม" Telegram ว่ามีข้อความใหม่ไหม จึงไม่ต้องเปิดพอร์ต ไม่ต้องมี public IP ไม่ต้องตั้ง webhook
+    </p>
+    <div class="cards">
+      <div class="card"><div class="ci">🤖</div><div class="lbl">STEP 1</div><h5>สร้าง bot</h5><p>คุยกับ @BotFather เพื่อขอ bot token</p></div>
+      <div class="card"><div class="ci">🔑</div><div class="lbl">STEP 2</div><h5>ใส่ token</h5><p>บอก OpenClaw ผ่าน config หรือ env</p></div>
+      <div class="card"><div class="ci">🤝</div><div class="lbl">STEP 3</div><h5>Pairing</h5><p>ทักครั้งแรก แล้ว approve รหัสจับคู่</p></div>
+      <div class="card"><div class="ci">🔒</div><div class="lbl">STEP 4</div><h5>ล็อกสิทธิ์</h5><p>ตั้ง allowlist ให้คุณคนเดียวสั่งได้</p></div>
+    </div>
+    <div class="callout warn">
+      <span class="ico">⚠️</span>
+      <div class="body"><b>ต่างจาก channel อื่น:</b> Telegram <u>ไม่ใช้</u> คำสั่ง <code class="inline">openclaw channels login telegram</code> — วิธีเชื่อมคือ "ใส่ token ลง config/env แล้วสตาร์ท Gateway" เท่านั้น</div>
+    </div>
+  </section>
+
+  <!-- 01 -->
+  <section id="botfather">
+    <h2><span class="num">01</span> สร้าง bot ใน BotFather</h2>
+    <p class="sec-sub">BotFather คือ bot ทางการของ Telegram ที่เอาไว้สร้าง/จัดการ bot ตัวอื่น</p>
+    <div class="step"><div class="sn">1</div><div class="sc">เปิด Telegram ค้นหา <b>@BotFather</b> (เช็กให้ตรงเป๊ะ มีเครื่องหมายติ๊กถูกสีฟ้า) แล้วกดเริ่มแชต</div></div>
+    <div class="step"><div class="sn">2</div><div class="sc">พิมพ์คำสั่ง <code class="inline">/newbot</code></div></div>
+    <div class="step"><div class="sn">3</div><div class="sc">ตั้ง <b>display name</b> (ชื่อที่โชว์) เช่น <code class="inline">My Pedpro Agent</code></div></div>
+    <div class="step"><div class="sn">4</div><div class="sc">ตั้ง <b>username</b> ที่ลงท้ายด้วย <code class="inline">bot</code> หรือ <code class="inline">_bot</code> เช่น <code class="inline">pedpro_agent_bot</code> (ต้องไม่ซ้ำใคร)</div></div>
+    <div class="step"><div class="sn">5</div><div class="sc">BotFather จะส่ง <b>Bot Token</b> กลับมา หน้าตาแบบ <code class="inline">123456789:ABCdefGHI...</code> — <b>คัดลอกเก็บไว้</b></div></div>
+    <div class="callout pit">
+      <span class="ico">🔐</span>
+      <div class="body"><b>Token = รหัสผ่านของ bot</b> ใครได้ไปคุม bot คุณได้ทันที — อย่าเผยแพร่ อย่า commit ขึ้น Git ถ้าหลุดให้ขอใหม่ผ่าน BotFather <code class="inline">/mybots → API Token → Revoke</code></div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section id="token">
+    <h2><span class="num">02</span> ใส่ token ให้ OpenClaw</h2>
+    <p class="sec-sub">มี 2 ทาง — เลือกอย่างใดอย่างหนึ่ง ถ้าตั้งทั้งคู่ "config ชนะ env"</p>
+
+    <h3>ทาง A — แก้ config โดยตรง (แนะนำ ชัดเจน)</h3>
+    <p>เปิดไฟล์ <code class="inline">~/.openclaw/openclaw.json</code> แล้วเพิ่มบล็อก <code class="inline">channels.telegram</code>:</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json (JSON5)</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span>
+  <span class="c-key">channels</span>: {
+    <span class="c-key">telegram</span>: {
+      <span class="c-key">enabled</span>: <span class="c-str">true</span>,
+      <span class="c-key">botToken</span>: <span class="c-str">"123456789:ABCdefGHI..."</span>,   <span class="c-cmt">// token จาก BotFather</span>
+      <span class="c-key">dmPolicy</span>: <span class="c-str">"pairing"</span>,                  <span class="c-cmt">// ค่าเริ่มต้น (ดูข้อ 03)</span>
+      <span class="c-key">groups</span>: { <span class="c-str">"*"</span>: { <span class="c-key">requireMention</span>: <span class="c-str">true</span> } }
+    }
+  }
+<span class="c-cmd">}</span></code></pre>
+    </div>
+
+    <h3>ทาง B — สั่งผ่าน CLI</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — config set</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw config set channels.telegram.botToken <span class="c-str">"123456789:ABCdefGHI..."</span></span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw config set channels.telegram.enabled <span class="c-str">true</span></span></code></pre>
+    </div>
+
+    <h3>ทาง C — Environment variable</h3>
+    <p class="dim">ใช้ได้กับ "บัญชี default" เท่านั้น เหมาะเวลารัน on server ที่ไม่อยากให้ token อยู่ในไฟล์ config:</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — env fallback</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">export TELEGRAM_BOT_TOKEN=</span><span class="c-str">"123456789:ABCdefGHI..."</span></code></pre>
+    </div>
+
+    <div class="callout tip">
+      <span class="ico">💾</span>
+      <div class="body">แก้เสร็จแล้ว <b>restart Gateway เสมอ</b> เพื่อโหลด config ใหม่:
+        <div class="code" style="margin-top:10px"><div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw gateway restart</span></code></pre></div>
+        ใน log ควรเห็นบรรทัดทำนอง <code class="inline">starting provider (@YourBotUsername)</code> = เชื่อมสำเร็จ
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="dmpolicy">
+    <h2><span class="num">03</span> เข้าใจ dmPolicy ก่อนทักแชต</h2>
+    <p class="sec-sub"><code class="inline">dmPolicy</code> คุมว่า "ใครส่ง DM สั่ง bot ได้บ้าง" — เข้าใจตรงนี้ = ตั้งความปลอดภัยถูกตั้งแต่ต้น</p>
+    <table class="tbl">
+      <tr><th>dmPolicy</th><th>พฤติกรรม</th><th>เหมาะกับ</th></tr>
+      <tr><td><code>pairing</code> <b>(default)</b></td><td>คนใหม่ทักได้ แต่ต้องให้คุณ approve รหัสจับคู่ก่อน</td><td>เริ่มต้น / ทดสอบ ปลอดภัยดี</td></tr>
+      <tr><td><code>allowlist</code></td><td>เฉพาะ user ID ที่อยู่ใน <code>allowFrom</code> เท่านั้น (ต้องมีอย่างน้อย 1 ID)</td><td><b>bot ส่วนตัวเจ้าของคนเดียว</b> — แนะนำสุด</td></tr>
+      <tr><td><code>open</code></td><td>ใครก็สั่งได้ ต้องตั้ง <code>allowFrom: ["*"]</code></td><td>bot สาธารณะที่จำกัด tool แน่นหนาแล้วเท่านั้น</td></tr>
+      <tr><td><code>disabled</code></td><td>ปิด DM ทั้งหมด</td><td>ใช้เฉพาะในกลุ่ม</td></tr>
+    </table>
+    <div class="callout pit">
+      <span class="ico">🚨</span>
+      <div class="body"><b>อย่าใช้ <code class="inline">open</code> + <code class="inline">["*"]</code> มั่ว ๆ!</b> ใครที่เดา username ของ bot เจอจะสั่งงาน agent คุณได้ทันที (และเผา token/เงินค่าโมเดลของคุณ) — bot เจ้าของคนเดียวให้ใช้ <code class="inline">allowlist</code> เสมอ</div>
+    </div>
+    <div class="callout note">
+      <span class="ico">ℹ️</span>
+      <div class="body"><code class="inline">dmPolicy: "allowlist"</code> ที่ <code class="inline">allowFrom</code> ว่างเปล่า = บล็อกทุกคน และจะถูก config validation ปฏิเสธ — ต้องใส่ numeric user ID อย่างน้อยหนึ่งตัว (วิธีหา ID อยู่ข้อ 05)</div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="pairing">
+    <h2><span class="num">04</span> Pairing — ทักครั้งแรก</h2>
+    <p class="sec-sub">ถ้าใช้ <code class="inline">pairing</code> (ค่าเริ่มต้น) นี่คือวิธีให้ตัวเองเข้าใช้ครั้งแรก</p>
+    <div class="step"><div class="sn">1</div><div class="sc">ให้ Gateway รันอยู่ (เช็กด้วย <code class="inline">openclaw gateway status</code> หรือสตาร์ทด้วย <code class="inline">openclaw gateway</code>)</div></div>
+    <div class="step"><div class="sn">2</div><div class="sc">เปิด Telegram หา bot ของคุณ (ตาม username ที่ตั้งไว้) แล้วกด <b>Start</b> / ทักข้อความอะไรก็ได้</div></div>
+    <div class="step"><div class="sn">3</div><div class="sc">ดูรหัสจับคู่ที่ฝั่ง server แล้ว approve:</div></div>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — pairing</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw pairing list telegram</span>            <span class="c-cmt"># ดูคำขอจับคู่ที่ค้างอยู่ + รหัส</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw pairing approve telegram <span class="c-flag">&lt;CODE&gt;</span></span>   <span class="c-cmt"># อนุมัติด้วยรหัสที่เห็น</span></code></pre>
+    </div>
+    <div class="step"><div class="sn">4</div><div class="sc">กลับไปที่ Telegram ทักหา bot อีกครั้ง เช่น "สวัสดี ช่วยอะไรได้บ้าง" — agent จะตอบกลับผ่าน Codex 🎉</div></div>
+    <div class="callout warn">
+      <span class="ico">⏰</span>
+      <div class="body"><b>รหัส pairing หมดอายุใน 1 ชั่วโมง</b> ถ้าช้าไปให้ทัก bot ใหม่เพื่อสร้างรหัสใหม่</div>
+    </div>
+    <div class="callout note">
+      <span class="ico">👑</span>
+      <div class="body"><b>โบนัส:</b> การ approve pairing ครั้งแรกจะตั้งคุณเป็น <code class="inline">commands.ownerAllowFrom</code> โดยอัตโนมัติ (เจ้าของคำสั่งระดับ owner เช่นการอนุมัติ exec) — ดังนั้นเซ็ตอัปเจ้าของคนเดียวก็ใช้งานได้เลยโดยไม่ต้องตั้งซ้ำ</div>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="userid">
+    <h2><span class="num">05</span> หา Telegram user ID ของคุณ</h2>
+    <p class="sec-sub">จำเป็นสำหรับ <code class="inline">allowFrom</code> — ต้องเป็น <b>ตัวเลขล้วน</b> (ไม่ใช่ @username)</p>
+
+    <h3>วิธีที่ 1 — ปลอดภัยสุด (ไม่พึ่ง bot คนอื่น)</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — อ่านจาก log</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw logs <span class="c-flag">--follow</span></span>
+<span class="c-cmt"># แล้วทัก bot ของคุณ → มองหาค่า from.id ใน log นั่นคือ user ID</span></code></pre>
+    </div>
+
+    <h3>วิธีที่ 2 — Telegram Bot API ทางการ</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — getUpdates</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">curl <span class="c-str">"https://api.telegram.org/bot&lt;bot_token&gt;/getUpdates"</span></span>
+<span class="c-cmt"># ทัก bot ก่อนหนึ่งครั้ง แล้วดู "from":{"id": ... } ใน JSON</span></code></pre>
+    </div>
+
+    <h3>วิธีที่ 3 — bot ภายนอก (ส่วนตัวน้อยกว่า)</h3>
+    <p class="dim">ทักหา <code class="inline">@userinfobot</code> หรือ <code class="inline">@getidsbot</code> มันจะตอบ user ID ของคุณกลับมา — สะดวกแต่ต้องเชื่อใจ bot นั้น</p>
+  </section>
+
+  <!-- 06 -->
+  <section id="owner">
+    <h2><span class="num">06</span> ล็อกให้เป็น "เจ้าของคนเดียว"</h2>
+    <p class="sec-sub">นี่คือเซ็ตอัปที่แนะนำสำหรับใช้ส่วนตัว — สิทธิ์ฝังใน config ถาวร ไม่พึ่ง pairing</p>
+    <p>เปลี่ยนจาก <code class="inline">pairing</code> มาเป็น <code class="inline">allowlist</code> พร้อมใส่ user ID ของคุณ (จากข้อ 05):</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json — owner-only</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span>
+  <span class="c-key">channels</span>: {
+    <span class="c-key">telegram</span>: {
+      <span class="c-key">enabled</span>: <span class="c-str">true</span>,
+      <span class="c-key">botToken</span>: <span class="c-str">"123456789:ABCdefGHI..."</span>,
+      <span class="c-key">dmPolicy</span>: <span class="c-str">"allowlist"</span>,
+      <span class="c-key">allowFrom</span>: [<span class="c-str">"8734062810"</span>]        <span class="c-cmt">// ← user ID ของคุณ (ตัวเลขล้วน)</span>
+    }
+  },
+  <span class="c-key">commands</span>: {
+    <span class="c-key">ownerAllowFrom</span>: [<span class="c-str">"telegram:8734062810"</span>]   <span class="c-cmt">// ← สิทธิ์ owner เต็ม (มี prefix telegram:)</span>
+  }
+<span class="c-cmd">}</span></code></pre>
+    </div>
+    <ul class="mech">
+      <li><code class="inline">allowFrom</code> รับ <b>numeric user ID</b> · prefix <code class="inline">telegram:</code> / <code class="inline">tg:</code> ใส่ได้ ระบบ normalize ให้</li>
+      <li><code class="inline">commands.ownerAllowFrom</code> = คนที่สั่งคำสั่งระดับ owner ได้ (เช่น approve การรันคำสั่ง) — ใส่แบบมี prefix <code class="inline">telegram:&lt;id&gt;</code></li>
+      <li>เซ็ตแบบนี้ "คุณได้รับสิทธิ์ครั้งเดียว ใช้ได้ทั้ง DM และคำสั่งในกลุ่ม"</li>
+    </ul>
+    <div class="callout warn">
+      <span class="ico">🔧</span>
+      <div class="body">ถ้า config เก่ามี <code class="inline">@username</code> ใน allowlist (รูปแบบเลิกใช้แล้ว) รัน <code class="inline">openclaw doctor --fix</code> เพื่อแปลงเป็น numeric ID ให้ (ต้องมี bot token เพื่อ resolve)</div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="groups">
+    <h2><span class="num">07</span> ใช้งานในกลุ่ม (Groups)</h2>
+    <p class="sec-sub">ตรงนี้มีกับดักเยอะ — มี 2 ชั้นการควบคุมที่ต้องตั้งให้ครบ</p>
+
+    <h3>2 ชั้นที่ต้องเข้าใจ</h3>
+    <ul class="mech">
+      <li><strong>กลุ่มไหนได้บ้าง</strong> → <code class="inline">channels.telegram.groups</code> (ค่าเริ่มต้น <code class="inline">groupPolicy: "allowlist"</code> = บล็อกจนกว่าจะเพิ่มกลุ่ม หรือใส่ <code class="inline">"*"</code>)</li>
+      <li><strong>ใครในกลุ่มสั่งได้</strong> → <code class="inline">groupPolicy</code> (<code class="inline">open</code> / <code class="inline">allowlist</code> ค่าเริ่มต้น / <code class="inline">disabled</code>) ร่วมกับ <code class="inline">groupAllowFrom</code> (ถ้าไม่ตั้งจะ fallback ไปใช้ <code class="inline">allowFrom</code>)</li>
+    </ul>
+
+    <h3>ขั้นตอน</h3>
+    <div class="step"><div class="sn">1</div><div class="sc">เพิ่ม bot เข้ากลุ่ม</div></div>
+    <div class="step"><div class="sn">2</div><div class="sc">หา <b>group chat ID</b> — อ่าน <code class="inline">chat.id</code> จาก <code class="inline">openclaw logs --follow</code>, forward ข้อความกลุ่มไปหา <code class="inline">@userinfobot</code>, หรือดูจาก <code class="inline">getUpdates</code></div></div>
+    <div class="step"><div class="sn">3</div><div class="sc">ใส่ group ID ลง config (ID supergroup เริ่มด้วย <code class="inline">-100</code>)</div></div>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json — owner-only group</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span>
+  <span class="c-key">channels</span>: {
+    <span class="c-key">telegram</span>: {
+      <span class="c-key">enabled</span>: <span class="c-str">true</span>,
+      <span class="c-key">dmPolicy</span>: <span class="c-str">"allowlist"</span>,
+      <span class="c-key">allowFrom</span>: [<span class="c-str">"8734062810"</span>],
+      <span class="c-key">groupPolicy</span>: <span class="c-str">"allowlist"</span>,
+      <span class="c-key">groups</span>: {
+        <span class="c-str">"-1001234567890"</span>: { <span class="c-key">requireMention</span>: <span class="c-str">true</span> }   <span class="c-cmt">// ← group chat ID</span>
+      }
+    }
+  }
+<span class="c-cmd">}</span></code></pre>
+    </div>
+    <p class="dim">ทดสอบในกลุ่มด้วย <code class="inline">@&lt;bot_username&gt; ping</code> — ขณะ <code class="inline">requireMention: true</code> ข้อความธรรมดาที่ไม่ mention จะไม่ทำให้ bot ตอบ</p>
+
+    <div class="callout pit">
+      <span class="ico">📍</span>
+      <div class="body"><b>กับดักที่สับสนที่สุด:</b> ID กลุ่มติดลบ (<code class="inline">-100...</code>) ต้องอยู่ใต้ <code class="inline">groups</code> เท่านั้น — <u>ห้าม</u>เอาไปใส่ใน <code class="inline">groupAllowFrom</code> (ตรงนั้นเอาไว้ใส่ <b>user ID</b> ของคนในกลุ่มเท่านั้น)</div>
+    </div>
+
+    <h3>Privacy Mode — ทำไม bot ไม่เห็นข้อความในกลุ่ม</h3>
+    <p>bot ของ Telegram เปิด <strong>Privacy Mode</strong> เป็นค่าเริ่มต้น ทำให้เห็นเฉพาะข้อความที่ mention ถึงมัน ถ้าอยากให้ bot เห็นทุกข้อความ (เช่น <code class="inline">requireMention: false</code>) ต้องเลือกทำอย่างใดอย่างหนึ่ง:</p>
+    <ul class="mech">
+      <li>ปิด privacy ที่ BotFather: <code class="inline">/setprivacy</code> → Disable</li>
+      <li>หรือทำให้ bot เป็น <b>admin</b> ของกลุ่ม</li>
+      <li><b>สำคัญ:</b> หลังสลับ privacy mode ต้อง <u>ลบ bot ออกแล้วเพิ่มกลับเข้ากลุ่ม</u> เพื่อให้ Telegram ใช้ค่าใหม่</li>
+    </ul>
+
+    <div class="callout note">
+      <span class="ico">🧵</span>
+      <div class="body"><b>ขั้นสูง:</b> Forum/Topics รองรับการแยก agent ต่อ topic ได้ด้วย <code class="inline">groups.&lt;chatId&gt;.topics.&lt;threadId&gt;.agentId</code> — เช่น topic dev ส่งไป agent ตัวหนึ่ง, topic code review ส่งไปอีกตัว แต่ละ topic มี session/memory แยกกัน</div>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section id="streaming">
+    <h2><span class="num">08</span> Streaming + การโชว์งานของ Codex</h2>
+    <p class="sec-sub">เกี่ยวกับ Codex โดยตรง — คุมว่าจะเห็น "ความคืบหน้า" ของ agent แค่ไหนระหว่างทำงาน</p>
+    <p>
+      OpenClaw stream คำตอบแบบ real-time ได้ คุมด้วย <code class="inline">channels.telegram.streaming</code> ซึ่งมี 4 โหมด เวลา Codex ทำงาน
+      (รันคำสั่ง อ่านไฟล์ วางแผน) มันจะมี "tool-progress preview" — รวมถึงข้อความ preamble/commentary ของ Codex app-server ที่โชว์ขึ้นมาเป็นบรรทัดสถานะสั้น ๆ
+    </p>
+    <table class="tbl">
+      <tr><th>mode</th><th>พฤติกรรม</th></tr>
+      <tr><td><code>partial</code> <b>(default)</b></td><td>แก้ข้อความเดิมไปเรื่อย ๆ โชว์คำตอบทยอยขึ้น + โชว์ความคืบหน้า tool</td></tr>
+      <tr><td><code>progress</code></td><td>โชว์สถานะ tool แยก แล้วส่งคำตอบสุดท้ายเป็นข้อความใหม่ (ไม่แก้ทับ)</td></tr>
+      <tr><td><code>block</code></td><td>stream เป็นบล็อก</td></tr>
+      <tr><td><code>off</code></td><td>ส่งเฉพาะคำตอบสุดท้าย เงียบ tool chatter ทั้งหมด</td></tr>
+    </table>
+    <p>ถ้าอยากให้คำตอบทยอยขึ้นแต่ <b>ซ่อนบรรทัดความคืบหน้า tool</b>:</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span>
+  <span class="c-key">channels</span>: { <span class="c-key">telegram</span>: {
+    <span class="c-key">streaming</span>: {
+      <span class="c-key">mode</span>: <span class="c-str">"partial"</span>,
+      <span class="c-key">preview</span>: { <span class="c-key">toolProgress</span>: <span class="c-str">false</span> }
+    }
+  } }
+<span class="c-cmd">}</span></code></pre>
+    </div>
+    <div class="callout warn">
+      <span class="ico">🔧</span>
+      <div class="body">ถ้า config เก่าใช้ <code class="inline">streamMode</code> (รูปแบบเลิกใช้) รัน <code class="inline">openclaw doctor --fix</code> เพื่อย้ายมาเป็น <code class="inline">streaming.mode</code> ให้</div>
+    </div>
+  </section>
+
+  <!-- 09 -->
+  <section id="cli">
+    <h2><span class="num">09</span> สั่งจาก CLI + เมนูคำสั่ง</h2>
+    <p class="sec-sub">นอกจากแชต ยังสั่ง OpenClaw ให้ส่งข้อความ/โพลเข้า Telegram ผ่าน command line ได้</p>
+
+    <h3>ส่งข้อความ / โพล</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — message send / poll</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmt"># ส่งหา user ID, @username หรือ topic ในกลุ่ม</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw message send <span class="c-flag">--channel</span> telegram <span class="c-flag">--target</span> 123456789 <span class="c-flag">--message</span> <span class="c-str">"สวัสดี"</span></span>
+
+<span class="c-cmt"># สร้างโพลในกลุ่ม</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw message poll <span class="c-flag">--channel</span> telegram <span class="c-flag">--target</span> 123456789 \
+    <span class="c-flag">--poll-question</span> <span class="c-str">"deploy เลยไหม?"</span> <span class="c-flag">--poll-option</span> <span class="c-str">"เอา"</span> <span class="c-flag">--poll-option</span> <span class="c-str">"รอ"</span></span></code></pre>
+    </div>
+
+    <h3>เพิ่มเมนูคำสั่งของตัวเอง</h3>
+    <p>เพิ่มรายการในเมนู <code class="inline">/</code> ของ Telegram (เป็นแค่รายการเมนู ไม่ได้สร้าง logic ให้อัตโนมัติ):</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span>
+  <span class="c-key">channels</span>: { <span class="c-key">telegram</span>: {
+    <span class="c-key">customCommands</span>: [
+      { <span class="c-key">command</span>: <span class="c-str">"backup"</span>, <span class="c-key">description</span>: <span class="c-str">"สำรองด้วย git"</span> },
+      { <span class="c-key">command</span>: <span class="c-str">"generate"</span>, <span class="c-key">description</span>: <span class="c-str">"สร้างรูป"</span> }
+    ]
+  } }
+<span class="c-cmd">}</span></code></pre>
+    </div>
+    <p class="dim">กติกา: ชื่อใช้ <code class="inline">a-z 0-9 _</code> ยาว 1–32 ตัว · override คำสั่ง native ไม่ได้ · ที่ซ้ำจะถูกข้าม</p>
+  </section>
+
+  <!-- 10 -->
+  <section id="trouble">
+    <h2><span class="num">10</span> แก้ปัญหา Telegram</h2>
+    <p class="sec-sub">อาการยอดฮิตและทางแก้</p>
+    <table class="tbl">
+      <tr><th>อาการ</th><th>สาเหตุ</th><th>วิธีแก้</th></tr>
+      <tr><td><b>getMe returned 401</b></td><td>token ผิด/มีช่องว่าง/ถูก revoke</td><td>copy token ใหม่จาก BotFather → อัปเดต <code>botToken</code> หรือ <code>TELEGRAM_BOT_TOKEN</code></td></tr>
+      <tr><td><b>bot ออนไลน์แต่ไม่ตอบ DM</b></td><td>ยังไม่ approve pairing / ไม่อยู่ใน allowFrom</td><td>ทำ pairing (ข้อ 04) หรือเพิ่ม ID ใน <code>allowFrom</code></td></tr>
+      <tr><td><b>ไม่ตอบในกลุ่ม</b></td><td>กลุ่มไม่อยู่ใน <code>groups</code> / privacy mode</td><td>เพิ่ม group ID + ปิด privacy แล้ว ลบ-เพิ่ม bot ใหม่</td></tr>
+      <tr><td><b>getUpdates 409 conflict</b></td><td>มี gateway/สคริปต์อื่นใช้ token เดียวกัน</td><td>หยุด poller ตัวซ้ำ ให้เหลือใช้ token ตัวเดียว</td></tr>
+      <tr><td><b>network / fetch failed</b></td><td>DNS/HTTPS ไป <code>api.telegram.org</code> มีปัญหา (มัก IPv6)</td><td>บน VPS ลอง <code>network.autoSelectFamily: false</code> หรือบังคับ <code>ipv4first</code></td></tr>
+    </table>
+    <div class="callout tip">
+      <span class="ico">🧰</span>
+      <div class="body">ไล่ debug ตามลำดับ: <code class="inline">openclaw channels status --probe</code> → <code class="inline">openclaw logs --follow</code> (ดู skip reasons) → <code class="inline">openclaw doctor</code></div>
+    </div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="summary">
+    <h2><span class="num">✓</span> สรุป Part 2</h2>
+    <div class="cards">
+      <div class="card"><div class="ci">🤖</div><h5>มี bot แล้ว</h5><p>สร้างผ่าน BotFather + ใส่ token ให้ OpenClaw</p></div>
+      <div class="card"><div class="ci">🔒</div><h5>ปลอดภัย</h5><p>ตั้ง <code class="inline">allowlist</code> ให้ตัวเองคนเดียวสั่งได้</p></div>
+      <div class="card"><div class="ci">📱</div><h5>คุยจากมือถือ</h5><p>ส่งงานหา agent (สมอง Codex) ได้ทุกที่</p></div>
+    </div>
+    <p>Part 3 จะทำแบบเดียวกันกับ <strong>Discord</strong> — สร้าง application/bot ใน Developer Portal, เปิด Message Content Intent, invite เข้า server, ใส่ token แล้ว pair · Discord เป็น channel ที่ทรงพลังที่สุดของ OpenClaw (รองรับ guild channels แยก session, threads, slash commands)</p>
+  </section>
+
+  <div class="pager">
+    <a class="prev" href="#intro"><div class="pl">← Part 1</div><div class="pt">🦞 ติดตั้ง + Codex</div></a>
+    <a class="next" href="#intro"><div class="pl">ถัดไป →</div><div class="pt">Part 3 · Discord 🎮</div></a>
+  </div>
+</main>
+</div>
+
+<script>
+  document.querySelectorAll('.code').forEach(block=>{
+    const btn=block.querySelector('.copy');if(!btn)return;
+    btn.addEventListener('click',()=>{
+      const code=block.querySelector('pre').innerText;
+      navigator.clipboard.writeText(code).then(()=>{
+        const t=btn.textContent;btn.textContent='✓ คัดลอกแล้ว';btn.classList.add('done');
+        setTimeout(()=>{btn.textContent=t;btn.classList.remove('done')},1500);
+      });
+    });
+  });
+  const prog=document.getElementById('progress');
+  window.addEventListener('scroll',()=>{const h=document.documentElement;prog.style.width=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100+'%';});
+  const links=[...document.querySelectorAll('nav a[href^="#"]')];const map={};
+  links.forEach(l=>{const id=l.getAttribute('href').slice(1);const s=document.getElementById(id);if(s)map[id]=l;});
+  const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const l=map[e.target.id];if(l)l.classList.add('active');}});},{rootMargin:'-15% 0px -75% 0px'});
+  Object.keys(map).forEach(id=>{const s=document.getElementById(id);if(s)obs.observe(s);});
+</script>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw × Codex — Part 4: คำสั่ง + ขั้นสูง</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0f12;--bg-soft:#14171c;--bg-card:#171b21;--bg-code:#0a0c0f;
+    --line:#262c34;--line-soft:#1d2229;
+    --text:#e7e9ee;--text-dim:#9aa3b0;--text-faint:#69727f;
+    --claw:#FF5A36;--claw-glow:rgba(255,90,54,.14);
+    --acc:#f5a623;--acc-soft:#ffc05a;--acc-glow:rgba(245,166,35,.15);
+    --gold:#ffb454;--green:#4ade80;--cyan:#38bdf8;--warn:#fbbf24;--danger:#f87171;--purple:#a78bfa;
+    --mono:'JetBrains Mono',ui-monospace,monospace;--disp:'Chakra Petch',sans-serif;--body:'IBM Plex Sans Thai',sans-serif;
+    --sb:300px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(900px 500px at 88% -8%, var(--acc-glow), transparent 60%),radial-gradient(700px 400px at -5% 5%, var(--claw-glow), transparent 55%);
+    background-attachment:fixed;}
+  ::-webkit-scrollbar{width:11px;height:11px}::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:#2a313a;border-radius:6px;border:2px solid var(--bg)}::-webkit-scrollbar-thumb:hover{background:#3a434f}
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--acc),var(--claw));z-index:100;transition:width .1s linear;box-shadow:0 0 12px var(--acc)}
+  .wrap{display:flex;min-height:100vh}
+  aside{width:var(--sb);flex:0 0 var(--sb);position:sticky;top:0;height:100vh;overflow-y:auto;background:linear-gradient(180deg,#0b0d10,#0e1115);border-right:1px solid var(--line);padding:26px 18px 60px}
+  main{flex:1;min-width:0;padding:54px clamp(20px,5vw,76px) 120px;max-width:1000px}
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+  .brand .logo{font-size:30px;filter:drop-shadow(0 2px 6px var(--claw-glow))}
+  .brand .name{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:.5px}
+  .brand .name b{color:var(--claw)}
+  .brand-sub{font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:0 0 22px 41px;letter-spacing:1px}
+  .part-pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--acc-soft);background:var(--acc-glow);border:1px solid rgba(245,166,35,.34);padding:5px 11px;border-radius:30px;margin-bottom:20px;letter-spacing:1px}
+  .nav-group{margin-bottom:22px}
+  .nav-group h4{font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;color:var(--text-faint);text-transform:uppercase;margin-bottom:9px;padding-left:10px}
+  nav a{display:flex;align-items:center;gap:9px;color:var(--text-dim);text-decoration:none;font-size:13.5px;padding:7px 11px;border-radius:8px;border-left:2px solid transparent;transition:.15s}
+  nav a .nx{font-family:var(--mono);font-size:11px;color:var(--text-faint);min-width:20px}
+  nav a:hover{color:var(--text);background:var(--bg-soft)}
+  nav a.active{color:var(--acc-soft);background:var(--acc-glow);border-left-color:var(--acc)}
+  nav a.active .nx{color:var(--acc-soft)}
+  .nav-future{margin-top:26px;padding-top:18px;border-top:1px dashed var(--line)}
+  .nav-future .roadmap-item{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-faint);padding:6px 11px}
+  .nav-future .roadmap-item .tag{font-family:var(--mono);font-size:9px;border:1px solid var(--line);border-radius:4px;padding:2px 5px;margin-left:auto}
+  .nav-future .roadmap-item.done .tag{color:var(--green);border-color:rgba(74,222,128,.4)}
+  .nav-future .roadmap-item.cur .tag{color:var(--acc-soft);border-color:rgba(245,166,35,.4)}
+  .hero{margin-bottom:50px}
+  .hero .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--acc-soft);margin-bottom:14px}
+  h1{font-family:var(--disp);font-weight:700;font-size:clamp(30px,5vw,46px);line-height:1.15;letter-spacing:.3px;margin-bottom:16px}
+  h1 .grad{background:linear-gradient(120deg,var(--acc),var(--claw));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:17px;color:var(--text-dim);max-width:65ch}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+  .meta-chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:7px 13px;border-radius:8px}
+  .meta-chip b{color:var(--text)}.meta-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  section{margin-bottom:58px;scroll-margin-top:30px}
+  h2{font-family:var(--disp);font-weight:700;font-size:27px;letter-spacing:.3px;margin-bottom:8px;display:flex;align-items:baseline;gap:13px}
+  h2 .num{font-family:var(--mono);font-size:15px;color:var(--acc-soft);font-weight:700}
+  .sec-sub{color:var(--text-dim);margin-bottom:24px;font-size:15.5px}
+  h3{font-family:var(--disp);font-weight:600;font-size:18.5px;margin:30px 0 12px;color:var(--text);display:flex;align-items:center;gap:9px}
+  h3::before{content:"";width:5px;height:18px;background:var(--acc);border-radius:3px;display:inline-block}
+  p{margin-bottom:13px;color:var(--text)}p.dim{color:var(--text-dim)}
+  a.link{color:var(--acc-soft);text-decoration:none;border-bottom:1px dashed rgba(255,192,90,.4)}a.link:hover{border-bottom-style:solid}
+  strong{color:#fff;font-weight:600}
+  code.inline{font-family:var(--mono);font-size:13px;background:var(--bg-code);color:var(--gold);padding:2px 7px;border-radius:5px;border:1px solid var(--line-soft)}
+  ul,ol{margin:6px 0 16px 4px;padding-left:22px}li{margin-bottom:8px;color:var(--text)}li::marker{color:var(--acc-soft)}
+  ul.mech li::marker{content:"▸  ";color:var(--acc-soft)}
+  .code{position:relative;margin:16px 0 20px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--bg-code)}
+  .code-head{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .code-head .dots{display:flex;gap:6px}.code-head .dots i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .code-head .dots i:nth-child(1){background:#ff5f57}.code-head .dots i:nth-child(2){background:#febc2e}.code-head .dots i:nth-child(3){background:#28c840}
+  .code-head .title{font-family:var(--mono);font-size:11.5px;color:var(--text-faint);margin-left:6px}
+  .code-head .copy{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--line);padding:4px 11px;border-radius:6px;cursor:pointer;transition:.15s}
+  .code-head .copy:hover{color:var(--acc-soft);border-color:var(--acc)}.code-head .copy.done{color:var(--green);border-color:rgba(74,222,128,.4)}
+  pre{padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.65}
+  pre code{font-family:var(--mono);white-space:pre}
+  .c-cmd{color:#e7e9ee}.c-flag{color:var(--cyan)}.c-str{color:var(--green)}.c-cmt{color:var(--text-faint);font-style:italic}.c-key{color:var(--acc-soft)}.c-prompt{color:var(--acc-soft);user-select:none}.c-slash{color:var(--purple)}
+  .callout{display:flex;gap:13px;padding:15px 17px;border-radius:11px;margin:18px 0;border:1px solid var(--line);background:var(--bg-card);font-size:14.5px}
+  .callout .ico{font-size:19px;flex:0 0 auto;line-height:1.4}.callout .body{color:var(--text-dim)}.callout .body b{color:var(--text)}
+  .callout.note{border-color:rgba(56,189,248,.32);background:rgba(56,189,248,.06)}.callout.note .ico{color:var(--cyan)}
+  .callout.warn{border-color:rgba(251,191,36,.34);background:rgba(251,191,36,.06)}.callout.warn .ico{color:var(--warn)}
+  .callout.pit{border-color:rgba(248,113,113,.34);background:rgba(248,113,113,.06)}.callout.pit .ico{color:var(--danger)}
+  .callout.tip{border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.05)}.callout.tip .ico{color:var(--green)}
+  .callout.dev{border-color:rgba(245,166,35,.4);background:var(--acc-glow)}.callout.dev .ico{color:var(--acc-soft)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:20px 0}
+  .card{background:var(--bg-card);border:1px solid var(--line);border-radius:13px;padding:18px;transition:.18s}
+  .card:hover{border-color:rgba(245,166,35,.45);transform:translateY(-2px)}
+  .card .ci{font-size:24px;margin-bottom:10px}.card h5{font-family:var(--disp);font-weight:600;font-size:16px;margin-bottom:6px;color:#fff}
+  .card p{font-size:13.5px;color:var(--text-dim);margin:0}.card .lbl{font-family:var(--mono);font-size:10.5px;color:var(--acc-soft);letter-spacing:1px}
+  .tbl{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .tbl th{background:var(--bg-soft);text-align:left;padding:11px 14px;font-family:var(--mono);font-size:12px;color:var(--acc-soft);letter-spacing:.5px;border-bottom:1px solid var(--line)}
+  .tbl td{padding:11px 14px;border-bottom:1px solid var(--line-soft);color:var(--text-dim);vertical-align:top}
+  .tbl tr:last-child td{border-bottom:none}.tbl td code{font-family:var(--mono);font-size:12.5px;color:var(--gold);white-space:nowrap}.tbl td b{color:var(--text)}
+  .cmd-list{margin:16px 0}
+  .cmd{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--line-soft);align-items:baseline}
+  .cmd:last-child{border-bottom:none}
+  .cmd .cc{font-family:var(--mono);font-size:13px;color:var(--purple);background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.22);padding:3px 9px;border-radius:6px;white-space:nowrap;flex:0 0 auto;min-width:200px}
+  .cmd .cd{color:var(--text-dim);font-size:14px}
+  .pager{display:flex;gap:14px;margin-top:60px;padding-top:28px;border-top:1px solid var(--line)}
+  .pager a{flex:1;text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--bg-card);transition:.18s}
+  .pager a:hover{border-color:var(--acc);background:var(--acc-glow)}
+  .pager .pl{font-family:var(--mono);font-size:11px;color:var(--text-faint);letter-spacing:1px}
+  .pager .pt{font-family:var(--disp);font-weight:600;font-size:16px;color:var(--text);margin-top:5px}
+  .pager a.next{text-align:right}.pager a.disabled{opacity:.4;pointer-events:none}
+  .finale{text-align:center;border:1px solid var(--line);border-radius:16px;padding:36px 24px;margin-top:30px;background:linear-gradient(160deg,rgba(245,166,35,.06),rgba(255,90,54,.05))}
+  .finale .big{font-family:var(--disp);font-weight:700;font-size:26px;background:linear-gradient(120deg,var(--acc),var(--claw));-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:8px}
+  .mobile-bar{display:none}
+  @media(max-width:880px){
+    aside{display:none}main{padding:24px 18px 80px}
+    .mobile-bar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;background:rgba(13,15,18,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:13px 16px;margin:-24px -18px 24px}
+    .mobile-bar .logo{font-size:22px}.mobile-bar .nm{font-family:var(--disp);font-weight:700;font-size:16px}.mobile-bar .nm b{color:var(--claw)}
+    .pager{flex-direction:column}.cmd{flex-direction:column;gap:5px}.cmd .cc{min-width:0}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="wrap">
+
+<aside>
+  <div class="brand"><span class="logo">🦞</span><span class="name">Open<b>Claw</b></span></div>
+  <div class="brand-sub">× CODEX · UBUNTU GUIDE</div>
+  <div class="part-pill">⚡ PART 4 / 4 — ADVANCED</div>
+  <nav>
+    <div class="nav-group">
+      <h4>พื้นฐานการสั่งงาน</h4>
+      <a href="#intro"><span class="nx">00</span> 3 ชั้นการสั่งงาน</a>
+      <a href="#directives"><span class="nx">01</span> Directives</a>
+      <a href="#session"><span class="nx">02</span> คำสั่งจัดการ session</a>
+    </div>
+    <div class="nav-group">
+      <h4>Codex & Agents</h4>
+      <a href="#codex"><span class="nx">03</span> คำสั่ง Codex</a>
+      <a href="#subagents"><span class="nx">04</span> Subagents + routing</a>
+      <a href="#exec"><span class="nx">05</span> Exec + approvals</a>
+    </div>
+    <div class="nav-group">
+      <h4>ขยายความสามารถ</h4>
+      <a href="#skills"><span class="nx">06</span> Skills + ClawHub</a>
+      <a href="#cron"><span class="nx">07</span> Cron + automation</a>
+      <a href="#workflow"><span class="nx">08</span> Dev workflow 🔥</a>
+      <a href="#ops"><span class="nx">09</span> ดูแลระบบ</a>
+    </div>
+    <div class="nav-future">
+      <div class="roadmap-item done"><span>🦞</span> Part 1 — ติดตั้ง + Codex <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>✈️</span> Part 2 — Telegram <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item done"><span>🎮</span> Part 3 — Discord <span class="tag">เสร็จ</span></div>
+      <div class="roadmap-item cur"><span>⚡</span> Part 4 — ขั้นสูง <span class="tag">ตอนนี้</span></div>
+    </div>
+  </nav>
+</aside>
+
+<main>
+  <div class="mobile-bar"><span class="logo">⚡</span><span class="nm">Open<b>Claw</b> × Advanced</span></div>
+
+  <div class="hero">
+    <div class="eyebrow">PART 4 · ตอนจบ — จากผู้ใช้สู่ผู้ออกแบบระบบ</div>
+    <h1>สั่งงาน OpenClaw <span class="grad">ขั้นสูง</span><br>ให้ทำงานแทนคุณจริง ๆ</h1>
+    <p class="lead">
+      ตอนนี้คุณติดตั้ง เชื่อม Codex และต่อ Telegram/Discord ครบแล้ว — Part สุดท้ายนี้คือ "วิธีสั่ง" ให้มันทำงานเป็น:
+      directive ปรับพฤติกรรม, คำสั่ง Codex, การกระจายงานให้ subagent, การคุมสิทธิ์ exec, ติดตั้ง Skills จาก ClawHub
+      และตั้ง automation ให้ทำงานเองตามเวลา
+    </p>
+    <div class="meta-row">
+      <span class="meta-chip"><span class="dot"></span> ปิดซีรีส์</span>
+      <span class="meta-chip">⌨️ Slash + Directives</span>
+      <span class="meta-chip">🤖 Multi-agent</span>
+      <span class="meta-chip">⏰ Cron + Skills</span>
+    </div>
+  </div>
+
+  <!-- 00 -->
+  <section id="intro">
+    <h2><span class="num">00</span> 3 ชั้นของการสั่งงาน</h2>
+    <p class="sec-sub">แยกให้ออกว่าพิมพ์อะไร ที่ไหน แล้วเกิดอะไร</p>
+    <div class="cards">
+      <div class="card"><div class="ci">⌨️</div><div class="lbl">SHELL</div><h5>CLI commands</h5><p><code class="inline">openclaw ...</code> คุม infrastructure: ติดตั้ง สตาร์ท ตั้งค่า</p></div>
+      <div class="card"><div class="ci">💬</div><div class="lbl">CHAT</div><h5>Slash commands</h5><p><code class="inline">/...</code> ในแชต Gateway ประมวลผลก่อนถึงโมเดล = เร็วและแน่นอน</p></div>
+      <div class="card"><div class="ci">🎚️</div><div class="lbl">HINT</div><h5>Directives</h5><p><code class="inline">/think /fast /model</code> ปรับพฤติกรรมของ turn/session</p></div>
+    </div>
+    <p>
+      จุดสำคัญ: <strong>slash command ถูก Gateway ประมวลผลก่อนที่โมเดลจะเห็น</strong> — จึงเร็วและ deterministic
+      ส่วน <strong>directive</strong> ถ้าส่งเป็นข้อความเดี่ยว ๆ (มีแค่ directive) จะ <em>ติดถาวรกับ session</em>
+      แต่ถ้าแทรกในข้อความปกติจะเป็นแค่ "hint ครั้งเดียว" ไม่ติดถาวร
+    </p>
+    <div class="callout note">
+      <span class="ico">🔐</span>
+      <div class="body">คำสั่งและ directive ใช้ได้เฉพาะ <b>ผู้ส่งที่ได้รับสิทธิ์</b> (ผ่าน allowlist/pairing) — คนที่ไม่มีสิทธิ์ ข้อความ <code class="inline">/...</code> จะถูกมองเป็นข้อความธรรมดาเฉย ๆ</div>
+    </div>
+  </section>
+
+  <!-- 01 -->
+  <section id="directives">
+    <h2><span class="num">01</span> Directives — ปรับพฤติกรรม Codex</h2>
+    <p class="sec-sub">ตัวปรับการคิด/ความเร็ว/การแสดงผลของ agent · ส่งเดี่ยว ๆ = ติดถาวร, แทรก = ครั้งเดียว</p>
+    <div class="cmd-list">
+      <div class="cmd"><span class="cc">/think off|low|medium|high|xhigh</span><span class="cd">ระดับการคิด (reasoning) · alias <code class="inline">/t</code></span></div>
+      <div class="cmd"><span class="cc">/fast on|off|status</span><span class="cd">โหมดเร็ว · กับ OpenAI/Codex = map เป็น <code class="inline">service_tier=priority</code></span></div>
+      <div class="cmd"><span class="cc">/model &lt;name&gt;</span><span class="cd">สลับโมเดลทันที เช่น <code class="inline">/model openai/gpt-5.5</code> · บน Discord เปิด picker</span></div>
+      <div class="cmd"><span class="cc">/reasoning on|off|stream</span><span class="cd">โชว์ reasoning แยกข้อความ · <b>ระวังในกลุ่ม</b> เผยความคิดภายใน</span></div>
+      <div class="cmd"><span class="cc">/verbose on|full|off</span><span class="cd">เพิ่มรายละเอียด (debug) · ปกติปิดไว้ · alias <code class="inline">/v</code></span></div>
+      <div class="cmd"><span class="cc">/elevated on|off|ask|full</span><span class="cd">โหมดสิทธิ์สูง · <code class="inline">full</code> = ข้าม exec approval (ระวัง!)</span></div>
+      <div class="cmd"><span class="cc">/queue &lt;mode&gt;</span><span class="cd">จัดคิวข้อความ เช่น <code class="inline">debounce:2s cap:25 drop:summarize</code></span></div>
+    </div>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">ในแชต — ตัวอย่าง</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-slash">/think high</span>                 <span class="c-cmt"># ส่งเดี่ยว = session คิดละเอียดขึ้นถาวร</span>
+<span class="c-slash">/think high</span> ช่วย refactor ฟังก์ชันนี้   <span class="c-cmt"># แทรก = ใช้แค่ครั้งนี้</span></code></pre>
+    </div>
+    <div class="callout pit">
+      <span class="ico">⚠️</span>
+      <div class="body"><code class="inline">/reasoning</code> และ <code class="inline">/verbose</code> ในห้องกลุ่มอาจเผย reasoning/tool output ที่ไม่ตั้งใจให้คนอื่นเห็น — ในกลุ่มควรปิดไว้</div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section id="session">
+    <h2><span class="num">02</span> คำสั่งจัดการ session & บริบท</h2>
+    <p class="sec-sub">คุม context window, รีเซ็ต, ตรวจสถานะ</p>
+    <div class="cmd-list">
+      <div class="cmd"><span class="cc">/new [model]</span><span class="cd">เริ่ม session ใหม่ (ล้าง context) · ใส่ชื่อโมเดลพ่วงได้ · alias <code class="inline">/reset</code></span></div>
+      <div class="cmd"><span class="cc">/compact [คำสั่ง]</span><span class="cd">ย่อ context ที่ยาวเกินให้สั้นลง (text-only)</span></div>
+      <div class="cmd"><span class="cc">/context [list|detail|json]</span><span class="cd">ดูว่าตอนนี้ context ประกอบด้วยอะไร + ขนาดต่อไฟล์/tool/skill</span></div>
+      <div class="cmd"><span class="cc">/status</span><span class="cd">สถานะ runtime + uptime + โควต้า provider (เช่น "Codex 80% left")</span></div>
+      <div class="cmd"><span class="cc">/usage off|tokens|full|cost</span><span class="cd">โชว์ token/ค่าใช้จ่ายต่อคำตอบ</span></div>
+      <div class="cmd"><span class="cc">/tools [compact|verbose]</span><span class="cd">ดูว่า agent ใช้ tool อะไรได้บ้างตอนนี้</span></div>
+      <div class="cmd"><span class="cc">/btw &lt;คำถาม&gt;</span><span class="cd">ถามแทรกแบบไม่กระทบ context หลัก (one-shot ไม่บันทึก)</span></div>
+      <div class="cmd"><span class="cc">/stop</span><span class="cd">ยกเลิก run ที่กำลังทำงานใน session นี้</span></div>
+      <div class="cmd"><span class="cc">/export-session [path]</span><span class="cd">export session เป็น HTML พร้อม system prompt · alias <code class="inline">/export</code></span></div>
+    </div>
+    <div class="callout tip">
+      <span class="ico">🧹</span>
+      <div class="body"><b>นิสัยที่ดี:</b> งานใหม่ที่ไม่เกี่ยวกับงานเดิม → <code class="inline">/new</code> ก่อน เพื่อไม่ให้ context เก่าปนเปื้อนและเปลือง token · งานยาวที่ context บวม → <code class="inline">/compact</code></div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="codex">
+    <h2><span class="num">03</span> คำสั่ง Codex โดยตรง</h2>
+    <p class="sec-sub">เมื่อ bundled Codex plugin เปิดอยู่ ใช้ surface คำสั่ง <code class="inline">/codex</code> ควบคุม Codex แบบ native</p>
+    <div class="cmd-list">
+      <div class="cmd"><span class="cc">/codex bind</span><span class="cd">ผูก session ปัจจุบันเข้ากับ Codex thread</span></div>
+      <div class="cmd"><span class="cc">/codex threads</span><span class="cd">ดูรายการ Codex thread ที่มี</span></div>
+      <div class="cmd"><span class="cc">/codex resume</span><span class="cd">กลับไปทำงานต่อใน thread เดิม</span></div>
+      <div class="cmd"><span class="cc">/codex steer &lt;ข้อความ&gt;</span><span class="cd">แทรกคำแนะนำเข้าไประหว่าง Codex กำลังรันอยู่</span></div>
+      <div class="cmd"><span class="cc">/codex stop</span><span class="cd">หยุด Codex run ปัจจุบัน</span></div>
+    </div>
+    <p>เช็กว่าใครกำลังรัน session อยู่ด้วย <code class="inline">/status</code> — บรรทัด <strong>Runtime</strong> จะบอกว่าเป็น <code class="inline">OpenAI Codex</code>, CLI backend, ACP backend หรือ OpenClaw Default</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">ในแชต — สลับโมเดล + ดู runtime</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-slash">/model openai/gpt-5.5</span>    <span class="c-cmt"># ใช้ Codex (GPT-5.5)</span>
+<span class="c-slash">/status</span>                  <span class="c-cmt"># ดู Runtime: OpenAI Codex + โควต้าคงเหลือ</span>
+<span class="c-slash">/model status</span>            <span class="c-cmt"># ดู provider/endpoint/auth</span></code></pre>
+    </div>
+    <div class="callout note">
+      <span class="ico">🧭</span>
+      <div class="body">ใช้ ACP เฉพาะตอนต้องการจริง ๆ (เช่นผูกห้องในโปรเจกต์แบบ Part 3 #09) · งานทั่วไปให้คุม Codex ผ่าน surface <code class="inline">/codex ...</code> แบบ native</div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="subagents">
+    <h2><span class="num">04</span> หลาย Agent + Subagents + Routing</h2>
+    <p class="sec-sub">กระจายงานออกเป็นหลายตัว แล้วคุมแต่ละตัว — หัวใจของ "multi-agent orchestration"</p>
+
+    <h3>คำสั่งคุม subagent (ในแชต)</h3>
+    <div class="cmd-list">
+      <div class="cmd"><span class="cc">/subagents list|info|log</span><span class="cd">ดูรายการ/รายละเอียด/log ของ subagent ใน session นี้</span></div>
+      <div class="cmd"><span class="cc">/subagents spawn</span><span class="cd">สร้าง subagent ใหม่ให้ทำงานย่อย</span></div>
+      <div class="cmd"><span class="cc">/steer &lt;id|#&gt; &lt;ข้อความ&gt;</span><span class="cd">แทรกคำแนะนำให้ subagent ที่กำลังรัน · alias <code class="inline">/tell</code></span></div>
+      <div class="cmd"><span class="cc">/kill &lt;id|#|all&gt;</span><span class="cd">หยุด subagent ทันที (ไม่มีถามยืนยัน)</span></div>
+      <div class="cmd"><span class="cc">/agents</span><span class="cd">ดู agent ที่ผูกกับ thread ใน session นี้</span></div>
+    </div>
+
+    <h3>กำหนด agent หลายตัว + model routing</h3>
+    <p>ตั้งหลาย agent ที่ใช้คนละโมเดล แล้ว route ตามห้อง/role ได้ — ตัวอย่างแนวทางจัดสรรโมเดล:</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">~/.openclaw/openclaw.json — multi-agent</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-cmd">{</span>
+  <span class="c-key">agents</span>: {
+    <span class="c-key">list</span>: [
+      { <span class="c-key">id</span>: <span class="c-str">"coder"</span>,    <span class="c-key">model</span>: <span class="c-str">"openai/gpt-5.5"</span> },        <span class="c-cmt">// งานเขียนโค้ด (Codex)</span>
+      { <span class="c-key">id</span>: <span class="c-str">"planner"</span>,  <span class="c-key">model</span>: <span class="c-str">"anthropic/claude-opus-4-8"</span> }, <span class="c-cmt">// งานวางแผน/สถาปัตยกรรม</span>
+      { <span class="c-key">id</span>: <span class="c-str">"router"</span>,   <span class="c-key">model</span>: <span class="c-str">"anthropic/claude-haiku-4-5"</span> }   <span class="c-cmt">// งานเบา ปริมาณเยอะ</span>
+    ]
+  }
+<span class="c-cmd">}</span></code></pre>
+    </div>
+    <ul class="mech">
+      <li>กฎทั่วไป: โมเดลแรง (Opus/GPT-5.5) ไว้วางแผน/โค้ด · โมเดลเบา (Haiku/mini) ไว้งานซ้ำ ๆ ปริมาณมาก = คุมต้นทุน</li>
+      <li><code class="inline">maxConcurrent</code> (ค่าเริ่มต้น 4) คุมจำนวน run ขนานข้าม session</li>
+      <li>route ตาม role บน Discord ได้ด้วย <code class="inline">bindings[].match.roles</code> (Part 3)</li>
+    </ul>
+    <div class="callout warn">
+      <span class="ico">🎯</span>
+      <div class="body"><b>อย่ารีบทำ multi-agent:</b> เอกสารทางการเตือนว่าให้ใช้ single agent ที่ตั้งดี ๆ ให้สุดก่อน — เพิ่ม agent เฉพาะเมื่อมีเหตุผลชัด เพราะแต่ละตัวเพิ่มความซับซ้อนในการ debug</div>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="exec">
+    <h2><span class="num">05</span> Exec + Approvals (ความปลอดภัย)</h2>
+    <p class="sec-sub">เมื่อ agent ขอรันคำสั่งบนเครื่อง — คุมว่าจะให้รันได้แค่ไหน ต้องอนุมัติไหม</p>
+    <div class="cmd-list">
+      <div class="cmd"><span class="cc">/exec host=&lt;...&gt; security=&lt;...&gt; ask=&lt;...&gt;</span><span class="cd">ตั้งนโยบาย exec · ส่ง <code class="inline">/exec</code> เปล่าเพื่อดูค่าปัจจุบัน</span></div>
+      <div class="cmd"><span class="cc">/approve &lt;id&gt; &lt;decision&gt;</span><span class="cd">อนุมัติ/ปฏิเสธคำขอ exec ที่ค้างอยู่</span></div>
+      <div class="cmd"><span class="cc">/elevated on|off|ask|full</span><span class="cd">ระดับสิทธิ์ · <code class="inline">full</code> = ข้าม approval</span></div>
+    </div>
+    <table class="tbl">
+      <tr><th>พารามิเตอร์ /exec</th><th>ค่า</th><th>ความหมาย</th></tr>
+      <tr><td><code>security</code></td><td><code>deny</code> / <code>allowlist</code> / <code>full</code></td><td>ระดับการอนุญาตคำสั่ง</td></tr>
+      <tr><td><code>ask</code></td><td><code>off</code> / <code>on-miss</code> / <code>always</code></td><td>ถามอนุมัติเมื่อไหร่</td></tr>
+      <tr><td><code>host</code></td><td><code>auto</code> / <code>sandbox</code> / <code>gateway</code> / <code>node</code></td><td>รันที่ไหน</td></tr>
+    </table>
+    <div class="callout pit">
+      <span class="ico">🚨</span>
+      <div class="body"><b>อย่าตั้ง allow-all กับ exec/diagnostics</b> โดยเฉพาะคำสั่งที่ดึงข้อมูลระบบ · ให้ตั้ง <code class="inline">ask=on-miss</code> หรือ <code class="inline">always</code> ในงานที่เสี่ยง · บน Discord/Telegram จะมีปุ่มอนุมัติให้กดยืนยัน (หมดอายุใน 30 นาที)</div>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section id="skills">
+    <h2><span class="num">06</span> AgentSkills + ClawHub</h2>
+    <p class="sec-sub">เพิ่มความสามารถใหม่ ๆ ให้ agent ด้วย plugin/skill จากชุมชน (มีกว่า 100 ตัว)</p>
+
+    <h3>ติดตั้งจาก ClawHub</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — ติดตั้ง plugin/skill</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw plugins install clawhub:&lt;pkg&gt;</span>   <span class="c-cmt"># จาก ClawHub</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw plugins install ./local-path</span>     <span class="c-cmt"># จาก path/archive/npm</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw plugins list</span></code></pre>
+    </div>
+
+    <h3>เรียกใช้ skill ในแชต</h3>
+    <div class="cmd-list">
+      <div class="cmd"><span class="cc">/skill &lt;name&gt; [input]</span><span class="cd">รัน skill ตามชื่อ</span></div>
+      <div class="cmd"><span class="cc">/plugins list|enable|disable</span><span class="cd">ดู/เปิด/ปิด plugin (owner-only · ต้อง <code class="inline">commands.plugins: true</code>)</span></div>
+    </div>
+    <p class="dim">skill ที่ตั้ง <code class="inline">user-invocable</code> จะกลายเป็น slash command อัตโนมัติ (ชื่อ sanitize เป็น <code class="inline">a-z0-9_</code>) — บางตัวประกาศ <code class="inline">command-dispatch: tool</code> ให้รันตรงเข้า tool โดยไม่ผ่านโมเดล (เร็ว+แน่นอน)</p>
+    <div class="callout tip">
+      <span class="ico">🧩</span>
+      <div class="body">เปิด <code class="inline">/mcp set ...</code> เพื่อต่อ MCP server (ต้อง <code class="inline">commands.mcp: true</code>) — สาย dev ต่อ MCP ของโปรเจกต์เข้ามาให้ agent เรียกได้ เช่นเดียวกับที่คุณคุ้นใน Claude Code</div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="cron">
+    <h2><span class="num">07</span> Cron + Automation</h2>
+    <p class="sec-sub">ให้ agent ทำงานเองตามเวลา หรือทำงานเบื้องหลัง</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — cron</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw cron list</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw cron add</span>      <span class="c-cmt"># สร้างงานตามเวลา (รองรับ --tools)</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw cron edit|rm|enable|disable|run</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw cron status</span></code></pre>
+    </div>
+    <ul class="mech">
+      <li><b>Scheduled tasks (cron)</b> — งานตามเวลา เช่นสรุปข่าวทุกเช้า, เช็ก CI ทุกชั่วโมง แล้วส่งเข้า Telegram/Discord</li>
+      <li><b>Standing orders</b> — คำสั่งประจำที่ agent ยึดถือตลอด</li>
+      <li><b>Background tasks</b> — งานเบื้องหลัง ดูได้ด้วย <code class="inline">/tasks</code> ในแชต</li>
+      <li><b>Hooks</b> — ผูก action กับ event ของระบบ</li>
+    </ul>
+    <div class="callout note">
+      <span class="ico">⏰</span>
+      <div class="body">ตัวอย่าง: cron ตอน 9 โมงเช้า → agent ดึง issue ที่ค้างใน tracker มาสรุป แล้วส่งเข้าห้อง Discord <code class="inline">#standup</code> ให้คุณอ่านก่อนเริ่มงาน</div>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section id="workflow">
+    <h2><span class="num">08</span> 🔥 Dev workflow รวมร่าง</h2>
+    <p class="sec-sub">เอาทุก Part มาประกอบเป็น setup ใช้งานจริงสำหรับนักพัฒนา</p>
+    <div class="callout dev">
+      <span class="ico">🏗️</span>
+      <div class="body"><b>ภาพรวมระบบที่ได้:</b> Gateway รันบน VPS (Part 1) → สมอง Codex/GPT-5.5 → สั่งงานด่วนจากมือถือผ่าน Telegram (Part 2) → ห้องโปรเจกต์ผูก Codex ACP บน Discord (Part 3) → automation + skills (Part 4)</div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="ci">📱</div><div class="lbl">TELEGRAM</div><h5>สั่งด่วน</h5><p>"deploy staging ให้หน่อย" จากมือถือระหว่างเดินทาง</p></div>
+      <div class="card"><div class="ci">🎮</div><div class="lbl">DISCORD</div><h5>ห้องโปรเจกต์</h5><p><code class="inline">#pedpro-codex</code> ผูก Codex กับ repo จริง คุยทำฟีเจอร์</p></div>
+      <div class="card"><div class="ci">⏰</div><div class="lbl">CRON</div><h5>งานประจำ</h5><p>สรุป PR/issue เข้าห้อง standup ทุกเช้า</p></div>
+      <div class="card"><div class="ci">🧩</div><div class="lbl">SKILLS</div><h5>เครื่องมือ</h5><p>MCP/skill ของโปรเจกต์ให้ agent เรียกใช้</p></div>
+    </div>
+    <h3>ลำดับสั่งงานในห้อง Codex (ตัวอย่างจริง)</h3>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">Discord #pedpro-codex</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-slash">/model openai/gpt-5.5</span>
+<span class="c-slash">/think high</span>
+อ่าน bruno-api/botline/*.bru แล้วเพิ่ม validation ให้ฟอร์ม
+ตามสัญญา API ห้ามเดา field เอง
+
+<span class="c-cmt"># ระหว่าง Codex ทำงาน ถ้าอยากปรับทิศ:</span>
+<span class="c-slash">/codex steer</span> ใช้ double quotes และห้ามใส่ semicolon ตาม convention
+
+<span class="c-cmt"># ถามแทรกโดยไม่กระทบงานหลัก:</span>
+<span class="c-slash">/btw</span> ตอนนี้แก้ไฟล์ไหนไปแล้วบ้าง</code></pre>
+    </div>
+    <div class="callout tip">
+      <span class="ico">💡</span>
+      <div class="body">วาง convention ของโปรเจกต์ (เช่น flat directory, Bruno เป็น source of truth, double quotes/no semicolons) ไว้ใน <code class="inline">AGENTS.md</code> ของ workspace — มันจะถูก inject ทุก session ไม่ต้องพิมพ์ซ้ำทุกครั้ง</div>
+    </div>
+  </section>
+
+  <!-- 09 -->
+  <section id="ops">
+    <h2><span class="num">09</span> ดูแลระบบระยะยาว</h2>
+    <p class="sec-sub">คำสั่ง CLI ที่ควรรู้ไว้ดูแลความสะอาดและความปลอดภัย</p>
+    <div class="code">
+      <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="title">bash — operations</span><button class="copy">คัดลอก</button></div>
+<pre><code><span class="c-prompt">$ </span><span class="c-cmd">openclaw sessions</span>                 <span class="c-cmt"># ดู session ทั้งหมด (--active 120 / --all-agents / --json)</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw sessions cleanup</span>         <span class="c-cmt"># เคลียร์ตาม disk budget</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw memory status</span>            <span class="c-cmt"># สถานะ memory index</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw memory search <span class="c-flag">--query</span> <span class="c-str">"deploy notes"</span></span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw security audit</span>            <span class="c-cmt"># ตรวจช่องโหว่การตั้งค่า (เช่น allowlist หละหลวม)</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw backup create</span>             <span class="c-cmt"># สำรอง state (--only-config / --no-include-workspace)</span>
+<span class="c-prompt">$ </span><span class="c-cmd">openclaw backup verify &lt;path&gt;</span>      <span class="c-cmt"># ตรวจ manifest</span></code></pre>
+    </div>
+    <div class="callout tip">
+      <span class="ico">🛡️</span>
+      <div class="body">รัน <code class="inline">openclaw security audit</code> เป็นระยะ โดยเฉพาะหลังเพิ่ม channel/skill ใหม่ — มันจะเตือนเรื่อง allowlist แบบชื่อ/tag (แทน ID) และการตั้งค่าเสี่ยงอื่น ๆ · และอย่าลืม <code class="inline">openclaw update</code> ให้ทันรุ่นล่าสุดเสมอ</div>
+    </div>
+  </section>
+
+  <!-- FINALE -->
+  <section id="finale">
+    <div class="finale">
+      <div class="big">🦞 จบครบทั้ง 4 Part!</div>
+      <p style="color:var(--text-dim);max-width:60ch;margin:0 auto">
+        คุณได้ระบบ OpenClaw + Codex ที่ติดตั้งบน Ubuntu, คุยได้ทั้ง CLI / Telegram / Discord,
+        ผูกห้องเข้ากับโปรเจกต์จริง, มี automation และ skills — พร้อมต่อยอดเป็น workflow ของตัวเอง
+      </p>
+      <div class="meta-row" style="justify-content:center;margin-top:22px">
+        <span class="meta-chip">🦞 ติดตั้ง + Codex</span>
+        <span class="meta-chip">✈️ Telegram</span>
+        <span class="meta-chip">🎮 Discord</span>
+        <span class="meta-chip">⚡ ขั้นสูง</span>
+      </div>
+    </div>
+    <h3 style="margin-top:40px">ขั้นต่อไปแนะนำ</h3>
+    <ul class="mech">
+      <li>เริ่มจาก single agent (Codex) ที่ตั้งดี ๆ ให้สุดก่อน แล้วค่อยขยายเป็น multi-agent เมื่อมีเหตุผลชัด</li>
+      <li>ใส่ convention โปรเจกต์ลง <code class="inline">AGENTS.md</code> · เก็บ note ยาวใน <code class="inline">MEMORY.md</code></li>
+      <li>ตั้ง <code class="inline">openclaw update</code> เป็นนิสัย + <code class="inline">backup create</code> ก่อนเปลี่ยนใหญ่ ๆ</li>
+      <li>อ่านเอกสารเชิงลึกเพิ่มที่ <a class="link" href="https://docs.openclaw.ai/th/install" target="_blank">docs.openclaw.ai (มีภาษาไทย)</a></li>
+    </ul>
+  </section>
+
+  <div class="pager">
+    <a class="prev" href="#intro"><div class="pl">← Part 3</div><div class="pt">🎮 Discord</div></a>
+    <a class="next disabled"><div class="pl">จบซีรีส์ ✓</div><div class="pt">— ขอบคุณที่ติดตาม —</div></a>
+  </div>
+</main>
+</div>
+
+<script>
+  document.querySelectorAll('.code').forEach(block=>{
+    const btn=block.querySelector('.copy');if(!btn)return;
+    btn.addEventListener('click',()=>{
+      const code=block.querySelector('pre').innerText;
+      navigator.clipboard.writeText(code).then(()=>{
+        const t=btn.textContent;btn.textContent='✓ คัดลอกแล้ว';btn.classList.add('done');
+        setTimeout(()=>{btn.textContent=t;btn.classList.remove('done')},1500);
+      });
+    });
+  });
+  const prog=document.getElementById('progress');
+  window.addEventListener('scroll',()=>{const h=document.documentElement;prog.style.width=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100+'%';});
+  const links=[...document.querySelectorAll('nav a[href^="#"]')];const map={};
+  links.forEach(l=>{const id=l.getAttribute('href').slice(1);const s=document.getElementById(id);if(s)map[id]=l;});
+  const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const l=map[e.target.id];if(l)l.classList.add('active');}});},{rootMargin:'-15% 0px -75% 0px'});
+  Object.keys(map).forEach(id=>{const s=document.getElementById(id);if(s)obs.observe(s);});
+</script>
+</body>
+</html>
