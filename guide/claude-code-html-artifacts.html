@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Claude Code · HTML Artifacts Workshop — Pedpro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,800&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --bg:#0a0b0f; --surface:#14151d; --surface-2:#1b1d28; --surface-3:#232536;
+    --border:#2b2d3d; --border-soft:#1f212e;
+    --text:#eef0f5; --text-dim:#9a9bac; --text-faint:#5d5f70;
+    --gold:#e8b04b; --gold-dim:#7a5c22; --gold-soft:rgba(232,176,75,0.10);
+    --teal:#5fd9c4; --teal-soft:rgba(95,217,196,0.10);
+    --coral:#f1828f; --blue:#7da8f4; --purple:#c792ea;
+    --side-w:268px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+  body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  code,.mono,pre{font-family:'JetBrains Mono',monospace;}
+  ::selection{background:rgba(232,176,75,0.25);}
+  img,svg{max-width:100%;}
+
+  .progress{position:fixed;top:0;left:0;right:0;height:3px;background:var(--border-soft);z-index:100;}
+  .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .1s linear;}
+
+  /* mobile top bar — hidden on desktop */
+  .mobile-bar{display:none;}
+  .nav-overlay{display:none;}
+
+  .shell{display:flex;max-width:1340px;margin:0 auto;}
+  .sidenav{width:var(--side-w);flex-shrink:0;position:sticky;top:0;height:100vh;padding:28px 18px;border-right:1px solid var(--border-soft);display:flex;flex-direction:column;overflow-y:auto;}
+  .side-brand{font-family:'Fraunces',serif;font-weight:600;font-size:15px;letter-spacing:-.01em;margin-bottom:4px;}
+  .side-brand em{color:var(--gold);font-style:italic;font-weight:400;}
+  .side-sub{font-size:11px;color:var(--text-faint);margin-bottom:24px;letter-spacing:.04em;}
+  .side-link{display:flex;align-items:baseline;gap:10px;padding:9px 10px;border-radius:8px;color:var(--text-dim);text-decoration:none;font-size:13px;font-weight:500;transition:all .15s ease;margin-bottom:2px;}
+  .side-link:hover{background:var(--surface-2);color:var(--text);}
+  .side-link.active{background:var(--surface-2);color:var(--gold);}
+  .side-num{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-faint);flex-shrink:0;}
+  .side-link.active .side-num{color:var(--gold);}
+  .side-foot{margin-top:auto;padding-top:18px;border-top:1px solid var(--border-soft);}
+  .side-foot p{font-size:11px;color:var(--text-faint);line-height:1.6;}
+
+  .content{flex:1;min-width:0;}
+  .wrap{max-width:900px;margin:0 auto;padding:0 32px;}
+
+  /* ============ RESPONSIVE: drawer nav on tablet/mobile ============ */
+  @media (max-width:980px){
+    .mobile-bar{
+      display:flex;align-items:center;gap:14px;position:sticky;top:3px;z-index:70;
+      background:rgba(10,11,15,.94);backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--border-soft);padding:12px 16px;
+      padding-top:calc(12px + env(safe-area-inset-top,0));
+    }
+    .hamburger{background:var(--surface-2);border:1px solid var(--border-soft);color:var(--gold);width:38px;height:38px;border-radius:9px;font-size:18px;cursor:pointer;flex-shrink:0;line-height:1;}
+    .mobile-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;}
+    .sidenav{
+      position:fixed;top:0;left:0;height:100vh;width:280px;z-index:90;
+      transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+      background:var(--bg);box-shadow:none;
+    }
+    .sidenav.open{transform:translateX(0);box-shadow:0 0 50px rgba(0,0,0,.6);}
+    .nav-overlay{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:80;opacity:0;pointer-events:none;transition:opacity .28s ease;}
+    .nav-overlay.show{opacity:1;pointer-events:auto;}
+    .wrap{padding:0 18px;}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 14px;}
+  }
+
+  .hero{padding:48px 0 36px;border-bottom:1px solid var(--border-soft);}
+  @media(max-width:980px){.hero{padding:32px 0 28px;}}
+  .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-faint);font-weight:600;margin-bottom:16px;}
+  .eyebrow b{color:var(--gold);}
+  h1.hero-title{font-family:'Fraunces',serif;font-weight:800;font-size:clamp(28px,5.2vw,52px);line-height:1.12;letter-spacing:-.02em;margin-bottom:16px;max-width:780px;word-break:break-word;}
+  h1.hero-title em{font-style:italic;color:var(--gold);font-weight:400;}
+  .hero-lede{font-size:clamp(14px,2.6vw,15.5px);color:var(--text-dim);max-width:660px;}
+  .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+  .chip{font-size:11px;padding:5px 12px;border-radius:20px;background:var(--surface-2);border:1px solid var(--border-soft);color:var(--text-dim);font-weight:500;}
+  .chip b{color:var(--text);}
+  .howto{margin-top:26px;background:var(--surface);border:1px solid var(--border-soft);border-radius:12px;padding:16px 20px;font-size:13px;color:var(--text-dim);display:flex;gap:12px;align-items:flex-start;}
+  .howto .ic{color:var(--teal);flex-shrink:0;font-size:15px;}
+  .howto b{color:var(--text);} .howto a{text-decoration:none;border-bottom:1px dashed;color:var(--gold);}
+
+  .lab{margin-top:30px;background:var(--surface);border:1px solid var(--border-soft);border-radius:16px;padding:clamp(16px,4vw,26px);}
+  .lab-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:20px;flex-wrap:wrap;}
+  .lab-title{font-family:'Fraunces',serif;font-size:clamp(15px,3vw,18px);font-weight:600;}
+  .scenario-toggle{display:flex;gap:6px;background:var(--bg);border:1px solid var(--border-soft);border-radius:10px;padding:4px;}
+  .scenario-toggle button{font-family:inherit;font-size:11.5px;font-weight:600;padding:8px 12px;border-radius:7px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;transition:all .15s ease;white-space:nowrap;}
+  .scenario-toggle button.active{background:var(--surface-3);color:var(--text);}
+  .scenario-toggle button.active.a{color:var(--coral);} .scenario-toggle button.active.b{color:var(--teal);}
+  .lab-bars{display:flex;flex-direction:column;gap:16px;margin-bottom:18px;}
+  .bar-row{display:grid;grid-template-columns:minmax(120px,170px) 1fr 64px;gap:14px;align-items:center;}
+  @media(max-width:560px){.bar-row{grid-template-columns:1fr 56px;}.bar-row .bar-label{grid-column:1/-1;}}
+  .bar-label{font-size:12.5px;color:var(--text-dim);font-weight:500;}
+  .bar-track{height:14px;background:var(--bg);border-radius:7px;overflow:hidden;border:1px solid var(--border-soft);}
+  .bar-fill{height:100%;border-radius:7px;transition:width .6s cubic-bezier(.4,0,.2,1);width:0%;}
+  .bar-fill.vol{background:linear-gradient(90deg,#8a5a2a,var(--coral));}
+  .bar-fill.rate{background:linear-gradient(90deg,#1f8f7c,var(--teal));}
+  .bar-fill.prod{background:linear-gradient(90deg,var(--gold-dim),var(--gold));}
+  .bar-val{font-family:'JetBrains Mono',monospace;font-size:12.5px;text-align:right;color:var(--text);}
+  .lab-verdict{border-radius:10px;padding:15px 17px;font-size:13px;line-height:1.7;border-left:3px solid var(--border);background:var(--bg);color:var(--text-dim);transition:border-color .3s ease;}
+  .lab-verdict b{color:var(--text);} .lab-verdict.a{border-left-color:var(--coral);} .lab-verdict.b{border-left-color:var(--teal);}
+
+  section.ch{padding:54px 0;border-bottom:1px solid var(--border-soft);scroll-margin-top:64px;}
+  @media(max-width:980px){section.ch{padding:40px 0;}}
+  section.ch:last-of-type{border-bottom:none;}
+  .ch-head{display:flex;align-items:baseline;gap:14px;margin-bottom:22px;}
+  .ch-num{font-family:'Fraunces',serif;font-size:14px;font-weight:700;color:var(--gold);letter-spacing:.06em;flex-shrink:0;}
+  .ch-title{font-family:'Fraunces',serif;font-size:clamp(20px,3.6vw,30px);font-weight:600;letter-spacing:-.01em;}
+  .ch-line{flex:1;height:1px;background:var(--border-soft);min-width:12px;}
+  p.body{font-size:clamp(13.5px,2.6vw,14.5px);color:var(--text-dim);margin-bottom:14px;}
+  p.body b{color:var(--text);font-weight:600;} p.body em{color:var(--gold);font-style:italic;}
+  code.inline{background:var(--surface-3);padding:1.5px 7px;border-radius:4px;font-size:12px;color:var(--gold);word-break:break-word;}
+  .mini-h{font-family:'Fraunces',serif;font-size:clamp(15px,3vw,17px);font-weight:600;margin:28px 0 14px;}
+
+  .xref{display:flex;gap:10px;align-items:flex-start;margin:18px 0 0;background:var(--gold-soft);border:1px solid rgba(232,176,75,.22);border-radius:10px;padding:13px 16px;font-size:12.5px;color:var(--text-dim);}
+  .xref .ic{color:var(--gold);flex-shrink:0;font-size:14px;}
+  .xref a{color:var(--gold);text-decoration:none;font-weight:600;border-bottom:1px dashed rgba(232,176,75,.4);}
+
+  .callout-warn{display:flex;gap:10px;align-items:flex-start;margin:0 0 20px;background:rgba(232,176,75,.07);border:1px solid rgba(232,176,75,.25);border-radius:10px;padding:13px 16px;font-size:12.5px;color:var(--text-dim);}
+  .callout-warn .ic{color:var(--gold);flex-shrink:0;} .callout-warn b{color:var(--text);}
+
+  .demo-tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border-soft);border-radius:10px;padding:4px;max-width:380px;}
+  .demo-tabs button{flex:1;font-family:inherit;font-size:12.5px;font-weight:600;padding:9px 12px;border:none;border-radius:7px;background:transparent;color:var(--text-dim);cursor:pointer;}
+  .demo-tabs button.active{background:var(--surface-3);color:var(--text);}
+  .demo-pane{border:1px solid var(--border-soft);border-radius:0 12px 12px 12px;background:var(--surface);padding:20px;}
+  .demo-pane.hidden{display:none;}
+  .md-render h4{font-size:15px;margin-bottom:8px;font-weight:600;}
+  .md-render ul{padding-left:20px;color:var(--text-dim);font-size:13px;margin-bottom:10px;}
+  .md-render li{margin-bottom:3px;} .md-render code{background:var(--surface-3);padding:1px 5px;border-radius:3px;font-size:11.5px;color:var(--gold);}
+  .html-render{display:grid;grid-template-columns:1fr 220px;gap:16px;}
+  @media(max-width:640px){.html-render{grid-template-columns:1fr;}}
+  .html-mockup{background:var(--bg);border:1px solid var(--border-soft);border-radius:10px;padding:14px;}
+  .hm-panel{background:var(--surface-2);border-radius:7px;padding:10px 12px;margin-bottom:8px;cursor:pointer;border:1px solid transparent;transition:all .15s ease;}
+  .hm-panel:hover,.hm-panel.active{border-color:var(--gold);background:var(--gold-soft);}
+  .hm-panel .t{font-size:12px;font-weight:600;margin-bottom:6px;}
+  .hm-row{height:5px;background:var(--border);border-radius:2px;margin-bottom:4px;}
+  .hm-row.w70{width:70%;}.hm-row.w50{width:50%;}.hm-row.w90{width:90%;}
+  .html-side{display:flex;flex-direction:column;gap:8px;}
+  .hs-note{background:var(--surface-2);border-radius:8px;padding:10px 12px;font-size:11.5px;color:var(--text-faint);border-left:2px solid var(--border);transition:all .15s ease;}
+  .hs-note.active{border-left-color:var(--gold);color:var(--text-dim);background:var(--gold-soft);}
+
+  .decision-flow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;}
+  @media(max-width:640px){.decision-flow{grid-template-columns:1fr;}}
+  .df-questions{display:flex;flex-direction:column;gap:10px;}
+  .df-q{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border-soft);border-radius:10px;padding:13px 16px;cursor:pointer;transition:all .15s ease;font-size:12.5px;color:var(--text-dim);}
+  .df-q input{width:17px;height:17px;accent-color:var(--gold);cursor:pointer;flex-shrink:0;}
+  .df-q.checked{color:var(--text);border-color:var(--gold-dim);background:var(--gold-soft);}
+  .df-result{background:var(--surface);border:1px solid var(--border-soft);border-radius:10px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;transition:all .25s ease;}
+  .df-result-icon{font-size:26px;} .df-result-title{font-family:'Fraunces',serif;font-size:16px;font-weight:600;} .df-result-desc{font-size:12.5px;color:var(--text-dim);}
+  .df-result.do-html{border-color:rgba(232,176,75,.35);background:var(--gold-soft);} .df-result.do-html .df-result-title{color:var(--gold);}
+  .df-result.skip-html{border-color:rgba(95,217,196,.3);background:var(--teal-soft);} .df-result.skip-html .df-result-title{color:var(--teal);}
+
+  .timeline{display:flex;flex-direction:column;gap:0;margin-top:4px;}
+  .tl-item{display:grid;grid-template-columns:32px 1fr;gap:16px;padding-bottom:26px;}
+  .tl-item:last-child{padding-bottom:0;}
+  .tl-dot-col{display:flex;flex-direction:column;align-items:center;}
+  .tl-dot{width:32px;height:32px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0;}
+  .tl-line{flex:1;width:1px;background:var(--border-soft);margin-top:4px;}
+  .tl-item:last-child .tl-line{display:none;}
+  .tl-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:12px;padding:16px 18px;min-width:0;}
+  .tl-card h4{font-family:'Fraunces',serif;font-size:15px;font-weight:600;margin-bottom:6px;}
+  .tl-card p{font-size:12.5px;color:var(--text-dim);margin-bottom:10px;}
+  .tl-example{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-family:'JetBrains Mono',monospace;background:var(--surface-2);border:1px solid var(--border-soft);border-radius:6px;padding:4px 10px;color:var(--text-faint);max-width:100%;overflow-x:auto;}
+  .tl-example .lbl{color:var(--text-faint);font-family:'IBM Plex Sans Thai',sans-serif;flex-shrink:0;}
+
+  .layer-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:6px;}
+  @media(max-width:640px){.layer-grid{grid-template-columns:1fr;}}
+  .layer{background:var(--surface);border:1px solid var(--border-soft);border-radius:12px;padding:18px;}
+  .layer-tag{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;letter-spacing:.06em;margin-bottom:10px;}
+  .layer-tag.cat{background:rgba(232,176,75,.16);color:var(--gold);} .layer-tag.list{background:rgba(95,217,196,.16);color:var(--teal);}
+  .layer h4{font-family:'Fraunces',serif;font-size:15px;font-weight:600;margin-bottom:4px;}
+  .layer .sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);margin-bottom:10px;}
+  .layer .desc{font-size:12.5px;color:var(--text-dim);}
+  .decision-recap{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:10px 0 6px;}
+  @media(max-width:640px){.decision-recap{grid-template-columns:1fr;}}
+  .opt{border:1px solid var(--border-soft);border-radius:12px;background:var(--surface);overflow:hidden;}
+  .opt.dim{opacity:.55;}
+  .opt-head{padding:13px 16px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:10px;background:var(--surface-2);}
+  .opt.chosen .opt-head{background:var(--gold-soft);}
+  .opt-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;background:var(--surface-3);color:var(--text-dim);white-space:nowrap;}
+  .opt.chosen .opt-badge{background:var(--gold);color:#1a1306;}
+  .opt-name{font-weight:600;font-size:13px;}
+  .opt-body{padding:14px 16px;font-size:12.5px;color:var(--text-dim);}
+  .opt-body ul{padding-left:18px;margin-top:6px;} .opt-body li{margin-bottom:3px;}
+  .check{color:var(--gold);font-weight:700;}
+
+  .tree{background:var(--surface);border:1px solid var(--border-soft);border-radius:12px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.9;overflow-x:auto;margin-bottom:20px;}
+  .tree .dim{color:var(--text-faint);} .tree .folder{color:var(--gold);} .tree .file{color:var(--blue);} .tree .cm{color:var(--text-faint);font-style:italic;font-family:'IBM Plex Sans Thai',sans-serif;}
+
+  .code-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+  .cf-pill{font-size:11.5px;padding:7px 13px;border-radius:8px;cursor:pointer;background:var(--surface-2);border:1px solid var(--border-soft);color:var(--text-dim);font-weight:500;transition:all .15s ease;}
+  .cf-pill:hover{color:var(--text);} .cf-pill.active{background:var(--gold);color:#1a1306;border-color:var(--gold);}
+
+  .codefile{background:var(--surface);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+  .codefile-head{display:flex;align-items:center;gap:11px;padding:13px 16px;background:var(--surface-2);border-bottom:1px solid var(--border-soft);cursor:pointer;flex-wrap:wrap;}
+  .codefile-head:hover{background:var(--surface-3);}
+  .cf-icon{color:var(--gold);font-size:12px;flex-shrink:0;}
+  .cf-path{flex:1;min-width:140px;}
+  .cf-name{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--text);font-weight:600;word-break:break-all;}
+  .cf-dir{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);display:block;margin-bottom:2px;word-break:break-all;}
+  .cf-role{font-size:11px;color:var(--text-dim);margin-top:3px;line-height:1.5;}
+  .cf-lang{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em;flex-shrink:0;}
+  .cf-lang.ts{background:rgba(125,168,244,.16);color:var(--blue);}
+  .cf-lang.vue{background:rgba(95,217,196,.16);color:var(--teal);}
+  .cf-lang.md{background:rgba(199,146,234,.16);color:var(--purple);}
+  .cf-lang.bru{background:rgba(232,176,75,.16);color:var(--gold);}
+  .cf-lines{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);flex-shrink:0;}
+  .cf-verb{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;flex-shrink:0;}
+  .cf-verb.READ{background:rgba(125,168,244,.15);color:var(--blue);}
+  .cf-verb.WRITE{background:rgba(95,217,196,.15);color:var(--teal);}
+  .cf-verb.DEL{background:rgba(241,130,143,.15);color:var(--coral);}
+  .cf-copy{font-family:inherit;font-size:11px;font-weight:600;padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:var(--bg);color:var(--text-dim);cursor:pointer;transition:all .15s ease;flex-shrink:0;}
+  .cf-copy:hover{border-color:var(--gold);color:var(--gold);}
+  .cf-copy.copied{background:var(--teal);color:#04210f;border-color:var(--teal);}
+  .cf-chevron{color:var(--text-faint);font-size:11px;transition:transform .2s ease;flex-shrink:0;}
+  .codefile.collapsed .cf-chevron{transform:rotate(-90deg);}
+  .codefile-body{display:flex;overflow-x:auto;background:#0d0e14;-webkit-overflow-scrolling:touch;}
+  .codefile.collapsed .codefile-body{display:none;}
+  .gutter{flex-shrink:0;padding:16px 0;text-align:right;user-select:none;border-right:1px solid var(--border-soft);background:#0b0c11;}
+  .gutter span{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;color:var(--text-faint);padding:0 12px;}
+  pre.code{margin:0;padding:16px 18px;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.7;color:#d4d6e0;white-space:pre;flex:1;tab-size:2;}
+  @media(max-width:560px){pre.code,.gutter span{font-size:10.5px;}}
+  .tok-key{color:var(--purple);} .tok-str{color:#9ece6a;} .tok-com{color:#565a6e;font-style:italic;}
+  .tok-num{color:#ff9e64;}
+  .md-h{color:var(--gold);font-weight:700;} .md-bar{color:var(--blue);}
+
+  .setup-steps{display:flex;flex-direction:column;gap:12px;margin-bottom:8px;}
+  .setup-step{display:flex;gap:14px;background:var(--surface);border:1px solid var(--border-soft);border-radius:12px;padding:16px 18px;}
+  .ss-num{width:28px;height:28px;border-radius:8px;background:var(--gold-soft);color:var(--gold);font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .ss-body{flex:1;min-width:0;}
+  .ss-body h5{font-size:13px;font-weight:600;margin-bottom:6px;} .ss-body h5 code{font-size:11px;color:var(--gold);background:var(--surface-3);padding:1px 5px;border-radius:3px;word-break:break-all;}
+  .ss-body p{font-size:12.5px;color:var(--text-dim);} .ss-body p code{font-size:11px;color:var(--gold);}
+  .snippet-mini{background:#0d0e14;border:1px solid var(--border-soft);border-radius:7px;padding:10px 13px;margin-top:6px;overflow-x:auto;}
+  .snippet-mini code{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#9ece6a;}
+
+  .wf-table{background:var(--surface);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;margin-bottom:18px;}
+  .wf-row{display:grid;grid-template-columns:96px 1fr;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border-soft);align-items:flex-start;}
+  .wf-row:last-child{border-bottom:none;}
+  .wf-row.head{background:var(--surface-2);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);font-weight:700;}
+  .wf-phase{font-family:'Fraunces',serif;font-size:13px;font-weight:600;color:var(--gold);}
+  .wf-desc{font-size:12.5px;color:var(--text-dim);} .wf-desc b{color:var(--text);}
+
+  /* adapt chapter */
+  .adapt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:8px;}
+  @media(max-width:760px){.adapt-grid{grid-template-columns:1fr;}}
+  .adapt-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:12px;padding:18px;}
+  .adapt-num{width:30px;height:30px;border-radius:8px;background:var(--teal-soft);color:var(--teal);font-family:'Fraunces',serif;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+  .adapt-card h5{font-family:'Fraunces',serif;font-size:14.5px;font-weight:600;margin-bottom:6px;}
+  .adapt-card p{font-size:12.5px;color:var(--text-dim);line-height:1.6;}
+  .adapt-check{display:flex;flex-direction:column;gap:8px;margin-bottom:8px;}
+  .ac-row{display:flex;gap:13px;background:var(--surface);border:1px solid var(--border-soft);border-radius:10px;padding:13px 16px;font-size:12.5px;color:var(--text-dim);align-items:flex-start;}
+  .ac-row b{color:var(--text);}
+  .ac-n{width:22px;height:22px;border-radius:6px;background:var(--surface-3);color:var(--gold);font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .level-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  @media(max-width:760px){.level-grid{grid-template-columns:1fr;}}
+  .level-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:12px;padding:18px;}
+  .lv-tag{display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--gold-soft);color:var(--gold);letter-spacing:.04em;margin-bottom:10px;}
+  .level-card h5{font-family:'Fraunces',serif;font-size:14.5px;font-weight:600;margin-bottom:5px;}
+  .level-card p{font-size:12px;color:var(--text-dim);line-height:1.6;}
+
+  /* caution chapter */
+  .caution-list{display:flex;flex-direction:column;gap:11px;}
+  .caution-item{background:var(--surface);border:1px solid var(--border-soft);border-radius:11px;padding:16px 18px;border-left:3px solid var(--border);}
+  .caution-item.danger{border-left-color:var(--coral);}
+  .caution-item.warn{border-left-color:var(--gold);}
+  .caution-item.info{border-left-color:var(--blue);}
+  .caution-head{font-weight:600;font-size:13.5px;margin-bottom:6px;display:flex;align-items:center;gap:9px;}
+  .cau-ic{font-size:11px;flex-shrink:0;}
+  .caution-item.danger .cau-ic{color:var(--coral);}
+  .caution-item.warn .cau-ic{color:var(--gold);}
+  .caution-item.info .cau-ic{color:var(--blue);}
+  .caution-body{font-size:12.5px;color:var(--text-dim);line-height:1.65;}
+  .caution-body code{font-size:11px;}
+
+  .journey{display:flex;flex-direction:column;gap:10px;margin-top:6px;}
+  .journey-step{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border-soft);border-radius:10px;padding:13px 18px;text-decoration:none;color:var(--text);transition:all .15s ease;}
+  .journey-step:hover{border-color:var(--gold);transform:translateX(3px);}
+  .journey-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);font-weight:700;flex-shrink:0;width:24px;}
+  .journey-text{font-size:13px;} .journey-text b{font-weight:600;} .journey-text span{color:var(--text-faint);font-size:11.5px;}
+  .closing{margin-top:24px;padding:22px 26px;border-radius:14px;background:linear-gradient(135deg,var(--gold-soft),transparent);border:1px solid rgba(232,176,75,.22);}
+  .closing p{font-size:clamp(13.5px,2.6vw,14.5px);color:var(--text-dim);} .closing b{color:var(--text);} .closing em{color:var(--gold);font-style:italic;}
+
+  .footer{padding:40px 0 60px;text-align:center;color:var(--text-faint);font-size:11.5px;line-height:1.7;}
+
+  .totop{position:fixed;bottom:20px;right:20px;width:44px;height:44px;border-radius:50%;background:var(--surface-3);border:1px solid var(--border);color:var(--gold);font-size:18px;cursor:pointer;z-index:60;opacity:0;pointer-events:none;transition:all .25s ease;}
+  .totop.show{opacity:1;pointer-events:auto;}
+  .totop:hover{background:var(--gold);color:#1a1306;}
+  @media(max-width:980px){.totop{bottom:16px;right:16px;}}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+
+</style>
+</head>
+<body>
+<div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- mobile top bar with hamburger -->
+<div class="mobile-bar" id="mobileBar">
+  <button class="hamburger" id="hamburger" aria-label="เมนู">&#9776;</button>
+  <span class="mobile-title">Claude Code · HTML Artifacts</span>
+</div>
+<div class="nav-overlay" id="navOverlay"></div>
+
+<div class="shell">
+  <nav class="sidenav" id="sidenav">
+    <div class="side-brand">Claude Code <em>·</em> HTML Artifacts</div>
+    <div class="side-sub">PEDPRO WORKSHOP · 12 มิ.ย. 2569</div>
+    <a class="side-link" data-target="thesis" href="#thesis"><span class="side-num">00</span><span>หลักคิดตั้งต้น</span></a>
+    <a class="side-link" data-target="ch1" href="#ch1"><span class="side-num">01</span><span>ทำไมเลิก Markdown</span></a>
+    <a class="side-link" data-target="ch2" href="#ch2"><span class="side-num">02</span><span>HTML โผล่ตอนไหน</span></a>
+    <a class="side-link" data-target="ch3" href="#ch3"><span class="side-num">03</span><span>Case Study: BotLine</span></a>
+    <a class="side-link" data-target="bruno" href="#bruno"><span class="side-num">04</span><span>Bruno API Specs</span></a>
+    <a class="side-link" data-target="code" href="#code"><span class="side-num">05</span><span>โค้ดทั้งหมด</span></a>
+    <a class="side-link" data-target="claude" href="#claude"><span class="side-num">06</span><span>CLAUDE.md</span></a>
+    <a class="side-link" data-target="setup" href="#setup"><span class="side-num">07</span><span>ติดตั้ง + เริ่มหน้าใหม่</span></a>
+    <a class="side-link" data-target="adapt" href="#adapt"><span class="side-num">08</span><span>นำไปใช้โปรเจกต์อื่น</span></a>
+    <a class="side-link" data-target="caution" href="#caution"><span class="side-num">09</span><span>ข้อควรระวัง</span></a>
+    <a class="side-link" data-target="thesis2" href="#thesis2"><span class="side-num">10</span><span>แก่นจริง: Transfer Rate</span></a>
+    <div class="side-foot">
+      <p>ไฟล์เดียวจบ — workshop + bruno specs + โค้ดจริง + CLAUDE.md พร้อมปุ่ม copy ทุก snippet เก็บขึ้นเว็บใช้ได้ตลอด</p>
+    </div>
+  </nav>
+
+  <main class="content">
+    <div class="wrap">
+
+      <!-- HERO -->
+      <header class="hero" id="thesis">
+        <div class="eyebrow">PEDPRO · UI WORKSHOP · <b>FULL GUIDE</b></div>
+        <h1 class="hero-title">สร้างหน้าใหม่ด้วย<br>HTML-spec → <em>โค้ดจริง</em></h1>
+        <p class="hero-lede">คู่มือฉบับสมบูรณ์จาก session วันนี้ — แนวคิด HTML แทน Markdown, การวาง spec ก่อนเขียนโค้ด, โค้ดจริงทุกไฟล์ของฟีเจอร์ "ตั้งค่าบอท Line", bruno API specs, CLAUDE.md, แนวทางนำไปใช้กับโปรเจกต์อื่น และข้อควรระวัง</p>
+        <div class="hero-meta">
+          <span class="chip">11 บท</span>
+          <span class="chip">โค้ดจริง <b id="fileCountChip">9 ไฟล์</b></span>
+          <span class="chip">bruno <b id="brunoCountChip">11 specs</b></span>
+          <span class="chip">copy ได้ทุก snippet</span>
+        </div>
+        <div class="howto">
+          <span class="ic">&#9670;</span>
+          <div><b>วิธีใช้</b> — เลื่อนอ่านตามลำดับเพื่อเข้าใจ logic ทั้งหมด หรือกระโดดไป <a href="#code">บท 05 (โค้ด)</a> / <a href="#bruno">บท 04 (bruno)</a> ได้เลย ทุก snippet มีปุ่ม copy · เก็บไฟล์นี้ขึ้นเว็บไว้เป็น reference ของทีม</div>
+        </div>
+
+        <div class="lab">
+          <div class="lab-head">
+            <div class="lab-title">ห้องทดลอง: อัตราการส่งต่อความเข้าใจ</div>
+            <div class="scenario-toggle">
+              <button class="active a" id="btnA" onclick="setScenario('a')">A — ปั่นเยอะ</button>
+              <button class="b" id="btnB" onclick="setScenario('b')">B — ส่งต่อได้จริง</button>
+            </div>
+          </div>
+          <div class="lab-bars">
+            <div class="bar-row"><div class="bar-label">ปริมาณ Artifact ที่ผลิต</div><div class="bar-track"><div class="bar-fill vol" id="barVol"></div></div><div class="bar-val" id="valVol">&mdash;</div></div>
+            <div class="bar-row"><div class="bar-label">อัตราที่คนเข้าใจ/ใช้ได้จริง</div><div class="bar-track"><div class="bar-fill rate" id="barRate"></div></div><div class="bar-val" id="valRate">&mdash;</div></div>
+            <div class="bar-row"><div class="bar-label">Productivity ที่ทีมได้จริง</div><div class="bar-track"><div class="bar-fill prod" id="barProd"></div></div><div class="bar-val" id="valProd">&mdash;</div></div>
+          </div>
+          <div class="lab-verdict a" id="labVerdict"></div>
+        </div>
+      </header>
+
+      <!-- CH1 -->
+      <section class="ch" id="ch1">
+        <div class="ch-head"><span class="ch-num">01</span><span class="ch-title">ทำไมทีม Claude Code เลิกใช้ Markdown</span><span class="ch-line"></span></div>
+        <p class="body">บทความที่ว่า Anthropic "เลิกใช้ Markdown" <b>จริงแต่เกินจริงนิดนึง</b> มันคือ preference ของ Thariq Shihipar (engineering lead ทีม Claude Code) ที่หันมาใช้ HTML เป็น output format มากขึ้น ไม่ใช่ policy ทั้งบริษัท</p>
+        <p class="body">เหตุผลเบื้องหลังสำคัญกว่า — <b>workflow เปลี่ยน</b> เมื่อก่อน AI เขียน &rarr; คนอ่าน &rarr; คนแก้มือ &rarr; commit (Markdown มีค่าเพราะ "แก้ง่าย") แต่ตอนนี้ AI เขียน spec &rarr; ส่งต่อให้ AI session ถัดไปลงมือ &rarr; คนแค่ตรวจ ข้อดีเดียวของ Markdown หายไป แต่ข้อจำกัด (อ่านยาวไม่จบ, ไม่มี visual, แชร์ยาก) ยังอยู่ครบ</p>
+        <p class="body">เนื้อหาเดียวกัน สองรูปแบบ — ลองคลิกสลับ:</p>
+        <div class="demo-tabs">
+          <button class="active" id="tabMd" onclick="showDemo('md')">Markdown</button>
+          <button id="tabHtml" onclick="showDemo('html')">HTML</button>
+        </div>
+        <div class="demo-pane" id="paneMd">
+          <div class="md-render">
+            <h4>Spec: ตั้งระบบ Line Notification</h4>
+            <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px">ส่วนประกอบ:</p>
+            <ul>
+              <li>ตารางผู้ใช้ &mdash; คอลัมน์ ชื่อ/รหัส/สถานะ/บริการ มีปุ่ม <code>เกตเวย์</code>/<code>ตอบรับ</code>/<code>ส่งให้</code></li>
+              <li>ฟอร์มเพิ่มรหัส &mdash; field รหัส/ชื่อรหัส/คำอธิบาย</li>
+              <li>ฟอร์มตั้งระบบ &mdash; หมายเลข Line/ช่อง/ชื่อระบบ</li>
+            </ul>
+            <p style="font-size:12px;color:var(--text-faint)">&mdash; อ่านได้ แต่ไม่เห็นหน้าจอจริง สโครลผ่าน 100 บรรทัดแล้วจำได้กี่ข้อ?</p>
+          </div>
+        </div>
+        <div class="demo-pane hidden" id="paneHtml">
+          <div class="html-render">
+            <div class="html-mockup">
+              <div class="hm-panel active" data-note="0"><div class="t">A &middot; ตารางผู้ใช้ Line</div><div class="hm-row w90"></div><div class="hm-row w70"></div><div class="hm-row w50"></div></div>
+              <div class="hm-panel" data-note="1"><div class="t">B &middot; เพิ่ม activation code</div><div class="hm-row w70"></div><div class="hm-row w50"></div></div>
+              <div class="hm-panel" data-note="2"><div class="t">C &middot; ตั้งระบบ Line OA</div><div class="hm-row w90"></div><div class="hm-row w70"></div></div>
+            </div>
+            <div class="html-side">
+              <div class="hs-note active" data-for="0">คลิก panel ซ้าย &rarr; โน้ตขวาอธิบายตรงนั้น ปุ่ม เกตเวย์/ตอบรับ/ส่งให้ ต่อแถว</div>
+              <div class="hs-note" data-for="1">field description รับ markdown สำหรับลิงก์/คำอธิบายยาว</div>
+              <div class="hs-note" data-for="2">ตารางล่างคือ webhook event ที่ subscribe</div>
+            </div>
+          </div>
+        </div>
+        <p class="body" style="margin-top:18px">ฝั่ง HTML คุณ<b>เห็นโครงหน้าจอจริง</b>และ<b>คลิกสำรวจได้</b> นี่คือเหตุผลที่ Thariq บอกว่าหลังใช้ HTML เขารู้สึก "in the loop" มากกว่าตอนอ่าน plan ยาว ๆ</p>
+
+        <h4 class="mini-h">เมื่อไหร่ควรทำ HTML spec &mdash; ตอบ 3 คำถามนี้</h4>
+        <div class="decision-flow">
+          <div class="df-questions">
+            <label class="df-q"><input type="checkbox" onchange="updateDecision()"> หน้านี้มีจุดตัดสินใจหลายแบบไหม (เชื่อมหน้า, โครง state, แตก component)?</label>
+            <label class="df-q"><input type="checkbox" onchange="updateDecision()"> bruno มีอะไรไม่ตรง pattern เดิม หรือซับซ้อนกว่าปกติไหม?</label>
+            <label class="df-q"><input type="checkbox" onchange="updateDecision()"> ต้องให้คนอื่นในทีม review ก่อนลงมือไหม?</label>
+          </div>
+          <div class="df-result skip-html" id="dfResult">
+            <div class="df-result-icon">&#9889;</div>
+            <div class="df-result-title">ข้าม HTML spec</div>
+            <div class="df-result-desc">ก๊อป pattern จาก reference feature แล้วเขียนโค้ดได้เลย</div>
+          </div>
+        </div>
+        <div class="xref"><span class="ic">&rarr;</span><span>เกณฑ์นี้ถูกฝังเป็นกฎใน <a href="#claude">บท 06 · CLAUDE.md</a> และตัวอย่างที่ "เข้าเกณฑ์" คือ BotLine ใน <a href="#ch3">บท 03</a></span></div>
+      </section>
+
+      <!-- CH2 -->
+      <section class="ch" id="ch2">
+        <div class="ch-head"><span class="ch-num">02</span><span class="ch-title">HTML โผล่ตอนไหน &mdash; 3 จังหวะ</span><span class="ch-line"></span></div>
+        <p class="body">HTML ไม่ใช่ตัวโค้ดที่รันจริง มันคือ "เอกสารรอบตัวโค้ด" ที่ช่วย<b>คิดและสื่อสาร</b> ส่วน <code class="inline">.vue</code>/<code class="inline">.ts</code> คือสิ่งที่<b>รันจริง</b> และ HTML มีจังหวะเหมาะ 3 จุด:</p>
+        <div class="timeline">
+          <div class="tl-item"><div class="tl-dot-col"><div class="tl-dot">1</div><div class="tl-line"></div></div><div class="tl-card"><h4>ก่อนเขียนโค้ด &mdash; Implementation Plan</h4><p>รวม context (bruno + mockup + docs) แล้วทำ spec ที่มี API contract, flow diagram, และ<b>จุดตัดสินใจที่เทียบทางเลือกข้างกัน</b> ให้ review ก่อน lock</p><span class="tl-example"><span class="lbl">ตัวอย่าง:</span> botline-implementation-plan.html</span></div></div>
+          <div class="tl-item"><div class="tl-dot-col"><div class="tl-dot">2</div><div class="tl-line"></div></div><div class="tl-card"><h4>หลังเขียนโค้ด &mdash; Code Review Artifact</h4><p>แนบ PR ด้วย HTML ที่เดินผ่านไฟล์ทีละไฟล์ พร้อม annotation ว่าตรง bruno contract ตรงไหน &mdash; เปิดดูได้โดยไม่ต้อง pull โค้ด</p><span class="tl-example"><span class="lbl">ตัวอย่าง:</span> botline-pr-review.html</span></div></div>
+          <div class="tl-item"><div class="tl-dot-col"><div class="tl-dot">3</div><div class="tl-line"></div></div><div class="tl-card"><h4>เมื่ออธิบายด้วยข้อความไม่พอ &mdash; Throwaway Playground</h4><p>เช่น prototype animation ปุ่มที่มี slider ปรับค่า + ปุ่ม Copy CSS &mdash; ปรับจนถูกใจแล้ว export ไป implement ใช้ครั้งเดียวทิ้งได้</p><span class="tl-example"><span class="lbl">หลักการ:</span> ทุก interactive artifact ต้องมีปุ่ม export</span></div></div>
+        </div>
+      </section>
+
+      <!-- CH3 -->
+      <section class="ch" id="ch3">
+        <div class="ch-head"><span class="ch-num">03</span><span class="ch-title">Case Study &mdash; "ตั้งค่าบอท Line"</span><span class="ch-line"></span></div>
+        <p class="body">ฟีเจอร์ตัวอย่าง — mockup + bruno 12 endpoint แบ่งเป็นโครงสร้าง 2 ชั้น:</p>
+        <div class="layer-grid">
+          <div class="layer"><span class="layer-tag cat">ชั้นที่ 1 &middot; หมวดหมู่</span><h4>BotCatElement</h4><div class="sub">Cat* &middot; 6 endpoint</div><div class="desc">ตารางหลัก &mdash; แต่ละแถวคือ 1 "ไฟล์" config (CatCode เป็น unique key แก้ไม่ได้หลังสร้าง)</div></div>
+          <div class="layer"><span class="layer-tag list">ชั้นที่ 2 &middot; รายการ</span><h4>BotListElement</h4><div class="sub">List* &middot; 5 endpoint</div><div class="desc">element ย่อยใน CatCode &mdash; ElKey/ElRemark required, ElType/ElValue optional</div></div>
+        </div>
+        <p class="body">จุดน่าสนใจสุดคือ<b>การตัดสินใจการเชื่อม 2 หน้า</b> — ทำ HTML spec ให้เห็นทางเลือกก่อน แล้วเลือก:</p>
+        <div class="decision-recap">
+          <div class="opt chosen"><div class="opt-head"><span class="opt-badge"><span class="check">&#10003;</span> เลือกแล้ว</span><span class="opt-name">แบบ A &mdash; Toggle หน้าเดียว</span></div><div class="opt-body"><code class="inline">v-if</code> สลับ cat-table &harr; list-manage<ul><li>ตรงกับ mockup (ปุ่ม "กลับไปหน้าแรก")</li><li>ส่ง CatCode ผ่าน state ตรง ๆ</li><li>route เดียว</li></ul></div></div>
+          <div class="opt dim"><div class="opt-head"><span class="opt-badge">ไม่เลือก</span><span class="opt-name">แบบ B &mdash; แยก 2 route</span></div><div class="opt-body"><code class="inline">/botline</code> &rarr; <code class="inline">/botline/:catCode</code><ul><li>deep-link ได้</li><li>แต่ mockup สื่อ toggle มากกว่า</li><li>ต้องแตะ router เพิ่ม</li></ul></div></div>
+        </div>
+        <div class="xref"><span class="ic">&rarr;</span><span>API contract เต็มดูใน <a href="#bruno">บท 04</a> · โค้ดทั้ง 9 ไฟล์ดูใน <a href="#code">บท 05</a></span></div>
+      </section>
+
+      <!-- CH4 : BRUNO -->
+      <section class="ch" id="bruno">
+        <div class="ch-head"><span class="ch-num">04</span><span class="ch-title">Bruno API Specs &mdash; source of truth</span><span class="ch-line"></span></div>
+        <p class="body">ทั้ง 11 endpoint อยู่ใต้ <code class="inline">/v1/BotLine</code> auth ด้วย Bearer token (<b>ไม่มี AgentCode</b>) &mdash; bruno เป็น contract ที่ DTO และ form ทั้งหมดอ้างอิง ตาม Golden Rule #2 "ก่อนเขียน form/API ใหม่ ต้องเปิด bruno อ่านก่อน"</p>
+        <div class="callout-warn"><span class="ic">&#9888;</span><div>field, required, max, oneof ในโค้ด <b>ต้องตรงกับ bruno เป๊ะ</b> — ถ้า BE แก้ spec ภายหลัง ต้องอัปเดต type/rules ตามทันที อย่าเดาเอง</div></div>
+        <div class="code-filter" id="brunoFilter"></div>
+        <div id="brunoContainer"></div>
+      </section>
+
+      <!-- CH5 : CODE -->
+      <section class="ch" id="code">
+        <div class="ch-head"><span class="ch-num">05</span><span class="ch-title">โค้ดทั้งหมด &mdash; ทำตามได้ทุกไฟล์</span><span class="ch-line"></span></div>
+        <p class="body">โค้ดจริงทุกไฟล์ของ BotLine (v3 พร้อมใช้) เรียงตามลำดับการสร้าง <b>type &rarr; api &rarr; composable &rarr; component &rarr; view &rarr; route</b> กดหัวไฟล์เพื่อพับ/กาง · ปุ่ม copy มุมขวาบน</p>
+        <div class="tree">
+<div><span class="folder">src/services/</span></div>
+<div><span class="dim">&#9500;&#9472;</span> <span class="file">type/bot-line.type.ts</span></div>
+<div><span class="dim">&#9492;&#9472;</span> <span class="file">api/bot-line.api.ts</span></div>
+<div>&nbsp;</div>
+<div><span class="folder">src/views/Agent/BotLine/BotLineSetting/</span></div>
+<div><span class="dim">&#9500;&#9472;</span> <span class="file">BotLineSetting.vue</span> <span class="cm">wrapper</span></div>
+<div><span class="dim">&#9500;&#9472;</span> <span class="folder">component/</span></div>
+<div><span class="dim">&#9474;&nbsp;&nbsp;&#9500;&#9472;</span> <span class="file">cat-table.vue</span></div>
+<div><span class="dim">&#9474;&nbsp;&nbsp;&#9500;&#9472;</span> <span class="file">cat-form-modal.vue</span></div>
+<div><span class="dim">&#9474;&nbsp;&nbsp;&#9492;&#9472;</span> <span class="file">list-manage.vue</span></div>
+<div><span class="dim">&#9492;&#9472;</span> <span class="folder">composables/</span></div>
+<div><span class="dim">&nbsp;&nbsp;&nbsp;&#9500;&#9472;</span> <span class="file">use-bot-cat.ts</span></div>
+<div><span class="dim">&nbsp;&nbsp;&nbsp;&#9492;&#9472;</span> <span class="file">use-bot-list.ts</span></div>
+        </div>
+        <div class="code-filter" id="codeFilter"></div>
+        <div id="codeContainer"></div>
+      </section>
+
+      <!-- CH6 : CLAUDE.md -->
+      <section class="ch" id="claude">
+        <div class="ch-head"><span class="ch-num">06</span><span class="ch-title">CLAUDE.md &mdash; project guide</span><span class="ch-line"></span></div>
+        <p class="body">ไฟล์ที่ Claude Code อ่านทุก session — รวม Golden Rules, project map, naming, และ section ใหม่ <b>"เริ่มหน้าใหม่"</b> ที่เพิ่มในวันนี้ ฝังกฎ workflow ทั้งหมดไว้ที่นี่ครั้งเดียว</p>
+        <div id="claudeContainer"></div>
+      </section>
+
+      <!-- CH7 : SETUP -->
+      <section class="ch" id="setup">
+        <div class="ch-head"><span class="ch-num">07</span><span class="ch-title">ติดตั้ง + เริ่มหน้าใหม่</span><span class="ch-line"></span></div>
+        <h4 class="mini-h">3 จุดที่ต้องทำเองหลัง copy โค้ด</h4>
+        <div class="setup-steps">
+          <div class="setup-step"><div class="ss-num">1</div><div class="ss-body"><h5>เพิ่ม re-export ใน <code>src/services/api/index.ts</code></h5><pre class="snippet-mini"><code>export * from "./bot-line.api"</code></pre></div></div>
+          <div class="setup-step"><div class="ss-num">2</div><div class="ss-body"><h5>เพิ่ม route ใน <code>src/router/index.ts</code></h5><p>copy จาก <code>botline-route.snippet.ts</code> (ไฟล์สุดท้ายในบท 05) ไปวาง แล้วลบ snippet ทิ้ง — ปรับ <code>roles</code> ให้ตรงสิทธิ์จริงตาม <code>router/components.ts</code></p></div></div>
+          <div class="setup-step"><div class="ss-num">3</div><div class="ss-body"><h5>ยืนยัน field กับ bruno จริง</h5><p>เทียบ type ใน <code>bot-line.type.ts</code> กับ bruno (บท 04) ถ้า BE แก้ field ต้องอัปเดตตาม จากนั้นรัน <code>pnpm type-check</code> + <code>pnpm lint</code></p></div></div>
+        </div>
+        <h4 class="mini-h">ลำดับมาตรฐาน &mdash; หน้าใหม่ทุกหน้า</h4>
+        <div class="wf-table">
+          <div class="wf-row head"><div>เฟส</div><div>ทำอะไร</div></div>
+          <div class="wf-row"><div class="wf-phase">1 &middot; Context</div><div class="wf-desc">เปิด <b>bruno</b> ทุก endpoint อ่าน docs table + ดู mockup + เปิด reference feature</div></div>
+          <div class="wf-row"><div class="wf-phase">2 &middot; Plan</div><div class="wf-desc">เช็คเกณฑ์ 3 ข้อ — ถ้าเข้าเกณฑ์ ทำ HTML spec ให้ review ก่อนเขียนโค้ด</div></div>
+          <div class="wf-row"><div class="wf-phase">3 &middot; Build</div><div class="wf-desc">เขียนตามลำดับ <b>type &rarr; api &rarr; composable &rarr; component &rarr; view &rarr; route</b></div></div>
+          <div class="wf-row"><div class="wf-phase">4 &middot; Verify</div><div class="wf-desc"><code class="inline">type-check</code> + <code class="inline">lint</code> &rarr; เช็ค <code class="inline">gotchas.md</code> &rarr; (option) HTML review แนบ PR</div></div>
+        </div>
+      </section>
+
+      <!-- CH8 : ADAPT -->
+      <section class="ch" id="adapt">
+        <div class="ch-head"><span class="ch-num">08</span><span class="ch-title">นำไปใช้กับโปรเจกต์อื่น</span><span class="ch-line"></span></div>
+        <p class="body">workflow นี้ไม่ผูกกับ Vue/Naive UI — มันคือ<b>หลักการจัดระเบียบความรู้</b> ที่ย้ายไปโปรเจกต์ไหนก็ได้ แต่ต้อง "แปล" 3 ส่วนให้ตรงกับโปรเจกต์นั้นก่อน</p>
+        <div class="adapt-grid">
+          <div class="adapt-card">
+            <div class="adapt-num">A</div>
+            <h5>แปล "source of truth"</h5>
+            <p>ที่ Pedpro คือ bruno specs — โปรเจกต์อื่นอาจเป็น OpenAPI/Swagger, GraphQL schema, Protobuf, หรือ TypeScript types ที่ share จาก backend หา "เอกสารที่เป็นความจริงของ contract" ให้เจอก่อน แล้วให้ AI อ่านอันนั้นเป็นอันดับแรกเสมอ</p>
+          </div>
+          <div class="adapt-card">
+            <div class="adapt-num">B</div>
+            <h5>แปล "pattern เดิม"</h5>
+            <p>ที่ Pedpro คือ reference feature (GeneralSetting / MemberRegister) — โปรเจกต์อื่นชี้ไปที่ feature ที่เขียนดีที่สุด 1-2 อันเป็นตัวอย่าง ให้ AI match แทนที่จะคิด pattern ใหม่ หลักคือ "อย่าประดิษฐ์ ให้เลียนของที่มี"</p>
+          </div>
+          <div class="adapt-card">
+            <div class="adapt-num">C</div>
+            <h5>แปล "ลำดับชั้น"</h5>
+            <p>ที่ Pedpro คือ type &rarr; api &rarr; composable &rarr; component &rarr; view — โปรเจกต์อื่นอาจเป็น model &rarr; repository &rarr; service &rarr; controller หรือ schema &rarr; resolver &rarr; component หลักคือเขียนจากชั้นในออกชั้นนอก เพราะชั้นนอกพึ่งชั้นใน</p>
+          </div>
+        </div>
+
+        <h4 class="mini-h">checklist ตั้งระบบในโปรเจกต์ใหม่</h4>
+        <div class="adapt-check">
+          <div class="ac-row"><span class="ac-n">1</span><div><b>เขียน CLAUDE.md (หรือเทียบเท่า)</b> — ระบุ stack, golden rules, source of truth, ลำดับการเขียน, naming convention, สิ่งที่ห้ามแตะ ใช้ของ Pedpro (บท 06) เป็นโครง</div></div>
+          <div class="ac-row"><span class="ac-n">2</span><div><b>ชี้ reference feature</b> — เลือก feature ที่เขียนสะอาดที่สุดในโปรเจกต์ 1-2 อัน ระบุใน CLAUDE.md ว่า "ดูตัวอย่างที่นี่"</div></div>
+          <div class="ac-row"><span class="ac-n">3</span><div><b>ทำ _template.html</b> — โครงเปล่า HTML spec สำหรับหน้าที่มีจุดตัดสินใจ ปรับ section ให้ตรงโครงสร้างโปรเจกต์</div></div>
+          <div class="ac-row"><span class="ac-n">4</span><div><b>ตั้งเกณฑ์ "เมื่อไหร่ทำ HTML spec"</b> — ใช้ 3 คำถามจากบท 01 หรือปรับให้เข้ากับทีม</div></div>
+          <div class="ac-row"><span class="ac-n">5</span><div><b>ลองกับ feature เล็กก่อน 1 อัน</b> — อย่าเปลี่ยนทั้งทีมทันที พิสูจน์กับงานจริงชิ้นเดียวให้เห็นผลก่อน</div></div>
+        </div>
+
+        <h4 class="mini-h">ระดับการนำไปใช้ &mdash; เลือกตามความพร้อมของทีม</h4>
+        <div class="level-grid">
+          <div class="level-card"><div class="lv-tag">เริ่มต้น</div><h5>ใช้ในแชทเดี่ยว</h5><p>ขอ AI ทำ spec/review เป็น HTML เป็นครั้ง ๆ ไม่ต้องตั้งระบบอะไร เหมาะลองดูว่าเวิร์กไหม</p></div>
+          <div class="level-card"><div class="lv-tag">กลาง</div><h5>ฝังใน CLAUDE.md</h5><p>เพิ่ม section workflow ให้ AI รู้จังหวะเอง ไม่ต้องสั่งซ้ำ — จุดที่ Pedpro อยู่ตอนนี้</p></div>
+          <div class="level-card"><div class="lv-tag">เต็มระบบ</div><h5>ทำเป็น Skill + template</h5><p>สร้าง skill ที่บรรจุ pattern ทั้งหมด + design tokens ของโปรเจกต์ output สม่ำเสมอทุกครั้ง เหมาะเมื่อใช้จนชินแล้ว</p></div>
+        </div>
+      </section>
+
+      <!-- CH9 : CAUTION -->
+      <section class="ch" id="caution">
+        <div class="ch-head"><span class="ch-num">09</span><span class="ch-title">ข้อควรระวัง</span><span class="ch-line"></span></div>
+        <p class="body">workflow นี้มีกับดักที่เจอบ่อย — รู้ไว้ก่อนจะได้ไม่พลาดซ้ำรอยที่เราเจอในวันนี้</p>
+        <div class="caution-list">
+          <div class="caution-item danger">
+            <div class="caution-head"><span class="cau-ic">&#9650;</span> อย่าเอา HTML ไปแทนโค้ดจริง</div>
+            <div class="caution-body">HTML artifact คือ "เอกสารรอบโค้ด" ไม่ใช่ production code ตัว feature ที่รันจริงต้องเป็น <code class="inline">.vue</code>/<code class="inline">.ts</code> เข้า git ตามปกติ — HTML mockup ที่ดูเหมือนเสร็จแล้วอาจหลอกให้คนคิดว่า implement แล้วทั้งที่ยังไม่ได้ทำ</div>
+          </div>
+          <div class="caution-item danger">
+            <div class="caution-head"><span class="cau-ic">&#9650;</span> อย่าให้ AI เดา contract</div>
+            <div class="caution-body">บทเรียนตรงจากวันนี้ — ตอนแรกผมเดา stack ผิด (นึกว่า Nuxt) เขียนโค้ดที่ขัด CLAUDE.md ทั้งหมด ต้องทิ้งทั้งชุด <b>ต้องให้ AI อ่าน bruno + CLAUDE.md จริงก่อนเสมอ</b> field/type/required ห้ามเดา</div>
+          </div>
+          <div class="caution-item warn">
+            <div class="caution-head"><span class="cau-ic">&#9670;</span> อย่าข้ามขั้น HTML spec ตอนมีจุดตัดสินใจ</div>
+            <div class="caution-body">อีกบทเรียนจากวันนี้ — ผมข้าม spec ไปเขียนโค้ดเลย แล้วมาเจอจุดที่ตัดสินใจแทนไม่ได้ตอนจบ (เชื่อม 2 หน้ายังไง) ถ้าทำ spec ก่อน จุดนั้นจะถูกถามตั้งแต่ต้น โค้ดออกมาถูกรอบเดียว</div>
+          </div>
+          <div class="caution-item warn">
+            <div class="caution-head"><span class="cau-ic">&#9670;</span> git diff ของ HTML โหด</div>
+            <div class="caution-body">HTML artifact ที่ commit เข้า repo จะ review ยากเวลา diff (เต็มไปด้วย tag) — เก็บเฉพาะที่เป็น reference ถาวร (เช่น _template.html) ส่วน spec/review ที่ใช้ครั้งเดียวไม่ต้อง commit ก็ได้</div>
+          </div>
+          <div class="caution-item info">
+            <div class="caution-head"><span class="cau-ic">&#9679;</span> เพดานอยู่ที่ความสนใจของผู้รับ</div>
+            <div class="caution-body">interactive artifact ที่ดีไม่ได้ปลดล็อกให้ผลิตไม่จำกัด ทำ simulation สวย ๆ สิบอันคนก็ดูได้แค่จำนวนหนึ่ง — ถามทุกครั้งก่อนสร้างเพิ่มว่า "อันนี้มีคนรับสารจริงไหม" ไม่ใช่ "ทำสวยได้ไหม"</div>
+          </div>
+          <div class="caution-item info">
+            <div class="caution-head"><span class="cau-ic">&#9679;</span> อย่าทำ HTML spec กับทุกหน้า</div>
+            <div class="caution-body">หน้า single-form ธรรมดาที่ก๊อป pattern ได้เลย ไม่ต้องทำ spec — จะเปลืองเวลาเปล่า ใช้เกณฑ์ 3 ข้อ (บท 01) กรองก่อนเสมอ</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CH10 : THESIS -->
+      <section class="ch" id="thesis2">
+        <div class="ch-head"><span class="ch-num">10</span><span class="ch-title">แก่นจริง &mdash; Productivity คืออัตราการส่งต่อ</span><span class="ch-line"></span></div>
+        <p class="body">วงการ AI ชอบวัด productivity จาก<b>ฝั่งผลิต</b> (จำนวนเอกสาร, บรรทัดโค้ด, นาทีที่ประหยัด) เพราะนับง่าย แต่มูลค่าจริงเกิดที่<b>ฝั่งรับ</b> — มีคนเข้าใจไหม เร็วแค่ไหน เอาไปตัดสินใจต่อได้ไหม</p>
+        <p class="body">ถ้าฝั่งผลิตโต 100 เท่า แต่ฝั่งรับเท่าเดิม — ไม่ใช่แค่ <em>"ไม่ progress"</em> แต่เป็น<b>ลบ</b> เพราะคอขวดย้ายจาก "เขียนไม่ทัน" เป็น "อ่านไม่ทัน" และกองเอกสารที่ไม่มีคนอ่านยังสร้าง noise กลบของสำคัญ</p>
+        <div class="journey">
+          <a class="journey-step" href="#ch1"><span class="journey-num">01</span><span class="journey-text"><b>HTML แทน Markdown</b> เพราะ <span>คนอ่านจบจริง คลิกสำรวจได้ — อัตราส่งต่อสูงขึ้น</span></span></a>
+          <a class="journey-step" href="#ch2"><span class="journey-num">02</span><span class="journey-text"><b>HTML เกิดตอน "คิด" และ "ตรวจ"</b> <span>— ไม่เพิ่ม artifact ที่ไม่จำเป็น</span></span></a>
+          <a class="journey-step" href="#ch3"><span class="journey-num">03</span><span class="journey-text"><b>BotLine spec มีจุดตัดสินใจ</b> ที่กดเลือกได้ใน 30 วินาที <span>— เทียบกับอ่าน Markdown 100 บรรทัดแล้วยังไม่ตัดสินใจ</span></span></a>
+          <a class="journey-step" href="#adapt"><span class="journey-num">04</span><span class="journey-text"><b>ย้ายไปโปรเจกต์อื่นได้</b> เพราะเป็นหลักการ ไม่ใช่ tool <span>— ส่งต่อ "วิธีทำงาน" เองก็เพิ่มขึ้น</span></span></a>
+        </div>
+        <div class="closing"><p>เพดานของหลักการนี้อยู่ที่<b>ความสนใจของผู้รับ</b>เสมอ — interactive artifact ที่ดีไม่ได้ปลดล็อกให้ผลิตไม่จำกัด มันแค่ทำให้แต่ละชิ้น<b>คุ้มความสนใจ</b>มากขึ้น คำถามก่อนสร้างอะไรเพิ่มจึงไม่ใช่ <em>"ทำสวยได้ไหม"</em> แต่คือ <em>"มีคนรับสารจริงไหม"</em></p></div>
+      </section>
+
+      <div class="footer">Pedpro-UI &middot; Claude Code HTML Artifacts Workshop &middot; ไฟล์เดียวจบ — workshop + bruno + โค้ด + CLAUDE.md พร้อมขึ้นเว็บ</div>
+    </div>
+  </main>
+</div>
+
+<button class="totop" id="toTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="ขึ้นบนสุด">&#8593;</button>
+
+<script id="codeData" type="application/json">{"files": [{"path": "src/services/type/bot-line.type.ts", "label": "bot-line.type.ts", "lang": "ts", "role": "นิยาม DTO ทุกตัว — แยก Cat* (หมวดหมู่) กับ List* (element) ดึง field/type/max จาก bruno docs", "lines": 144, "code": "// อ้างอิงจาก bruno_collections/BotLine/*.bru — source of truth\n// endpoint ทั้งกลุ่มอยู่ใต้ /v1/BotLine ใช้ Bearer token (UserAuthen)\n// ไม่ใช้ AgentCode ต่างจาก feature Agent ทั่วไป\n\nexport const BOT_CAT_CODE_MAX_LEN = 30\nexport const BOT_CAT_NAME_MAX_LEN = 50\nexport const BOT_CAT_REMARK_MAX_LEN = 500\nexport const BOT_LIST_KEY_MAX_LEN = 50\nexport const BOT_LIST_TYPE_MAX_LEN = 50\nexport const BOT_LIST_VALUE_MAX_LEN = 500\nexport const BOT_LIST_REMARK_MAX_LEN = 500\n\nexport type BotLineActiveYN = \"Y\" | \"N\"\n\n// ── ประเภทของ Element — bruno ระบุ number, text ─────────────────────────\nexport type BotListElType = \"text\" | \"number\"\n\n/* ════════════════════ Cat — หมวดหมู่ (BotCatElement) ════════════════════ */\n\nexport interface BotLineCatRow {\n  Id: number\n  CatCode: string\n  CatName: string\n  CatRemark: string | null\n  IsActive: BotLineActiveYN\n}\n\nexport interface BotLineCatInfoIdReq {\n  Id: number\n}\n\nexport interface BotLineCatInfoCodeReq {\n  CatCode: string\n}\n\n// CatSave — ส่ง CatCode ได้ (ใช้เป็นชื่อไฟล์ json ด้วย ต้อง unique)\nexport interface BotLineCatSaveReq {\n  CatCode: string\n  CatName: string\n  CatRemark: string\n  IsActive: BotLineActiveYN\n  DoAdmin: string\n  DoIp: string\n}\n\n// CatUpdate — แก้ CatCode ไม่ได้ ใช้ Id อ้างอิงแถว\nexport interface BotLineCatUpdateReq {\n  Id: number\n  CatName: string\n  CatRemark: string\n  IsActive: BotLineActiveYN\n  DoAdmin: string\n  DoIp: string\n}\n\nexport interface BotLineCatDeleteReq {\n  Id: number\n  DoAdmin: string\n  DoIp: string\n}\n\nexport interface BotLineCatSearchRes {\n  Result: boolean\n  Remark: string\n  Count: number\n  Data: BotLineCatRow[]\n  ErrorCode?: string\n}\n\nexport interface BotLineCatInfoRes {\n  Result: boolean\n  Remark: string\n  Data: BotLineCatRow\n  ErrorCode?: string\n}\n\nexport interface BotLineMutationRes {\n  Result: boolean\n  Remark: string\n  ErrorCode?: string\n}\n\n/* ═══════════════ List — รายการในหมวดหมู่ (BotListElement) ═══════════════ */\n\nexport interface BotLineListRow {\n  Id: number\n  CatCode: string\n  ElKey: string\n  ElType: string | null\n  ElValue: string | null\n  ElRemark: string\n}\n\nexport interface BotLineListByCatReq {\n  CatCode: string\n}\n\nexport interface BotLineListInfoIdReq {\n  Id: number\n}\n\n// ListSave — ElType, ElValue เป็น optional / ElRemark required\nexport interface BotLineListSaveReq {\n  CatCode: string\n  ElKey: string\n  ElType: string\n  ElValue: string\n  ElRemark: string\n  DoAdmin: string\n  DoIp: string\n}\n\n// ListUpdate — แก้ CatCode ไม่ได้ ใช้ Id อ้างอิงแถว\nexport interface BotLineListUpdateReq {\n  Id: number\n  ElKey: string\n  ElType: string\n  ElValue: string\n  ElRemark: string\n  DoAdmin: string\n  DoIp: string\n}\n\nexport interface BotLineListDeleteReq {\n  Id: number\n  DoAdmin: string\n  DoIp: string\n}\n\nexport interface BotLineListByCatRes {\n  Result: boolean\n  Remark: string\n  Count: number\n  Data: BotLineListRow[]\n  ErrorCode?: string\n}\n\nexport interface BotLineListInfoRes {\n  Result: boolean\n  Remark: string\n  Data: BotLineListRow\n  ErrorCode?: string\n}\n"}, {"path": "src/services/api/bot-line.api.ts", "label": "bot-line.api.ts", "lang": "ts", "role": "service class — wrap endpoint ทั้ง 11 ตัวด้วย postData<T> ตาม api-pattern.md", "lines": 74, "code": "// หลังเพิ่มไฟล์นี้ ต้องเพิ่ม `export * from \"./bot-line.api\"`\n// ใน src/services/api/index.ts\n\nimport type {\n  BotLineCatDeleteReq,\n  BotLineCatInfoCodeReq,\n  BotLineCatInfoIdReq,\n  BotLineCatInfoRes,\n  BotLineCatSaveReq,\n  BotLineCatSearchRes,\n  BotLineCatUpdateReq,\n  BotLineListByCatReq,\n  BotLineListByCatRes,\n  BotLineListDeleteReq,\n  BotLineListInfoIdReq,\n  BotLineListInfoRes,\n  BotLineListSaveReq,\n  BotLineListUpdateReq,\n  BotLineMutationRes\n} from \"../type/bot-line.type\"\nimport { postData } from \"../after-token\"\n\nclass BotLineService {\n  private readonly baseUrl = \"/v1/BotLine\"\n\n  // ── Cat — หมวดหมู่ ──────────────────────────────────────────────\n  CatSearch() {\n    return postData<BotLineCatSearchRes>(`${this.baseUrl}/CatSearch`, {})\n  }\n\n  CatInfoId(params: BotLineCatInfoIdReq) {\n    return postData<BotLineCatInfoRes>(`${this.baseUrl}/CatInfoId`, params)\n  }\n\n  CatInfoCode(params: BotLineCatInfoCodeReq) {\n    return postData<BotLineCatInfoRes>(`${this.baseUrl}/CatInfoCode`, params)\n  }\n\n  CatSave(params: BotLineCatSaveReq) {\n    return postData<BotLineMutationRes>(`${this.baseUrl}/CatSave`, params)\n  }\n\n  CatUpdate(params: BotLineCatUpdateReq) {\n    return postData<BotLineMutationRes>(`${this.baseUrl}/CatUpdate`, params)\n  }\n\n  CatDelete(params: BotLineCatDeleteReq) {\n    return postData<BotLineMutationRes>(`${this.baseUrl}/CatDelete`, params)\n  }\n\n  // ── List — รายการในหมวดหมู่ ─────────────────────────────────────\n  ListByCat(params: BotLineListByCatReq) {\n    return postData<BotLineListByCatRes>(`${this.baseUrl}/ListByCat`, params)\n  }\n\n  ListInfoId(params: BotLineListInfoIdReq) {\n    return postData<BotLineListInfoRes>(`${this.baseUrl}/ListInfoId`, params)\n  }\n\n  ListSave(params: BotLineListSaveReq) {\n    return postData<BotLineMutationRes>(`${this.baseUrl}/ListSave`, params)\n  }\n\n  ListUpdate(params: BotLineListUpdateReq) {\n    return postData<BotLineMutationRes>(`${this.baseUrl}/ListUpdate`, params)\n  }\n\n  ListDelete(params: BotLineListDeleteReq) {\n    return postData<BotLineMutationRes>(`${this.baseUrl}/ListDelete`, params)\n  }\n}\n\nexport const botLineService = new BotLineService()\n"}, {"path": "src/views/Agent/BotLine/BotLineSetting/BotLineSetting.vue", "label": "BotLineSetting.vue", "lang": "vue", "role": "wrapper — toggle ระหว่าง cat-table กับ list-manage ด้วย v-if (การเชื่อมแบบ A)", "lines": 44, "code": "<template>\n\t<!-- หน้าเดียว toggle ด้วย v-if — view='cat' ตาราง / view='list' element -->\n\t<CatTable\n\t\tv-if=\"view === 'cat'\"\n\t\t@manage=\"goManage\"\n\t/>\n\t<ListManage\n\t\tv-else\n\t\t:cat-code=\"selected.CatCode\"\n\t\t:cat-name=\"selected.CatName\"\n\t\t@back=\"goBack\"\n\t/>\n<\/template>\n\n<script setup lang=\"ts\">\nimport type { BotLineCatRow } from \"@/services/type/bot-line.type\"\nimport { reactive, ref } from \"vue\"\n\nimport CatTable from \"./component/cat-table.vue\"\nimport ListManage from \"./component/list-manage.vue\"\n\ntype View = \"cat\" | \"list\"\n\nconst view = ref<View>(\"cat\")\n\n// เก็บหมวดหมู่ที่เลือก — ส่งต่อให้ list-manage ผ่าน props\nconst selected = reactive<Pick<BotLineCatRow, \"CatCode\" | \"CatName\">>({\n  CatCode: \"\",\n  CatName: \"\"\n})\n\nfunction goManage(row: BotLineCatRow) {\n  selected.CatCode = row.CatCode\n  selected.CatName = row.CatName\n  view.value = \"list\"\n}\n\nfunction goBack() {\n  view.value = \"cat\"\n  selected.CatCode = \"\"\n  selected.CatName = \"\"\n}\n<\/script>\n"}, {"path": "src/views/Agent/BotLine/BotLineSetting/component/cat-table.vue", "label": "cat-table.vue", "lang": "vue", "role": "ตารางหมวดหมู่ — NDataTable + columns ผ่าน h() · ปุ่มจัดการ/แก้ไข/ลบ ต่อแถว", "lines": 165, "code": "<template>\n\t<div class=\"space-y-4\">\n\t\t<div class=\"page pb-1!\">\n\t\t\t<div class=\"page-header flex items-center justify-between\">\n\t\t\t\t<div class=\"title flex items-center gap-2\">\n\t\t\t\t\t<Icon name=\"carbon:bot\" />\n\t\t\t\t\tตั้งค่าบอท Line\n\t\t\t\t<\/div>\n\t\t\t\t<n-button type=\"primary\" size=\"small\" @click=\"openAdd\">\n\t\t\t\t\t<template #icon>\n\t\t\t\t\t\t<Icon name=\"carbon:add\" />\n\t\t\t\t\t<\/template>\n\t\t\t\t\tเพิ่มรายการ\n\t\t\t\t<\/n-button>\n\t\t\t<\/div>\n\t\t<\/div>\n\n\t\t<n-card size=\"small\">\n\t\t\t<n-spin :show=\"state.loading\">\n\t\t\t\t<n-data-table\n\t\t\t\t\t:columns=\"columns\"\n\t\t\t\t\t:data=\"state.list\"\n\t\t\t\t\t:row-key=\"(row: BotLineCatRow) => row.Id\"\n\t\t\t\t\t:scroll-x=\"980\"\n\t\t\t\t\tbordered\n\t\t\t\t\tsize=\"small\"\n\t\t\t\t/>\n\t\t\t<\/n-spin>\n\t\t<\/n-card>\n\n\t\t<CatFormModal\n\t\t\t:state=\"state\"\n\t\t\t:rules=\"rules\"\n\t\t\t:max-len=\"maxLen\"\n\t\t\t:form-ref=\"formRef\"\n\t\t\t:submit-form=\"submitForm\"\n\t\t/>\n\t<\/div>\n<\/template>\n\n<script setup lang=\"ts\">\nimport type { DataTableColumns } from \"naive-ui\"\nimport type { BotLineCatRow } from \"@/services/type/bot-line.type\"\nimport { NButton, NCard, NDataTable, NEllipsis, NPopconfirm, NSpin, NTag } from \"naive-ui\"\nimport { computed, h, onMounted } from \"vue\"\n\nimport Icon from \"@/components/common/Icon.vue\"\n\nimport CatFormModal from \"./cat-form-modal.vue\"\nimport { useBotCat } from \"../composables/use-bot-cat\"\n\n// wrapper รับ event นี้เพื่อสลับไปหน้า element\nconst emit = defineEmits<{\n  manage: [row: BotLineCatRow]\n}>()\n\nconst {\n  formRef,\n  state,\n  rules,\n  maxLen,\n  loadList,\n  openAdd,\n  openEdit,\n  submitForm,\n  onDelete\n} = useBotCat()\n\nconst columns = computed<DataTableColumns<BotLineCatRow>>(() => [\n  {\n    title: \"#\",\n    key: \"index\",\n    width: 56,\n    titleAlign: \"center\",\n    align: \"center\",\n    render: (_row, index) => index + 1\n  },\n  {\n    title: \"รหัส\",\n    key: \"CatCode\",\n    minWidth: 140,\n    titleAlign: \"center\"\n  },\n  {\n    title: \"ชื่อการตั้งค่า\",\n    key: \"CatName\",\n    minWidth: 160,\n    titleAlign: \"center\"\n  },\n  {\n    title: \"รายละเอียด\",\n    key: \"CatRemark\",\n    minWidth: 200,\n    titleAlign: \"center\",\n    render: row =>\n      h(NEllipsis, { tooltip: true }, { default: () => row.CatRemark || \"—\" })\n  },\n  {\n    title: \"สถานะ\",\n    key: \"IsActive\",\n    width: 110,\n    titleAlign: \"center\",\n    align: \"center\",\n    render: row => {\n      const isY = row.IsActive === \"Y\"\n      return h(\n        NTag,\n        { type: isY ? \"success\" : \"error\", size: \"small\" },\n        { default: () => (isY ? \"ใช้งาน\" : \"ปิดใช้งาน\") }\n      )\n    }\n  },\n  {\n    title: \"จัดการ\",\n    key: \"actions\",\n    width: 220,\n    fixed: \"right\",\n    titleAlign: \"center\",\n    align: \"center\",\n    render: row =>\n      h(\"div\", { class: \"flex justify-center gap-2\" }, [\n        h(\n          NButton,\n          {\n            size: \"tiny\",\n            type: \"primary\",\n            onClick: () => emit(\"manage\", row)\n          },\n          { default: () => \"จัดการ\" }\n        ),\n        h(\n          NButton,\n          {\n            size: \"tiny\",\n            type: \"info\",\n            onClick: () => openEdit(row)\n          },\n          { default: () => \"แก้ไข\" }\n        ),\n        h(\n          NPopconfirm,\n          {\n            positiveText: \"ยืนยัน\",\n            negativeText: \"ยกเลิก\",\n            onPositiveClick: () => onDelete(row)\n          },\n          {\n            trigger: () =>\n              h(\n                NButton,\n                { size: \"tiny\", type: \"error\" },\n                { default: () => \"ลบ\" }\n              ),\n            default: () => \"ยกเลิกการตั้งค่าบอท\"\n          }\n        )\n      ])\n  }\n])\n\nonMounted(() => {\n  loadList()\n})\n<\/script>\n"}, {"path": "src/views/Agent/BotLine/BotLineSetting/component/cat-form-modal.vue", "label": "cat-form-modal.vue", "lang": "vue", "role": "modal เพิ่ม/แก้หมวดหมู่ — ช่อง CatCode disable ตอน edit (bruno CatUpdate ไม่รับ CatCode)", "lines": 125, "code": "<template>\n\t<n-modal\n\t\tv-model:show=\"state.modal.form\"\n\t\t:auto-focus=\"false\"\n\t\t:trap-focus=\"false\"\n\t\t:mask-closable=\"!state.loading\"\n\t\t:close-on-esc=\"!state.loading\"\n\t>\n\t\t<n-card\n\t\t\tstyle=\"width: 560px; max-width: calc(100vw - 32px)\"\n\t\t\t:title=\"state.formMode === 'add' ? 'เพิ่มรหัส (ไฟล์)' : 'แก้ไขรหัส (ไฟล์)'\"\n\t\t\t:bordered=\"false\"\n\t\t\tsize=\"huge\"\n\t\t\trole=\"dialog\"\n\t\t\taria-modal=\"true\"\n\t\t>\n\t\t\t<template #header-extra>\n\t\t\t\t<n-button\n\t\t\t\t\tquaternary\n\t\t\t\t\tcircle\n\t\t\t\t\tsize=\"small\"\n\t\t\t\t\t:disabled=\"state.loading\"\n\t\t\t\t\t@click=\"state.modal.form = false\"\n\t\t\t\t>\n\t\t\t\t\t<Icon name=\"carbon:close\" />\n\t\t\t\t<\/n-button>\n\t\t\t<\/template>\n\n\t\t\t<n-spin :show=\"state.loading\">\n\t\t\t\t<n-form\n\t\t\t\t\tref=\"formRef\"\n\t\t\t\t\t:model=\"state.reqForm\"\n\t\t\t\t\t:rules=\"rules\"\n\t\t\t\t\tlabel-placement=\"top\"\n\t\t\t\t\tsize=\"small\"\n\t\t\t\t>\n\t\t\t\t\t<div class=\"grid grid-cols-1 gap-3 md:grid-cols-2\">\n\t\t\t\t\t\t<n-form-item label=\"รหัส (ชื่อไฟล์)\" path=\"CatCode\">\n\t\t\t\t\t\t\t<n-input\n\t\t\t\t\t\t\t\tv-model:value=\"state.reqForm.CatCode\"\n\t\t\t\t\t\t\t\tplaceholder=\"เช่น CAT001\"\n\t\t\t\t\t\t\t\t:maxlength=\"maxLen.CatCode\"\n\t\t\t\t\t\t\t\tshow-count\n\t\t\t\t\t\t\t\t:disabled=\"state.formMode === 'edit'\"\n\t\t\t\t\t\t\t\t@keypress=\"fn.valid($event, ['CODE'])\"\n\t\t\t\t\t\t\t\t@paste=\"fn.valid($event, ['CODE'])\"\n\t\t\t\t\t\t\t/>\n\t\t\t\t\t\t<\/n-form-item>\n\n\t\t\t\t\t\t<n-form-item label=\"ชื่อการตั้งค่า\" path=\"CatName\">\n\t\t\t\t\t\t\t<n-input\n\t\t\t\t\t\t\t\tv-model:value=\"state.reqForm.CatName\"\n\t\t\t\t\t\t\t\tplaceholder=\"กรอกชื่อการตั้งค่า\"\n\t\t\t\t\t\t\t\t:maxlength=\"maxLen.CatName\"\n\t\t\t\t\t\t\t\tshow-count\n\t\t\t\t\t\t\t/>\n\t\t\t\t\t\t<\/n-form-item>\n\t\t\t\t\t<\/div>\n\n\t\t\t\t\t<n-form-item label=\"รายละเอียด\" path=\"CatRemark\">\n\t\t\t\t\t\t<n-input\n\t\t\t\t\t\t\tv-model:value=\"state.reqForm.CatRemark\"\n\t\t\t\t\t\t\ttype=\"textarea\"\n\t\t\t\t\t\t\tplaceholder=\"กรอกรายละเอียด\"\n\t\t\t\t\t\t\t:maxlength=\"maxLen.CatRemark\"\n\t\t\t\t\t\t\tshow-count\n\t\t\t\t\t\t\t:autosize=\"{ minRows: 3, maxRows: 6 }\"\n\t\t\t\t\t\t/>\n\t\t\t\t\t<\/n-form-item>\n\n\t\t\t\t\t<n-form-item label=\"สถานะ\" path=\"IsActive\">\n\t\t\t\t\t\t<n-switch\n\t\t\t\t\t\t\tv-model:value=\"state.reqForm.IsActive\"\n\t\t\t\t\t\t\tchecked-value=\"Y\"\n\t\t\t\t\t\t\tunchecked-value=\"N\"\n\t\t\t\t\t\t/>\n\t\t\t\t\t<\/n-form-item>\n\t\t\t\t<\/n-form>\n\n\t\t\t\t<div class=\"mt-4 flex justify-end gap-2\">\n\t\t\t\t\t<n-button\n\t\t\t\t\t\t:disabled=\"state.loading\"\n\t\t\t\t\t\t@click=\"state.modal.form = false\"\n\t\t\t\t\t>\n\t\t\t\t\t\tยกเลิก\n\t\t\t\t\t<\/n-button>\n\t\t\t\t\t<n-button\n\t\t\t\t\t\ttype=\"success\"\n\t\t\t\t\t\t:loading=\"state.loading\"\n\t\t\t\t\t\t@click=\"submitForm\"\n\t\t\t\t\t>\n\t\t\t\t\t\tบันทึกข้อมูล\n\t\t\t\t\t<\/n-button>\n\t\t\t\t<\/div>\n\t\t\t<\/n-spin>\n\t\t<\/n-card>\n\t<\/n-modal>\n<\/template>\n\n<script setup lang=\"ts\">\nimport type { FormInst } from \"naive-ui\"\nimport { NButton, NCard, NForm, NFormItem, NInput, NModal, NSpin, NSwitch } from \"naive-ui\"\n\nimport Icon from \"@/components/common/Icon.vue\"\nimport { fn } from \"@/plugins/functions\"\n\ndefineProps<{\n\tstate: {\n\t\tloading: boolean\n\t\tmodal: { form: boolean }\n\t\tformMode: \"add\" | \"edit\"\n\t\treqForm: {\n\t\t\tCatCode: string\n\t\t\tCatName: string\n\t\t\tCatRemark: string\n\t\t\tIsActive: \"Y\" | \"N\"\n\t\t}\n\t}\n\trules: Record<string, unknown>\n\tmaxLen: { CatCode: number, CatName: number, CatRemark: number }\n\tformRef: FormInst | null\n\tsubmitForm: () => void\n}>()\n<\/script>\n"}, {"path": "src/views/Agent/BotLine/BotLineSetting/component/list-manage.vue", "label": "list-manage.vue", "lang": "vue", "role": "หน้าจัดการ element — header สรุปหมวดหมู่ + ฟอร์ม inline (mode-aware) + ตาราง", "lines": 232, "code": "<template>\n\t<div class=\"space-y-4\">\n\t\t<div class=\"page pb-1!\">\n\t\t\t<div class=\"page-header flex items-center justify-between\">\n\t\t\t\t<div class=\"title flex items-center gap-2\">\n\t\t\t\t\t<Icon name=\"carbon:settings-adjust\" />\n\t\t\t\t\tตั้งค่าบอท Line\n\t\t\t\t<\/div>\n\t\t\t\t<n-button size=\"small\" @click=\"emit('back')\">\n\t\t\t\t\t<template #icon>\n\t\t\t\t\t\t<Icon name=\"carbon:arrow-left\" />\n\t\t\t\t\t<\/template>\n\t\t\t\t\tกลับไปหน้าแรก\n\t\t\t\t<\/n-button>\n\t\t\t<\/div>\n\t\t<\/div>\n\n\t\t<!-- header สรุปหมวดหมู่ที่กำลังจัดการ -->\n\t\t<n-card size=\"small\">\n\t\t\t<div class=\"flex flex-wrap gap-x-8 gap-y-1 text-sm\">\n\t\t\t\t<div>\n\t\t\t\t\t<span class=\"text-gray-500\">รหัส (File) :<\/span>\n\t\t\t\t\t<span class=\"ml-2 font-medium\">{{ state.catCode || \"—\" }}<\/span>\n\t\t\t\t<\/div>\n\t\t\t\t<div>\n\t\t\t\t\t<span class=\"text-gray-500\">ชื่อ :<\/span>\n\t\t\t\t\t<span class=\"ml-2 font-medium\">{{ state.catName || \"—\" }}<\/span>\n\t\t\t\t<\/div>\n\t\t\t<\/div>\n\t\t<\/n-card>\n\n\t\t<!-- ฟอร์มเพิ่ม/แก้ — mode-aware: ปุ่มเปลี่ยนตาม formMode -->\n\t\t<n-card size=\"small\">\n\t\t\t<n-spin :show=\"state.loading\">\n\t\t\t\t<n-form\n\t\t\t\t\tref=\"formRef\"\n\t\t\t\t\t:model=\"state.reqForm\"\n\t\t\t\t\t:rules=\"rules\"\n\t\t\t\t\tlabel-placement=\"top\"\n\t\t\t\t\tsize=\"small\"\n\t\t\t\t>\n\t\t\t\t\t<div class=\"grid grid-cols-1 gap-3 md:grid-cols-3\">\n\t\t\t\t\t\t<n-form-item label=\"Key\" path=\"ElKey\">\n\t\t\t\t\t\t\t<n-input\n\t\t\t\t\t\t\t\tv-model:value=\"state.reqForm.ElKey\"\n\t\t\t\t\t\t\t\tplaceholder=\"กรอก Key\"\n\t\t\t\t\t\t\t\t:maxlength=\"maxLen.ElKey\"\n\t\t\t\t\t\t\t\tshow-count\n\t\t\t\t\t\t\t/>\n\t\t\t\t\t\t<\/n-form-item>\n\n\t\t\t\t\t\t<n-form-item label=\"ประเภท\" path=\"ElType\">\n\t\t\t\t\t\t\t<n-select\n\t\t\t\t\t\t\t\tv-model:value=\"state.reqForm.ElType\"\n\t\t\t\t\t\t\t\t:options=\"elTypeOptions\"\n\t\t\t\t\t\t\t\tplaceholder=\"เลือกประเภท\"\n\t\t\t\t\t\t\t\tclearable\n\t\t\t\t\t\t\t/>\n\t\t\t\t\t\t<\/n-form-item>\n\n\t\t\t\t\t\t<n-form-item label=\"ค่าที่ระบุ\" path=\"ElValue\">\n\t\t\t\t\t\t\t<n-input\n\t\t\t\t\t\t\t\tv-model:value=\"state.reqForm.ElValue\"\n\t\t\t\t\t\t\t\tplaceholder=\"กรอกค่าที่ระบุ\"\n\t\t\t\t\t\t\t\t:maxlength=\"maxLen.ElValue\"\n\t\t\t\t\t\t\t\tshow-count\n\t\t\t\t\t\t\t/>\n\t\t\t\t\t\t<\/n-form-item>\n\t\t\t\t\t<\/div>\n\n\t\t\t\t\t<n-form-item label=\"หมายเหตุ\" path=\"ElRemark\">\n\t\t\t\t\t\t<n-input\n\t\t\t\t\t\t\tv-model:value=\"state.reqForm.ElRemark\"\n\t\t\t\t\t\t\tplaceholder=\"กรอกหมายเหตุ\"\n\t\t\t\t\t\t\t:maxlength=\"maxLen.ElRemark\"\n\t\t\t\t\t\t\tshow-count\n\t\t\t\t\t\t/>\n\t\t\t\t\t<\/n-form-item>\n\n\t\t\t\t\t<div class=\"mt-2 flex flex-wrap gap-2\">\n\t\t\t\t\t\t<n-button\n\t\t\t\t\t\t\ttype=\"success\"\n\t\t\t\t\t\t\t:loading=\"state.loading\"\n\t\t\t\t\t\t\t@click=\"submitForm\"\n\t\t\t\t\t\t>\n\t\t\t\t\t\t\t{{ state.formMode === \"add\" ? \"บันทึกข้อมูล\" : \"ปรับปรุงข้อมูล\" }}\n\t\t\t\t\t\t<\/n-button>\n\t\t\t\t\t\t<n-button\n\t\t\t\t\t\t\t:disabled=\"state.loading\"\n\t\t\t\t\t\t\t@click=\"resetForm\"\n\t\t\t\t\t\t>\n\t\t\t\t\t\t\tยกเลิก\n\t\t\t\t\t\t<\/n-button>\n\t\t\t\t\t<\/div>\n\t\t\t\t<\/n-form>\n\t\t\t<\/n-spin>\n\t\t<\/n-card>\n\n\t\t<!-- ตารางรายการ -->\n\t\t<n-card size=\"small\">\n\t\t\t<n-spin :show=\"state.loading\">\n\t\t\t\t<n-data-table\n\t\t\t\t\t:columns=\"columns\"\n\t\t\t\t\t:data=\"state.list\"\n\t\t\t\t\t:row-key=\"(row: BotLineListRow) => row.Id\"\n\t\t\t\t\t:scroll-x=\"900\"\n\t\t\t\t\tbordered\n\t\t\t\t\tsize=\"small\"\n\t\t\t\t/>\n\t\t\t<\/n-spin>\n\t\t<\/n-card>\n\t<\/div>\n<\/template>\n\n<script setup lang=\"ts\">\nimport type { DataTableColumns } from \"naive-ui\"\nimport type { BotLineListRow } from \"@/services/type/bot-line.type\"\nimport { NButton, NCard, NDataTable, NEllipsis, NForm, NFormItem, NInput, NPopconfirm, NSelect, NSpin } from \"naive-ui\"\nimport { computed, h, onMounted } from \"vue\"\n\nimport Icon from \"@/components/common/Icon.vue\"\n\nimport { EL_TYPE_OPTIONS, useBotList } from \"../composables/use-bot-list\"\n\nconst props = defineProps<{\n  catCode: string\n  catName: string\n}>()\n\nconst emit = defineEmits<{\n  back: []\n}>()\n\nconst {\n  formRef,\n  state,\n  rules,\n  maxLen,\n  initCat,\n  loadList,\n  resetForm,\n  openEdit,\n  submitForm,\n  onDelete\n} = useBotList()\n\nconst elTypeOptions = EL_TYPE_OPTIONS\n\nconst columns = computed<DataTableColumns<BotLineListRow>>(() => [\n  {\n    title: \"#\",\n    key: \"index\",\n    width: 56,\n    titleAlign: \"center\",\n    align: \"center\",\n    render: (_row, index) => index + 1\n  },\n  {\n    title: \"Key\",\n    key: \"ElKey\",\n    minWidth: 140,\n    titleAlign: \"center\"\n  },\n  {\n    title: \"ประเภท\",\n    key: \"ElType\",\n    width: 110,\n    titleAlign: \"center\",\n    align: \"center\",\n    render: row => row.ElType || \"—\"\n  },\n  {\n    title: \"ค่าที่ระบุ\",\n    key: \"ElValue\",\n    minWidth: 160,\n    titleAlign: \"center\",\n    render: row =>\n      h(NEllipsis, { tooltip: true }, { default: () => row.ElValue || \"—\" })\n  },\n  {\n    title: \"หมายเหตุ\",\n    key: \"ElRemark\",\n    minWidth: 160,\n    titleAlign: \"center\",\n    render: row =>\n      h(NEllipsis, { tooltip: true }, { default: () => row.ElRemark || \"—\" })\n  },\n  {\n    title: \"จัดการ\",\n    key: \"actions\",\n    width: 200,\n    fixed: \"right\",\n    titleAlign: \"center\",\n    align: \"center\",\n    render: row =>\n      h(\"div\", { class: \"flex justify-center gap-2\" }, [\n        h(\n          NButton,\n          {\n            size: \"tiny\",\n            type: \"info\",\n            onClick: () => openEdit(row)\n          },\n          { default: () => \"แก้ไข\" }\n        ),\n        h(\n          NPopconfirm,\n          {\n            positiveText: \"ยืนยัน\",\n            negativeText: \"ยกเลิก\",\n            onPositiveClick: () => onDelete(row)\n          },\n          {\n            trigger: () =>\n              h(\n                NButton,\n                { size: \"tiny\", type: \"error\" },\n                { default: () => \"ลบ\" }\n              ),\n            default: () => \"ยืนยันการลบรายการ\"\n          }\n        )\n      ])\n  }\n])\n\nonMounted(() => {\n  initCat(props.catCode, props.catName)\n  loadList()\n})\n<\/script>\n"}, {"path": "src/views/Agent/BotLine/BotLineSetting/composables/use-bot-cat.ts", "label": "use-bot-cat.ts", "lang": "ts", "role": "business logic หมวดหมู่ — return shape { state, ... } ตาม feature-pattern.md list page", "lines": 205, "code": "import type { FormInst, FormItemRule, FormRules } from \"naive-ui\"\nimport type {\n  BotLineActiveYN,\n  BotLineCatRow\n} from \"@/services/type/bot-line.type\"\nimport { useMessage } from \"naive-ui\"\n\nimport { reactive, ref } from \"vue\"\nimport {\n  BOT_CAT_CODE_MAX_LEN,\n  BOT_CAT_NAME_MAX_LEN,\n  BOT_CAT_REMARK_MAX_LEN\n} from \"@/services/type/bot-line.type\"\nimport { fn } from \"@/plugins/functions\"\nimport { botLineService } from \"@/services/api\"\nimport { useAuthStore } from \"@/stores/auth\"\n\ntype FormMode = \"add\" | \"edit\"\n\ninterface CatForm {\n  Id: number | null\n  CatCode: string\n  CatName: string\n  CatRemark: string\n  IsActive: BotLineActiveYN\n}\n\nfunction emptyForm(): CatForm {\n  return {\n    Id: null,\n    CatCode: \"\",\n    CatName: \"\",\n    CatRemark: \"\",\n    IsActive: \"N\"\n  }\n}\n\nexport function useBotCat() {\n  const message = useMessage()\n  const authStore = useAuthStore()\n  const formRef = ref<FormInst | null>(null)\n\n  const state = reactive({\n    list: [] as BotLineCatRow[],\n    loading: false,\n    modal: { form: false },\n    formMode: \"add\" as FormMode,\n    reqForm: emptyForm()\n  })\n\n  // CatCode แก้ไม่ได้ตอน edit (bruno CatUpdate ไม่รับ CatCode)\n  const rules: FormRules = {\n    CatCode: [\n      {\n        required: true,\n        message: \"กรุณากรอกรหัส (ชื่อไฟล์)\",\n        trigger: [\"blur\", \"input\"]\n      } as FormItemRule\n    ],\n    CatName: [\n      {\n        required: true,\n        message: \"กรุณากรอกชื่อการตั้งค่า\",\n        trigger: [\"blur\", \"input\"]\n      } as FormItemRule\n    ]\n  }\n\n  async function loadList() {\n    state.loading = true\n    try {\n      const res = await botLineService.CatSearch()\n      if (!res?.Result) {\n        message.error(res?.Remark || \"โหลดข้อมูลไม่สำเร็จ\")\n        return\n      }\n      state.list = res.Data ?? []\n    } catch (e: unknown) {\n      const err = e as { response?: { data?: { Remark?: string } } }\n      message.error(err?.response?.data?.Remark || \"โหลดข้อมูลไม่สำเร็จ\")\n    } finally {\n      state.loading = false\n    }\n  }\n\n  function openAdd() {\n    state.formMode = \"add\"\n    state.reqForm = emptyForm()\n    formRef.value?.restoreValidation()\n    state.modal.form = true\n  }\n\n  // ตอนแก้ใช้ CatInfoId ดึงข้อมูลก่อน (ตาม mockup note)\n  async function openEdit(row: BotLineCatRow) {\n    state.formMode = \"edit\"\n    state.modal.form = true\n    state.loading = true\n    try {\n      const res = await botLineService.CatInfoId({ Id: row.Id })\n      if (!res?.Result) {\n        message.error(res?.Remark || \"ดึงข้อมูลไม่สำเร็จ\")\n        state.modal.form = false\n        return\n      }\n      const d = res.Data\n      state.reqForm = {\n        Id: d.Id,\n        CatCode: d.CatCode,\n        CatName: d.CatName,\n        CatRemark: d.CatRemark ?? \"\",\n        IsActive: d.IsActive\n      }\n    } catch (e: unknown) {\n      const err = e as { response?: { data?: { Remark?: string } } }\n      message.error(err?.response?.data?.Remark || \"ดึงข้อมูลไม่สำเร็จ\")\n      state.modal.form = false\n    } finally {\n      state.loading = false\n    }\n  }\n\n  async function submitForm() {\n    await formRef.value?.validate(async errors => {\n      if (errors) return\n\n      state.loading = true\n      try {\n        const doAdmin = authStore.getUsername || \"\"\n        const doIp = (await fn.getIP()) || \"\"\n        const f = state.reqForm\n\n        const res =\n          state.formMode === \"add\"\n            ? await botLineService.CatSave({\n                CatCode: f.CatCode,\n                CatName: f.CatName,\n                CatRemark: f.CatRemark,\n                IsActive: f.IsActive,\n                DoAdmin: doAdmin,\n                DoIp: doIp\n              })\n            : await botLineService.CatUpdate({\n                Id: f.Id ?? 0,\n                CatName: f.CatName,\n                CatRemark: f.CatRemark,\n                IsActive: f.IsActive,\n                DoAdmin: doAdmin,\n                DoIp: doIp\n              })\n\n        if (res?.Result) {\n          message.success(res?.Remark || \"บันทึกสำเร็จ\")\n          state.modal.form = false\n          await loadList()\n        } else {\n          message.error(res?.Remark || \"บันทึกไม่สำเร็จ\")\n        }\n      } catch (e: unknown) {\n        const err = e as { response?: { data?: { Remark?: string } } }\n        message.error(err?.response?.data?.Remark || \"เกิดข้อผิดพลาด\")\n      } finally {\n        state.loading = false\n      }\n    })\n  }\n\n  async function onDelete(row: BotLineCatRow) {\n    state.loading = true\n    try {\n      const res = await botLineService.CatDelete({\n        Id: row.Id,\n        DoAdmin: authStore.getUsername || \"\",\n        DoIp: (await fn.getIP()) || \"\"\n      })\n      if (res?.Result) {\n        message.success(res?.Remark || \"ลบรายการสำเร็จ\")\n        await loadList()\n      } else {\n        message.error(res?.Remark || \"ลบไม่สำเร็จ\")\n      }\n    } catch (e: unknown) {\n      const err = e as { response?: { data?: { Remark?: string } } }\n      message.error(err?.response?.data?.Remark || \"เกิดข้อผิดพลาด\")\n    } finally {\n      state.loading = false\n    }\n  }\n\n  return {\n    formRef,\n    state,\n    rules,\n    maxLen: {\n      CatCode: BOT_CAT_CODE_MAX_LEN,\n      CatName: BOT_CAT_NAME_MAX_LEN,\n      CatRemark: BOT_CAT_REMARK_MAX_LEN\n    },\n    loadList,\n    openAdd,\n    openEdit,\n    submitForm,\n    onDelete\n  }\n}\n"}, {"path": "src/views/Agent/BotLine/BotLineSetting/composables/use-bot-list.ts", "label": "use-bot-list.ts", "lang": "ts", "role": "business logic element — initCat() รับ CatCode แล้ว CRUD ผ่าน List* endpoint", "lines": 222, "code": "import type { FormInst, FormItemRule, FormRules } from \"naive-ui\"\nimport type { BotLineListRow } from \"@/services/type/bot-line.type\"\nimport { useMessage } from \"naive-ui\"\n\nimport { reactive, ref } from \"vue\"\nimport {\n  BOT_LIST_KEY_MAX_LEN,\n  BOT_LIST_REMARK_MAX_LEN,\n  BOT_LIST_VALUE_MAX_LEN\n} from \"@/services/type/bot-line.type\"\nimport { fn } from \"@/plugins/functions\"\nimport { botLineService } from \"@/services/api\"\nimport { useAuthStore } from \"@/stores/auth\"\n\ntype FormMode = \"add\" | \"edit\"\n\ninterface ListForm {\n  Id: number | null\n  CatCode: string\n  ElKey: string\n  ElType: string\n  ElValue: string\n  ElRemark: string\n}\n\n// dropdown ประเภท — bruno ListSave ระบุ number, text\nexport const EL_TYPE_OPTIONS = [\n  { label: \"text\", value: \"text\" },\n  { label: \"number\", value: \"number\" }\n]\n\nfunction emptyForm(catCode: string): ListForm {\n  return {\n    Id: null,\n    CatCode: catCode,\n    ElKey: \"\",\n    ElType: \"\",\n    ElValue: \"\",\n    ElRemark: \"\"\n  }\n}\n\nexport function useBotList() {\n  const message = useMessage()\n  const authStore = useAuthStore()\n  const formRef = ref<FormInst | null>(null)\n\n  const state = reactive({\n    catCode: \"\",\n    catName: \"\",\n    list: [] as BotLineListRow[],\n    loading: false,\n    formMode: \"add\" as FormMode,\n    reqForm: emptyForm(\"\")\n  })\n\n  // ElKey + ElRemark required / ElType + ElValue optional (ตาม bruno)\n  const rules: FormRules = {\n    ElKey: [\n      {\n        required: true,\n        message: \"กรุณากรอก Key\",\n        trigger: [\"blur\", \"input\"]\n      } as FormItemRule\n    ],\n    ElRemark: [\n      {\n        required: true,\n        message: \"กรุณากรอกหมายเหตุ\",\n        trigger: [\"blur\", \"input\"]\n      } as FormItemRule\n    ]\n  }\n\n  // หน้านี้เปิดจากแถวในตารางหมวดหมู่ — รับ catCode เข้ามา\n  function initCat(catCode: string, catName: string) {\n    state.catCode = catCode\n    state.catName = catName\n    state.reqForm = emptyForm(catCode)\n  }\n\n  async function loadList() {\n    if (!state.catCode) {\n      message.warning(\"ไม่พบรหัสหมวดหมู่\")\n      return\n    }\n    state.loading = true\n    try {\n      const res = await botLineService.ListByCat({ CatCode: state.catCode })\n      if (!res?.Result) {\n        message.error(res?.Remark || \"โหลดข้อมูลไม่สำเร็จ\")\n        return\n      }\n      state.list = res.Data ?? []\n    } catch (e: unknown) {\n      const err = e as { response?: { data?: { Remark?: string } } }\n      message.error(err?.response?.data?.Remark || \"โหลดข้อมูลไม่สำเร็จ\")\n    } finally {\n      state.loading = false\n    }\n  }\n\n  function resetForm() {\n    state.formMode = \"add\"\n    state.reqForm = emptyForm(state.catCode)\n    formRef.value?.restoreValidation()\n  }\n\n  // mockup: กดแก้ไข → form เปลี่ยนจาก \"เพิ่ม\" เป็น \"แก้ไข\" ในที่เดิม\n  async function openEdit(row: BotLineListRow) {\n    state.loading = true\n    try {\n      const res = await botLineService.ListInfoId({ Id: row.Id })\n      if (!res?.Result) {\n        message.error(res?.Remark || \"ดึงข้อมูลไม่สำเร็จ\")\n        return\n      }\n      const d = res.Data\n      state.formMode = \"edit\"\n      state.reqForm = {\n        Id: d.Id,\n        CatCode: d.CatCode,\n        ElKey: d.ElKey,\n        ElType: d.ElType ?? \"\",\n        ElValue: d.ElValue ?? \"\",\n        ElRemark: d.ElRemark\n      }\n    } catch (e: unknown) {\n      const err = e as { response?: { data?: { Remark?: string } } }\n      message.error(err?.response?.data?.Remark || \"ดึงข้อมูลไม่สำเร็จ\")\n    } finally {\n      state.loading = false\n    }\n  }\n\n  async function submitForm() {\n    await formRef.value?.validate(async errors => {\n      if (errors) return\n\n      state.loading = true\n      try {\n        const doAdmin = authStore.getUsername || \"\"\n        const doIp = (await fn.getIP()) || \"\"\n        const f = state.reqForm\n\n        const res =\n          state.formMode === \"add\"\n            ? await botLineService.ListSave({\n                CatCode: f.CatCode,\n                ElKey: f.ElKey,\n                ElType: f.ElType,\n                ElValue: f.ElValue,\n                ElRemark: f.ElRemark,\n                DoAdmin: doAdmin,\n                DoIp: doIp\n              })\n            : await botLineService.ListUpdate({\n                Id: f.Id ?? 0,\n                ElKey: f.ElKey,\n                ElType: f.ElType,\n                ElValue: f.ElValue,\n                ElRemark: f.ElRemark,\n                DoAdmin: doAdmin,\n                DoIp: doIp\n              })\n\n        if (res?.Result) {\n          message.success(res?.Remark || \"บันทึกสำเร็จ\")\n          resetForm()\n          await loadList()\n        } else {\n          message.error(res?.Remark || \"บันทึกไม่สำเร็จ\")\n        }\n      } catch (e: unknown) {\n        const err = e as { response?: { data?: { Remark?: string } } }\n        message.error(err?.response?.data?.Remark || \"เกิดข้อผิดพลาด\")\n      } finally {\n        state.loading = false\n      }\n    })\n  }\n\n  async function onDelete(row: BotLineListRow) {\n    state.loading = true\n    try {\n      const res = await botLineService.ListDelete({\n        Id: row.Id,\n        DoAdmin: authStore.getUsername || \"\",\n        DoIp: (await fn.getIP()) || \"\"\n      })\n      if (res?.Result) {\n        message.success(res?.Remark || \"ลบรายการสำเร็จ\")\n        await loadList()\n      } else {\n        message.error(res?.Remark || \"ลบไม่สำเร็จ\")\n      }\n    } catch (e: unknown) {\n      const err = e as { response?: { data?: { Remark?: string } } }\n      message.error(err?.response?.data?.Remark || \"เกิดข้อผิดพลาด\")\n    } finally {\n      state.loading = false\n    }\n  }\n\n  return {\n    formRef,\n    state,\n    rules,\n    maxLen: {\n      ElKey: BOT_LIST_KEY_MAX_LEN,\n      ElValue: BOT_LIST_VALUE_MAX_LEN,\n      ElRemark: BOT_LIST_REMARK_MAX_LEN\n    },\n    initCat,\n    loadList,\n    resetForm,\n    openEdit,\n    submitForm,\n    onDelete\n  }\n}\n"}, {"path": "src/router/botline-route.snippet.ts", "label": "botline-route.snippet.ts", "lang": "ts", "role": "ตัวอย่าง route สำหรับวางใน router/index.ts (แบบ A ใช้ route เดียว)", "lines": 35, "code": "// ════════════════════════════════════════════════════════════════════\n//  ตัวอย่าง route สำหรับ feature BotLine\n//  นำไปวางใน src/router/index.ts — เพิ่มเป็น child ใต้กลุ่ม domain ที่เหมาะสม\n//\n//  แบบ A (toggle หน้าเดียว) ใช้ route เดียว — ไม่มี param\n//  เพราะการสลับ cat <-> list อยู่ภายใน BotLineSetting.vue ด้วย v-if\n// ════════════════════════════════════════════════════════════════════\n\n// กลุ่มแม่ — ถ้ายังไม่มี domain BotLine ใน router\n{\n  path: \"/botline\",\n  redirect: \"/botline/setting\",\n  meta: {\n    auth: true,\n    roles: \"Agent\",                // ปรับตามสิทธิ์จริง — ดู router/components.ts\n    breadcrumb: \"ตั้งค่าบอท Line\"\n  },\n  children: [\n    {\n      path: \"setting\",\n      name: \"Agent-BotLineSetting\",\n      component: () =>\n        import(\"@/views/Agent/BotLine/BotLineSetting/BotLineSetting.vue\"),\n      meta: { title: \"ตั้งค่าบอท Line\" }\n    }\n  ]\n}\n\n// หมายเหตุ:\n// - แบบ A ใช้ route เดียวพอ — ไม่ต้องมี /botline/setting/:catCode\n//   เพราะหน้า element เป็นแค่อีก view ภายใน component เดียวกัน\n// - ถ้าภายหลังเปลี่ยนใจอยาก deep-link ได้ (แบบ B) ค่อยเพิ่ม\n//   child route ที่รับ :catCode param แล้วให้ BotLineSetting อ่าน\n//   route.params มา set view + selected — composable รองรับอยู่แล้ว\n"}], "groups": {"API layer": ["bot-line.type.ts", "bot-line.api.ts"], "หน้าหมวดหมู่ (Category)": ["BotLineSetting.vue", "cat-table.vue", "cat-form-modal.vue", "use-bot-cat.ts"], "หน้าจัดการ element": ["list-manage.vue", "use-bot-list.ts"], "Routing": ["botline-route.snippet.ts"]}, "bruno": [{"file": "CatSearch.bru", "name": "CatSearch", "verb": "READ", "role": "รายการหมวดหมู่ทั้งหมด (ตารางหลัก)", "lines": 134, "code": "meta {\n  name: CatSearch - ค้นหาหมวดหมู่\n  type: http\n  seq: 1\n}\n\npost {\n  url: {{API_URL}}/v1/BotLine/CatSearch\n  body: text\n  auth: inherit\n}\n\nsettings {\n  encodeUrl: true\n}\n\ndocs {\n  # BotLine/CatSearch — รายการหมวดหมู่ Bot (BotCatElement)\n\n  ดึงรายการหมวดหมู่ของเส้น Bot (BotCatElement) ที่ยังไม่ถูกลบ (`Ctrlcode = '0'`) ทั้งหมด เรียงตาม `CatCode` เพื่อใช้แสดงตารางหลักในหน้า Admin UI ของโมดูล BotLine\n\n  โครงสร้าง BotLine แบ่งเป็น 2 ชั้น:\n  - `Cat*` = หมวดหมู่ (BotCatElement) → กลุ่มหลัก\n  - `List*` = รายการภายในหมวดหมู่ (BotListElement) → รายการย่อยของบอท\n\n  ## Endpoint\n  `POST {{API_URL}}/v1/BotLine/CatSearch`\n\n  ## Authentication\n  ต้องแนบ `Authorization: Bearer <AccessToken>` ที่ได้จากเส้น `/authen/User/Login` — เส้น `/v1` ทั้งกลุ่มใช้ middleware `db.UserAuthen`\n\n  ## Body\n  ไม่ต้องส่ง Body (Bruno ตั้ง `body: text` ไว้ แต่ Server ไม่ได้อ่านค่า)\n\n  ## Response (success)\n  | Field | Type | คำอธิบาย |\n  |---|---|---|\n  | Result | bool | `true` |\n  | Remark | string | `ทำรายการสำเร็จแล้ว` |\n  | Count | int | จำนวนแถวที่คืน |\n  | Data | array | รายการ `BotLineCatSearch` (Id, CatCode, CatName, CatRemark, IsActive) |\n\n  ## Response (error)\n  | HTTP | ErrorCode | ความหมาย |\n  |---|---|---|\n  | 400 | X-001 | Query ตาราง `BotCatElement` ผิดพลาด |\n  | 401 | - | ไม่มี/ไม่ถูกต้อง AccessToken |\n\n  ## ลำดับการทำงาน\n  1. Query `BotCatElement` ที่ `Ctrlcode = '0'` เรียงตาม `CatCode`\n  2. คืนรายการทั้งหมดพร้อม `Count`\n\n  ## Notes\n  - ไม่มี Pagination — คืนทั้งหมดที่ยัง active\n  - ข้อมูลนี้ใช้ช่วย dropdown ของ `CatCode` ในหน้า `ListByCat / ListSave` ด้วย\n}\n\nexample {\n  name: ดึงรายการหมวดหมู่สำเร็จ\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatSearch\n    method: POST\n    mode: json\n    body:json: {\n      {}\n    }\n  }\n\n  response: {\n    status: {\n      code: 200\n      text: OK\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": true,\n            \"Remark\": \"ทำรายการสำเร็จแล้ว\",\n            \"Count\": 2,\n            \"Data\": [\n                {\n                    \"Id\": 1,\n                    \"CatCode\": \"CAT001\",\n                    \"CatName\": \"หมวดหมู่ทั่วไป\",\n                    \"CatRemark\": \"หมวดหมู่สำหรับทดสอบ\",\n                    \"IsActive\": \"Y\"\n                },\n                {\n                    \"Id\": 2,\n                    \"CatCode\": \"CAT002\",\n                    \"CatName\": \"หมวดหมู่ทดสอบ\",\n                    \"CatRemark\": null,\n                    \"IsActive\": \"N\"\n                }\n            ]\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: ไม่มี AccessToken\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatSearch\n    method: POST\n    mode: json\n    body:json: {\n      {}\n    }\n  }\n\n  response: {\n    status: {\n      code: 401\n      text: Unauthorized\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"Unauthorized\"\n        }\n      '''\n    }\n  }\n}\n"}, {"file": "CatInfoId.bru", "name": "CatInfoId", "verb": "READ", "role": "ดึง 1 หมวดหมู่ตาม Id (ก่อน edit)", "lines": 171, "code": "meta {\n  name: CatInfoId - ดูหมวดหมู่ตาม Id\n  type: http\n  seq: 3\n}\n\npost {\n  url: {{API_URL}}/v1/BotLine/CatInfoId\n  body: json\n  auth: inherit\n}\n\nbody:json {\n  {\n      \"Id\": 1          //* Id ของ BotCatElement (type = int, min = 1)\n  }\n}\n\nsettings {\n  encodeUrl: true\n}\n\ndocs {\n  # BotLine/CatInfoId — ข้อมูลหมวดหมู่ตาม Id\n\n  ดึงข้อมูลหมวดหมู่ Bot 1 รายการตาม `Id` (Primary Key ของ `BotCatElement`) ที่ยัง active (`Ctrlcode = '0'`)\n\n  ## Endpoint\n  `POST {{API_URL}}/v1/BotLine/CatInfoId`\n\n  ## Authentication\n  ต้องแนบ `Authorization: Bearer <AccessToken>` (UserAuthen middleware)\n\n  ## Body (JSON)\n  | Field | Required | Type | คำอธิบาย |\n  |---|---|---|---|\n  | Id | ✅ | int (min=1) | Id ของ BotCatElement |\n\n  ## Response (success)\n  | Field | Type | คำอธิบาย |\n  |---|---|---|\n  | Result | bool | `true` |\n  | Remark | string | `ทำรายการสำเร็จแล้ว` |\n  | Data | object | `BotLineCatSearch` (Id, CatCode, CatName, CatRemark, IsActive) |\n\n  ## Response (error)\n  | HTTP | ErrorCode | ความหมาย |\n  |---|---|---|\n  | 422 | X000-2 | Validate ล้มเหลว (Id ว่างหรือ <1) |\n  | 400 | X-005 | ไม่พบข้อมูล |\n\n  ## ลำดับการทำงาน\n  1. Validate Body ตาม `BotLineCatGetInfoId`\n  2. Query `BotCatElement` ด้วย `Id + Ctrlcode='0'`\n  3. คืนข้อมูลที่พบ\n\n  ## Notes\n  - ถ้าต้องการค้นด้วย `CatCode` ให้ใช้ `CatInfoCode` แทน\n}\n\nexample {\n  name: ดึงข้อมูลสำเร็จ\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatInfoId\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 1\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 200\n      text: OK\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": true,\n            \"Remark\": \"ทำรายการสำเร็จแล้ว\",\n            \"Data\": {\n                \"Id\": 1,\n                \"CatCode\": \"CAT001\",\n                \"CatName\": \"หมวดหมู่ทั่วไป\",\n                \"CatRemark\": \"หมวดหมู่สำหรับทดสอบ\",\n                \"IsActive\": \"Y\"\n            }\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: ไม่พบข้อมูล (X-005)\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatInfoId\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 9999\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 400\n      text: Bad Request\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"ไม่พบข้อมูล\",\n            \"ErrorCode\": \"X-005\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: Validate ล้มเหลว - Id = 0\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatInfoId\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 0\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 422\n      text: Unprocessable Entity\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"เกิดข้อผิดพลาดที่การตรวจสอบข้อมูล\",\n            \"Errors\": {\n                \"Id\": \"เกิดข้อผิดพลาดที่ Id เนื่องจาก: required\"\n            },\n            \"PostData\": {\n                \"Id\": 0\n            },\n            \"ErrorCode\": \"X000-2\"\n        }\n      '''\n    }\n  }\n}\n"}, {"file": "CatInfoCode.bru", "name": "CatInfoCode", "verb": "READ", "role": "ดึง 1 หมวดหมู่ตาม CatCode", "lines": 168, "code": "meta {\n  name: CatInfoCode - ดูหมวดหมู่ตาม Code\n  type: http\n  seq: 4\n}\n\npost {\n  url: {{API_URL}}/v1/BotLine/CatInfoCode\n  body: json\n  auth: inherit\n}\n\nbody:json {\n  {\n      \"CatCode\": \"CAT001\"          //* รหัสหมวดหมู่ (type = string, max = 30)\n  }\n}\n\nsettings {\n  encodeUrl: true\n}\n\ndocs {\n  # BotLine/CatInfoCode — ข้อมูลหมวดหมู่ตาม CatCode\n\n  ดึงข้อมูลหมวดหมู่ Bot 1 รายการตาม `CatCode` ที่ยัง active (`Ctrlcode = '0'`)\n\n  ## Endpoint\n  `POST {{API_URL}}/v1/BotLine/CatInfoCode`\n\n  ## Authentication\n  ต้องแนบ `Authorization: Bearer <AccessToken>` (UserAuthen middleware)\n\n  ## Body (JSON)\n  | Field | Required | Type | Max | คำอธิบาย |\n  |---|---|---|---|---|\n  | CatCode | ✅ | string | 30 | รหัสหมวดหมู่ |\n\n  ## Response (success)\n  | Field | Type | คำอธิบาย |\n  |---|---|---|\n  | Result | bool | `true` |\n  | Remark | string | `ทำรายการสำเร็จแล้ว` |\n  | Data | object | `BotLineCatSearch` (Id, CatCode, CatName, CatRemark, IsActive) |\n\n  ## Response (error)\n  | HTTP | ErrorCode | ความหมาย |\n  |---|---|---|\n  | 422 | X000-2 | Validate ล้มเหลว |\n  | 400 | X-006 | ไม่พบข้อมูล |\n\n  ## ลำดับการทำงาน\n  1. Validate Body ตาม `BotLineCatGetInfoCode`\n  2. Query `BotCatElement` ด้วย `CatCode + Ctrlcode='0'`\n  3. คืนข้อมูลที่พบ\n}\n\nexample {\n  name: ดึงข้อมูลสำเร็จ\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatInfoCode\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"CatCode\": \"CAT001\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 200\n      text: OK\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": true,\n            \"Remark\": \"ทำรายการสำเร็จแล้ว\",\n            \"Data\": {\n                \"Id\": 1,\n                \"CatCode\": \"CAT001\",\n                \"CatName\": \"หมวดหมู่ทั่วไป\",\n                \"CatRemark\": \"หมวดหมู่สำหรับทดสอบ\",\n                \"IsActive\": \"Y\"\n            }\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: ไม่พบข้อมูล (X-006)\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatInfoCode\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"CatCode\": \"NOTEXIST\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 400\n      text: Bad Request\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"ไม่พบข้อมูล\",\n            \"ErrorCode\": \"X-006\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: Validate ล้มเหลว - CatCode ว่าง\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatInfoCode\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"CatCode\": \"\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 422\n      text: Unprocessable Entity\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"เกิดข้อผิดพลาดที่การตรวจสอบข้อมูล\",\n            \"Errors\": {\n                \"CatCode\": \"เกิดข้อผิดพลาดที่ CatCode เนื่องจาก: required\"\n            },\n            \"PostData\": {\n                \"CatCode\": \"\"\n            },\n            \"ErrorCode\": \"X000-2\"\n        }\n      '''\n    }\n  }\n}\n"}, {"file": "CatSave.bru", "name": "CatSave", "verb": "WRITE", "role": "เพิ่มหมวดหมู่ — ส่ง CatCode ได้", "lines": 245, "code": "meta {\n  name: CatSave - บันทึกหมวดหมู่\n  type: http\n  seq: 2\n}\n\npost {\n  url: {{API_URL}}/v1/BotLine/CatSave\n  body: json\n  auth: inherit\n}\n\nbody:json {\n  {\n      \"CatCode\": \"CAT002\",                    //* รหัสหมวดหมู่ ใช้เป็นชื่อไฟล์ json ด้วย (type = string, max = 30, unique)\n      \"CatName\": \"หมวดหมู่ทดสอบ\",              //* ชื่อหมวดหมู่ (type = string, max = 50)\n      \"CatRemark\": \"รายละเอียดหมวดหมู่\",        // รายละเอียด (type = string, max = 500, optional)\n      \"IsActive\": \"Y\",                        //* สถานะ Y=เปิดใช้งาน, N=ปิดใช้งาน (type = string, oneof = Y N)\n      \"DoAdmin\": \"admin\",                     //* ผู้ทำรายการ (type = string, max = 30)\n      \"DoIp\": \"192.168.1.1\"                   //* IP Address ของผู้ทำรายการ (type = string, ip)\n  }\n}\n\nsettings {\n  encodeUrl: true\n}\n\ndocs {\n  # BotLine/CatSave — บันทึกหมวดหมู่ Bot\n\n  เพิ่มข้อมูลหมวดหมู่ของเส้น Bot (BotCatElement) ใหม่ และสำเนาลง `BotCatElementLog` (DoType = I)\n\n  ## Endpoint\n  `POST {{API_URL}}/v1/BotLine/CatSave`\n\n  ## Authentication\n  ต้องแนบ `Authorization: Bearer <AccessToken>` ที่ได้จากเส้น `/authen/User/Login`\n\n  ## Body (JSON)\n  | Field | Required | Type | Max | คำอธิบาย |\n  |---|---|---|---|---|\n  | CatCode | ✅ | string | 30 | รหัสหมวดหมู่ (ใช้เป็นชื่อไฟล์ json ด้วย) ต้องไม่ซ้ำ |\n  | CatName | ✅ | string | 50 | ชื่อหมวดหมู่ |\n  | CatRemark |  | string | 500 | รายละเอียดเพิ่มเติม |\n  | IsActive | ✅ | string (Y/N) | - | สถานะ Y=เปิดใช้งาน, N=ปิดใช้งาน |\n  | DoAdmin | ✅ | string | 30 | ผู้ทำรายการ |\n  | DoIp | ✅ | string (ip) | - | IP Address ของผู้ทำรายการ |\n\n  ## Response (success)\n  | Field | Type | คำอธิบาย |\n  |---|---|---|\n  | Result | bool | `true` |\n  | Remark | string | `บันทึกรายการสำเร็จ` |\n\n  ## Response (error)\n  | HTTP | ErrorCode | ความหมาย |\n  |---|---|---|\n  | 400 | X000-0 / X000-1 | อ่าน Body ไม่สำเร็จ / JSON ไม่ถูกต้อง |\n  | 422 | X000-2 | Validate ล้มเหลว |\n  | 400 | X-002 | `CatCode` ซ้ำกับที่มีอยู่ในระบบ |\n  | 500 | X-003 | บันทึก `BotCatElement` ผิดพลาด |\n  | 500 | X-004 | บันทึก `BotCatElementLog` ผิดพลาด |\n\n  ## ลำดับการทำงาน\n  1. Validate Body ตาม `BotLineCatGetSave`\n  2. Query นับ `BotCatElement` ด้วย `CatCode + Ctrlcode='0'` → ถ้าพบ → 400 `X-002`\n  3. Insert `BotCatElement` (Ctrlcode = 0)\n  4. Insert `BotCatElementLog` (DoType = I, DoDatetime จากระบบ)\n  5. คืนผลสำเร็จ\n\n  ## Notes\n  - ✅ Log เขียนใน transaction เดียวกับ Insert/Update แล้ว — ถ้า Log fail จะ rollback การ Save/Update ด้วย\n  - `CatCode` ใช้เป็นชื่อไฟล์ json ที่ระบบ Bot ดาวน์โหลดไปใช้\n}\n\nexample {\n  name: บันทึกสำเร็จ\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatSave\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"CatCode\": \"CAT002\",\n          \"CatName\": \"หมวดหมู่ทดสอบ\",\n          \"CatRemark\": \"รายละเอียดหมวดหมู่\",\n          \"IsActive\": \"Y\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 200\n      text: OK\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": true,\n            \"Remark\": \"บันทึกรายการสำเร็จ\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: CatCode ซ้ำ (X-002)\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatSave\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"CatCode\": \"CAT001\",\n          \"CatName\": \"หมวดหมู่ซ้ำ\",\n          \"CatRemark\": \"\",\n          \"IsActive\": \"Y\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 400\n      text: Bad Request\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"รหัสนี้มีอยู่ในระบบแล้ว\",\n            \"ErrorCode\": \"X-002\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: Validate ล้มเหลว - ไม่ส่ง CatCode\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatSave\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"CatName\": \"หมวดหมู่ทดสอบ\",\n          \"IsActive\": \"Y\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 422\n      text: Unprocessable Entity\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"เกิดข้อผิดพลาดที่การตรวจสอบข้อมูล\",\n            \"Errors\": {\n                \"CatCode\": \"เกิดข้อผิดพลาดที่ CatCode เนื่องจาก: required\"\n            },\n            \"PostData\": {\n                \"CatCode\": \"\",\n                \"CatName\": \"หมวดหมู่ทดสอบ\",\n                \"CatRemark\": null,\n                \"IsActive\": \"Y\",\n                \"DoAdmin\": \"admin\",\n                \"DoIp\": \"192.168.1.1\"\n            },\n            \"ErrorCode\": \"X000-2\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: Validate ล้มเหลว - IsActive ไม่ใช่ Y/N\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatSave\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"CatCode\": \"CAT002\",\n          \"CatName\": \"หมวดหมู่ทดสอบ\",\n          \"IsActive\": \"A\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 422\n      text: Unprocessable Entity\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"เกิดข้อผิดพลาดที่การตรวจสอบข้อมูล\",\n            \"Errors\": {\n                \"IsActive\": \"เกิดข้อผิดพลาดที่ IsActive เนื่องจาก: oneof\"\n            },\n            \"PostData\": {\n                \"CatCode\": \"CAT002\",\n                \"CatName\": \"หมวดหมู่ทดสอบ\",\n                \"CatRemark\": null,\n                \"IsActive\": \"A\",\n                \"DoAdmin\": \"admin\",\n                \"DoIp\": \"192.168.1.1\"\n            },\n            \"ErrorCode\": \"X000-2\"\n        }\n      '''\n    }\n  }\n}\n"}, {"file": "CatUpdate.bru", "name": "CatUpdate", "verb": "WRITE", "role": "แก้หมวดหมู่ — แก้ CatCode ไม่ได้", "lines": 197, "code": "meta {\n  name: CatUpdate - แก้ไขหมวดหมู่\n  type: http\n  seq: 5\n}\n\npost {\n  url: {{API_URL}}/v1/BotLine/CatUpdate\n  body: json\n  auth: inherit\n}\n\nbody:json {\n  {\n      \"Id\": 1,                                //* Id ของ BotCatElement (type = int, min = 1)\n      \"CatName\": \"สินค้าทั่วไป\",                //* ชื่อหมวดหมู่ (type = string, max = 50)\n      \"CatRemark\": \"หมวดหมู่สำหรับสินค้าทั่วไป\",   // รายละเอียด (type = string, max = 500, optional)\n      \"IsActive\": \"Y\",                        //* สถานะ Y=เปิดใช้งาน, N=ปิดใช้งาน (type = string, oneof = Y N)\n      \"DoAdmin\": \"admin\",                     //* ผู้ทำรายการ (type = string, max = 30)\n      \"DoIp\": \"192.168.1.1\"                   //* IP Address ของผู้ทำรายการ (type = string, ip)\n  }\n}\n\nsettings {\n  encodeUrl: true\n}\n\ndocs {\n  # BotLine/CatUpdate — แก้ไขหมวดหมู่ Bot\n\n  ปรับปรุงข้อมูลหมวดหมู่ Bot (BotCatElement) และสำเนาลง `BotCatElementLog` (DoType = U)\n\n  > หมายเหตุ: ไม่อนุญาตแก้ไข `CatCode` — ระบบจะใช้ `CatCode` เดิมของแถวในการบันทึก Log\n\n  ## Endpoint\n  `POST {{API_URL}}/v1/BotLine/CatUpdate`\n\n  ## Authentication\n  ต้องแนบ `Authorization: Bearer <AccessToken>` (UserAuthen middleware)\n\n  ## Body (JSON)\n  | Field | Required | Type | Max | คำอธิบาย |\n  |---|---|---|---|---|\n  | Id | ✅ | int (min=1) | - | Id ของ BotCatElement |\n  | CatName | ✅ | string | 50 | ชื่อหมวดหมู่ใหม่ |\n  | CatRemark |  | string | 500 | รายละเอียด |\n  | IsActive | ✅ | string (Y/N) | - | สถานะ |\n  | DoAdmin | ✅ | string | 30 | ผู้ทำรายการ |\n  | DoIp | ✅ | string (ip) | - | IP Address ของผู้ทำรายการ |\n\n  ## Response (success)\n  | Field | Type | คำอธิบาย |\n  |---|---|---|\n  | Result | bool | `true` |\n  | Remark | string | `ปรับปรุงรายการสำเร็จ` |\n\n  ## Response (error)\n  | HTTP | ErrorCode | ความหมาย |\n  |---|---|---|\n  | 422 | X000-2 | Validate ล้มเหลว |\n  | 400 | X-007 | ไม่พบข้อมูล |\n  | 500 | X-008 | Update `BotCatElement` ผิดพลาด |\n  | 500 | X-009 | บันทึก Log ผิดพลาด |\n\n  ## ลำดับการทำงาน\n  1. Validate Body\n  2. Query หา `BotCatElement` ด้วย `Id + Ctrlcode='0'` → ถ้าไม่พบ → `X-007`\n  3. Update ฟิลด์ `CatName, CatRemark, IsActive`\n  4. Insert `BotCatElementLog` ใช้ `CatCode` จากแถวเดิม (DoType = U)\n  5. คืนผลสำเร็จ\n\n  ## Notes\n  - ✅ Log เขียนใน transaction เดียวกับ Insert/Update แล้ว — ถ้า Log fail จะ rollback การ Save/Update ด้วย\n}\n\nexample {\n  name: แก้ไขสำเร็จ\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatUpdate\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 1,\n          \"CatName\": \"สินค้าทั่วไป\",\n          \"CatRemark\": \"หมวดหมู่สำหรับสินค้าทั่วไป\",\n          \"IsActive\": \"Y\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 200\n      text: OK\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": true,\n            \"Remark\": \"ปรับปรุงรายการสำเร็จ\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: ไม่พบข้อมูล (X-007)\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatUpdate\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 9999,\n          \"CatName\": \"ชื่อใหม่\",\n          \"IsActive\": \"Y\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 400\n      text: Bad Request\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"ไม่พบข้อมูล\",\n            \"ErrorCode\": \"X-007\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: Validate ล้มเหลว - DoIp ไม่ใช่ IP\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatUpdate\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 1,\n          \"CatName\": \"สินค้าทั่วไป\",\n          \"IsActive\": \"Y\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"not-an-ip\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 422\n      text: Unprocessable Entity\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"เกิดข้อผิดพลาดที่การตรวจสอบข้อมูล\",\n            \"Errors\": {\n                \"DoIp\": \"เกิดข้อผิดพลาดที่ DoIp เนื่องจาก: ip\"\n            },\n            \"PostData\": {\n                \"Id\": 1,\n                \"CatName\": \"สินค้าทั่วไป\",\n                \"CatRemark\": null,\n                \"IsActive\": \"Y\",\n                \"DoAdmin\": \"admin\",\n                \"DoIp\": \"not-an-ip\"\n            },\n            \"ErrorCode\": \"X000-2\"\n        }\n      '''\n    }\n  }\n}\n"}, {"file": "CatDelete.bru", "name": "CatDelete", "verb": "DEL", "role": "ลบ (soft) หมวดหมู่", "lines": 180, "code": "meta {\n  name: CatDelete - ลบหมวดหมู่\n  type: http\n  seq: 6\n}\n\npost {\n  url: {{API_URL}}/v1/BotLine/CatDelete\n  body: json\n  auth: inherit\n}\n\nbody:json {\n  {\n      \"Id\": 1,                            //* Id ของ BotCatElement (type = int, min = 1)\n      \"DoAdmin\": \"admin\",                 //* ผู้ทำรายการ (type = string, max = 30)\n      \"DoIp\": \"192.168.1.1\"               //* IP Address ของผู้ทำรายการ (type = string, ip)\n  }\n}\n\nsettings {\n  encodeUrl: true\n}\n\ndocs {\n  # BotLine/CatDelete — ลบหมวดหมู่ Bot (Soft Delete)\n\n  ลบหมวดหมู่ Bot แบบ Soft Delete (อัปเดต `Ctrlcode = '9'`) และสำเนาลง `BotCatElementLog` (DoType = D)\n\n  ## Endpoint\n  `POST {{API_URL}}/v1/BotLine/CatDelete`\n\n  ## Authentication\n  ต้องแนบ `Authorization: Bearer <AccessToken>` (UserAuthen middleware)\n\n  ## Body (JSON)\n  | Field | Required | Type | Max | คำอธิบาย |\n  |---|---|---|---|---|\n  | Id | ✅ | int (min=1) | - | Id ของ BotCatElement |\n  | DoAdmin | ✅ | string | 30 | ผู้ทำรายการ |\n  | DoIp | ✅ | string (ip) | - | IP Address |\n\n  ## Response (success)\n  | Field | Type | คำอธิบาย |\n  |---|---|---|\n  | Result | bool | `true` |\n  | Remark | string | `ลบรายการสำเร็จ` |\n\n  ## Response (error)\n  | HTTP | ErrorCode | ความหมาย |\n  |---|---|---|\n  | 422 | X000-2 | Validate ล้มเหลว |\n  | 400 | X-010 | ไม่พบข้อมูลหรือถูกลบไปแล้ว |\n  | 500 | X-011 | Soft Delete ผิดพลาด |\n  | 500 | X-012 | บันทึก Log ผิดพลาด |\n\n  ## ลำดับการทำงาน\n  1. Validate Body\n  2. Query หา `BotCatElement` (Ctrlcode='0') เพื่อเก็บข้อมูลเดิมก่อน\n  3. Update `Ctrlcode = '9'`\n  4. Insert `BotCatElementLog` (DoType = D)\n  5. คืนผลสำเร็จ\n\n  ## Notes\n  - Soft Delete — ข้อมูลยังอยู่ในตาราง กรองด้วย `Ctrlcode = '0'` เท่านั้น\n  - Log ถูก Insert หลัง Update (ถ้า Log fail ข้อมูลจะถูกลบไปแล้ว → ไม่มี transaction)\n}\n\nexample {\n  name: ลบสำเร็จ\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatDelete\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 1,\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 200\n      text: OK\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": true,\n            \"Remark\": \"ลบรายการสำเร็จ\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: ไม่พบข้อมูล (X-010)\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatDelete\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 9999,\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 400\n      text: Bad Request\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"ไม่พบข้อมูล\",\n            \"ErrorCode\": \"X-010\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: Validate ล้มเหลว - DoAdmin ว่าง\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/CatDelete\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 1,\n          \"DoAdmin\": \"\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 422\n      text: Unprocessable Entity\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"เกิดข้อผิดพลาดที่การตรวจสอบข้อมูล\",\n            \"Errors\": {\n                \"DoAdmin\": \"เกิดข้อผิดพลาดที่ DoAdmin เนื่องจาก: required\"\n            },\n            \"PostData\": {\n                \"Id\": 1,\n                \"DoAdmin\": \"\",\n                \"DoIp\": \"192.168.1.1\"\n            },\n            \"ErrorCode\": \"X000-2\"\n        }\n      '''\n    }\n  }\n}\n"}, {"file": "ListByCat.bru", "name": "ListByCat", "verb": "READ", "role": "element ทั้งหมดใน CatCode", "lines": 151, "code": "meta {\n  name: ListByCat - รายการตามหมวดหมู่\n  type: http\n  seq: 7\n}\n\npost {\n  url: {{API_URL}}/v1/BotLine/ListByCat\n  body: json\n  auth: inherit\n}\n\nbody:json {\n  {\n      \"CatCode\": \"CAT001\"              //* รหัสหมวดหมู่ที่ต้องการดูรายการ (type = string, max = 30)\n  }\n}\n\nsettings {\n  encodeUrl: true\n}\n\ndocs {\n  # BotLine/ListByCat — รายการบอทในหมวดหมู่ (BotListElement)\n\n  ดึงรายการ `BotListElement` ทั้งหมดภายใน `CatCode` ที่ระบุ (ที่ยังไม่ถูกลบ) เรียงตาม `ElKey`\n\n  ## Endpoint\n  `POST {{API_URL}}/v1/BotLine/ListByCat`\n\n  ## Authentication\n  ต้องแนบ `Authorization: Bearer <AccessToken>` (UserAuthen middleware)\n\n  ## Body (JSON)\n  | Field | Required | Type | Max | คำอธิบาย |\n  |---|---|---|---|---|\n  | CatCode | ✅ | string | 30 | รหัสหมวดหมู่ (`BotCatElement.CatCode`) |\n\n  ## Response (success)\n  | Field | Type | คำอธิบาย |\n  |---|---|---|\n  | Result | bool | `true` |\n  | Remark | string | `ทำรายการสำเร็จแล้ว` |\n  | Count | int | จำนวนรายการ |\n  | Data | array | รายการ `BotLineListByCatSearch` (Id, CatCode, ElKey, ElType, ElValue, ElRemark) |\n\n  ## Response (error)\n  | HTTP | ErrorCode | ความหมาย |\n  |---|---|---|\n  | 422 | X000-2 | Validate ล้มเหลว |\n  | 400 | X-013 | Query ผิดพลาด |\n\n  ## ลำดับการทำงาน\n  1. Validate Body ตาม `BotLineListByCatGet`\n  2. Query `BotListElement` ด้วย `CatCode + Ctrlcode='0'` เรียงตาม `ElKey`\n  3. คืนรายการพร้อม `Count`\n\n  ## Notes\n  - ใช้ `CatCode` ที่ได้จาก `CatSearch` เพื่อ dropdown เลือกหมวดหมู่\n}\n\nexample {\n  name: ดึงรายการสำเร็จ\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListByCat\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"CatCode\": \"CAT001\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 200\n      text: OK\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": true,\n            \"Remark\": \"ทำรายการสำเร็จแล้ว\",\n            \"Count\": 2,\n            \"Data\": [\n                {\n                    \"Id\": 1,\n                    \"CatCode\": \"CAT001\",\n                    \"ElKey\": \"product_type\",\n                    \"ElType\": \"text\",\n                    \"ElValue\": \"สินค้าอุปโภค์\",\n                    \"ElRemark\": \"ประเภทสินค้าสำหรับอุปโภค์\"\n                },\n                {\n                    \"Id\": 2,\n                    \"CatCode\": \"CAT001\",\n                    \"ElKey\": \"timeout\",\n                    \"ElType\": \"number\",\n                    \"ElValue\": \"30\",\n                    \"ElRemark\": \"Timeout หน่วยวินาที\"\n                }\n            ]\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: Validate ล้มเหลว - CatCode ว่าง\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListByCat\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"CatCode\": \"\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 422\n      text: Unprocessable Entity\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"เกิดข้อผิดพลาดที่การตรวจสอบข้อมูล\",\n            \"Errors\": {\n                \"CatCode\": \"เกิดข้อผิดพลาดที่ CatCode เนื่องจาก: required\"\n            },\n            \"PostData\": {\n                \"CatCode\": \"\"\n            },\n            \"ErrorCode\": \"X000-2\"\n        }\n      '''\n    }\n  }\n}\n"}, {"file": "ListInfoId.bru", "name": "ListInfoId", "verb": "READ", "role": "ดึง 1 element ตาม Id", "lines": 164, "code": "meta {\n  name: ListInfoId - รายการตาม Id\n  type: http\n  seq: 8\n}\n\npost {\n  url: {{API_URL}}/v1/BotLine/ListInfoId\n  body: json\n  auth: inherit\n}\n\nbody:json {\n  {\n      \"Id\": 1          //* Id ของ BotListElement (type = int, min = 1)\n  }\n}\n\nsettings {\n  encodeUrl: true\n}\n\ndocs {\n  # BotLine/ListInfoId — ข้อมูลรายการบอทตาม Id\n\n  ดึงข้อมูล `BotListElement` 1 รายการตาม `Id` ที่ยัง active (`Ctrlcode = '0'`)\n\n  ## Endpoint\n  `POST {{API_URL}}/v1/BotLine/ListInfoId`\n\n  ## Authentication\n  ต้องแนบ `Authorization: Bearer <AccessToken>` (UserAuthen middleware)\n\n  ## Body (JSON)\n  | Field | Required | Type | คำอธิบาย |\n  |---|---|---|---|\n  | Id | ✅ | int (min=1) | Id ของ BotListElement |\n\n  ## Response (success)\n  | Field | Type | คำอธิบาย |\n  |---|---|---|\n  | Result | bool | `true` |\n  | Remark | string | `ทำรายการสำเร็จแล้ว` |\n  | Data | object | `BotLineListByCatSearch` (Id, CatCode, ElKey, ElType, ElValue, ElRemark) |\n\n  ## Response (error)\n  | HTTP | ErrorCode | ความหมาย |\n  |---|---|---|\n  | 422 | X000-2 | Validate ล้มเหลว |\n  | 400 | X-014 | ไม่พบข้อมูล |\n}\n\nexample {\n  name: ดึงข้อมูลสำเร็จ\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListInfoId\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 1\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 200\n      text: OK\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": true,\n            \"Remark\": \"ทำรายการสำเร็จแล้ว\",\n            \"Data\": {\n                \"Id\": 1,\n                \"CatCode\": \"CAT001\",\n                \"ElKey\": \"product_type\",\n                \"ElType\": \"text\",\n                \"ElValue\": \"สินค้าอุปโภค์\",\n                \"ElRemark\": \"ประเภทสินค้าสำหรับอุปโภค์\"\n            }\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: ไม่พบข้อมูล (X-014)\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListInfoId\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 9999\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 400\n      text: Bad Request\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"ไม่พบข้อมูล\",\n            \"ErrorCode\": \"X-014\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: Validate ล้มเหลว - Id ว่าง\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListInfoId\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 0\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 422\n      text: Unprocessable Entity\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"เกิดข้อผิดพลาดที่การตรวจสอบข้อมูล\",\n            \"Errors\": {\n                \"Id\": \"เกิดข้อผิดพลาดที่ Id เนื่องจาก: required\"\n            },\n            \"PostData\": {\n                \"Id\": 0\n            },\n            \"ErrorCode\": \"X000-2\"\n        }\n      '''\n    }\n  }\n}\n"}, {"file": "ListSave.bru", "name": "ListSave", "verb": "WRITE", "role": "เพิ่ม element — ElKey unique ใน Cat", "lines": 202, "code": "meta {\n  name: ListSave - บันทึกรายการ\n  type: http\n  seq: 9\n}\n\npost {\n  url: {{API_URL}}/v1/BotLine/ListSave\n  body: json\n  auth: inherit\n}\n\nbody:json {\n  {\n      \"CatCode\": \"CAT001\",                           //* รหัสหมวดหมู่ (type = string, max = 30)\n      \"ElKey\": \"product_type\",                       //* ชื่อ Key (type = string, max = 50, unique ภายใน CatCode)\n      \"ElType\": \"text\",                              // ประเภท number, text (type = string, max = 50, optional)\n      \"ElValue\": \"สินค้าอุปโภค์\",                      // ค่าที่ระบุ (type = string, max = 500, optional)\n      \"ElRemark\": \"ประเภทสินค้าสำหรับอุปโภค์\",            //* หมายเหตุ (type = string, max = 500)\n      \"DoAdmin\": \"admin\",                            //* ผู้ทำรายการ (type = string, max = 30)\n      \"DoIp\": \"192.168.1.1\"                          //* IP Address (type = string, ip)\n  }\n}\n\nsettings {\n  encodeUrl: true\n}\n\ndocs {\n  # BotLine/ListSave — บันทึกรายการบอทในหมวดหมู่\n\n  เพิ่มข้อมูล `BotListElement` ใหม่ลงใต้ `CatCode` พร้อมสำเนา Log (DoType = I)\n\n  ## Endpoint\n  `POST {{API_URL}}/v1/BotLine/ListSave`\n\n  ## Authentication\n  ต้องแนบ `Authorization: Bearer <AccessToken>` (UserAuthen middleware)\n\n  ## Body (JSON)\n  | Field | Required | Type | Max | คำอธิบาย |\n  |---|---|---|---|---|\n  | CatCode | ✅ | string | 30 | รหัสหมวดหมู่ (อ้างอิง `BotCatElement.CatCode`) |\n  | ElKey | ✅ | string | 50 | ชื่อ Key ของ Element — ต้องไม่ซ้ำใน CatCode |\n  | ElType |  | string | 50 | ประเภทของค่า (`number`, `text`) |\n  | ElValue |  | string | 500 | ค่าที่ระบุ |\n  | ElRemark | ✅ | string | 500 | หมายเหตุประกอบรายการ |\n  | DoAdmin | ✅ | string | 30 | ผู้ทำรายการ |\n  | DoIp | ✅ | string (ip) | - | IP Address |\n\n  ## Response (success)\n  | Field | Type | คำอธิบาย |\n  |---|---|---|\n  | Result | bool | `true` |\n  | Remark | string | `บันทึกรายการสำเร็จ` |\n\n  ## Response (error)\n  | HTTP | ErrorCode | ความหมาย |\n  |---|---|---|\n  | 422 | X000-2 | Validate ล้มเหลว |\n  | 400 | X-015 | `CatCode + ElKey` ซ้ำในระบบ |\n  | 500 | X-016 | Insert `BotListElement` ผิดพลาด |\n  | 500 | X-017 | Insert Log ผิดพลาด |\n\n  ## ลำดับการทำงาน\n  1. Validate Body\n  2. นับแถว `BotListElement` ด้วย `CatCode + ElKey + Ctrlcode='0'` → ถ้าพบ → `X-015`\n  3. Insert `BotListElement`\n  4. Insert `BotListElementLog` (DoType = I)\n\n  ## Notes\n  - ✅ Log เขียนใน transaction เดียวกับ Insert/Update แล้ว — ถ้า Log fail จะ rollback การ Save/Update ด้วย\n}\n\nexample {\n  name: บันทึกสำเร็จ\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListSave\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"CatCode\": \"CAT001\",\n          \"ElKey\": \"product_type\",\n          \"ElType\": \"text\",\n          \"ElValue\": \"สินค้าอุปโภค์\",\n          \"ElRemark\": \"ประเภทสินค้าสำหรับอุปโภค์\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 200\n      text: OK\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": true,\n            \"Remark\": \"บันทึกรายการสำเร็จ\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: ElKey ซ้ำ (X-015)\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListSave\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"CatCode\": \"CAT001\",\n          \"ElKey\": \"product_type\",\n          \"ElType\": \"text\",\n          \"ElValue\": \"\",\n          \"ElRemark\": \"ซ้ำกับที่มีอยู่\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 400\n      text: Bad Request\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"รหัสนี้มีอยู่ในระบบแล้ว\",\n            \"ErrorCode\": \"X-015\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: Validate ล้มเหลว - ElRemark ว่าง\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListSave\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"CatCode\": \"CAT001\",\n          \"ElKey\": \"product_type\",\n          \"ElType\": \"text\",\n          \"ElValue\": \"\",\n          \"ElRemark\": \"\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 422\n      text: Unprocessable Entity\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"เกิดข้อผิดพลาดที่การตรวจสอบข้อมูล\",\n            \"Errors\": {\n                \"ElRemark\": \"เกิดข้อผิดพลาดที่ ElRemark เนื่องจาก: required\"\n            },\n            \"PostData\": {\n                \"CatCode\": \"CAT001\",\n                \"ElKey\": \"product_type\",\n                \"ElType\": \"text\",\n                \"ElValue\": \"\",\n                \"ElRemark\": \"\",\n                \"DoAdmin\": \"admin\",\n                \"DoIp\": \"192.168.1.1\"\n            },\n            \"ErrorCode\": \"X000-2\"\n        }\n      '''\n    }\n  }\n}\n"}, {"file": "ListUpdate.bru", "name": "ListUpdate", "verb": "WRITE", "role": "แก้ element — แก้ CatCode ไม่ได้", "lines": 237, "code": "meta {\n  name: ListUpdate - อัพเดตรายการ\n  type: http\n  seq: 10\n}\n\npost {\n  url: {{API_URL}}/v1/BotLine/ListUpdate\n  body: json\n  auth: inherit\n}\n\nbody:json {\n  {\n      \"Id\": 1,                                   //* Id ของ BotListElement (type = int, min = 1)\n      \"ElKey\": \"product_type\",                   //* ชื่อ Key (type = string, max = 50)\n      \"ElType\": \"text\",                          // ประเภท number, text (type = string, max = 50, optional)\n      \"ElValue\": \"สินค้าอุปโภค์\",                  // ค่าที่ระบุ (type = string, max = 500, optional)\n      \"ElRemark\": \"ประเภทสินค้าสำหรับอุปโภค์\",        //* หมายเหตุ (type = string, max = 500)\n      \"DoAdmin\": \"admin\",                        //* ผู้ทำรายการ (type = string, max = 30)\n      \"DoIp\": \"192.168.1.1\"                      //* IP Address (type = string, ip)\n  }\n}\n\nsettings {\n  encodeUrl: true\n}\n\ndocs {\n  # BotLine/ListUpdate — แก้ไขรายการบอทในหมวดหมู่\n\n  ปรับปรุง `BotListElement` และสำเนา Log (DoType = U) — `CatCode` ไม่ถูกเปลี่ยน (ใช้ของเดิมตามแถว)\n\n  ## Endpoint\n  `POST {{API_URL}}/v1/BotLine/ListUpdate`\n\n  ## Authentication\n  ต้องแนบ `Authorization: Bearer <AccessToken>` (UserAuthen middleware)\n\n  ## Body (JSON)\n  | Field | Required | Type | Max | คำอธิบาย |\n  |---|---|---|---|---|\n  | Id | ✅ | int (min=1) | - | Id ของ BotListElement |\n  | ElKey | ✅ | string | 50 | ชื่อ Key (unique ภายใน CatCode เดิม) |\n  | ElType |  | string | 50 | ประเภท |\n  | ElValue |  | string | 500 | ค่าที่ระบุ |\n  | ElRemark | ✅ | string | 500 | หมายเหตุ |\n  | DoAdmin | ✅ | string | 30 | ผู้ทำรายการ |\n  | DoIp | ✅ | string (ip) | - | IP Address |\n\n  ## Response (success)\n  | Field | Type | คำอธิบาย |\n  |---|---|---|\n  | Result | bool | `true` |\n  | Remark | string | `ปรับปรุงรายการสำเร็จ` |\n\n  ## Response (error)\n  | HTTP | ErrorCode | ความหมาย |\n  |---|---|---|\n  | 422 | X000-2 | Validate ล้มเหลว |\n  | 400 | X-018 | ไม่พบข้อมูล |\n  | 400 | X-019 | `ElKey` ซ้ำกับแถวอื่นใน CatCode เดียวกัน |\n  | 500 | X-020 | Update ผิดพลาด |\n  | 500 | X-021 | Insert Log ผิดพลาด |\n\n  ## ลำดับการทำงาน\n  1. Validate Body\n  2. หาแถวเดิมด้วย `Id + Ctrlcode='0'` → ดึง `CatCode` → ถ้าไม่พบ → `X-018`\n  3. นับแถวอื่น (Id ≠ ปัจจุบัน) ที่มี `CatCode + ElKey` ชนกัน → ถ้าพบ → `X-019`\n  4. Update แถวด้วย ElKey, ElType, ElValue, ElRemark\n  5. Insert `BotListElementLog` (DoType = U) ใช้ `CatCode` เดิม\n\n  ## Notes\n  - ✅ Log เขียนใน transaction เดียวกับ Insert/Update แล้ว — ถ้า Log fail จะ rollback การ Save/Update ด้วย\n}\n\nexample {\n  name: แก้ไขสำเร็จ\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListUpdate\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 1,\n          \"ElKey\": \"product_type\",\n          \"ElType\": \"text\",\n          \"ElValue\": \"สินค้าอุปโภค์\",\n          \"ElRemark\": \"ประเภทสินค้าสำหรับอุปโภค์\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 200\n      text: OK\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": true,\n            \"Remark\": \"ปรับปรุงรายการสำเร็จ\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: ไม่พบข้อมูล (X-018)\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListUpdate\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 9999,\n          \"ElKey\": \"k\",\n          \"ElRemark\": \"หมายเหตุ\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 400\n      text: Bad Request\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"ไม่พบข้อมูล\",\n            \"ErrorCode\": \"X-018\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: ElKey ชนกับแถวอื่น (X-019)\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListUpdate\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 2,\n          \"ElKey\": \"product_type\",\n          \"ElRemark\": \"หมายเหตุ\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 400\n      text: Bad Request\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"รหัส ElKey นี้มีอยู่ในระบบแล้ว\",\n            \"ErrorCode\": \"X-019\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: Validate ล้มเหลว - ElKey ว่าง\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListUpdate\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 1,\n          \"ElKey\": \"\",\n          \"ElRemark\": \"หมายเหตุ\",\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 422\n      text: Unprocessable Entity\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"เกิดข้อผิดพลาดที่การตรวจสอบข้อมูล\",\n            \"Errors\": {\n                \"ElKey\": \"เกิดข้อผิดพลาดที่ ElKey เนื่องจาก: required\"\n            },\n            \"PostData\": {\n                \"Id\": 1,\n                \"ElKey\": \"\",\n                \"ElType\": null,\n                \"ElValue\": null,\n                \"ElRemark\": \"หมายเหตุ\",\n                \"DoAdmin\": \"admin\",\n                \"DoIp\": \"192.168.1.1\"\n            },\n            \"ErrorCode\": \"X000-2\"\n        }\n      '''\n    }\n  }\n}\n"}, {"file": "ListDelete.bru", "name": "ListDelete", "verb": "DEL", "role": "ลบ (soft) element", "lines": 175, "code": "meta {\n  name: ListDelete - ลบรายการ\n  type: http\n  seq: 11\n}\n\npost {\n  url: {{API_URL}}/v1/BotLine/ListDelete\n  body: json\n  auth: inherit\n}\n\nbody:json {\n  {\n      \"Id\": 1,                            //* Id ของ BotListElement (type = int, min = 1)\n      \"DoAdmin\": \"admin\",                 //* ผู้ทำรายการ (type = string, max = 30)\n      \"DoIp\": \"192.168.1.1\"               //* IP Address (type = string, ip)\n  }\n}\n\nsettings {\n  encodeUrl: true\n}\n\ndocs {\n  # BotLine/ListDelete — ลบรายการบอท (Soft Delete)\n\n  ลบ `BotListElement` แบบ Soft Delete (`Ctrlcode = '9'`) และสำเนา Log (DoType = D)\n\n  ## Endpoint\n  `POST {{API_URL}}/v1/BotLine/ListDelete`\n\n  ## Authentication\n  ต้องแนบ `Authorization: Bearer <AccessToken>` (UserAuthen middleware)\n\n  ## Body (JSON)\n  | Field | Required | Type | Max | คำอธิบาย |\n  |---|---|---|---|---|\n  | Id | ✅ | int (min=1) | - | Id ของ BotListElement |\n  | DoAdmin | ✅ | string | 30 | ผู้ทำรายการ |\n  | DoIp | ✅ | string (ip) | - | IP Address |\n\n  ## Response (success)\n  | Field | Type | คำอธิบาย |\n  |---|---|---|\n  | Result | bool | `true` |\n  | Remark | string | `ลบรายการสำเร็จ` |\n\n  ## Response (error)\n  | HTTP | ErrorCode | ความหมาย |\n  |---|---|---|\n  | 422 | X000-2 | Validate ล้มเหลว |\n  | 400 | X-022 | ไม่พบข้อมูล |\n  | 500 | X-023 | Soft Delete ผิดพลาด |\n  | 500 | X-024 | Insert Log ผิดพลาด |\n\n  ## ลำดับการทำงาน\n  1. Validate Body\n  2. หาแถวเดิม (Ctrlcode='0') → ถ้าไม่พบ → `X-022`\n  3. Update `Ctrlcode = '9'`\n  4. Insert `BotListElementLog` (DoType = D)\n}\n\nexample {\n  name: ลบสำเร็จ\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListDelete\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 1,\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 200\n      text: OK\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": true,\n            \"Remark\": \"ลบรายการสำเร็จ\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: ไม่พบข้อมูล (X-022)\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListDelete\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 9999,\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"192.168.1.1\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 400\n      text: Bad Request\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"ไม่พบข้อมูล\",\n            \"ErrorCode\": \"X-022\"\n        }\n      '''\n    }\n  }\n}\n\nexample {\n  name: Validate ล้มเหลว - DoIp ว่าง\n\n  request: {\n    url: {{API_URL}}/v1/BotLine/ListDelete\n    method: POST\n    mode: json\n    body:json: {\n      {\n          \"Id\": 1,\n          \"DoAdmin\": \"admin\",\n          \"DoIp\": \"\"\n      }\n    }\n  }\n\n  response: {\n    status: {\n      code: 422\n      text: Unprocessable Entity\n    }\n\n    body: {\n      type: json\n      content: '''\n        {\n            \"Result\": false,\n            \"Remark\": \"เกิดข้อผิดพลาดที่การตรวจสอบข้อมูล\",\n            \"Errors\": {\n                \"DoIp\": \"เกิดข้อผิดพลาดที่ DoIp เนื่องจาก: required\"\n            },\n            \"PostData\": {\n                \"Id\": 1,\n                \"DoAdmin\": \"admin\",\n                \"DoIp\": \"\"\n            },\n            \"ErrorCode\": \"X000-2\"\n        }\n      '''\n    }\n  }\n}\n"}], "brunoGroups": {"Cat · หมวดหมู่": ["CatSearch", "CatInfoId", "CatInfoCode", "CatSave", "CatUpdate", "CatDelete"], "List · รายการ": ["ListByCat", "ListInfoId", "ListSave", "ListUpdate", "ListDelete"]}, "docs": [{"file": "CLAUDE.md", "label": "CLAUDE.md", "lang": "md", "role": "project guide — Golden Rules + section 'เริ่มหน้าใหม่' ที่เพิ่มในวันนี้", "lines": 181, "code": "# pedpro-ui — Project Guide for Claude\n\nโปรเจกต์นี้คือ **Backoffice UI สำหรับ Agent / Control panel** (ระบบจัดการเอเย่นต์, สมาชิก, การเงิน, การตั้งค่า)\nอ่านไฟล์นี้ก่อนเริ่มงานทุกครั้ง แล้วเปิด docs ที่เกี่ยวข้องตามต้องการ\n\n---\n\n## Stack\n\n- **Vue 3** (Composition API + `<script setup lang=\"ts\">` เท่านั้น — ห้าม Options API)\n- **TypeScript** (strict, no `any`)\n- **Naive UI** เป็น component library หลัก (NForm, NDataTable, NModal, NCard, NTabs, NSpin, ...)\n- **Tailwind CSS v4** สำหรับ layout/spacing\n- **Pinia** + `pinia-plugin-persistedstate` สำหรับ state\n- **Vue Router 4**\n- **Axios** ผ่าน `services/after-token.ts` (มี refresh-token, 401 handler ในตัว)\n- **vue-i18n** (ข้อความ UI ส่วนใหญ่เป็น **ภาษาไทย** hardcoded ใน template)\n\nBuild: `pnpm dev` / `pnpm build` / `pnpm type-check` / `pnpm lint`\n\n---\n\n## Golden Rules — ห้ามผิด\n\n1. **ห้ามคิด pattern ใหม่เอง** — เปิด feature ที่มีอยู่ดูก่อนทุกครั้ง แล้ว match แบบที่ทำอยู่\n2. **ก่อนเขียน form / API ใหม่ ต้องเปิด `bruno_collections/<Service>/<Method>.bru` อ่านก่อน** — เป็น source of truth ของ required, type, max, enum, error code, ตัวอย่าง response ดู [docs/bruno-docs.md](docs/bruno-docs.md)\n3. **API ใหม่ทุกตัวต้องมี 3 ไฟล์**:\n   - `src/services/type/<name>.type.ts`\n   - `src/services/api/<name>.api.ts` (class wrapper)\n   - export ใน `src/services/api/index.ts`\n   ดู [docs/api-pattern.md](docs/api-pattern.md)\n4. **Feature page ใหม่ใช้โครง 3 ส่วน**: `Feature.vue` + `composables/` + `component/`\n   ดู [docs/feature-pattern.md](docs/feature-pattern.md)\n5. **Logic ห้ามอยู่ใน `.vue`** — ย้ายเข้า composable ใน `composables/use-<name>.ts` เสมอ\n6. **Form ทุกตัวใช้ Naive UI** (`n-form` + `n-form-item` + `formRef.validate()`) — ห้ามใช้ HTML form ดิบ\n7. **Validate ครบ 3 ชั้น**: `fn.valid($event, [...])` (keypress+paste) → Naive `FormRules` → เช็ค `res?.Result` — ดู [docs/validation.md](docs/validation.md)\n8. **Label / placeholder / maxlength ใช้จาก bruno docs** (คำอธิบายไทย, ตัวอย่าง body, max value) — ย่อ label ให้ ≤ 20 ตัวอักษรเสมอ\n9. **Error/Success ใช้ `useMessage()` ของ Naive UI** — ไม่ใช่ `alert()` / `console.log()`\n10. **API call ทุกตัวต้องมี `loading` state + try/catch** — ใช้ `res?.Remark` จาก BE เป็น default message\n11. **ห้าม mutate `vite.config.ts` / `package.json` / `tsconfig*.json`** โดยไม่ถาม\n12. **ห้ามเพิ่ม dependency ใหม่** โดยไม่ถาม — มี Naive UI + VueUse + lodash ครอบคลุมเกือบทุกเคสแล้ว\n13. **คอมเมนต์ภาษาไทยได้** ถ้าเป็นเหตุผล/ข้อตกลง แต่ห้ามคอมเมนต์อธิบายว่าโค้ดทำอะไร (โค้ดอ่านได้อยู่แล้ว)\n\n---\n\n## Project Map (จำขั้นต่ำ)\n\n```\nsrc/\n├─ views/<Domain>/<Feature>/      # หน้าจอจริง — ดู docs/feature-pattern.md\n│   └─ <Feature>/\n│      ├─ <Feature>.vue           # entry, แค่ template + ผูก composable\n│      ├─ composables/use-*.ts    # business logic + API call\n│      └─ component/              # sub-component (kebab-case file)\n├─ services/\n│   ├─ api/<name>.api.ts          # service class — postData<ResType>\n│   ├─ type/<name>.type.ts        # Req/Res/Data interfaces\n│   ├─ after-token.ts             # axios instance + refresh token (ห้ามแก้)\n│   └─ before-token.ts            # ยังไม่มี token (login/refresh)\n├─ stores/                        # Pinia stores (auth.ts, theme.ts, ...)\n├─ components/common/             # shared UI (Icon, FileDrop, ...)\n├─ router/index.ts                # routes — meta: { auth, roles, breadcrumb, title }\n├─ plugins/functions.ts           # fn.valid(), fn.getIP() — utility ที่ใช้บ่อย\n├─ utils/                         # auth.ts, dayjs.ts, full-http-url.ts\n└─ types/                         # global d.ts\n```\n\nรายละเอียดเต็ม → [docs/architecture.md](docs/architecture.md)\n\n---\n\n## Naming (จำให้แม่น)\n\n| สิ่งของ | รูปแบบ | ตัวอย่าง |\n|---|---|---|\n| Feature folder | PascalCase | `AgentSetting/GeneralSetting/` |\n| Feature entry .vue | PascalCase ตรงกับ folder | `GeneralSetting.vue` |\n| Sub-component .vue | kebab-case | `detail.vue`, `form-modal.vue`, `search.vue` |\n| Composable file | `use-kebab-case.ts` | `use-game-rtp.ts`, `use-agent-contact.ts` |\n| Composable function | `useCamelCase()` | `useGameRtp()`, `useAgentContact()` |\n| API file | `<name>.api.ts` (kebab) | `sp-agent-game-rtp.api.ts` |\n| Type file | `<name>.type.ts` (kebab) | `sp-agent-game-rtp.type.ts` |\n| Service singleton | `<name>Service` (camel) | `spAgentGameRtpService` |\n| Service class | `<Name>Service` (Pascal) | `SpAgentGameRtpService` |\n| Interface (DTO) | PascalCase match BE | `SpAgentGameRtpInfoReq` |\n| Y/N flag type | `\"Y\" \\| \"N\"` alias | `SpAgentGameRtpActiveYN` |\n| Pinia store | `useXxxStore` ใน `stores/xxx.ts` | `useAuthStore` |\n\nรายละเอียด + code style → [docs/conventions.md](docs/conventions.md)\n\n---\n\n## Critical Patterns\n\n### Form + API + Loading (ทุกหน้าใช้รูปแบบนี้)\n\n```ts\n// composables/use-xxx.ts\nconst formRef = ref<FormInst | null>(null)\nconst loading = reactive({ info: false, update: false })\nconst form = reactive<XxxReq>({ /* ... */ })\nconst rules: FormRules = { /* ... */ }\n\nasync function loadInfo() { /* postData → mapInfoToForm */ }\nasync function onSubmit() {\n  await formRef.value?.validate(async errors => {\n    if (errors) return\n    loading.update = true\n    try { /* postData → message.success/error */ }\n    catch (e) { /* err?.response?.data?.Remark fallback */ }\n    finally { loading.update = false }\n  })\n}\n\nreturn { formRef, form, rules, loading, loadInfo, onSubmit, onCancel }\n```\n\ntemplate + ตัวอย่างเต็ม → [docs/ui-patterns.md](docs/ui-patterns.md) และ [docs/feature-pattern.md](docs/feature-pattern.md)\n\n---\n\n## Auth & Agent Context\n\n- ทุก API ของ Agent ต้องส่ง `AgentCode` — ดึงจาก `useAuthStore().getAgentCode`\n- ทุก mutation API ต้องส่ง `DoAdmin` (username) + `DoIp` (จาก `await fn.getIP()`)\n- 401 → axios interceptor refresh เองอัตโนมัติ → ห้าม handle 401 ใน composable\n- Route protection ผ่าน `meta: { auth: true, roles: \"Control\" | \"all\" | ... }` ใน [src/router/index.ts](src/router/index.ts)\n\n---\n\n## เริ่มหน้าใหม่ — ลำดับงานมาตรฐาน\n\nทุกครั้งที่สร้างหน้า/feature ใหม่ ทำตามลำดับนี้ — ห้ามข้ามขั้น 1\n\n**1. รวบรวม context ก่อนเขียนอะไรทั้งสิ้น**\n- เปิด `bruno_collections/<Service>/*.bru` อ่าน `docs` table ของ **ทุก** endpoint ที่หน้าจะใช้ — field, required, type, max, enum, error code\n- ดู mockup (ถ้ามี) + เปิด reference feature ที่ใกล้เคียงที่สุด\n\n**2. ประเมินว่าต้องทำ HTML spec ก่อนไหม** — ถามตัวเอง 3 ข้อ:\n- หน้านี้มีจุดตัดสินใจหลายแบบไหม (วิธีเชื่อมหน้า, โครง state, การแตก component)?\n- bruno มีอะไรไม่ตรง pattern เดิม หรือซับซ้อนกว่าปกติไหม?\n- ต้องให้คนอื่นในทีม review ก่อนลงมือไหม?\n\nถ้า **ใช่ ข้อใดข้อหนึ่ง** → ทำ HTML implementation plan ก่อน ใช้ `docs/specs/_template.html` เป็นโครง — ต้องมี API contract table + จุดตัดสินใจที่เทียบทางเลือกข้างกัน ให้ review แล้วเลือกก่อนเขียนโค้ด\nถ้า **ไม่ ทั้งสามข้อ** (เช่น single-form ธรรมดา) → ข้าม HTML, ก๊อป pattern จาก reference feature เขียนโค้ดได้เลย\n\n**3. เขียนโค้ดตามลำดับชั้นใน → นอก** (ห้ามสลับ — ชั้นนอกพึ่งชั้นใน):\n`type → api (+re-export) → composable → component → view entry → route`\n\n**4. ตรวจก่อนปิดงาน**\n- `pnpm type-check` + `pnpm lint` ต้องผ่าน — ถ้าไม่ผ่านห้ามบอกว่าเสร็จ\n- เปิด [docs/gotchas.md](docs/gotchas.md) เป็น final checklist\n- (option) ถ้าจะเปิด PR — ทำ HTML code-review artifact แนบ\n\n> สรุป: ขั้น 1-2 = \"คิด\", ขั้น 3 = \"ทำ\", ขั้น 4 = \"ตรวจ\" — HTML ช่วยตอน \"คิด\" และ \"ตรวจ\" ไม่ใช่ตัวโค้ดจริง\n\n---\n\n## เมื่อเจอสิ่งที่ไม่แน่ใจ\n\n1. หาตัวอย่างที่ใกล้เคียงในโปรเจกต์ก่อน (`AgentSetting/GeneralSetting/` เป็น reference ที่ดี — มีทั้ง form, tab, table, modal)\n2. ก่อนเขียน helper / regex / formatter → ดู [docs/utilities.md](docs/utilities.md) ก่อนเสมอ\n3. ก่อน commit → ดู [docs/gotchas.md](docs/gotchas.md) เป็น final checklist\n4. ถ้ายังไม่แน่ใจ ให้ถาม **อย่าเดา**\n5. ถ้าจะแหวก pattern เดิม **บอกเหตุผลและขออนุญาตก่อน**\n\n---\n\n## Docs Index\n\n- [docs/architecture.md](docs/architecture.md) — โครงสร้างโฟลเดอร์, alias, env\n- [docs/conventions.md](docs/conventions.md) — TS/Vue rules, naming, imports order\n- [docs/bruno-docs.md](docs/bruno-docs.md) — **อ่านก่อนสร้าง form/API** — Bruno เป็น API contract source of truth\n- [docs/api-pattern.md](docs/api-pattern.md) — วิธีเพิ่ม API ใหม่ (มี template ก็อปวาง)\n- [docs/feature-pattern.md](docs/feature-pattern.md) — วิธีสร้างหน้าใหม่ (view + composable + component)\n- [docs/ui-patterns.md](docs/ui-patterns.md) — Naive UI form/table/modal/tabs recipes\n- [docs/validation.md](docs/validation.md) — Input validation 3 ชั้น + utility validators + patterns\n- [docs/utilities.md](docs/utilities.md) — **ดูก่อนเขียน util/helper ใหม่** — `fn.*`, `@/utils`, composables ที่มีอยู่\n- [docs/gotchas.md](docs/gotchas.md) — ★ checklist สิ่งที่ AI มักลืม (permission, DoAdmin/DoIp, loading, mode-aware, image upload, mobile, cleanup)\n- [docs/specs/_template.html](docs/specs/_template.html) — โครงเปล่า HTML implementation plan — copy ไปทำ spec หน้าใหม่ (ดูขั้นตอนใน \"เริ่มหน้าใหม่\")\n"}]}</script>
+<script>
+
+  var ids=['thesis','ch1','ch2','ch3','bruno','code','claude','setup','adapt','caution','thesis2'];
+  var sections=ids.map(function(id){return document.getElementById(id);});
+  var navLinks=document.querySelectorAll('.side-link');
+  function onScroll(){
+    var st=window.scrollY;
+    var dh=document.documentElement.scrollHeight-window.innerHeight;
+    document.getElementById('progressFill').style.width=(dh>0?(st/dh)*100:0)+'%';
+    var cur=ids[0];
+    sections.forEach(function(s){ if(s&&s.getBoundingClientRect().top<=140) cur=s.id; });
+    navLinks.forEach(function(l){ l.classList.toggle('active', l.getAttribute('data-target')===cur); });
+    document.getElementById('toTop').classList.toggle('show', st>500);
+  }
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  /* mobile drawer */
+  var sidenav=document.getElementById('sidenav');
+  var overlay=document.getElementById('navOverlay');
+  var hamb=document.getElementById('hamburger');
+  function openNav(){sidenav.classList.add('open');overlay.classList.add('show');}
+  function closeNav(){sidenav.classList.remove('open');overlay.classList.remove('show');}
+  if(hamb){hamb.addEventListener('click',openNav);}
+  overlay.addEventListener('click',closeNav);
+  sidenav.querySelectorAll('.side-link').forEach(function(l){ l.addEventListener('click',closeNav); });
+
+  /* transfer rate lab */
+  var scenarios={
+    a:{vol:95,rate:14,prod:18,cls:'a',
+       text:'<b>สถานการณ์ A:</b> AI ปั่น spec/เอกสารได้เร็วขึ้น 50&ndash;100 เท่า แต่ทุกอันยังเป็น Markdown ยาว ๆ ที่ไม่มีใครอ่านจบ &mdash; ปริมาณพุ่ง แต่อัตราที่คนเข้าใจ/นำไปใช้เกือบเท่าเดิม ผลคือ <b>productivity จริงของทีมไม่ขยับ</b> แถมตามหาของสำคัญในกองเอกสารยากขึ้น'},
+    b:{vol:28,rate:88,prod:82,cls:'b',
+       text:'<b>สถานการณ์ B:</b> ผลิต artifact น้อยลง (2&ndash;3 เท่า) แต่แต่ละชิ้นเป็น HTML ที่มี diagram, จุดตัดสินใจ, คลิกสำรวจได้ &mdash; คนเข้าใจเร็วขึ้นจริง ตัดสินใจได้ใน 30 วินาที ผลคือ <b>productivity ของทีมขยับจริง</b> แม้ artifact count จะดูน้อยกว่า'}
+  };
+  function setScenario(k){
+    var s=scenarios[k];
+    document.getElementById('btnA').classList.toggle('active',k==='a');
+    document.getElementById('btnB').classList.toggle('active',k==='b');
+    document.getElementById('barVol').style.width=s.vol+'%';
+    document.getElementById('barRate').style.width=s.rate+'%';
+    document.getElementById('barProd').style.width=s.prod+'%';
+    document.getElementById('valVol').textContent=(k==='a'?'\u00d7100':'\u00d72-3');
+    document.getElementById('valRate').textContent=s.rate+'%';
+    document.getElementById('valProd').textContent=(k==='a'?'flat':'\u2191');
+    var v=document.getElementById('labVerdict'); v.className='lab-verdict '+s.cls; v.innerHTML=s.text;
+  }
+  setScenario('a');
+
+  function showDemo(w){
+    document.getElementById('tabMd').classList.toggle('active',w==='md');
+    document.getElementById('tabHtml').classList.toggle('active',w==='html');
+    document.getElementById('paneMd').classList.toggle('hidden',w!=='md');
+    document.getElementById('paneHtml').classList.toggle('hidden',w!=='html');
+  }
+  document.querySelectorAll('.hm-panel').forEach(function(p){
+    p.addEventListener('click',function(){
+      var key=p.getAttribute('data-note');
+      document.querySelectorAll('.hm-panel').forEach(function(x){x.classList.toggle('active',x===p);});
+      document.querySelectorAll('.hs-note').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-for')===key);});
+    });
+  });
+
+  function updateDecision(){
+    var checks=document.querySelectorAll('.df-q input'); var any=false;
+    checks.forEach(function(c){ c.closest('.df-q').classList.toggle('checked',c.checked); if(c.checked)any=true; });
+    var r=document.getElementById('dfResult');
+    if(any){ r.className='df-result do-html'; r.innerHTML='<div class="df-result-icon">&#9670;</div><div class="df-result-title">ทำ HTML spec ก่อน</div><div class="df-result-desc">ใส่ทางเลือกที่เทียบกัน ให้ review แล้วเลือกก่อนเขียนโค้ด</div>'; }
+    else{ r.className='df-result skip-html'; r.innerHTML='<div class="df-result-icon">&#9889;</div><div class="df-result-title">ข้าม HTML spec</div><div class="df-result-desc">ก๊อป pattern จาก reference feature แล้วเขียนโค้ดได้เลย</div>'; }
+  }
+
+  /* ===== CODE/BRUNO/DOCS RENDERING ===== */
+  var DATA=JSON.parse(document.getElementById('codeData').textContent);
+  document.getElementById('fileCountChip').textContent=DATA.files.length+' ไฟล์';
+  document.getElementById('brunoCountChip').textContent=DATA.bruno.length+' specs';
+
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  function highlightCode(code){
+    var out=esc(code); var store=[];
+    function stash(h){store.push(h);return '\u0000'+(store.length-1)+'\u0000';}
+    out=out.replace(/\/\*[\s\S]*?\*\//g,function(m){return stash('<span class="tok-com">'+m+'</span>');});
+    out=out.replace(/\/\/[^\n]*/g,function(m){return stash('<span class="tok-com">'+m+'</span>');});
+    out=out.replace(/(&quot;[^&\n]*?&quot;|&#39;[^&\n]*?&#39;|`[^`]*?`)/g,function(m){return stash('<span class="tok-str">'+m+'</span>');});
+    var kw=['import','export','from','const','let','var','function','return','interface','type','class','extends','implements','async','await','if','else','for','of','in','new','readonly','private','public','default','as','void','null','true','false','this','reactive','ref','computed','defineProps','defineEmits','defineModel','onMounted','watch'];
+    out=out.replace(new RegExp('\\b('+kw.join('|')+')\\b','g'),'<span class="tok-key">$1</span>');
+    out=out.replace(/\b(\d+)\b/g,'<span class="tok-num">$1</span>');
+    out=out.replace(/\u0000(\d+)\u0000/g,function(_,i){return store[+i];});
+    return out;
+  }
+  function highlightBru(code){
+    var out=esc(code); var store=[];
+    function stash(h){store.push(h);return '\u0000'+(store.length-1)+'\u0000';}
+    out=out.replace(/\/\/[^\n]*/g,function(m){return stash('<span class="tok-com">'+m+'</span>');});
+    out=out.replace(/(&quot;[^&\n]*?&quot;)/g,function(m){return stash('<span class="tok-str">'+m+'</span>');});
+    out=out.replace(/^(\s*)(meta|post|get|body|body:json|docs|settings|auth)\b/gm,'$1<span class="tok-key">$2</span>');
+    out=out.replace(/\u0000(\d+)\u0000/g,function(_,i){return store[+i];});
+    return out;
+  }
+  function highlightMd(code){
+    var out=esc(code);
+    out=out.replace(/^(#{1,6} .*)$/gm,'<span class="md-h">$1</span>');
+    out=out.replace(/^(\s*[\|].*)$/gm,'<span class="md-bar">$1</span>');
+    out=out.replace(/(`[^`\n]+`)/g,'<span class="tok-str">$1</span>');
+    return out;
+  }
+
+  function buildCard(item, opts){
+    // opts: {idx, hl, langClass, langLabel, verb, dir, name}
+    var lines=item.code.split('\n');
+    var gutter=lines.map(function(_,i){return '<span>'+(i+1)+'</span>';}).join('');
+    var card=document.createElement('div');
+    card.className='codefile'+(opts.idx>0?' collapsed':'');
+    var head='<div class="codefile-head">'
+      +'<span class="cf-icon">&#9670;</span>';
+    if(opts.verb){ head+='<span class="cf-verb '+opts.verb+'">'+opts.verb+'</span>'; }
+    head+='<div class="cf-path">';
+    if(opts.dir){ head+='<span class="cf-dir">'+esc(opts.dir)+'</span>'; }
+    head+='<span class="cf-name">'+esc(opts.name)+'</span>';
+    head+='<div class="cf-role">'+opts.role+'</div></div>';
+    if(opts.langLabel){ head+='<span class="cf-lang '+opts.langClass+'">'+opts.langLabel+'</span>'; }
+    head+='<span class="cf-lines">'+item.lines+' บรรทัด</span>'
+      +'<button class="cf-copy">Copy</button>'
+      +'<span class="cf-chevron">&#9660;</span></div>';
+    card.innerHTML=head+'<div class="codefile-body"><div class="gutter">'+gutter+'</div><pre class="code">'+opts.hl(item.code)+'</pre></div>';
+    card.querySelector('.codefile-head').addEventListener('click',function(e){
+      if(e.target.classList.contains('cf-copy'))return;
+      card.classList.toggle('collapsed');
+    });
+    var btn=card.querySelector('.cf-copy');
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      var done=function(){btn.classList.add('copied');btn.textContent='\u2713 Copied';setTimeout(function(){btn.classList.remove('copied');btn.textContent='Copy';},2000);};
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(item.code).then(done).catch(function(){fallbackCopy(item.code,done);});
+      } else { fallbackCopy(item.code,done); }
+    });
+    return card;
+  }
+  function fallbackCopy(text,cb){
+    var ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');cb();}catch(_){}
+    document.body.removeChild(ta);
+  }
+
+  function makeFilter(barId, cards, items, groups, keyName){
+    var bar=document.getElementById(barId);
+    var map={}; items.forEach(function(it,i){ map[it[keyName]]=cards[i]; });
+    function pill(name,labels,active){
+      var p=document.createElement('span'); p.className='cf-pill'+(active?' active':''); p.textContent=name;
+      p.addEventListener('click',function(){
+        bar.querySelectorAll('.cf-pill').forEach(function(x){x.classList.remove('active');});
+        p.classList.add('active');
+        items.forEach(function(it){ map[it[keyName]].style.display=(labels===null||labels.indexOf(it[keyName])>=0)?'':'none'; });
+      });
+      bar.appendChild(p);
+    }
+    pill('ทั้งหมด',null,true);
+    Object.keys(groups).forEach(function(g){ pill(g,groups[g],false); });
+  }
+
+  /* code files */
+  var codeC=document.getElementById('codeContainer'); var codeCards=[];
+  DATA.files.forEach(function(f,i){
+    var dir=f.path.substring(0,f.path.lastIndexOf('/')+1);
+    var c=buildCard(f,{idx:i,hl:highlightCode,langClass:f.lang,langLabel:f.lang.toUpperCase(),dir:dir,name:f.label,role:f.role});
+    codeC.appendChild(c); codeCards.push(c);
+  });
+  makeFilter('codeFilter',codeCards,DATA.files,DATA.groups,'label');
+
+  /* bruno files */
+  var brunoC=document.getElementById('brunoContainer'); var brunoCards=[];
+  DATA.bruno.forEach(function(b,i){
+    var c=buildCard(b,{idx:i,hl:highlightBru,langClass:'bru',langLabel:'BRU',verb:b.verb,dir:'/v1/BotLine/',name:b.name,role:b.role});
+    brunoC.appendChild(c); brunoCards.push(c);
+  });
+  makeFilter('brunoFilter',brunoCards,DATA.bruno,DATA.brunoGroups,'name');
+
+  /* claude.md */
+  var claudeC=document.getElementById('claudeContainer');
+  DATA.docs.forEach(function(d){
+    var c=buildCard(d,{idx:0,hl:highlightMd,langClass:'md',langLabel:'MD',name:d.label,role:d.role});
+    c.classList.remove('collapsed');
+    claudeC.appendChild(c);
+  });
+
+</script>
+</body>
+</html>
