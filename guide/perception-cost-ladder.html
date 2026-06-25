@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Perception Cost Ladder · Pedpro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0a0f14;
+    --bg-grain:#0c1219;
+    --surface:#111b24;
+    --surface-2:#15222d;
+    --line:#1f3140;
+    --text:#e8eef3;
+    --muted:#8597a6;
+    --faint:#5a6b78;
+    /* thermal scale: cheap -> expensive */
+    --cool-1:#2dd4bf;
+    --cool-2:#38bdf8;
+    --mid:#60a5fa;
+    --warm-1:#fbbf24;
+    --warm-2:#fb923c;
+    --hot:#f87171;
+    --accent:var(--cool-1);
+    --maxw:980px;
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:
+      radial-gradient(1200px 700px at 80% -10%, rgba(45,212,191,.08), transparent 60%),
+      radial-gradient(900px 600px at -10% 20%, rgba(56,189,248,.06), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:"IBM Plex Sans Thai","Space Grotesk",system-ui,sans-serif;
+    font-size:17px;line-height:1.7;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  code,kbd,.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+
+  /* top bar */
+  .top{position:sticky;top:0;z-index:30;backdrop-filter:blur(10px);
+    background:rgba(10,15,20,.72);border-bottom:1px solid var(--line)}
+  .top .wrap{display:flex;align-items:center;justify-content:space-between;height:58px}
+  .brand{font-family:"JetBrains Mono",monospace;font-weight:700;letter-spacing:.04em;font-size:14px;color:var(--text)}
+  .brand span{color:var(--accent)}
+  .langtoggle{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-family:"JetBrains Mono",monospace;font-size:12px}
+  .langtoggle button{background:transparent;color:var(--muted);border:0;padding:7px 14px;cursor:pointer;font-family:inherit;font-size:inherit}
+  .langtoggle button.on{background:var(--accent);color:#04201c;font-weight:700}
+
+  /* hero */
+  .hero{padding:74px 0 48px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+  h1{font-family:"Space Grotesk","IBM Plex Sans Thai",sans-serif;font-weight:700;
+    font-size:clamp(34px,6vw,60px);line-height:1.04;margin:0 0 20px;letter-spacing:-.02em}
+  h1 .heat{background:linear-gradient(100deg,var(--cool-1),var(--cool-2) 35%,var(--warm-1) 70%,var(--hot));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{font-size:19px;color:var(--muted);max-width:60ch;margin:0 0 30px}
+  .thesis{display:flex;gap:14px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;font-size:13px}
+  .chip{border:1px solid var(--line);border-radius:999px;padding:6px 14px;color:var(--muted);background:var(--surface)}
+  .chip b{color:var(--text);font-weight:500}
+
+  /* section scaffolding */
+  section{padding:62px 0;border-bottom:1px solid var(--line)}
+  .kicker{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:0 0 12px}
+  h2{font-family:"Space Grotesk","IBM Plex Sans Thai",sans-serif;font-weight:700;font-size:clamp(24px,3.6vw,34px);margin:0 0 14px;letter-spacing:-.01em}
+  .sub{color:var(--muted);max-width:64ch;margin:0 0 34px}
+
+  /* three ways cards */
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;position:relative}
+  .card .tag{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  .card h3{font-family:"Space Grotesk","IBM Plex Sans Thai",sans-serif;font-size:19px;margin:10px 0 8px}
+  .card p{font-size:14.5px;color:var(--muted);margin:0 0 16px;min-height:62px}
+  .meter{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+  .meter i{display:block;height:100%;border-radius:99px}
+  .card .cost{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--faint);margin-top:8px;display:block}
+  .c-vision .tag{color:var(--hot)} .c-vision .meter i{width:100%;background:linear-gradient(90deg,var(--warm-2),var(--hot))}
+  .c-tree .tag{color:var(--mid)} .c-tree .meter i{width:48%;background:linear-gradient(90deg,var(--cool-2),var(--mid))}
+  .c-code .tag{color:var(--cool-1)} .c-code .meter i{width:9%;background:var(--cool-1)}
+
+  /* ladder (signature) */
+  .ladder{display:flex;flex-direction:column-reverse;gap:10px}
+  .rung{display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:16px;
+    background:var(--surface);border:1px solid var(--line);border-left-width:4px;
+    border-radius:12px;padding:16px 18px;cursor:pointer;transition:transform .18s ease,background .18s ease}
+  .rung:hover{background:var(--surface-2);transform:translateX(3px)}
+  .rung .num{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:18px}
+  .rung .lab{font-family:"Space Grotesk","IBM Plex Sans Thai",sans-serif;font-weight:500;font-size:17px}
+  .rung .lab small{display:block;color:var(--muted);font-family:"IBM Plex Sans Thai",sans-serif;font-weight:400;font-size:13px;margin-top:2px}
+  .rung .gauge{width:120px;height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden;flex-shrink:0}
+  .rung .gauge i{display:block;height:100%;border-radius:99px}
+  .rung[data-t="1"]{border-left-color:var(--cool-1)} .rung[data-t="1"] .num{color:var(--cool-1)} .rung[data-t="1"] .gauge i{width:6%;background:var(--cool-1)}
+  .rung[data-t="2"]{border-left-color:var(--cool-2)} .rung[data-t="2"] .num{color:var(--cool-2)} .rung[data-t="2"] .gauge i{width:10%;background:var(--cool-2)}
+  .rung[data-t="3"]{border-left-color:var(--mid)} .rung[data-t="3"] .num{color:var(--mid)} .rung[data-t="3"] .gauge i{width:18%;background:var(--mid)}
+  .rung[data-t="4"]{border-left-color:var(--warm-1)} .rung[data-t="4"] .num{color:var(--warm-1)} .rung[data-t="4"] .gauge i{width:55%;background:linear-gradient(90deg,var(--warm-1),var(--warm-2))}
+  .rung[data-t="5"]{border-left-color:var(--hot)} .rung[data-t="5"] .num{color:var(--hot)} .rung[data-t="5"] .gauge i{width:100%;background:linear-gradient(90deg,var(--warm-2),var(--hot))}
+  .ladderscale{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--faint);margin:14px 4px 0}
+
+  /* detail panel */
+  .panel{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  .panel-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+  .dot{width:10px;height:10px;border-radius:99px;flex-shrink:0}
+  .panel-head h3{margin:0;font-family:"Space Grotesk","IBM Plex Sans Thai",sans-serif;font-size:18px}
+  .panel-head .when{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--faint)}
+  .panel-body{padding:20px}
+  .panel-body p{margin:0 0 16px;color:var(--muted);font-size:15px}
+
+  /* code blocks */
+  .codewrap{position:relative;border:1px solid var(--line);border-radius:10px;background:var(--bg-grain);overflow:hidden}
+  .codewrap .copy{position:absolute;top:8px;right:8px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);
+    font-family:"JetBrains Mono",monospace;font-size:11px;padding:5px 10px;border-radius:7px;cursor:pointer}
+  .codewrap .copy:hover{color:var(--text);border-color:var(--accent)}
+  pre{margin:0;padding:18px 18px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:13px;line-height:1.65}
+  .t-key{color:#7dd3fc} .t-fn{color:#fbbf24} .t-str{color:#86efac} .t-com{color:#5a6b78;font-style:italic} .t-var{color:#e8eef3}
+
+  /* decision tree */
+  .tree{display:flex;flex-direction:column;gap:0}
+  .qnode{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .qnode .q{font-family:"Space Grotesk","IBM Plex Sans Thai",sans-serif;font-weight:500;font-size:16px;margin:0 0 14px}
+  .qnode .q b{color:var(--accent)}
+  .branches{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .branch{border:1px solid var(--line);border-radius:10px;padding:13px 15px;font-size:14px}
+  .branch .ans{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:6px}
+  .branch.go{border-color:var(--cool-1)} .branch.go .ans{color:var(--cool-1)}
+  .branch.stop{border-color:var(--warm-1)} .branch.stop .ans{color:var(--warm-1)}
+  .connector{width:2px;height:22px;background:var(--line);margin:0 auto}
+  .result{font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--text)}
+
+  /* api ref */
+  .api{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .api .fn{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .api .fn .sig{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cool-2);margin-bottom:8px;word-break:break-word}
+  .api .fn p{margin:0;font-size:14px;color:var(--muted)}
+
+  footer{padding:48px 0 70px;color:var(--faint);font-size:13px}
+  footer .mono{color:var(--muted)}
+
+  @media (max-width:760px){
+    .cards{grid-template-columns:1fr}
+    .api{grid-template-columns:1fr}
+    .rung{grid-template-columns:38px 1fr;}
+    .rung .gauge{display:none}
+    .branches{grid-template-columns:1fr}
+    body{font-size:16px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+  /* load reveal */
+  .reveal{opacity:0;transform:translateY(14px)}
+  .reveal.in{opacity:1;transform:none;transition:opacity .6s ease,transform .6s ease}
+
+  /* bruno flow */
+  .flow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:stretch}
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;position:relative}
+  .step .n{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.1em;color:var(--cool-1)}
+  .step h3{font-family:"Space Grotesk","IBM Plex Sans Thai",sans-serif;font-size:16px;margin:8px 0 6px}
+  .step p{margin:0;font-size:13.5px;color:var(--muted)}
+  .step.mid .n{color:var(--mid)} .step.last .n{color:var(--warm-1)}
+  /* gate flow */
+  .gate{display:grid;grid-template-columns:1fr;gap:14px;max-width:560px;margin:0 auto}
+  .gate .pivot{background:var(--surface);border:1px solid var(--mid);border-radius:12px;padding:16px 18px;text-align:center}
+  .gate .pivot .n{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.1em;color:var(--mid)}
+  .gate .pivot h3{font-family:"Space Grotesk","IBM Plex Sans Thai",sans-serif;margin:6px 0 0;font-size:17px}
+  .gate .outs{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .gate .out{border:1px solid var(--line);border-radius:12px;padding:16px}
+  .gate .out.pass{border-color:var(--cool-1)} .gate .out.fail{border-color:var(--hot)}
+  .gate .out .h{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.06em;margin-bottom:8px}
+  .gate .out.pass .h{color:var(--cool-1)} .gate .out.fail .h{color:var(--hot)}
+  .gate .out p{margin:0;font-size:13.5px;color:var(--muted)}
+  .gate .out code{font-size:12px;color:var(--text)}
+  .gate .arrow{text-align:center;color:var(--faint);font-size:18px;line-height:1}
+  /* full-source IDE */
+  .ide{display:grid;grid-template-columns:230px 1fr;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+  .filetree{border-right:1px solid var(--line);padding:10px;background:var(--bg-grain);max-height:540px;overflow:auto}
+  .filetree .grp{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:14px 8px 6px}
+  .filetree .grp:first-child{margin-top:2px}
+  .filetree button{display:block;width:100%;text-align:left;background:transparent;border:0;color:var(--muted);font-family:"JetBrains Mono",monospace;font-size:12.5px;padding:6px 9px;border-radius:7px;cursor:pointer;white-space:nowrap}
+  .filetree button:hover{background:var(--surface-2);color:var(--text)}
+  .filetree button.on{background:var(--surface-2);color:var(--accent)}
+  .codeview{min-width:0;display:flex;flex-direction:column}
+  .codeview-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .codeview-head .mono{font-size:12px;color:var(--cool-2)}
+  .codeview-head .copy{position:static;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);font-family:"JetBrains Mono",monospace;font-size:11px;padding:5px 10px;border-radius:7px;cursor:pointer}
+  .codeview-head .copy:hover{color:var(--text);border-color:var(--accent)}
+  .codeview pre{max-height:500px;overflow:auto}
+  @media (max-width:760px){
+    .flow3{grid-template-columns:1fr}
+    .ide{grid-template-columns:1fr}
+    .filetree{display:flex;gap:6px;overflow-x:auto;max-height:none}
+    .filetree .grp{display:none}
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" id="back-home-fab" aria-label="กลับคลังคู่มือ" style="position:fixed;right:18px;bottom:18px;z-index:99999;display:inline-flex;align-items:center;gap:7px;padding:10px 16px;font:600 14px/1 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#fff;background:#0284c7;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px rgba(2,132,199,.35)">🏠 หน้าแรก</a>
+
+<div class="top">
+  <div class="wrap">
+    <div class="brand">pedpro<span>::</span>observe</div>
+    <div class="langtoggle" role="group" aria-label="language">
+      <button id="th" class="on" onclick="setLang('th')">ไทย</button>
+      <button id="en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-th="วิศวกรรมการรับรู้ของ AI Agent" data-en="AI Agent Perception Engineering">วิศวกรรมการรับรู้ของ AI Agent</p>
+    <h1 class="reveal">
+      <span data-th="บันได<span class='heat'>ต้นทุนการรับรู้</span>" data-en="The <span class='heat'>Perception Cost</span> Ladder">บันได<span class="heat">ต้นทุนการรับรู้</span></span>
+    </h1>
+    <p class="lede reveal"
+       data-th="Browser ไม่ได้แพงเพราะเป็น browser — มันแพงตอนที่ AI ใช้ตา. กุญแจคือให้โค้ดกลั่นข้อมูลก่อน แล้วค่อยปีนขึ้นใช้ภาพเฉพาะตอนจำเป็นจริง ๆ"
+       data-en="A browser isn't expensive because it's a browser — it's expensive when the AI uses its eyes. The trick: let code distill the data first, and climb up to vision only when truly necessary.">
+       Browser ไม่ได้แพงเพราะเป็น browser — มันแพงตอนที่ AI ใช้ตา. กุญแจคือให้โค้ดกลั่นข้อมูลก่อน แล้วค่อยปีนขึ้นใช้ภาพเฉพาะตอนจำเป็นจริง ๆ
+    </p>
+    <div class="thesis reveal">
+      <span class="chip" data-th="หลักการ: <b>parallelize ข้อมูล · serialize สายตา</b>" data-en="Principle: <b>parallelize data · serialize sight</b>">หลักการ: <b>parallelize ข้อมูล · serialize สายตา</b></span>
+      <span class="chip mono">code &gt; text &gt; pixels</span>
+    </div>
+  </div>
+</header>
+
+<!-- THREE WAYS -->
+<section>
+  <div class="wrap">
+    <p class="kicker reveal">01 — <span data-th="วิธีที่ AI มองเว็บ" data-en="How AI sees the web">วิธีที่ AI มองเว็บ</span></p>
+    <h2 class="reveal" data-th="AI มองหน้าเว็บได้ 3 แบบ" data-en="Three ways an AI sees a page">AI มองหน้าเว็บได้ 3 แบบ</h2>
+    <p class="sub reveal"
+       data-th="แต่ละแบบ “เปลือง” ต่างกันมาก เพราะค่าใช้จ่ายคิดตามสิ่งที่เข้า context window — ไม่ใช่ตามการสั่ง browser"
+       data-en="Each one costs wildly differently, because the bill is what enters the context window — not the act of driving the browser.">
+       แต่ละแบบ “เปลือง” ต่างกันมาก เพราะค่าใช้จ่ายคิดตามสิ่งที่เข้า context window — ไม่ใช่ตามการสั่ง browser
+    </p>
+    <div class="cards">
+      <div class="card c-vision reveal">
+        <span class="tag" data-th="แบบที่ 1 · ภาพ" data-en="Way 1 · Vision">แบบที่ 1 · ภาพ</span>
+        <h3 data-th="มองด้วยภาพ" data-en="See with pixels">มองด้วยภาพ</h3>
+        <p data-th="ถ่าย screenshot ส่งให้ AI ดูเหมือนคนมองจอ เห็นทุกอย่าง แต่ภาพ 1 รูปกิน token มหาศาล และต้องถ่ายใหม่ทุก step"
+           data-en="Screenshot the page so the AI looks at it like a person. Sees everything — but one image eats huge tokens, and must be retaken every step.">ถ่าย screenshot ส่งให้ AI ดูเหมือนคนมองจอ เห็นทุกอย่าง แต่ภาพ 1 รูปกิน token มหาศาล และต้องถ่ายใหม่ทุก step</p>
+        <div class="meter"><i></i></div>
+        <span class="cost" data-th="ต้นทุน: สูงสุด" data-en="Cost: highest">ต้นทุน: สูงสุด</span>
+      </div>
+      <div class="card c-tree reveal">
+        <span class="tag" data-th="แบบที่ 2 · โครงสร้าง" data-en="Way 2 · Structure">แบบที่ 2 · โครงสร้าง</span>
+        <h3 data-th="อ่าน accessibility tree" data-en="Read the a11y tree">อ่าน accessibility tree</h3>
+        <p data-th="ดึงโครงสร้างหน้าเป็นข้อความ (ปุ่ม ลิงก์ ช่องกรอก) นี่คือ default ของ Playwright — เป็น text จึงถูกกว่าภาพมาก แต่หน้า Naive UI โครงสร้างบาน ยังเปลืองได้"
+           data-en="Pull the page structure as text (buttons, links, fields). This is Playwright's default — text, so far cheaper than images. But a Naive UI tree is huge and can still be costly.">ดึงโครงสร้างหน้าเป็นข้อความ (ปุ่ม ลิงก์ ช่องกรอก) นี่คือ default ของ Playwright — เป็น text จึงถูกกว่าภาพมาก แต่หน้า Naive UI โครงสร้างบาน ยังเปลืองได้</p>
+        <div class="meter"><i></i></div>
+        <span class="cost" data-th="ต้นทุน: ปานกลาง" data-en="Cost: medium">ต้นทุน: ปานกลาง</span>
+      </div>
+      <div class="card c-code reveal">
+        <span class="tag" data-th="แบบที่ 3 · โค้ด" data-en="Way 3 · Code">แบบที่ 3 · โค้ด</span>
+        <h3 data-th="เขียนโค้ดดึงเฉพาะจุด" data-en="Code-distilled extract">เขียนโค้ดดึงเฉพาะจุด</h3>
+        <p data-th="สั่งโค้ดไปหยิบเฉพาะค่าที่ต้องการ คืนกลับมาแค่ผลลัพธ์สะอาด ๆ สิ่งที่เข้า context จึงเหลือแค่คำตอบที่กลั่นแล้ว — ถูกที่สุด"
+           data-en="Tell code to grab only the values you want and return a clean result. Only the distilled answer enters the context — cheapest of all.">สั่งโค้ดไปหยิบเฉพาะค่าที่ต้องการ คืนกลับมาแค่ผลลัพธ์สะอาด ๆ สิ่งที่เข้า context จึงเหลือแค่คำตอบที่กลั่นแล้ว — ถูกที่สุด</p>
+        <div class="meter"><i></i></div>
+        <span class="cost" data-th="ต้นทุน: ต่ำสุด" data-en="Cost: lowest">ต้นทุน: ต่ำสุด</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LADDER -->
+<section>
+  <div class="wrap">
+    <p class="kicker reveal">02 — <span data-th="บันได 5 ขั้น" data-en="The five rungs">บันได 5 ขั้น</span></p>
+    <h2 class="reveal" data-th="ปีนจากถูกไปแพง — คลิกแต่ละขั้น" data-en="Climb from cheap to costly — tap a rung">ปีนจากถูกไปแพง — คลิกแต่ละขั้น</h2>
+    <p class="sub reveal"
+       data-th="กฎเหล็ก: หยุดที่ขั้นต่ำที่สุดที่ตอบคำถามได้ ยิ่งหยุดได้ต่ำ ยิ่งถูกและยิ่ง deterministic"
+       data-en="The rule: stop at the lowest rung that answers the question. The lower you stop, the cheaper and more deterministic.">
+       กฎเหล็ก: หยุดที่ขั้นต่ำที่สุดที่ตอบคำถามได้ ยิ่งหยุดได้ต่ำ ยิ่งถูกและยิ่ง deterministic
+    </p>
+
+    <div class="ladder reveal" id="ladder">
+      <div class="rung" data-t="1" onclick="openTier(1)">
+        <div class="num">01</div>
+        <div class="lab"><span data-th="ดึงข้อมูลด้วยโค้ด" data-en="Code extraction">ดึงข้อมูลด้วยโค้ด</span>
+          <small data-th="default · ตอบงานส่วนใหญ่ได้จบที่นี่" data-en="default · resolves most tasks here">default · ตอบงานส่วนใหญ่ได้จบที่นี่</small></div>
+        <div class="gauge"><i></i></div>
+      </div>
+      <div class="rung" data-t="2" onclick="openTier(2)">
+        <div class="num">02</div>
+        <div class="lab"><span data-th="สัญญาณ console / network" data-en="Console / network signals">สัญญาณ console / network</span>
+          <small data-th="ราคาเกือบศูนย์ · มักเจอต้นเหตุก่อนต้องใช้ภาพ" data-en="near-free · often finds the cause first">ราคาเกือบศูนย์ · มักเจอต้นเหตุก่อนต้องใช้ภาพ</small></div>
+        <div class="gauge"><i></i></div>
+      </div>
+      <div class="rung" data-t="3" onclick="openTier(3)">
+        <div class="num">03</div>
+        <div class="lab"><span data-th="เทียบ pixel กับ baseline" data-en="Pixel diff vs baseline">เทียบ pixel กับ baseline</span>
+          <small data-th="deterministic · ไม่ต้องใช้ AI เลย" data-en="deterministic · no model needed">deterministic · ไม่ต้องใช้ AI เลย</small></div>
+        <div class="gauge"><i></i></div>
+      </div>
+      <div class="rung" data-t="4" onclick="openTier(4)">
+        <div class="num">04</div>
+        <div class="lab"><span data-th="ถ่ายภาพเฉพาะจุด (clip)" data-en="Clipped screenshot">ถ่ายภาพเฉพาะจุด (clip)</span>
+          <small data-th="เฉพาะตอนสัญญาณเตือน หรือ diff ไม่ผ่าน" data-en="only when a signal or diff fails">เฉพาะตอนสัญญาณเตือน หรือ diff ไม่ผ่าน</small></div>
+        <div class="gauge"><i></i></div>
+      </div>
+      <div class="rung" data-t="5" onclick="openTier(5)">
+        <div class="num">05</div>
+        <div class="lab"><span data-th="ถ่ายทั้งหน้า (full page)" data-en="Full-page screenshot">ถ่ายทั้งหน้า (full page)</span>
+          <small data-th="ทางเลือกสุดท้ายจริง ๆ เท่านั้น" data-en="genuine last resort only">ทางเลือกสุดท้ายจริง ๆ เท่านั้น</small></div>
+        <div class="gauge"><i></i></div>
+      </div>
+    </div>
+    <div class="ladderscale">
+      <span data-th="◀ ถูก / deterministic" data-en="◀ cheap / deterministic">◀ ถูก / deterministic</span>
+      <span data-th="แพง / ใช้สายตา ▶" data-en="costly / needs sight ▶">แพง / ใช้สายตา ▶</span>
+    </div>
+
+    <div class="panel" id="panel" hidden>
+      <div class="panel-head">
+        <span class="dot" id="p-dot"></span>
+        <h3 id="p-title"></h3>
+        <span class="when" id="p-when"></span>
+      </div>
+      <div class="panel-body">
+        <p id="p-desc"></p>
+        <div class="codewrap">
+          <button class="copy" onclick="copyCode(this)" data-th="คัดลอก" data-en="copy">คัดลอก</button>
+          <pre id="p-code"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DECISION TREE -->
+<section>
+  <div class="wrap">
+    <p class="kicker reveal">03 — <span data-th="ผังการตัดสินใจ" data-en="Decision flow">ผังการตัดสินใจ</span></p>
+    <h2 class="reveal" data-th="เจองาน browser ให้ไล่ถามตามนี้" data-en="For any browser task, ask in order">เจองาน browser ให้ไล่ถามตามนี้</h2>
+    <p class="sub reveal" data-th="แต่ละคำถามพยายามดันให้หยุดที่ขั้นถูกที่สุดเท่าที่จะทำได้"
+       data-en="Each question tries to stop you at the cheapest possible rung.">แต่ละคำถามพยายามดันให้หยุดที่ขั้นถูกที่สุดเท่าที่จะทำได้</p>
+
+    <div class="tree reveal">
+      <div class="qnode">
+        <p class="q" data-th="อยากได้ <b>“ข้อมูล”</b> หรือ <b>“หน้าตา”</b>?" data-en="Do you want <b>“data”</b> or <b>“looks”</b>?">อยากได้ <b>“ข้อมูล”</b> หรือ <b>“หน้าตา”</b>?</p>
+        <div class="branches">
+          <div class="branch go"><span class="ans" data-th="ข้อมูล" data-en="data">ข้อมูล</span>
+            <span class="result" data-th="→ Tier 01 (โค้ด) จบ" data-en="→ Tier 01 (code), done">→ Tier 01 (โค้ด) จบ</span></div>
+          <div class="branch"><span class="ans" data-th="หน้าตา" data-en="looks">หน้าตา</span>
+            <span data-th="ไปคำถามถัดไป" data-en="go to next question">ไปคำถามถัดไป ↓</span></div>
+        </div>
+      </div>
+      <div class="connector"></div>
+      <div class="qnode">
+        <p class="q" data-th="มี <b>console error</b> หรือ <b>request ล้ม</b> ไหม?" data-en="Any <b>console error</b> or <b>failed request</b>?">มี <b>console error</b> หรือ <b>request ล้ม</b> ไหม?</p>
+        <div class="branches">
+          <div class="branch go"><span class="ans" data-th="มี" data-en="yes">มี</span>
+            <span class="result" data-th="→ Tier 02 มักเจอต้นเหตุตรงนี้" data-en="→ Tier 02, usually the root cause">→ Tier 02 มักเจอต้นเหตุตรงนี้</span></div>
+          <div class="branch"><span class="ans" data-th="ไม่มี" data-en="no">ไม่มี</span>
+            <span data-th="ไปคำถามถัดไป" data-en="go to next question">ไปคำถามถัดไป ↓</span></div>
+        </div>
+      </div>
+      <div class="connector"></div>
+      <div class="qnode">
+        <p class="q" data-th="เทียบ <b>baseline ด้วยโค้ด</b> ได้ไหม?" data-en="Can you <b>pixel-diff a baseline</b>?">เทียบ <b>baseline ด้วยโค้ด</b> ได้ไหม?</p>
+        <div class="branches">
+          <div class="branch go"><span class="ans" data-th="ได้" data-en="yes">ได้</span>
+            <span class="result" data-th="→ Tier 03 ให้โค้ดตัดสิน ไม่ใช้ AI" data-en="→ Tier 03, code decides, no AI">→ Tier 03 ให้โค้ดตัดสิน ไม่ใช้ AI</span></div>
+          <div class="branch stop"><span class="ans" data-th="ต่างจริง / สุดวิสัย" data-en="real diff / can't">ต่างจริง / สุดวิสัย</span>
+            <span class="result" data-th="→ Tier 04 clip ส่ง AI · Tier 05 ท้ายสุด" data-en="→ Tier 04 clip to AI · Tier 05 last">→ Tier 04 clip ส่ง AI · Tier 05 ท้ายสุด</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- API REF -->
+<section>
+  <div class="wrap">
+    <p class="kicker reveal">04 — <span data-th="หน้า API ของ helper" data-en="Helper API">หน้า API ของ helper</span></p>
+    <h2 class="reveal" data-th="ตัวที่ใช้ในโปรเจกต์จริง" data-en="What you actually call">ตัวที่ใช้ในโปรเจกต์จริง</h2>
+    <p class="sub reveal" data-th="คืนผลในทรง { Result, Error } เหมือน API ของ Pedpro เช็คในแพทเทิร์น res?.Result ได้เลย"
+       data-en="Returns the { Result, Error } shape like Pedpro APIs — check it with the res?.Result pattern.">คืนผลในทรง { Result, Error } เหมือน API ของ Pedpro เช็คในแพทเทิร์น res?.Result ได้เลย</p>
+    <div class="api">
+      <div class="fn reveal">
+        <div class="sig">observePage(page, url, opts)</div>
+        <p data-th="ตัวสะดวก: รวม capture สัญญาณ → goto → wait → extract ให้ลำดับถูกเสมอ ใช้ตัวนี้เป็น default"
+           data-en="Convenience: bundles signal capture → goto → wait → extract with correct ordering. Your default.">ตัวสะดวก: รวม capture สัญญาณ → goto → wait → extract ให้ลำดับถูกเสมอ ใช้ตัวนี้เป็น default</p>
+      </div>
+      <div class="fn reveal">
+        <div class="sig">observe(page, signals, opts)</div>
+        <p data-th="เวอร์ชันคุมเอง: ต้อง captureSignals(page) ก่อน goto แล้วส่ง signals เข้ามาเอง ใช้ตอนต้องคุม flow ละเอียด"
+           data-en="Manual version: captureSignals(page) before goto, then pass signals in. For fine-grained control.">เวอร์ชันคุมเอง: ต้อง captureSignals(page) ก่อน goto แล้วส่ง signals เข้ามาเอง ใช้ตอนต้องคุม flow ละเอียด</p>
+      </div>
+      <div class="fn reveal">
+        <div class="sig">mapRows(page, sel, mapper)</div>
+        <p data-th="วนอ่านแถวด้วย data-test แล้ว map เป็น object array สะอาด ๆ — ตัวกลั่นข้อมูลหลัก"
+           data-en="Loop rows by data-test and map to a clean object array — the core distiller.">วนอ่านแถวด้วย data-test แล้ว map เป็น object array สะอาด ๆ — ตัวกลั่นข้อมูลหลัก</p>
+      </div>
+      <div class="fn reveal">
+        <div class="sig">clipShot(locator)</div>
+        <p data-th="ถ่ายเฉพาะ element เดียว (ถูกสุดในกลุ่มภาพ) เรียกใช้ภายใน observe เมื่อ escalate เท่านั้น"
+           data-en="Screenshot one element only (cheapest image tier). Used inside observe on escalation only.">ถ่ายเฉพาะ element เดียว (ถูกสุดในกลุ่มภาพ) เรียกใช้ภายใน observe เมื่อ escalate เท่านั้น</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- BRUNO CROSS-CHECK -->
+<section>
+  <div class="wrap">
+    <p class="kicker reveal">05 — <span data-th="Bruno เป็น source of truth" data-en="Bruno as source of truth">Bruno เป็น source of truth</span></p>
+    <h2 class="reveal" data-th="cross-check หน้าเว็บกับ contract" data-en="Cross-check the page against the contract">cross-check หน้าเว็บกับ contract</h2>
+    <p class="sub reveal"
+       data-th="ดึงข้อมูลด้วยโค้ดอย่างเดียวบอกได้แค่ “หน้าแสดงอะไร” แต่ไม่รู้ว่ามัน “ถูกไหม” เอา Bruno spec มาเป็นตัวเทียบ — ถ้าหน้าเว็บไม่ตรงกับ contract ฝั่ง API คือมีบั๊ก"
+       data-en="Code extraction alone tells you what the page shows, not whether it's correct. Use the Bruno spec as the oracle — if the page disagrees with the API contract, that's a bug.">
+       ดึงข้อมูลด้วยโค้ดอย่างเดียวบอกได้แค่ “หน้าแสดงอะไร” แต่ไม่รู้ว่ามัน “ถูกไหม” เอา Bruno spec มาเป็นตัวเทียบ — ถ้าหน้าเว็บไม่ตรงกับ contract ฝั่ง API คือมีบั๊ก
+    </p>
+    <div class="flow3 reveal">
+      <div class="step">
+        <span class="n">STEP 01</span>
+        <h3 data-th="โหลด contract" data-en="Load contract">โหลด contract</h3>
+        <p data-th="loadBru() อ่าน .bru ได้ method + url แล้ว fetchFromSpec() เรียก API จริง = ความจริงฝั่ง server"
+           data-en="loadBru() reads the .bru for method + url, then fetchFromSpec() calls the real API = server-side truth.">loadBru() อ่าน .bru ได้ method + url แล้ว fetchFromSpec() เรียก API จริง = ความจริงฝั่ง server</p>
+      </div>
+      <div class="step mid">
+        <span class="n">STEP 02</span>
+        <h3 data-th="ดึงหน้าด้วย observe" data-en="Observe the page">ดึงหน้าด้วย observe</h3>
+        <p data-th="observePage() ดึงสิ่งที่ render จริงบนหน้า (code-first) = ความจริงฝั่ง client"
+           data-en="observePage() extracts what's actually rendered (code-first) = client-side truth.">observePage() ดึงสิ่งที่ render จริงบนหน้า (code-first) = ความจริงฝั่ง client</p>
+      </div>
+      <div class="step last">
+        <span class="n">STEP 03</span>
+        <h3 data-th="crossCheck สองทาง" data-en="Two-way crossCheck">crossCheck สองทาง</h3>
+        <p data-th="เทียบทีละ field สองทิศ: หน้ามีเกิน API ไหม / API มีแต่หน้าไม่ render ไหม รายงาน mismatch ออกมา"
+           data-en="Diff field by field, both directions: page extras vs API, and API rows the page failed to render. Reports every mismatch.">เทียบทีละ field สองทิศ: หน้ามีเกิน API ไหม / API มีแต่หน้าไม่ render ไหม รายงาน mismatch ออกมา</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE GATE -->
+<section>
+  <div class="wrap">
+    <p class="kicker reveal">06 — <span data-th="ด่านอัตโนมัติในไปป์ไลน์" data-en="Automated pipeline gate">ด่านอัตโนมัติในไปป์ไลน์</span></p>
+    <h2 class="reveal" data-th="ให้ผล cross-check ขับ YouTrack + Telegram" data-en="Let cross-check drive YouTrack + Telegram">ให้ผล cross-check ขับ YouTrack + Telegram</h2>
+    <p class="sub reveal"
+       data-th="parallelize agents, serialize human judgment — gate นี้กรองอัตโนมัติก่อนถึงสายตาคน mismatch = ตีกลับ task เอง ช่วยลด blind_approve_rate"
+       data-en="Parallelize agents, serialize human judgment — this gate filters automatically before a human looks. A mismatch bounces the task itself, lowering blind_approve_rate.">
+       parallelize agents, serialize human judgment — gate นี้กรองอัตโนมัติก่อนถึงสายตาคน mismatch = ตีกลับ task เอง ช่วยลด blind_approve_rate
+    </p>
+    <div class="gate reveal">
+      <div class="pivot">
+        <span class="n">crossCheck()</span>
+        <h3 data-th="หน้าเว็บตรงกับ contract ไหม?" data-en="Does the page match the contract?">หน้าเว็บตรงกับ contract ไหม?</h3>
+      </div>
+      <div class="arrow">&#9660;</div>
+      <div class="outs">
+        <div class="out pass">
+          <div class="h" data-th="ผ่าน" data-en="PASS">ผ่าน</div>
+          <p data-th="YouTrack: " data-en="YouTrack: ">YouTrack: <code>State Review</code></p>
+          <p data-th="Telegram: แจ้ง ✅ · exit 0" data-en="Telegram: ✅ notice · exit 0">Telegram: แจ้ง ✅ · exit 0</p>
+        </div>
+        <div class="out fail">
+          <div class="h" data-th="ไม่ผ่าน" data-en="FAIL">ไม่ผ่าน</div>
+          <p data-th="YouTrack: " data-en="YouTrack: ">YouTrack: <code>Needs Fix</code> + คอมเมนต์ mismatch</p>
+          <p data-th="Telegram: แจ้ง ❌ · exit 2 ป้อนกลับ loop" data-en="Telegram: ❌ notice · exit 2 feeds back">Telegram: แจ้ง ❌ · exit 2 ป้อนกลับ loop</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DURABLE STATE -->
+<section>
+  <div class="wrap">
+    <p class="kicker reveal">07 — <span data-th="durable state และ metric" data-en="Durable state & metrics">durable state และ metric</span></p>
+    <h2 class="reveal" data-th="จำทุก gate ลง SQLite แล้ววัดผล" data-en="Remember every gate in SQLite, then measure">จำทุก gate ลง SQLite แล้ววัดผล</h2>
+    <p class="sub reveal"
+       data-th="gate ที่ยิงแล้วลืมไม่มีค่า ต้องจำไว้ถึงจะวัดได้ ใช้ node:sqlite (built-in ไม่ต้องลง native dep) เก็บทุก run + claim กัน race แล้วคำนวณ metric ที่สำคัญที่สุด"
+       data-en="A fire-and-forget gate is worthless; you must remember it to measure it. Use node:sqlite (built-in, no native dep) to store every run + a claim race-guard, then compute the metric that matters most.">
+       gate ที่ยิงแล้วลืมไม่มีค่า ต้องจำไว้ถึงจะวัดได้ ใช้ node:sqlite (built-in ไม่ต้องลง native dep) เก็บทุก run + claim กัน race แล้วคำนวณ metric ที่สำคัญที่สุด
+    </p>
+    <div class="flow3 reveal">
+      <div class="step">
+        <span class="n">DURABLE</span>
+        <h3 data-th="trace ทุก run" data-en="Trace every run">trace ทุก run</h3>
+        <p data-th="recordGateRun() เก็บ decision, matched, mismatches ลงตาราง gate_runs ตามด้วย human_decision เมื่อคนกด"
+           data-en="recordGateRun() stores decision, matched, mismatches in gate_runs, then human_decision when a person acts.">recordGateRun() เก็บ decision, matched, mismatches ลงตาราง gate_runs ตามด้วย human_decision เมื่อคนกด</p>
+      </div>
+      <div class="step mid">
+        <span class="n">RACE GUARD</span>
+        <h3 data-th="optimistic claim" data-en="Optimistic claim">optimistic claim</h3>
+        <p data-th="claimIssue() insert แบบ unique แล้วอ่านกลับมายืนยัน กันสอง agent หยิบ task เดียวกัน"
+           data-en="claimIssue() does a unique insert then reads back to verify, stopping two agents grabbing the same task.">claimIssue() insert แบบ unique แล้วอ่านกลับมายืนยัน กันสอง agent หยิบ task เดียวกัน</p>
+      </div>
+      <div class="step last">
+        <span class="n">METRIC</span>
+        <h3 data-th="blind_approve_rate" data-en="blind_approve_rate">blind_approve_rate</h3>
+        <p data-th="ในบรรดา gate ที่ระบบบอก fail แต่คนยัง approve = เซ็นผ่านโดยไม่ตรวจ ยิ่งต่ำยิ่งดี เป้า 0"
+           data-en="Among gates the system flagged fail but a human approved anyway = rubber-stamping. Lower is better, target 0.">ในบรรดา gate ที่ระบบบอก fail แต่คนยัง approve = เซ็นผ่านโดยไม่ตรวจ ยิ่งต่ำยิ่งดี เป้า 0</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FULL SOURCE -->
+<section>
+  <div class="wrap">
+    <p class="kicker reveal">08 — <span data-th="โค้ดทั้งหมด" data-en="Full source">โค้ดทั้งหมด</span></p>
+    <h2 class="reveal" data-th="ซอร์สทุกไฟล์ในที่เดียว" data-en="Every file, in one place">ซอร์สทุกไฟล์ในที่เดียว</h2>
+    <p class="sub reveal"
+       data-th="คลิกชื่อไฟล์ทางซ้ายเพื่อดูซอร์สเต็ม กดปุ่มมุมขวาบนเพื่อคัดลอกทั้งไฟล์"
+       data-en="Click a file on the left to view its full source. The button copies the whole file.">
+       คลิกชื่อไฟล์ทางซ้ายเพื่อดูซอร์สเต็ม กดปุ่มมุมขวาบนเพื่อคัดลอกทั้งไฟล์
+    </p>
+    <div class="ide reveal">
+      <aside class="filetree" id="filetree"></aside>
+      <div class="codeview">
+        <div class="codeview-head">
+          <span class="mono" id="cv-path"></span>
+          <button class="copy" onclick="copyView(this)" data-th="คัดลอกไฟล์" data-en="copy file">คัดลอกไฟล์</button>
+        </div>
+        <div class="codewrap" style="border:0;border-radius:0">
+          <pre id="cv-code"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<footer>
+  <div class="wrap">
+    <span class="mono">pedpro::observe</span> —
+    <span data-th="default = ดึงด้วยโค้ดคืน data น้อยที่สุด, escalate ไปสายตาเฉพาะตอน verify ภาพ"
+          data-en="default = code extraction returning minimal data, escalate to sight only to verify visuals">default = ดึงด้วยโค้ดคืน data น้อยที่สุด, escalate ไปสายตาเฉพาะตอน verify ภาพ</span>
+  </div>
+</footer>
+
+<script>
+  // ---------- language ----------
+  function applyLang(l){
+    document.querySelectorAll('[data-th]').forEach(function(el){
+      var v = el.getAttribute('data-'+l)
+      if(v !== null) el.innerHTML = v
+    })
+  }
+  function setLang(l){
+    document.documentElement.lang = l
+    document.getElementById('th').classList.toggle('on', l==='th')
+    document.getElementById('en').classList.toggle('on', l==='en')
+    applyLang(l)
+    if(currentTier) openTier(currentTier)
+  }
+
+  // ---------- tier data ----------
+  var TIER = {
+    1:{ color:'var(--cool-1)',
+        th:{t:'ดึงข้อมูลด้วยโค้ด', when:'default', d:'ทำเป็นหลักเสมอ ใช้ data-test ชี้จุด ห้ามใช้ class ของ Naive UI เพราะมันเปลี่ยนตอนอัปเวอร์ชัน คืนแค่ผลลัพธ์ที่กลั่นแล้ว'},
+        en:{t:'Code extraction', when:'default', d:'Always the primary move. Point with data-test, never Naive UI classes (they shift across versions). Return only the distilled result.'},
+        code:[
+          ['com','// ดึงเฉพาะแถวในตาราง คืน array สะอาด ๆ'],
+          ['plain','const ranking = await mapRows(page,'],
+          ['plain','  "[data-test=\\"leaderboard-row\\"]", async (row) => ({'],
+          ['plain','    rank: await numberOf(row, "[data-test=\\"rank\\"]"),'],
+          ['plain','    name: await textOf(row, "[data-test=\\"name\\"]"),'],
+          ['plain','  }))'],
+          ['com','// เข้า context แค่ไม่กี่ร้อยตัวอักษร แทนหมื่น ๆ']
+        ]},
+    2:{ color:'var(--cool-2)',
+        th:{t:'สัญญาณ console / network', when:'~0 token', d:'ติด listener ก่อน goto เสมอ ไม่งั้นพลาด error ช่วงโหลดแรก หน้าเพี้ยนจริงมักมาจาก request ที่ล้ม ซึ่งจับได้โดยไม่ต้องถ่ายภาพ'},
+        en:{t:'Console / network signals', when:'~0 token', d:'Register listeners before goto, or you miss load-time errors. A broken page often traces to a failed request — caught with no image at all.'},
+        code:[
+          ['com','// ต้องก่อน page.goto เสมอ'],
+          ['plain','page.on("console", (m) => {'],
+          ['plain','  if (m.type() === "error") errors.push(m.text())'],
+          ['plain','})'],
+          ['plain','page.on("response", (r) => {'],
+          ['plain','  if (r.status() >= 400) failed.push(r.url())'],
+          ['plain','})']
+        ]},
+    3:{ color:'var(--mid)',
+        th:{t:'เทียบ pixel กับ baseline', when:'no AI', d:'เก็บภาพหน้าตอนถูกต้องเป็น baseline ครั้งต่อไปให้โค้ดเทียบเอง ถ้าต่างเกิน threshold จะ fail เอง จะเรียก AI ก็ต่อเมื่อ test fail เท่านั้น'},
+        en:{t:'Pixel diff vs baseline', when:'no AI', d:'Store a correct-state baseline. Next runs let code compare; over threshold fails on its own. Call the AI only when the test fails.'},
+        code:[
+          ['com','// deterministic ไม่ต้องใช้ model'],
+          ['plain','await expect(page.locator('],
+          ['plain','  "[data-test=\\"leaderboard-table\\"]"'],
+          ['plain',')).toHaveScreenshot("table.png", {'],
+          ['plain','  maxDiffPixelRatio: 0.01'],
+          ['plain','})']
+        ]},
+    4:{ color:'var(--warm-1)',
+        th:{t:'ถ่ายภาพเฉพาะจุด (clip)', when:'escalate', d:'เมื่อสัญญาณเตือนหรือ diff ไม่ผ่าน ค่อยถ่าย และต้องถ่ายให้แคบที่สุด Locator.screenshot() ครอบเฉพาะ element นั้นให้อัตโนมัติ'},
+        en:{t:'Clipped screenshot', when:'escalate', d:'When a signal fires or a diff fails, then shoot — and shoot as narrow as possible. Locator.screenshot() crops to just that element automatically.'},
+        code:[
+          ['com','// ถ่ายเฉพาะกล่องที่สงสัย ไม่ใช่ทั้งหน้า'],
+          ['plain','const target = page.locator('],
+          ['plain','  "[data-test=\\"submit-btn\\"]")'],
+          ['plain','const shot = await target.screenshot()'],
+          ['plain','sendToAgentWithImage(data, shot.toString("base64"))']
+        ]},
+    5:{ color:'var(--hot)',
+        th:{t:'ถ่ายทั้งหน้า (full page)', when:'last resort', d:'ใช้เฉพาะกรณีหายากจริง ๆ ที่ต้องเห็นทั้งหน้าพร้อมกัน เปลือง token สูงสุด ก่อนถึงขั้นนี้ให้ถามตัวเองอีกครั้งว่าขั้นล่างตอบไม่ได้จริงหรือ'},
+        en:{t:'Full-page screenshot', when:'last resort', d:'Only for the rare case needing the whole page at once. Highest token cost. Before reaching here, ask once more whether a lower rung truly can\'t answer.'},
+        code:[
+          ['com','// ทางเลือกสุดท้ายจริง ๆ'],
+          ['plain','const shot = await page.screenshot({'],
+          ['plain','  fullPage: true'],
+          ['plain','})']
+        ]}
+  }
+
+  var currentTier = null
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  function renderCode(lines){
+    return lines.map(function(l){
+      var cls = l[0]==='com' ? 't-com' : 't-var'
+      return '<span class="'+cls+'">'+esc(l[1])+'</span>'
+    }).join('\n')
+  }
+  function openTier(n){
+    currentTier = n
+    var lang = document.documentElement.lang
+    var d = TIER[n], t = d[lang]
+    document.getElementById('p-dot').style.background = d.color
+    document.getElementById('p-title').textContent = 'Tier 0'+n+' · '+t.t
+    document.getElementById('p-when').textContent = t.when
+    document.getElementById('p-desc').textContent = t.d
+    document.getElementById('p-code').innerHTML = renderCode(d.code)
+    var panel = document.getElementById('panel')
+    panel.hidden = false
+    document.querySelectorAll('.rung').forEach(function(r){
+      r.style.outline = r.getAttribute('data-t')==String(n) ? '1px solid '+d.color : 'none'
+    })
+  }
+  function copyCode(btn){
+    var code = btn.parentElement.querySelector('pre').innerText
+    navigator.clipboard.writeText(code).then(function(){
+      var o = btn.textContent; btn.textContent = '✓'
+      setTimeout(function(){btn.textContent=o},1200)
+    })
+  }
+
+  // ---------- reveal on scroll ----------
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target) } })
+  },{threshold:.12})
+  document.querySelectorAll('.reveal').forEach(function(el,i){
+    el.style.transitionDelay = (Math.min(i,6)*60)+'ms'
+    io.observe(el)
+  })
+
+  openTier(1)
+</script>
+
+<script>
+  var FILES = {"lib/types.ts": "// types.ts\n// ทรงผลลัพธ์ออกแบบให้ตรงกับ API ของ Pedpro (Result / Error)\n// เพื่อให้ฝั่งที่เรียกใช้ เช็คในทรงเดียวกับ res?.Result ได้คุ้นมือ\n\nexport type ObserveSignals = {\n  // error ที่ console พ่นออกมา (text ล้วน ราคาถูก)\n  consoleErrors: string[]\n  // request ที่ล้มเหลว หรือ status >= 400\n  failedRequests: string[]\n}\n\nexport type ObserveResult<T> = {\n  // ข้อมูลที่กลั่นด้วยโค้ด — ของหลักที่ควรเข้า context window\n  Result: T | null\n  // ข้อความ error ถ้า extract ล้ม (ทรงเดียวกับ res?.Result ทั้งโปรเจกต์)\n  Error: string | null\n  // สัญญาณราคาถูกจาก console / network\n  signals: ObserveSignals\n  // ภาพ base64 จะมีค่าเฉพาะตอน escalate เท่านั้น ปกติเป็น null\n  screenshot: string | null\n  // เหตุผลของการตัดสินใจ ไว้ debug ว่าทำไมถึง (ไม่) แนบภาพ\n  visionReason: string\n}\n\n// ระดับความเปลืองของการใช้ภาพ เรียงจากถูกไปแพง\nexport type VisionTier = \"none\" | \"clip\" | \"viewport\" | \"fullpage\"\n", "lib/signals.ts": "// signals.ts\n// ดักสัญญาณราคาถูก: console error + request ที่ล้มเหลว\n//\n// สำคัญมาก: ต้องเรียก captureSignals ก่อน page.goto เสมอ\n// เพราะ event listener ต้องติดไว้ก่อนหน้าจะโหลด ไม่งั้นจะพลาด error ช่วงโหลดแรก\n\nimport type { Page } from \"playwright\"\nimport type { ObserveSignals } from \"./types\"\n\nexport function captureSignals(page: Page): ObserveSignals {\n  const signals: ObserveSignals = {\n    consoleErrors: [],\n    failedRequests: [],\n  }\n\n  // 1. error ที่ JavaScript พ่นออก console\n  page.on(\"console\", (msg) => {\n    if (msg.type() === \"error\") {\n      signals.consoleErrors.push(msg.text())\n    }\n  })\n\n  // 2. request ที่ล้มเหลวระดับ network (เช่น โดเมนพัง, timeout)\n  page.on(\"requestfailed\", (req) => {\n    const reason = req.failure()?.errorText ?? \"unknown\"\n    signals.failedRequests.push(`${req.url()} - ${reason}`)\n  })\n\n  // 3. response ที่ status ไม่ ok (เช่น รูป 404, API 500)\n  page.on(\"response\", (res) => {\n    if (res.status() >= 400) {\n      signals.failedRequests.push(`${res.status()} ${res.url()}`)\n    }\n  })\n\n  return signals\n}\n", "lib/extract.ts": "// extract.ts\n// ตัวช่วยดึงข้อมูลด้วยโค้ด — หัวใจของการ \"กลั่นก่อนเข้า context\"\n//\n// ใช้ data-test attribute เป็นตัวชี้จุดเสมอ ห้ามชี้ด้วย class ของ Naive UI\n// เพราะ class ของ component library เปลี่ยนเองตอนอัปเวอร์ชัน ทำให้โค้ดพังง่าย\n\nimport type { Locator, Page } from \"playwright\"\n\n// ดึงข้อความสะอาด ๆ จาก element เดียวภายใต้ขอบเขต scope\nexport async function textOf(scope: Locator, selector: string): Promise<string> {\n  const el = scope.locator(selector).first()\n  if ((await el.count()) === 0) return \"\"\n  return (await el.textContent())?.trim() ?? \"\"\n}\n\n// ดึงตัวเลขจากข้อความ (ตัด comma ออกก่อน เช่น \"9,800\" -> 9800)\nexport async function numberOf(scope: Locator, selector: string): Promise<number> {\n  const text = await textOf(scope, selector)\n  const cleaned = text.replace(/,/g, \"\")\n  const n = Number(cleaned)\n  return Number.isNaN(n) ? 0 : n\n}\n\n// เช็คว่ามี element อยู่ไหม โดยไม่ต้องดึงค่า (ราคาถูกมาก)\nexport async function exists(page: Page, selector: string): Promise<boolean> {\n  return (await page.locator(selector).count()) > 0\n}\n\n// เช็คว่าปุ่ม/ช่องกรอกใช้งานได้ไหม (ไม่ disabled)\nexport async function isEnabled(page: Page, selector: string): Promise<boolean> {\n  const el = page.locator(selector).first()\n  if ((await el.count()) === 0) return false\n  return el.isEnabled()\n}\n\n// วนอ่านหลายแถว map เป็น object array — ตัวกลั่นข้อมูลตัวหลัก\n// ใช้ locator loop เพื่อให้อ่านง่ายและใช้ data-test ซ้อนในแต่ละแถวได้\nexport async function mapRows<T>(\n  page: Page,\n  rowSelector: string,\n  mapper: (row: Locator, index: number) => Promise<T>\n): Promise<T[]> {\n  const rows = page.locator(rowSelector)\n  const count = await rows.count()\n  const out: T[] = []\n  for (let i = 0; i < count; i++) {\n    out.push(await mapper(rows.nth(i), i))\n  }\n  return out\n}\n", "lib/vision.ts": "// vision.ts\n// ตัวช่วยถ่ายภาพ — ใช้เฉพาะตอน escalate เท่านั้น\n// หลักการ: ถ้าจำเป็นต้องใช้ภาพ ก็ยังต้องถ่ายให้แคบที่สุดเท่าที่ตอบคำถามได้\n\nimport type { Locator, Page } from \"playwright\"\n\n// ระดับ C (ถูกสุดในกลุ่มภาพ): ถ่ายเฉพาะ element เดียว\n// Locator.screenshot() จะ scroll ให้เห็นแล้วครอบเฉพาะกล่องนั้นให้อัตโนมัติ\nexport async function clipShot(target: Locator): Promise<string | null> {\n  if ((await target.count()) === 0) return null\n  const buffer = await target.screenshot()\n  return buffer.toString(\"base64\")\n}\n\n// ระดับ B (กลาง): ถ่ายเฉพาะที่เห็นบนจอ ไม่รวมส่วนที่ต้อง scroll\nexport async function viewportShot(page: Page): Promise<string> {\n  const buffer = await page.screenshot({ fullPage: false })\n  return buffer.toString(\"base64\")\n}\n\n// ระดับ A (เปลืองสุด): ถ่ายทั้งหน้า ใช้เป็นทางเลือกสุดท้ายจริง ๆ เท่านั้น\nexport async function fullPageShot(page: Page): Promise<string> {\n  const buffer = await page.screenshot({ fullPage: true })\n  return buffer.toString(\"base64\")\n}\n", "lib/observe.ts": "// observe.ts\n// ตัวประสานงานหลัก: ทำตามลำดับ \"ถูกก่อน แพงทีหลัง\" อัตโนมัติ\n//\n//   ชั้น 1  ดึงข้อมูลด้วยโค้ด (ถูกสุด)        -> ทำเสมอ\n//   ชั้น 2  อ่านสัญญาณ console / network      -> ราคาเกือบศูนย์\n//   ชั้น 3  ถ่ายภาพ clip เฉพาะจุด             -> เฉพาะตอนจำเป็น\n\nimport type { Page } from \"playwright\"\nimport type { ObserveResult, ObserveSignals } from \"./types\"\nimport { captureSignals } from \"./signals\"\nimport { clipShot } from \"./vision\"\n\ntype ObserveOptions<T> = {\n  // ฟังก์ชันดึงข้อมูลด้วยโค้ด — ส่วนที่ทำเป็นหลัก\n  extract: (page: Page) => Promise<T>\n  // selector ของกล่องที่จะถ่ายถ้าจำเป็น (ไม่ใส่ = ไม่ถ่ายเลย)\n  visualCheckSelector?: string\n  // เงื่อนไข escalate เอง ถ้าไม่ใส่ default = พบสัญญาณผิดปกติ\n  needsVision?: (signals: ObserveSignals) => boolean\n}\n\n// เวอร์ชันหลัก: ต้อง captureSignals ก่อน goto แล้วส่ง signals เข้ามา\nexport async function observe<T>(\n  page: Page,\n  signals: ObserveSignals,\n  options: ObserveOptions<T>\n): Promise<ObserveResult<T>> {\n  // ชั้น 1: ดึงข้อมูลด้วยโค้ด ในทรง loading -> try/catch -> Result\n  let result: T | null = null\n  let errorMsg: string | null = null\n  try {\n    result = await options.extract(page)\n  } catch (e) {\n    errorMsg = e instanceof Error ? e.message : String(e)\n  }\n\n  // ชั้น 2: ตัดสินว่าต้อง escalate ไปใช้ภาพไหม\n  const shouldUseVision = options.needsVision\n    ? options.needsVision(signals)\n    : signals.failedRequests.length > 0 || signals.consoleErrors.length > 0\n\n  // ชั้น 3: ถ่ายภาพ clip เฉพาะตอนจำเป็น และระบุ selector ไว้\n  let screenshot: string | null = null\n  let visionReason = \"ข้อมูลครบจากโค้ด ไม่ต้องใช้ภาพ\"\n\n  if (shouldUseVision && options.visualCheckSelector) {\n    screenshot = await clipShot(page.locator(options.visualCheckSelector).first())\n    visionReason =\n      `escalate เพราะพบ ${signals.failedRequests.length} request ล้ม, ` +\n      `${signals.consoleErrors.length} console error`\n  } else if (shouldUseVision) {\n    visionReason = \"ควรใช้ภาพ แต่ไม่ได้ระบุ visualCheckSelector จึงข้าม\"\n  }\n\n  return { Result: result, Error: errorMsg, signals, screenshot, visionReason }\n}\n\n// เวอร์ชันสะดวก: รวม capture + goto + observe ให้ในตัว ลำดับถูกต้องเสมอ\nexport async function observePage<T>(\n  page: Page,\n  url: string,\n  options: ObserveOptions<T> & { waitFor?: string }\n): Promise<ObserveResult<T>> {\n  const signals = captureSignals(page) // ต้องก่อน goto\n  await page.goto(url)\n  if (options.waitFor) {\n    await page.waitForSelector(options.waitFor)\n  }\n  return observe(page, signals, options)\n}\n", "lib/bruno.ts": "// bruno.ts\n// ใช้ official parser @usebruno/lang (bruToJsonV2) แทน regex\n// รองรับ method / headers / auth bearer / body json ครบ และ resolve {{var}} ทุกจุด\n// ยึด Bruno spec เป็น source of truth (Golden Rule ของ Pedpro)\n\nimport { readFile } from \"node:fs/promises\"\nimport { bruToJsonV2 } from \"@usebruno/lang\"\n\nexport type BruMethod = \"get\" | \"post\" | \"put\" | \"delete\" | \"patch\"\n\nexport type BruSpec = {\n  name: string\n  method: BruMethod\n  url: string\n  headers: Record<string, string>\n  // token ดิบ (ยังไม่ resolve) ถ้า auth เป็น bearer\n  bearerToken?: string\n  // body json ดิบ (ยังไม่ resolve) ถ้า body เป็น json\n  bodyJson?: string\n}\n\n// รูปทรงที่ bruToJsonV2 คืน เอาเฉพาะ field ที่ใช้\ntype BruJson = {\n  meta?: { name?: string }\n  http?: { method?: string; url?: string; body?: string; auth?: string }\n  headers?: { name: string; value: string; enabled?: boolean }[]\n  auth?: { bearer?: { token?: string } }\n  body?: { json?: string; text?: string }\n}\n\nexport function parseBru(content: string): BruSpec {\n  const j = bruToJsonV2(content) as BruJson\n  const headers: Record<string, string> = {}\n  for (const h of j.headers ?? []) {\n    if (h.enabled !== false) headers[h.name] = h.value\n  }\n  return {\n    name: j.meta?.name ?? \"unknown\",\n    method: (j.http?.method?.toLowerCase() ?? \"get\") as BruMethod,\n    url: j.http?.url ?? \"\",\n    headers,\n    bearerToken: j.http?.auth === \"bearer\" ? j.auth?.bearer?.token : undefined,\n    bodyJson: j.http?.body === \"json\" ? j.body?.json : undefined,\n  }\n}\n\nexport async function loadBru(path: string): Promise<BruSpec> {\n  return parseBru(await readFile(path, \"utf-8\"))\n}\n\n// แทนค่า {{var}} ทุกจุดในข้อความด้วยค่าจริง\nexport function resolveVars(text: string, vars: Record<string, string>): string {\n  return text.replace(/\\{\\{(\\w+)\\}\\}/g, (_, k: string) => vars[k] ?? `{{${k}}}`)\n}\n\n// เรียก API ตาม spec (resolve url + header + token + body ให้ครบ) คืน JSON = contract\nexport async function fetchFromSpec<T>(\n  spec: BruSpec,\n  vars: Record<string, string> = {}\n): Promise<T> {\n  const url = resolveVars(spec.url, vars)\n  const headers: Record<string, string> = {}\n  for (const [k, v] of Object.entries(spec.headers)) {\n    headers[k] = resolveVars(v, vars)\n  }\n  if (spec.bearerToken) {\n    headers[\"Authorization\"] = `Bearer ${resolveVars(spec.bearerToken, vars)}`\n  }\n  let body: string | undefined\n  if (spec.bodyJson) {\n    headers[\"Content-Type\"] = headers[\"Content-Type\"] ?? \"application/json\"\n    body = resolveVars(spec.bodyJson, vars)\n  }\n  const res = await fetch(url, { method: spec.method.toUpperCase(), headers, body })\n  if (!res.ok) {\n    throw new Error(`${spec.method.toUpperCase()} ${url} -> ${res.status}`)\n  }\n  return res.json() as Promise<T>\n}\n\nexport type CrossCheckResult = {\n  ok: boolean\n  // จำนวนรายการที่ตรงกันทุก field\n  matched: number\n  // รายการความไม่ตรงระหว่าง API กับหน้าเว็บ\n  mismatches: string[]\n}\n\n// cross-check สองทิศ: หน้าเว็บตรงกับ contract ไหม และ contract ถูก render ครบไหม\nexport function crossCheck<T>(\n  fromApi: T[],\n  fromPage: T[],\n  keyFn: (item: T) => string | number,\n  fields: (keyof T)[]\n): CrossCheckResult {\n  const mismatches: string[] = []\n  const apiMap = new Map(fromApi.map((x) => [keyFn(x), x]))\n  let matched = 0\n\n  // ทิศ 1: ทุกแถวบนหน้า ต้องมีใน API และค่าตรง\n  for (const pageItem of fromPage) {\n    const key = keyFn(pageItem)\n    const apiItem = apiMap.get(key)\n    if (!apiItem) {\n      mismatches.push(`หน้าเว็บมี key=${key} แต่ API ไม่มี`)\n      continue\n    }\n    let itemOk = true\n    for (const f of fields) {\n      if (apiItem[f] !== pageItem[f]) {\n        mismatches.push(\n          `key=${key} field=${String(f)}: API=${String(apiItem[f])} หน้าเว็บ=${String(pageItem[f])}`\n        )\n        itemOk = false\n      }\n    }\n    if (itemOk) matched++\n  }\n\n  // ทิศ 2: ทุกแถวใน API ต้องถูก render บนหน้า\n  const pageKeys = new Set(fromPage.map(keyFn))\n  for (const apiItem of fromApi) {\n    const key = keyFn(apiItem)\n    if (!pageKeys.has(key)) {\n      mismatches.push(`API มี key=${key} แต่หน้าเว็บไม่ได้ render`)\n    }\n  }\n\n  return { ok: mismatches.length === 0, matched, mismatches }\n}\n", "lib/youtrack.ts": "// youtrack.ts\n// client เบา ๆ ของ YouTrack REST: อ่าน issue, สั่ง command เปลี่ยน state, คอมเมนต์\n// YouTrack เป็น canonical state owner ของไปป์ไลน์ Pedpro\n\nexport type YouTrackConfig = {\n  baseUrl: string // เช่น https://pedpro.youtrack.cloud\n  token: string // permanent token\n}\n\nexport type YouTrackIssue = {\n  idReadable: string\n  summary: string\n}\n\nfunction authHeaders(cfg: YouTrackConfig): Record<string, string> {\n  return {\n    Authorization: `Bearer ${cfg.token}`,\n    \"Content-Type\": \"application/json\",\n    Accept: \"application/json\",\n  }\n}\n\nexport async function getIssue(cfg: YouTrackConfig, id: string): Promise<YouTrackIssue> {\n  const url = `${cfg.baseUrl}/api/issues/${id}?fields=idReadable,summary`\n  const res = await fetch(url, { headers: authHeaders(cfg) })\n  if (!res.ok) throw new Error(`getIssue ${id} -> ${res.status}`)\n  return res.json() as Promise<YouTrackIssue>\n}\n\nexport async function addComment(\n  cfg: YouTrackConfig,\n  id: string,\n  text: string\n): Promise<boolean> {\n  const url = `${cfg.baseUrl}/api/issues/${id}/comments`\n  const res = await fetch(url, {\n    method: \"POST\",\n    headers: authHeaders(cfg),\n    body: JSON.stringify({ text }),\n  })\n  return res.ok\n}\n\n// ใช้ commands API เปลี่ยน state เช่น applyCommand(cfg, \"PED-12\", \"State Fixed\")\nexport async function applyCommand(\n  cfg: YouTrackConfig,\n  id: string,\n  command: string\n): Promise<boolean> {\n  const url = `${cfg.baseUrl}/api/commands`\n  const res = await fetch(url, {\n    method: \"POST\",\n    headers: authHeaders(cfg),\n    body: JSON.stringify({ query: command, issues: [{ idReadable: id }] }),\n  })\n  return res.ok\n}\n", "lib/telegram.ts": "// telegram.ts\n// แจ้งเตือน gate แบบ async ผ่าน Telegram (ใช้ในไปป์ไลน์ approval ของ Pedpro)\n\nexport type TelegramConfig = {\n  botToken: string\n  chatId: string\n}\n\nexport async function sendTelegram(cfg: TelegramConfig, text: string): Promise<boolean> {\n  const url = `https://api.telegram.org/bot${cfg.botToken}/sendMessage`\n  const res = await fetch(url, {\n    method: \"POST\",\n    headers: { \"Content-Type\": \"application/json\" },\n    body: JSON.stringify({ chat_id: cfg.chatId, text, parse_mode: \"HTML\" }),\n  })\n  return res.ok\n}\n", "lib/gate.ts": "// gate.ts\n// gate อัตโนมัติ: เอาผล crossCheck มาตัดสินสถานะ task ใน YouTrack แล้วแจ้ง Telegram\n// หลักการ: parallelize agents, serialize human judgment\n// gate นี้คือด่านอัตโนมัติที่กรองก่อนถึงสายตาคน ลด blind_approve_rate\n\nimport type { CrossCheckResult } from \"./bruno\"\nimport type { YouTrackConfig } from \"./youtrack\"\nimport type { TelegramConfig } from \"./telegram\"\nimport { addComment, applyCommand } from \"./youtrack\"\nimport { sendTelegram } from \"./telegram\"\n\nexport type GateConfig = {\n  youtrack: YouTrackConfig\n  telegram: TelegramConfig\n  issueId: string\n  // command ที่จะสั่งเมื่อผ่าน / ไม่ผ่าน (ปรับตาม workflow ของ Pedpro)\n  passCommand: string // เช่น \"State Review\"\n  failCommand: string // เช่น 'State \"Needs Fix\"'\n}\n\nexport type GateDecision = \"pass\" | \"fail\"\n\nexport async function runCrossCheckGate(\n  cfg: GateConfig,\n  check: CrossCheckResult\n): Promise<GateDecision> {\n  if (check.ok) {\n    await addComment(\n      cfg.youtrack,\n      cfg.issueId,\n      `cross-check ผ่าน: หน้าเว็บตรงกับ contract ${check.matched} แถว`\n    )\n    await applyCommand(cfg.youtrack, cfg.issueId, cfg.passCommand)\n    await sendTelegram(\n      cfg.telegram,\n      `✅ <b>cross-check ผ่าน<\/b> (${cfg.issueId})\\n` +\n        `หน้าเว็บตรงกับ Bruno spec ทั้ง ${check.matched} แถว`\n    )\n    return \"pass\"\n  }\n\n  const bullets = check.mismatches.map((m) => `• ${m}`).join(\"\\n\")\n  await addComment(\n    cfg.youtrack,\n    cfg.issueId,\n    `cross-check ไม่ผ่าน:\\n${check.mismatches.map((m) => \"- \" + m).join(\"\\n\")}`\n  )\n  await applyCommand(cfg.youtrack, cfg.issueId, cfg.failCommand)\n  await sendTelegram(\n    cfg.telegram,\n    `❌ <b>cross-check ไม่ผ่าน<\/b> (${cfg.issueId})\\n` +\n      `พบ ${check.mismatches.length} จุดที่หน้าเว็บไม่ตรงกับ contract:\\n${bullets}`\n  )\n  return \"fail\"\n}\n", "lib/trace.ts": "// trace.ts\n// durable state ด้วย node:sqlite (built-in ไม่ต้องลง native dep)\n// เก็บประวัติทุก gate run + claim กัน race ระหว่าง agent\n// ตรงกับดีไซน์ไปป์ไลน์ Pedpro: SQLite เป็น durable state, optimistic-verify claim เป็น race guard\n\nimport { DatabaseSync } from \"node:sqlite\"\nimport type { CrossCheckResult } from \"./bruno\"\nimport type { GateDecision } from \"./gate\"\n\nexport type Trace = DatabaseSync\n\nexport function openTrace(path = \"pedpro-gate.db\"): Trace {\n  const db = new DatabaseSync(path)\n  db.exec(`\n    CREATE TABLE IF NOT EXISTS gate_runs (\n      id INTEGER PRIMARY KEY AUTOINCREMENT,\n      issue_id TEXT NOT NULL,\n      ts INTEGER NOT NULL,\n      auto_decision TEXT NOT NULL,\n      matched INTEGER NOT NULL,\n      mismatch_count INTEGER NOT NULL,\n      mismatches TEXT NOT NULL,\n      human_decision TEXT,\n      human_ts INTEGER\n    );\n    CREATE TABLE IF NOT EXISTS claims (\n      issue_id TEXT PRIMARY KEY,\n      agent TEXT NOT NULL,\n      claimed_at INTEGER NOT NULL\n    );\n  `)\n  return db\n}\n\nexport function recordGateRun(\n  db: Trace,\n  issueId: string,\n  decision: GateDecision,\n  check: CrossCheckResult\n): number {\n  const info = db\n    .prepare(\n      `INSERT INTO gate_runs (issue_id, ts, auto_decision, matched, mismatch_count, mismatches)\n       VALUES (?, ?, ?, ?, ?, ?)`\n    )\n    .run(\n      issueId,\n      Date.now(),\n      decision,\n      check.matched,\n      check.mismatches.length,\n      JSON.stringify(check.mismatches)\n    )\n  return Number(info.lastInsertRowid)\n}\n\nexport function recordHumanDecision(\n  db: Trace,\n  runId: number,\n  decision: \"approve\" | \"reject\"\n): void {\n  db.prepare(`UPDATE gate_runs SET human_decision = ?, human_ts = ? WHERE id = ?`).run(\n    decision,\n    Date.now(),\n    runId\n  )\n}\n\n// optimistic-verify claim: insert แบบ unique กัน race แล้วอ่านกลับมายืนยันว่าเป็นของเราจริง\nexport function claimIssue(db: Trace, issueId: string, agent: string): boolean {\n  try {\n    db.prepare(`INSERT INTO claims (issue_id, agent, claimed_at) VALUES (?, ?, ?)`).run(\n      issueId,\n      agent,\n      Date.now()\n    )\n  } catch {\n    // มี claim อยู่แล้ว = แพ้ race\n    return false\n  }\n  const row = db.prepare(`SELECT agent FROM claims WHERE issue_id = ?`).get(issueId) as\n    | { agent: string }\n    | undefined\n  return row?.agent === agent\n}\n\nexport function releaseClaim(db: Trace, issueId: string): void {\n  db.prepare(`DELETE FROM claims WHERE issue_id = ?`).run(issueId)\n}\n\nexport type GateRunRow = {\n  id: number\n  issue_id: string\n  ts: number\n  auto_decision: string\n  matched: number\n  mismatch_count: number\n  mismatches: string\n  human_decision: string | null\n  human_ts: number | null\n}\n\nexport function listRuns(db: Trace, limit = 100): GateRunRow[] {\n  return db.prepare(`SELECT * FROM gate_runs ORDER BY ts DESC LIMIT ?`).all(limit) as GateRunRow[]\n}\n", "lib/metrics.ts": "// metrics.ts\n// คำนวณ metric จาก trace โดยตัวสำคัญสุดคือ blind_approve_rate\n// blind_approve_rate = ในบรรดา gate ที่ \"ระบบตรวจว่า fail\" แต่ \"คนยัง approve\"\n// คือสัญญาณว่าคนเซ็นผ่านโดยไม่ตรวจจริง ยิ่งต่ำยิ่งดี (เป้าหมายคือ 0)\n\nimport type { Trace } from \"./trace\"\nimport { listRuns } from \"./trace\"\n\nexport type GateMetrics = {\n  totalRuns: number\n  autoPass: number\n  autoFail: number\n  humanReviewed: number\n  blindApproveRate: number\n}\n\nexport function computeMetrics(db: Trace): GateMetrics {\n  const runs = listRuns(db, 1_000_000)\n  const total = runs.length\n  const autoPass = runs.filter((r) => r.auto_decision === \"pass\").length\n  const autoFail = total - autoPass\n  const humanReviewed = runs.filter((r) => r.human_decision !== null).length\n\n  // เฉพาะ gate ที่ระบบบอก fail และมีคนตัดสินแล้ว\n  const failDecided = runs.filter(\n    (r) => r.auto_decision === \"fail\" && r.human_decision !== null\n  )\n  const blindApprovals = failDecided.filter((r) => r.human_decision === \"approve\").length\n  const blindApproveRate =\n    failDecided.length === 0 ? 0 : blindApprovals / failDecided.length\n\n  return { totalRuns: total, autoPass, autoFail, humanReviewed, blindApproveRate }\n}\n", "lib/approval.ts": "// approval.ts\n// human gate ตัวที่สอง: ส่งคำขอ approve พร้อมปุ่มกดบน Telegram แล้ว poll หาผลที่คนกด\n// \"serialize human judgment\" — คนตัดสินผ่านปุ่มเดียว ผลถูกบันทึกลง trace\n\nimport type { TelegramConfig } from \"./telegram\"\n\nexport type HumanDecision = \"approve\" | \"reject\"\n\n// ส่งข้อความพร้อมปุ่ม inline, callback_data = \"issueId:decision\"\nexport async function requestApproval(\n  cfg: TelegramConfig,\n  issueId: string,\n  summary: string\n): Promise<boolean> {\n  const url = `https://api.telegram.org/bot${cfg.botToken}/sendMessage`\n  const res = await fetch(url, {\n    method: \"POST\",\n    headers: { \"Content-Type\": \"application/json\" },\n    body: JSON.stringify({\n      chat_id: cfg.chatId,\n      text: `🔐 รออนุมัติ: <b>${issueId}<\/b>\\n${summary}`,\n      parse_mode: \"HTML\",\n      reply_markup: {\n        inline_keyboard: [\n          [\n            { text: \"✅ Approve\", callback_data: `${issueId}:approve` },\n            { text: \"❌ Reject\", callback_data: `${issueId}:reject` },\n          ],\n        ],\n      },\n    }),\n  })\n  return res.ok\n}\n\ntype CallbackQuery = { id: string; data?: string }\ntype Update = { update_id: number; callback_query?: CallbackQuery }\n\n// long-poll getUpdates หา callback จากปุ่มที่คนกด แล้วเรียก handler\n// คืน offset ถัดไป เอาไปเรียกครั้งหน้าเพื่อกัน process update ซ้ำ\nexport async function pollApprovals(\n  cfg: TelegramConfig,\n  offset: number,\n  handler: (issueId: string, decision: HumanDecision) => void | Promise<void>\n): Promise<number> {\n  const url = `https://api.telegram.org/bot${cfg.botToken}/getUpdates?timeout=30&offset=${offset}`\n  const res = await fetch(url)\n  if (!res.ok) return offset\n\n  const data = (await res.json()) as { result: Update[] }\n  let next = offset\n  for (const u of data.result) {\n    next = u.update_id + 1\n    const cb = u.callback_query\n    if (!cb?.data) continue\n    const [issueId, decision] = cb.data.split(\":\")\n    if (issueId && (decision === \"approve\" || decision === \"reject\")) {\n      await handler(issueId, decision)\n    }\n    // ปิดสถานะ loading ของปุ่มฝั่งผู้ใช้\n    await fetch(`https://api.telegram.org/bot${cfg.botToken}/answerCallbackQuery`, {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application/json\" },\n      body: JSON.stringify({ callback_query_id: cb.id, text: \"บันทึกแล้ว\" }),\n    })\n  }\n  return next\n}\n", "examples/leaderboard.ts": "// examples/leaderboard.ts\n// ตัวอย่างใช้จริง: ดึงอันดับ leaderboard จากหน้า Pedpro มาเช็ค\n// รัน: npx tsx examples/leaderboard.ts\n\nimport { chromium } from \"playwright\"\nimport { observePage } from \"../lib/observe\"\nimport { mapRows, textOf, numberOf } from \"../lib/extract\"\n\ntype LeaderboardEntry = {\n  rank: number\n  name: string\n  point: number\n}\n\nasync function main() {\n  const browser = await chromium.launch()\n  const page = await browser.newPage()\n\n  // observePage จัดลำดับ capture -> goto -> wait -> extract ให้ครบในที่เดียว\n  const res = await observePage<LeaderboardEntry[]>(\n    page,\n    \"https://pedpro.example/leaderboard\",\n    {\n      waitFor: \"[data-test=\\\"leaderboard-row\\\"]\",\n      // ชั้น 1: ดึงเฉพาะแถวในตาราง คืน array สะอาด ๆ\n      extract: (p) =>\n        mapRows(p, \"[data-test=\\\"leaderboard-row\\\"]\", async (row) => ({\n          rank: await numberOf(row, \"[data-test=\\\"rank\\\"]\"),\n          name: await textOf(row, \"[data-test=\\\"name\\\"]\"),\n          point: await numberOf(row, \"[data-test=\\\"point\\\"]\"),\n        })),\n      // ชั้น 3: ถ้าต้องใช้ภาพ ให้ถ่ายเฉพาะกล่องตาราง ไม่ใช่ทั้งหน้า\n      visualCheckSelector: \"[data-test=\\\"leaderboard-table\\\"]\",\n    }\n  )\n\n  // ใช้ในทรงเดียวกับ API ของโปรเจกต์: เช็ค Result / Error ก่อนเสมอ\n  if (res.Error) {\n    console.error(\"extract ล้ม:\", res.Error)\n  } else if (res.screenshot) {\n    // มีสัญญาณผิดปกติ -> ส่งภาพให้ AI ดูเพิ่ม\n    console.log(\"พบความผิดปกติ:\", res.visionReason)\n    // sendToAgentWithImage(res.Result, res.screenshot)\n  } else {\n    // ปกติ -> ส่งเข้า AI แค่ข้อมูลที่กลั่นแล้ว (ถูกสุด)\n    console.log(\"ข้อมูลสะอาด ส่งเข้า AI แค่นี้:\", JSON.stringify(res.Result, null, 2))\n    // sendToAgent(res.Result)\n  }\n\n  await browser.close()\n}\n\nvoid main()\n", "examples/leaderboard-crosscheck.ts": "// examples/leaderboard-crosscheck.ts\n// รวม observe + bruno: เทียบสิ่งที่ render บนหน้า กับ contract จาก Bruno spec\n// รัน: npx tsx examples/leaderboard-crosscheck.ts\n\nimport { chromium } from \"playwright\"\nimport { observePage } from \"../lib/observe\"\nimport { mapRows, textOf, numberOf } from \"../lib/extract\"\nimport { loadBru, fetchFromSpec, crossCheck } from \"../lib/bruno\"\n\ntype Entry = { rank: number; name: string; point: number }\n\nasync function main() {\n  // 1. โหลด contract จาก Bruno spec (source of truth)\n  const spec = await loadBru(\"bruno-api/leaderboard/get-leaderboard.bru\")\n  const apiData = await fetchFromSpec<Entry[]>(spec, {\n    baseUrl: \"https://pedpro.example\",\n  })\n\n  // 2. ดึงสิ่งที่ render จริงบนหน้า ด้วย observe (code-first)\n  const browser = await chromium.launch()\n  const page = await browser.newPage()\n  const res = await observePage<Entry[]>(page, \"https://pedpro.example/leaderboard\", {\n    waitFor: \"[data-test=\\\"leaderboard-row\\\"]\",\n    extract: (p) =>\n      mapRows(p, \"[data-test=\\\"leaderboard-row\\\"]\", async (row) => ({\n        rank: await numberOf(row, \"[data-test=\\\"rank\\\"]\"),\n        name: await textOf(row, \"[data-test=\\\"name\\\"]\"),\n        point: await numberOf(row, \"[data-test=\\\"point\\\"]\"),\n      })),\n    visualCheckSelector: \"[data-test=\\\"leaderboard-table\\\"]\",\n  })\n  await browser.close()\n\n  if (res.Error || !res.Result) {\n    console.error(\"extract ล้ม:\", res.Error)\n    return\n  }\n\n  // 3. cross-check: หน้าเว็บตรงกับ contract ไหม\n  const check = crossCheck<Entry>(apiData, res.Result, (x) => x.rank, [\"name\", \"point\"])\n\n  if (check.ok) {\n    console.log(`ผ่าน: หน้าเว็บตรงกับ Bruno spec ทั้ง ${check.matched} แถว`)\n  } else {\n    console.error(\"ไม่ตรงกับ contract:\")\n    check.mismatches.forEach((m) => console.error(\" -\", m))\n  }\n}\n\nvoid main()\n", "examples/gate-pipeline.ts": "// examples/gate-pipeline.ts\n// ไปป์ไลน์เต็ม: Bruno spec -> observe หน้าเว็บ -> crossCheck -> gate (YouTrack + Telegram)\n// รัน: npx tsx examples/gate-pipeline.ts PED-123\n\nimport { chromium } from \"playwright\"\nimport { observePage } from \"../lib/observe\"\nimport { mapRows, textOf, numberOf } from \"../lib/extract\"\nimport { loadBru, fetchFromSpec, crossCheck } from \"../lib/bruno\"\nimport { runCrossCheckGate } from \"../lib/gate\"\n\ntype Entry = { rank: number; name: string; point: number }\n\nasync function main() {\n  const issueId = process.argv[2] ?? \"PED-000\"\n\n  // 1. contract จาก Bruno spec (source of truth)\n  const spec = await loadBru(\"bruno-api/leaderboard/get-leaderboard.bru\")\n  const apiData = await fetchFromSpec<Entry[]>(spec, {\n    baseUrl: process.env.PEDPRO_BASE_URL ?? \"https://pedpro.example\",\n    authToken: process.env.PEDPRO_TOKEN ?? \"\",\n  })\n\n  // 2. หน้าเว็บจริง ด้วย observe (code-first)\n  const browser = await chromium.launch()\n  const page = await browser.newPage()\n  const res = await observePage<Entry[]>(page, \"https://pedpro.example/leaderboard\", {\n    waitFor: \"[data-test=\\\"leaderboard-row\\\"]\",\n    extract: (p) =>\n      mapRows(p, \"[data-test=\\\"leaderboard-row\\\"]\", async (row) => ({\n        rank: await numberOf(row, \"[data-test=\\\"rank\\\"]\"),\n        name: await textOf(row, \"[data-test=\\\"name\\\"]\"),\n        point: await numberOf(row, \"[data-test=\\\"point\\\"]\"),\n      })),\n  })\n  await browser.close()\n\n  if (res.Error || !res.Result) {\n    console.error(\"extract ล้ม:\", res.Error)\n    process.exit(1)\n  }\n\n  // 3. cross-check หน้าเว็บกับ contract\n  const check = crossCheck<Entry>(apiData, res.Result, (x) => x.rank, [\"name\", \"point\"])\n\n  // 4. gate -> เปลี่ยน state ใน YouTrack + แจ้ง Telegram\n  const decision = await runCrossCheckGate(\n    {\n      youtrack: { baseUrl: process.env.YT_URL ?? \"\", token: process.env.YT_TOKEN ?? \"\" },\n      telegram: { botToken: process.env.TG_BOT ?? \"\", chatId: process.env.TG_CHAT ?? \"\" },\n      issueId,\n      passCommand: \"State Review\",\n      failCommand: 'State \"Needs Fix\"',\n    },\n    check\n  )\n\n  console.log(\"gate decision:\", decision)\n  // exit 2 = ป้อน failure กลับเข้า loop (ตามแพทเทิร์น hook ของ Pedpro)\n  process.exit(decision === \"pass\" ? 0 : 2)\n}\n\nvoid main()\n", "examples/human-gate.ts": "// examples/human-gate.ts\n// human gate (gate 2): หลัง auto gate ผ่าน ขอคนกด approve ผ่าน Telegram แล้วบันทึกลง SQLite\n// รัน: npx tsx examples/human-gate.ts PED-123\n\nimport {\n  openTrace,\n  recordGateRun,\n  recordHumanDecision,\n  claimIssue,\n  releaseClaim,\n} from \"../lib/trace\"\nimport { computeMetrics } from \"../lib/metrics\"\nimport { requestApproval, pollApprovals } from \"../lib/approval\"\nimport type { CrossCheckResult } from \"../lib/bruno\"\n\nasync function main() {\n  const issueId = process.argv[2] ?? \"PED-000\"\n  const db = openTrace(\"pedpro-gate.db\")\n\n  // race guard: ถ้า agent อื่น claim ไปแล้ว ก็ถอย\n  if (!claimIssue(db, issueId, \"agent-A\")) {\n    console.log(issueId, \"ถูก claim ไปแล้ว ข้าม\")\n    db.close()\n    return\n  }\n\n  try {\n    // สมมติ auto gate ผ่านมาแล้ว (ดู gate-pipeline.ts) บันทึกลง trace\n    const check: CrossCheckResult = { ok: true, matched: 10, mismatches: [] }\n    const runId = recordGateRun(db, issueId, \"pass\", check)\n\n    // gate 2: ขอคนกด approve\n    const tg = { botToken: process.env.TG_BOT ?? \"\", chatId: process.env.TG_CHAT ?? \"\" }\n    await requestApproval(tg, issueId, \"cross-check ผ่าน รออนุมัติ deploy\")\n\n    // poll รอจนคนกด (ตัวอย่างรอบเดียว ของจริงทำเป็น daemon วน offset ต่อเนื่อง)\n    await pollApprovals(tg, 0, async (id, decision) => {\n      if (id === issueId) {\n        recordHumanDecision(db, runId, decision)\n        console.log(id, \"->\", decision)\n      }\n    })\n\n    console.log(\"metrics:\", computeMetrics(db))\n  } finally {\n    releaseClaim(db, issueId)\n    db.close()\n  }\n}\n\nvoid main()\n", "tests/visual-regression.spec.ts": "// tests/visual-regression.spec.ts\n// visual regression: ให้โค้ดเทียบ pixel เอง ไม่ต้องใช้ AI เลย\n//\n// ครั้งแรกที่รัน Playwright จะสร้าง baseline ให้ (ภาพหน้าตอนที่ถูกต้อง)\n// ครั้งต่อไป ถ้าหน้าต่างจาก baseline เกิน threshold จะ fail เอง โดยอัตโนมัติ\n// จะเรียก AI มาดูก็ต่อเมื่อ test นี้ fail เท่านั้น\n//\n// รัน: npx playwright test\n\nimport { test, expect } from \"@playwright/test\"\n\ntest(\"leaderboard table หน้าตาไม่เพี้ยน\", async ({ page }) => {\n  await page.goto(\"https://pedpro.example/leaderboard\")\n  await page.waitForSelector(\"[data-test=\\\"leaderboard-row\\\"]\")\n\n  // เทียบเฉพาะกล่องตาราง ไม่ใช่ทั้งหน้า -> baseline เสถียรกว่า\n  await expect(page.locator(\"[data-test=\\\"leaderboard-table\\\"]\")).toHaveScreenshot(\n    \"leaderboard-table.png\",\n    {\n      // ยอมต่างได้ 1% กัน noise เล็ก ๆ เช่น anti-aliasing\n      maxDiffPixelRatio: 0.01,\n    }\n  )\n})\n", "tests/bruno.test.ts": "// tests/bruno.test.ts\n// รัน: node --import tsx --test tests/bruno.test.ts\n\nimport { test } from \"node:test\"\nimport assert from \"node:assert/strict\"\nimport { parseBru, resolveVars, crossCheck } from \"../lib/bruno\"\n\nconst SAMPLE = `meta {\n  name: Create Score\n  type: http\n  seq: 2\n}\n\npost {\n  url: {{baseUrl}}/api/leaderboard\n  body: json\n  auth: bearer\n}\n\nheaders {\n  Accept: application/json\n}\n\nauth:bearer {\n  token: {{authToken}}\n}\n\nbody:json {\n  {\n    \"name\": \"DragonSlayer\",\n    \"point\": 9800\n  }\n}\n`\n\ntest(\"parseBru อ่าน method / url / headers / bearer / body ครบ\", () => {\n  const spec = parseBru(SAMPLE)\n  assert.equal(spec.name, \"Create Score\")\n  assert.equal(spec.method, \"post\")\n  assert.equal(spec.url, \"{{baseUrl}}/api/leaderboard\")\n  assert.equal(spec.headers.Accept, \"application/json\")\n  assert.equal(spec.bearerToken, \"{{authToken}}\")\n  assert.ok(spec.bodyJson?.includes(\"\\\"name\\\"\"))\n})\n\ntest(\"resolveVars แทนค่าตัวแปรทุกจุด\", () => {\n  assert.equal(resolveVars(\"{{a}}/x/{{b}}\", { a: \"1\", b: \"2\" }), \"1/x/2\")\n  assert.equal(resolveVars(\"{{missing}}\", {}), \"{{missing}}\")\n})\n\ntest(\"crossCheck จับ mismatch ได้ทั้งสองทิศ\", () => {\n  type E = { rank: number; name: string }\n  const api: E[] = [\n    { rank: 1, name: \"A\" },\n    { rank: 2, name: \"B\" },\n  ]\n  const page: E[] = [\n    { rank: 1, name: \"A\" },\n    { rank: 2, name: \"WRONG\" },\n    { rank: 3, name: \"C\" },\n  ]\n  const r = crossCheck<E>(api, page, (x) => x.rank, [\"name\"])\n  assert.equal(r.ok, false)\n  assert.equal(r.matched, 1)\n  assert.ok(r.mismatches.some((m) => m.includes(\"key=2\") && m.includes(\"WRONG\")))\n  assert.ok(r.mismatches.some((m) => m.includes(\"key=3\")))\n})\n\ntest(\"crossCheck ผ่านเมื่อข้อมูลตรงกันทั้งหมด\", () => {\n  type E = { rank: number; name: string }\n  const a: E[] = [{ rank: 1, name: \"A\" }]\n  const r = crossCheck<E>(a, a, (x) => x.rank, [\"name\"])\n  assert.equal(r.ok, true)\n  assert.equal(r.matched, 1)\n  assert.equal(r.mismatches.length, 0)\n})\n", "tests/trace.test.ts": "// tests/trace.test.ts\n// รัน: node --import tsx --test tests/trace.test.ts\n\nimport { test } from \"node:test\"\nimport assert from \"node:assert/strict\"\nimport {\n  openTrace,\n  recordGateRun,\n  recordHumanDecision,\n  claimIssue,\n  listRuns,\n} from \"../lib/trace\"\nimport { computeMetrics } from \"../lib/metrics\"\nimport type { CrossCheckResult } from \"../lib/bruno\"\n\nconst PASS: CrossCheckResult = { ok: true, matched: 5, mismatches: [] }\nconst FAIL: CrossCheckResult = { ok: false, matched: 3, mismatches: [\"key=2 ...\"] }\n\ntest(\"claimIssue กัน race ได้ (คนที่สองแพ้)\", () => {\n  const db = openTrace(\":memory:\")\n  assert.equal(claimIssue(db, \"PED-1\", \"A\"), true)\n  assert.equal(claimIssue(db, \"PED-1\", \"B\"), false)\n})\n\ntest(\"recordGateRun + listRuns เก็บครบ\", () => {\n  const db = openTrace(\":memory:\")\n  recordGateRun(db, \"PED-1\", \"pass\", PASS)\n  recordGateRun(db, \"PED-2\", \"fail\", FAIL)\n  assert.equal(listRuns(db).length, 2)\n})\n\ntest(\"blind_approve_rate คำนวณถูก (1 จาก 2 = 0.5)\", () => {\n  const db = openTrace(\":memory:\")\n  const r1 = recordGateRun(db, \"PED-1\", \"fail\", FAIL)\n  recordHumanDecision(db, r1, \"approve\") // auto fail แต่คน approve = blind\n  const r2 = recordGateRun(db, \"PED-2\", \"fail\", FAIL)\n  recordHumanDecision(db, r2, \"reject\") // auto fail คน reject = ดี\n  assert.equal(computeMetrics(db).blindApproveRate, 0.5)\n})\n\ntest(\"blind_approve_rate = 0 เมื่อไม่มี auto-fail ที่คนตัดสิน\", () => {\n  const db = openTrace(\":memory:\")\n  const r = recordGateRun(db, \"PED-1\", \"pass\", PASS)\n  recordHumanDecision(db, r, \"approve\")\n  assert.equal(computeMetrics(db).blindApproveRate, 0)\n})\n", "bruno-api/leaderboard/get-leaderboard.bru": "meta {\n  name: Get Leaderboard\n  type: http\n  seq: 1\n}\n\nget {\n  url: {{baseUrl}}/api/leaderboard\n  body: none\n  auth: none\n}\n\nheaders {\n  Accept: application/json\n}\n", "types/usebruno-lang.d.ts": "// types/usebruno-lang.d.ts\n// @usebruno/lang ไม่มี type ของตัวเอง ประกาศ ambient ไว้ให้ strict mode รู้จัก\n\ndeclare module \"@usebruno/lang\" {\n  export function bruToJsonV2(input: string): unknown\n  export function jsonToBruV2(input: unknown): string\n}\n", "SKILL.md": "# Skill: browser-observe\n\nToken-efficient browser observation for Pedpro agents. Code-first extraction; vision only on escalation.\n\n## When this skill applies\n\nThe task involves reading state from a running Pedpro page (Nuxt + Naive UI) through Playwright. Typical cases: verifying a rendered value, extracting a list or table, checking whether an action succeeded, or confirming a page is not visually broken.\n\n## Core principle\n\nThe cost of browser observation is dominated by what enters the context window, not by driving the browser. Pixels are expensive. Structured text is cheap. Code-distilled results are cheapest. Playwright is the browser driver in every case, so \"browser is expensive\" is inaccurate; the expensive part is sending images.\n\n## The tiers, cheapest first\n\n1. Code extraction returns minimal structured data. This is the default and resolves most tasks.\n2. Console errors and failed network requests are captured as text. They are near-free and often reveal a broken page before any image is taken.\n3. Pixel diff against a stored baseline is deterministic and uses no model. It lives in the Playwright test layer.\n4. A clipped screenshot of a single element is sent to the model only when a signal fires or a baseline diff fails.\n5. A full-page screenshot is a last resort.\n\n## Decision order for any browser task\n\nA task that asks for a value or a list is answered at tier 1 and stops there. A task that asks whether the page looks correct first checks tiers 2 and 3. Tier 4 is reached only when sight is genuinely required and a narrower tier cannot answer. Tier 5 is rare.\n\n## Conventions this skill follows\n\nSelectors use `data-test` attributes, never Naive UI internal class names, because library classes change across versions. Results are returned in the `{ Result, Error }` shape used across Pedpro API calls. Signal listeners are registered before navigation, otherwise load-time errors are missed.\n\n## Files\n\n- `lib/types.ts` — ObserveResult, ObserveSignals\n- `lib/signals.ts` — captureSignals, registered before goto\n- `lib/extract.ts` — textOf, numberOf, exists, isEnabled, mapRows\n- `lib/vision.ts` — clipShot, viewportShot, fullPageShot\n- `lib/observe.ts` — observe, observePage (orchestrator)\n- `lib/bruno.ts` — official @usebruno/lang parser, fetchFromSpec, crossCheck\n- `lib/youtrack.ts` — getIssue, addComment, applyCommand\n- `lib/telegram.ts` — sendTelegram\n- `lib/gate.ts` — runCrossCheckGate (crossCheck result drives YouTrack state + Telegram)\n- `lib/trace.ts` — node:sqlite durable state: recordGateRun, claimIssue (race guard)\n- `lib/metrics.ts` — computeMetrics, blind_approve_rate\n- `lib/approval.ts` — requestApproval (inline buttons), pollApprovals (human gate)\n- `examples/leaderboard.ts` — code-first extraction\n- `examples/leaderboard-crosscheck.ts` — observe + Bruno cross-check\n- `examples/gate-pipeline.ts` — bru → observe → crossCheck → gate, exit 2 on fail\n- `examples/human-gate.ts` — claim → record → Telegram approval → metrics\n- `tests/visual-regression.spec.ts` — baseline pixel diff\n- `tests/bruno.test.ts` — parser + crossCheck unit tests\n- `tests/trace.test.ts` — durable state + blind_approve_rate tests\n- `types/usebruno-lang.d.ts` — ambient types for @usebruno/lang\n\n## Durable state and the metric that matters\n\nnode:sqlite (built-in, no native dependency) stores every gate run. claimIssue is an optimistic-verify race guard so two agents never process the same task. The most critical metric is blind_approve_rate: among gates the system flagged fail, the share a human approved anyway. Target zero.\n\n## The Bruno cross-check gate\n\nThe Bruno spec is the contract oracle. fetchFromSpec returns server truth; observePage returns client truth; crossCheck diffs them two ways. runCrossCheckGate turns that result into a YouTrack state change and a Telegram notice, and the pipeline exits 2 on failure so the loop feeds the failure back.\n\n## Setup\n\n```\nnpm i @usebruno/lang\nnpm i -D playwright @playwright/test tsx typescript @types/node\nnpx playwright install chromium\nnode --import tsx --test tests/bruno.test.ts\n```\n"};
+  var GROUPS = {"lib": ["lib/types.ts", "lib/signals.ts", "lib/extract.ts", "lib/vision.ts", "lib/observe.ts", "lib/bruno.ts", "lib/youtrack.ts", "lib/telegram.ts", "lib/gate.ts", "lib/trace.ts", "lib/metrics.ts", "lib/approval.ts"], "examples": ["examples/leaderboard.ts", "examples/leaderboard-crosscheck.ts", "examples/gate-pipeline.ts", "examples/human-gate.ts"], "tests": ["tests/visual-regression.spec.ts", "tests/bruno.test.ts", "tests/trace.test.ts"], "spec": ["bruno-api/leaderboard/get-leaderboard.bru"], "types": ["types/usebruno-lang.d.ts"], "root": ["SKILL.md"]};
+  var GRP_LABEL = { lib:"lib/", examples:"examples/", tests:"tests/", spec:"bruno-api/", types:"types/", root:"root" };
+  var GRP_ORDER = ["lib","examples","tests","spec","types","root"];
+  var cvCurrent = null;
+
+  function esc2(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+  var KW = /\b(const|let|var|function|return|await|async|import|export|from|type|interface|if|else|for|of|new|class|extends|implements|void|null|undefined|true|false|number|string|boolean|Promise|Map|Set)\b/g;
+  function hlLine(line){
+    line = esc2(line);
+    if(/^\s*\/\//.test(line)) return '<span class="t-com">'+line+'</span>';
+    if(/^\s*#/.test(line)) return '<span class="t-com">'+line+'</span>';
+    line = line.replace(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g, '<span class="t-str">$1</span>');
+    line = line.replace(/(\/\/.*)$/g, '<span class="t-com">$1</span>');
+    line = line.replace(KW, '<span class="t-key">$1</span>');
+    return line;
+  }
+  function hl(src){ return src.split("\n").map(hlLine).join("\n") }
+
+  function showFile(path){
+    cvCurrent = path;
+    document.getElementById("cv-path").textContent = path;
+    document.getElementById("cv-code").innerHTML = hl(FILES[path]);
+    document.querySelectorAll("#filetree button").forEach(function(b){
+      b.classList.toggle("on", b.getAttribute("data-p")===path);
+    });
+  }
+  function copyView(btn){
+    if(!cvCurrent) return;
+    navigator.clipboard.writeText(FILES[cvCurrent]).then(function(){
+      var o = btn.textContent; btn.textContent = "\u2713";
+      setTimeout(function(){btn.textContent=o},1200);
+    });
+  }
+  (function buildTree(){
+    var tree = document.getElementById("filetree");
+    GRP_ORDER.forEach(function(g){
+      if(!GROUPS[g]) return;
+      var label = document.createElement("div");
+      label.className = "grp"; label.textContent = GRP_LABEL[g] || g;
+      tree.appendChild(label);
+      GROUPS[g].forEach(function(p){
+        var b = document.createElement("button");
+        b.setAttribute("data-p", p);
+        b.textContent = p.split("/").pop();
+        b.onclick = function(){ showFile(p) };
+        tree.appendChild(b);
+      });
+    });
+    showFile("lib/observe.ts");
+  })();
+</script>
+</body>
+</html>
