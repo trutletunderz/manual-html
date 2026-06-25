@@ -47,8 +47,23 @@ body {
   margin-bottom: 1.5rem;
 }
 
+.sidebar h3 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  margin: 1.5rem 0 0.5rem;
+  padding: 0 0.75rem;
+}
+
 .sidebar ul {
   list-style: none;
+}
+
+.sidebar ul + h3 {
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.25rem;
 }
 
 .sidebar ul li {

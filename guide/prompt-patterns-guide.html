@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Patterns สำหรับ Thai Dev — Reference Guide</title>
+<style>
+  :root {
+    --bg: #0c0f12;
+    --bg-elev: #14191e;
+    --bg-code: #0a0d10;
+    --border: #232b33;
+    --border-bright: #2f3a44;
+    --text: #d6dde3;
+    --text-dim: #8995a0;
+    --text-faint: #5a6571;
+    --phosphor: #4ade80;
+    --phosphor-dim: #2a8a4f;
+    --amber: #fbbf24;
+    --cyan: #38bdf8;
+    --rose: #fb7185;
+    --mono: "JetBrains Mono", "Fira Code", "SF Mono", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "liga" 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; animation: none !important; }
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    max-width: 1180px;
+    margin: 0 auto;
+    gap: 0;
+  }
+
+  /* ---------- Sidebar / TOC ---------- */
+  aside {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 20px 32px 24px;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+  }
+  aside::-webkit-scrollbar { width: 6px; }
+  aside::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+
+  .toc-brand {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--phosphor);
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+  }
+  .toc-brand::before { content: "› "; color: var(--phosphor-dim); }
+  .toc-sub {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-bottom: 28px;
+    font-family: var(--mono);
+  }
+
+  .toc-group { margin-bottom: 6px; }
+  .toc-group-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-faint);
+    padding: 16px 0 6px;
+    font-family: var(--mono);
+  }
+  .toc-link {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13px;
+    transition: background 0.12s, color 0.12s;
+  }
+  .toc-link:hover { background: var(--bg-elev); color: var(--text); }
+  .toc-link .num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--phosphor-dim);
+    min-width: 16px;
+  }
+  .toc-link.active { color: var(--phosphor); background: var(--bg-elev); }
+
+  /* ---------- Main ---------- */
+  main { padding: 56px 48px 120px; min-width: 0; }
+
+  .hero { margin-bottom: 56px; }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--phosphor);
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: 38px;
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  .hero h1 .accent { color: var(--phosphor); }
+  .hero p {
+    color: var(--text-dim);
+    font-size: 16px;
+    max-width: 640px;
+  }
+  .hero .principle {
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: var(--bg-elev);
+    border-left: 3px solid var(--phosphor);
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+  }
+  .hero .principle strong { color: var(--phosphor); }
+
+  .formula-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .formula-cell {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .formula-cell .k {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .formula-cell .v { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+  .formula-arrow { color: var(--text-faint); }
+
+  section { margin-bottom: 56px; scroll-margin-top: 24px; }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 8px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-head .cat-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--phosphor);
+    background: var(--bg-elev);
+    border: 1px solid var(--border-bright);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .section-head h2 {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .section-desc {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  /* ---------- Pattern rows ---------- */
+  .pattern {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+  .pattern:last-child { border-bottom: none; }
+  .pattern-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--phosphor-dim);
+    padding-top: 10px;
+  }
+  .pattern-body { min-width: 0; }
+
+  .code-row {
+    display: flex;
+    align-items: stretch;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .code-row:hover { border-color: var(--border-bright); }
+  .code-row code {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--phosphor);
+    padding: 11px 14px;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.5;
+  }
+  .code-row code::-webkit-scrollbar { height: 5px; }
+  .code-row code::-webkit-scrollbar-thumb { background: var(--border-bright); }
+
+  .copy-btn {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    border-left: 1px solid var(--border);
+    color: var(--text-faint);
+    padding: 0 14px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 11px;
+    transition: color 0.12s, background 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .copy-btn:hover { color: var(--phosphor); background: var(--bg-elev); }
+  .copy-btn:focus-visible { outline: 2px solid var(--phosphor); outline-offset: -2px; }
+  .copy-btn.copied { color: var(--phosphor); }
+  .copy-btn svg { width: 13px; height: 13px; }
+
+  .pattern-when {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 7px;
+    padding-left: 2px;
+  }
+  .pattern-when::before { content: "↳ "; color: var(--text-faint); }
+
+  /* ---------- Example blocks ---------- */
+  .example {
+    margin-top: 24px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg-elev);
+  }
+  .example-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--border);
+  }
+  .example-head .label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--amber);
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .example-head .label .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--amber);
+  }
+  .example pre {
+    margin: 0;
+    padding: 16px;
+    overflow-x: auto;
+    background: var(--bg-code);
+  }
+  .example pre code {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+    white-space: pre;
+  }
+  .example pre::-webkit-scrollbar { height: 6px; }
+  .example pre::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+  .tok-en { color: var(--cyan); }
+  .tok-th { color: var(--phosphor); }
+  .tok-tag { color: var(--rose); }
+  .tok-dim { color: var(--text-faint); }
+
+  .example-copy {
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    border-radius: 5px;
+    color: var(--text-dim);
+    padding: 4px 10px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 11px;
+    transition: all 0.12s;
+  }
+  .example-copy:hover { color: var(--phosphor); border-color: var(--phosphor-dim); }
+  .example-copy.copied { color: var(--phosphor); border-color: var(--phosphor); }
+
+  /* ---------- Tips ---------- */
+  .tips {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+  }
+  .tips ol { list-style: none; counter-reset: tip; }
+  .tips li {
+    counter-increment: tip;
+    position: relative;
+    padding: 12px 0 12px 38px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--text);
+  }
+  .tips li:last-child { border-bottom: none; }
+  .tips li::before {
+    content: counter(tip);
+    position: absolute;
+    left: 0; top: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--phosphor);
+    background: var(--bg-code);
+    border: 1px solid var(--border-bright);
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tips li code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--phosphor);
+    background: var(--bg-code);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+
+  /* ---------- Interactive Builder ---------- */
+  .builder {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .builder-field { margin-bottom: 20px; }
+  .builder-field label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .builder-field label .bk {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--cyan);
+    background: var(--bg-code);
+    border: 1px solid var(--border-bright);
+    padding: 2px 8px;
+    border-radius: 5px;
+    margin-right: 8px;
+    letter-spacing: 0.04em;
+  }
+  .builder-field input,
+  .builder-field textarea {
+    width: 100%;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 10px 12px;
+    line-height: 1.55;
+    resize: vertical;
+    transition: border-color 0.15s;
+  }
+  .builder-field input::placeholder,
+  .builder-field textarea::placeholder { color: var(--text-faint); }
+  .builder-field input:focus,
+  .builder-field textarea:focus {
+    outline: none;
+    border-color: var(--phosphor-dim);
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .chip {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 11px;
+    cursor: pointer;
+    transition: all 0.12s;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .chip:hover { color: var(--phosphor); border-color: var(--phosphor-dim); background: var(--bg); }
+  .chip:focus-visible { outline: 2px solid var(--phosphor); outline-offset: 1px; }
+
+  .builder-output {
+    margin-top: 24px;
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg-code);
+  }
+  .builder-output-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--border);
+  }
+  .builder-output-head .label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--phosphor);
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .builder-output-head .label .dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--phosphor);
+  }
+  .builder-output pre { margin: 0; padding: 16px; overflow-x: auto; }
+  .builder-output pre code {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* ---------- Mobile ---------- */
+  .mobile-bar { display: none; }
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; }
+    aside { display: none; }
+    main { padding: 24px 18px 80px; }
+    .hero h1 { font-size: 28px; }
+    .formula-grid { grid-template-columns: 1fr; }
+    .formula-arrow { display: none; }
+    .mobile-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 18px;
+    }
+    .mobile-bar .b {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--phosphor);
+    }
+    .pattern { grid-template-columns: 28px 1fr; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" id="back-home-fab" aria-label="กลับคลังคู่มือ" style="position:fixed;right:18px;bottom:18px;z-index:99999;display:inline-flex;align-items:center;gap:7px;padding:10px 16px;font:600 14px/1 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#fff;background:#0284c7;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px rgba(2,132,199,.35)">🏠 หน้าแรก</a>
+
+<div class="mobile-bar">
+  <span class="b">› prompt-patterns</span>
+  <span style="color:var(--text-faint);font-size:11px;font-family:var(--mono)">40 patterns · TH/EN</span>
+</div>
+
+<div class="layout">
+  <!-- ============ TOC ============ -->
+  <aside>
+    <div class="toc-brand">prompt-patterns.md</div>
+    <div class="toc-sub">40 patterns · Thai Dev edition</div>
+
+    <nav id="toc">
+      <div class="toc-group-label">หมวด</div>
+      <a class="toc-link" href="#cat1"><span class="num">01</span> กำหนดบทบาท</a>
+      <a class="toc-link" href="#cat2"><span class="num">02</span> ควบคุมการคิด</a>
+      <a class="toc-link" href="#cat3"><span class="num">03</span> รูปแบบ output</a>
+      <a class="toc-link" href="#cat4"><span class="num">04</span> ให้ตัวอย่าง</a>
+      <a class="toc-link" href="#cat5"><span class="num">05</span> วิจารณ์/ปรับปรุง</a>
+      <a class="toc-link" href="#cat6"><span class="num">06</span> ขอบเขต/ข้อจำกัด</a>
+      <a class="toc-link" href="#cat7"><span class="num">07</span> agentic / multi-step</a>
+      <div class="toc-group-label">อ้างอิง</div>
+      <a class="toc-link" href="#builder"><span class="num">⚙</span> 4-part builder</a>
+      <a class="toc-link" href="#formula"><span class="num">∑</span> สูตรลัด 4 ส่วน</a>
+      <a class="toc-link" href="#tips"><span class="num">!</span> เกร็ดสำคัญ</a>
+    </nav>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main>
+    <div class="hero">
+      <div class="hero-eyebrow">REFERENCE GUIDE / สำหรับ Claude · Gemini · Hermes Agent · Pedpro</div>
+      <h1>40 Prompt Patterns<br>ที่ <span class="accent">Thai Dev</span> ควรรู้</h1>
+      <p>โครง prompt เป็นอังกฤษเพราะ model เข้าใจ pattern พวกนี้แม่นกว่า — แต่เนื้อหาและคำตอบยังเป็นภาษาไทยได้ ไม่ต้องเขียนอังกฤษคล่อง</p>
+      <div class="principle">
+        วิธีใช้: copy pattern → เติมเนื้อหาไทยของคุณ → ปิดท้ายด้วย <strong>"ตอบเป็นภาษาไทย"</strong> เสมอถ้า prompt ส่วนใหญ่เป็นอังกฤษ
+      </div>
+    </div>
+
+    <!-- ===== CAT 1 ===== -->
+    <section id="cat1">
+      <div class="section-head">
+        <span class="cat-num">01</span>
+        <h2>กำหนดบทบาท · Role / Persona</h2>
+      </div>
+      <p class="section-desc">ทำให้ model ปรับ tone และความลึกของคำตอบให้ตรงระดับคุณ</p>
+
+      <div class="pattern">
+        <div class="pattern-num">01</div>
+        <div class="pattern-body">
+          <div class="code-row">
+            <code>Act as a senior frontend engineer reviewing a PR.</code>
+            <button class="copy-btn" aria-label="คัดลอก">copy</button>
+          </div>
+          <div class="pattern-when">อยากได้ review เข้มข้น</div>
+        </div>
+      </div>
+
+      <div class="pattern">
+        <div class="pattern-num">02</div>
+        <div class="pattern-body">
+          <div class="code-row">
+            <code>You are a TypeScript strict-mode linter. Flag every type issue.</code>
+            <button class="copy-btn" aria-label="คัดลอก">copy</button>
+          </div>
+          <div class="pattern-when">หา type error</div>
+        </div>
+      </div>
+
+      <div class="pattern">
+        <div class="pattern-num">03</div>
+        <div class="pattern-body">
+          <div class="code-row">
+            <code>Respond as a skeptical staff engineer. Challenge my assumptions.</code>
+            <button class="copy-btn" aria-label="คัดลอก">copy</button>
+          </div>
+          <div class="pattern-when">อยากโดนค้าน ไม่อยากได้ yes-man</div>
+        </div>
+      </div>
+
+      <div class="pattern">
+        <div class="pattern-num">04</div>
+        <div class="pattern-body">
+          <div class="code-row">
+            <code>Explain this like I already know Vue but am new to Nuxt 4.</code>
+            <button class="copy-btn" aria-label="คัดลอก">copy</button>
+          </div>
+          <div class="pattern-when">ปรับ level ให้ตรงคุณ</div>
+        </div>
+      </div>
+
+      <div class="example">
+        <div class="example-head">
+          <span class="label"><span class="dot"></span>ตัวอย่างใช้กับ Pedpro</span>
+          <button class="example-copy">copy</button>
+        </div>
+        <pre><code><span class="tok-en">Act as a senior Vue 3.5 engineer. Review this Pinia store for
+Pedpro conventions (no semicolons, double quotes, res?.Result pattern).</span>
+
+<span class="tok-tag">&lt;store&gt;</span>
+<span class="tok-dim">[paste code]</span>
+<span class="tok-tag">&lt;/store&gt;</span>
+
+<span class="tok-th">ชี้ปัญหาเป็นภาษาไทย เรียงตามความสำคัญ</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ===== CAT 2 ===== -->
+    <section id="cat2">
+      <div class="section-head">
+        <span class="cat-num">02</span>
+        <h2>ควบคุมการคิด · Reasoning Control</h2>
+      </div>
+      <p class="section-desc">บังคับให้ model คิดก่อนตอบ → คุณภาพสูงขึ้นมากในงานซับซ้อน</p>
+
+      <div class="pattern"><div class="pattern-num">05</div><div class="pattern-body">
+        <div class="code-row"><code>Think step by step before answering.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">บังคับ reasoning</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">06</div><div class="pattern-body">
+        <div class="code-row"><code>First list the trade-offs, then recommend.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">ได้การวิเคราะห์ก่อนสรุป</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">07</div><div class="pattern-body">
+        <div class="code-row"><code>Before coding, outline your approach and wait for my confirmation.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">กัน model เขียนผิดทิศ (plan-first)</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">08</div><div class="pattern-body">
+        <div class="code-row"><code>Identify edge cases I might have missed.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">หาช่องโหว่</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">09</div><div class="pattern-body">
+        <div class="code-row"><code>What would break this? List failure modes.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">stress-test idea</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">10</div><div class="pattern-body">
+        <div class="code-row"><code>Rate your confidence (1-10) and explain why.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">รู้ว่า model มั่นใจแค่ไหน</div>
+      </div></div>
+
+      <div class="example">
+        <div class="example-head">
+          <span class="label"><span class="dot"></span>ตัวอย่าง plan-first</span>
+          <button class="example-copy">copy</button>
+        </div>
+        <pre><code><span class="tok-en">Before refactoring this component, outline your approach in 3-5 bullets
+and wait for my confirmation. Don't write code yet.</span>
+
+<span class="tok-tag">&lt;component&gt;</span>
+<span class="tok-dim">[paste]</span>
+<span class="tok-tag">&lt;/component&gt;</span>
+
+<span class="tok-th">อธิบาย approach เป็นภาษาไทย</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ===== CAT 3 ===== -->
+    <section id="cat3">
+      <div class="section-head">
+        <span class="cat-num">03</span>
+        <h2>กำหนดรูปแบบ output · Output Format</h2>
+      </div>
+      <p class="section-desc">คุมให้ผลลัพธ์อยู่ในรูปที่เอาไปใช้ต่อได้ทันที</p>
+
+      <div class="pattern"><div class="pattern-num">11</div><div class="pattern-body">
+        <div class="code-row"><code>Respond ONLY in valid JSON, no markdown, no preamble.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">parse ได้ทันที</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">12</div><div class="pattern-body">
+        <div class="code-row"><code>Format as a markdown table.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">ตาราง</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">13</div><div class="pattern-body">
+        <div class="code-row"><code>Give me a diff, not the full file.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">เห็นแค่ที่เปลี่ยน</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">14</div><div class="pattern-body">
+        <div class="code-row"><code>Keep it under 100 words.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">กระชับ</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">15</div><div class="pattern-body">
+        <div class="code-row"><code>Use code blocks with language tags.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">syntax highlight ถูก</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">16</div><div class="pattern-body">
+        <div class="code-row"><code>Output as a checklist I can copy into YouTrack.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">เอาไปใช้ต่อได้เลย</div>
+      </div></div>
+
+      <div class="example">
+        <div class="example-head">
+          <span class="label"><span class="dot"></span>ตัวอย่าง JSON (ใช้กับ Hermes/API)</span>
+          <button class="example-copy">copy</button>
+        </div>
+        <pre><code><span class="tok-en">Extract all API endpoints from this Bruno spec.
+Respond ONLY in valid JSON, no markdown:</span>
+<span class="tok-dim">{ "endpoints": [{ "method": "", "path": "", "auth_required": bool }] }</span>
+
+<span class="tok-tag">&lt;spec&gt;</span>
+<span class="tok-dim">[paste]</span>
+<span class="tok-tag">&lt;/spec&gt;</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ===== CAT 4 ===== -->
+    <section id="cat4">
+      <div class="section-head">
+        <span class="cat-num">04</span>
+        <h2>ให้ตัวอย่าง · Few-shot</h2>
+      </div>
+      <p class="section-desc">วิธีที่ทรงพลังที่สุดในการสอน model ให้ทำตาม pattern คุณ — และเป็นตัวแก้ปัญหา "Sonnet ทำผิด convention"</p>
+
+      <div class="pattern"><div class="pattern-num">17</div><div class="pattern-body">
+        <div class="code-row"><code>Here's an example of the style I want: [example]. Now do the same for: [target].</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">อยากได้ style ตรง</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">18</div><div class="pattern-body">
+        <div class="code-row"><code>Follow the same pattern as this existing page: [reference].</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">ให้เลียนแบบ code เดิม</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">19</div><div class="pattern-body">
+        <div class="code-row"><code>Match the tone of this: [sample].</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">คุม tone งานเขียน</div>
+      </div></div>
+
+      <div class="example">
+        <div class="example-head">
+          <span class="label"><span class="dot"></span>ตัวอย่างสำคัญ — แก้ปัญหา Sonnet ทำผิด convention</span>
+          <button class="example-copy">copy</button>
+        </div>
+        <pre><code><span class="tok-en">Create a new product listing page following the EXACT same pattern as
+this existing page. Match imports, store usage, error handling.</span>
+
+<span class="tok-tag">&lt;reference_page&gt;</span>
+<span class="tok-dim">[paste pages/existing-feature/index.vue]</span>
+<span class="tok-tag">&lt;/reference_page&gt;</span>
+
+<span class="tok-th">สร้างหน้าใหม่ชื่อ pages/products/index.vue
+อธิบายส่วนที่ต่างเป็นภาษาไทย</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ===== CAT 5 ===== -->
+    <section id="cat5">
+      <div class="section-head">
+        <span class="cat-num">05</span>
+        <h2>วิจารณ์และปรับปรุง · Critique / Iterate</h2>
+      </div>
+      <p class="section-desc">บังคับให้ model หาจุดอ่อนแทนที่จะเห็นด้วยกับคุณ</p>
+
+      <div class="pattern"><div class="pattern-num">20</div><div class="pattern-body">
+        <div class="code-row"><code>Criticize this approach. What's wrong with it?</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">หาจุดอ่อน</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">21</div><div class="pattern-body">
+        <div class="code-row"><code>Play devil's advocate against this decision.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">ค้านเพื่อทดสอบ</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">22</div><div class="pattern-body">
+        <div class="code-row"><code>What would a security reviewer flag here?</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">มอง security</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">23</div><div class="pattern-body">
+        <div class="code-row"><code>Suggest 3 alternatives and rank them.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">ได้ทางเลือก</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">24</div><div class="pattern-body">
+        <div class="code-row"><code>Review your own answer and fix any mistakes.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">self-correct</div>
+      </div></div>
+
+      <div class="example">
+        <div class="example-head">
+          <span class="label"><span class="dot"></span>ตัวอย่าง — ทดสอบ design decision</span>
+          <button class="example-copy">copy</button>
+        </div>
+        <pre><code><span class="tok-en">I'm planning to put the Plan Review Gate logic inside an LLM call.
+Criticize this approach. What's wrong with it? Play devil's advocate.</span>
+
+<span class="tok-th">ตอบเป็นภาษาไทย</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ===== CAT 6 ===== -->
+    <section id="cat6">
+      <div class="section-head">
+        <span class="cat-num">06</span>
+        <h2>ขอบเขตและข้อจำกัด · Constraints</h2>
+      </div>
+      <p class="section-desc">กัน model ทำเกินขอบเขต — สำคัญมากกับ Pedpro ที่มี convention เยอะ</p>
+
+      <div class="pattern"><div class="pattern-num">25</div><div class="pattern-body">
+        <div class="code-row"><code>Do NOT add dependencies. Use only what's already imported.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">กันเพิ่ม library มั่ว</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">26</div><div class="pattern-body">
+        <div class="code-row"><code>Only change what I asked. Don't refactor anything else.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">กัน scope creep</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">27</div><div class="pattern-body">
+        <div class="code-row"><code>If you're unsure, ask instead of guessing.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">กัน hallucination</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">28</div><div class="pattern-body">
+        <div class="code-row"><code>Assume nothing. Ask clarifying questions first.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">กันเข้าใจผิด</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">29</div><div class="pattern-body">
+        <div class="code-row"><code>Use Tailwind core utilities only — no arbitrary values.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">คุม Pedpro rule</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">30</div><div class="pattern-body">
+        <div class="code-row"><code>If the answer requires info you don't have, say so explicitly.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">กันมั่ว</div>
+      </div></div>
+
+      <div class="example">
+        <div class="example-head">
+          <span class="label"><span class="dot"></span>ตัวอย่างรวมหลาย constraint (Pedpro-ready)</span>
+          <button class="example-copy">copy</button>
+        </div>
+        <pre><code><span class="tok-en">Fix the type error in this component.
+Constraints:
+- Only change what's needed to fix the error
+- Do NOT refactor other parts
+- Do NOT add dependencies
+- Keep no-semicolon, double-quote style
+- If unsure about the intended type, ask instead of guessing</span>
+
+<span class="tok-tag">&lt;component&gt;</span>
+<span class="tok-dim">[paste]</span>
+<span class="tok-tag">&lt;/component&gt;</span>
+
+<span class="tok-th">อธิบายสิ่งที่แก้เป็นภาษาไทย</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ===== CAT 7 ===== -->
+    <section id="cat7">
+      <div class="section-head">
+        <span class="cat-num">07</span>
+        <h2>Agentic / Multi-step · สำหรับ Hermes &amp; OpenClaw</h2>
+      </div>
+      <p class="section-desc">pattern สำหรับงานที่ agent ต้องทำหลาย step ใช้ tool ต่อเนื่อง และมี human approval gate — ออกแบบมาเพื่อ workflow ที่คุณรันบน VPS</p>
+
+      <div class="pattern"><div class="pattern-num">31</div><div class="pattern-body">
+        <div class="code-row"><code>Break this into a numbered task list. Execute one step at a time, report after each.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">บังคับ agent ทำทีละ step ไม่รวบ</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">32</div><div class="pattern-body">
+        <div class="code-row"><code>After each tool call, summarize what you learned before the next action.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">กัน agent หลงทางหลัง tool call เยอะ</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">33</div><div class="pattern-body">
+        <div class="code-row"><code>Do NOT commit, push, or run destructive commands. Return the plan for my approval first.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">human approval gate — หัวใจ OpenClaw</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">34</div><div class="pattern-body">
+        <div class="code-row"><code>State your plan, confidence, and what could go wrong. Wait for "go" before executing.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">Plan Review Gate pattern</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">35</div><div class="pattern-body">
+        <div class="code-row"><code>If a step fails, stop and report. Do NOT retry silently or work around it.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">fail-closed — กัน agent ซ่อน error</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">36</div><div class="pattern-body">
+        <div class="code-row"><code>Use only the tools listed. If you need a tool you don't have, ask instead of improvising.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">คุมขอบเขต tool ของ subagent</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">37</div><div class="pattern-body">
+        <div class="code-row"><code>You are a read-only reviewer. Return findings to the parent agent. Make no changes.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">subagent แบบ read-only (เช่น typescript-reviewer)</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">38</div><div class="pattern-body">
+        <div class="code-row"><code>Persist state to YouTrack after each completed step so we can resume on restart.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">scale-to-zero / state ownership</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">39</div><div class="pattern-body">
+        <div class="code-row"><code>Run independent subtasks in parallel, but serialize anything needing my judgment.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">"parallelize agents, serialize judgment"</div>
+      </div></div>
+
+      <div class="pattern"><div class="pattern-num">40</div><div class="pattern-body">
+        <div class="code-row"><code>Before finishing, verify your work against the original spec and list what you skipped.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
+        <div class="pattern-when">self-verification ก่อนปิด task</div>
+      </div></div>
+
+      <div class="example">
+        <div class="example-head">
+          <span class="label"><span class="dot"></span>ตัวอย่าง — Plan Review Gate (OpenClaw-style)</span>
+          <button class="example-copy">copy</button>
+        </div>
+        <pre><code><span class="tok-en">You are implementing a Pedpro feature. Follow this protocol strictly:
+
+1. Break the task into a numbered plan
+2. State confidence (1-10) and what could go wrong
+3. Do NOT write code, commit, or push yet
+4. Wait for my "go" before executing
+5. After each step, summarize and pause if anything fails</span>
+
+<span class="tok-tag">&lt;task&gt;</span>
+<span class="tok-th">เพิ่มหน้า leaderboard ที่ดึงข้อมูลจาก endpoint /api/ranking</span>
+<span class="tok-tag">&lt;/task&gt;</span>
+
+<span class="tok-th">เสนอ plan เป็นภาษาไทยก่อน รอผมอนุมัติ</span></code></pre>
+      </div>
+
+      <div class="example">
+        <div class="example-head">
+          <span class="label"><span class="dot"></span>ตัวอย่าง — read-only subagent</span>
+          <button class="example-copy">copy</button>
+        </div>
+        <pre><code><span class="tok-en">You are a read-only TypeScript reviewer subagent.
+Review the diff below. Return findings to the parent agent.
+Make NO changes, NO commits. Use only file-read tools.
+If a step fails, stop and report — do not work around it.</span>
+
+<span class="tok-tag">&lt;diff&gt;</span>
+<span class="tok-dim">[paste]</span>
+<span class="tok-tag">&lt;/diff&gt;</span>
+
+<span class="tok-th">สรุป finding เป็นภาษาไทย เรียงตามความรุนแรง</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ===== INTERACTIVE BUILDER ===== -->
+    <section id="builder">
+      <div class="section-head">
+        <span class="cat-num">⚙</span>
+        <h2>4-Part Builder · กรอกแล้ว copy ได้เลย</h2>
+      </div>
+      <p class="section-desc">กรอก 4 ช่องแล้วกด copy — ระบบประกอบ prompt ให้พร้อม ช่องไหนเว้นว่างจะข้ามไป</p>
+
+      <div class="builder">
+        <div class="builder-field">
+          <label for="b-role"><span class="bk">ROLE</span> ใคร — บทบาท</label>
+          <input id="b-role" type="text" placeholder="Act as a senior Vue 3.5 engineer." autocomplete="off">
+          <div class="chips" data-target="b-role">
+            <button class="chip">Act as a senior Vue 3.5 engineer.</button>
+            <button class="chip">You are a read-only TypeScript reviewer subagent.</button>
+            <button class="chip">Respond as a skeptical staff engineer.</button>
+          </div>
+        </div>
+
+        <div class="builder-field">
+          <label for="b-task"><span class="bk">TASK</span> ทำอะไร — เนื้อหาไทยได้</label>
+          <textarea id="b-task" rows="2" placeholder="ช่วยรีวิว component นี้ โฟกัสที่ accessibility"></textarea>
+        </div>
+
+        <div class="builder-field">
+          <label for="b-constraints"><span class="bk">CONSTRAINTS</span> ห้ามอะไร — ขึ้นบรรทัดใหม่ = constraint ละข้อ</label>
+          <textarea id="b-constraints" rows="3" placeholder="Only change what's needed&#10;Do NOT add dependencies&#10;Use Pedpro conventions (no semicolon, double quotes)"></textarea>
+          <div class="chips" data-target="b-constraints" data-mode="append">
+            <button class="chip">Only change what I asked. Don't refactor anything else.</button>
+            <button class="chip">Do NOT add dependencies.</button>
+            <button class="chip">Do NOT commit or push. Return plan for approval first.</button>
+            <button class="chip">Use Tailwind core utilities only — no arbitrary values.</button>
+            <button class="chip">If unsure, ask instead of guessing.</button>
+          </div>
+        </div>
+
+        <div class="builder-field">
+          <label for="b-format"><span class="bk">FORMAT</span> ออกมาแบบไหน</label>
+          <input id="b-format" type="text" placeholder="ตอบเป็นตารางภาษาไทย เรียงตามความรุนแรง" autocomplete="off">
+          <div class="chips" data-target="b-format">
+            <button class="chip">ตอบเป็นภาษาไทย</button>
+            <button class="chip">ตอบเป็นตารางภาษาไทย เรียงตามความรุนแรง</button>
+            <button class="chip">Respond ONLY in valid JSON, no markdown.</button>
+            <button class="chip">Give me a diff, not the full file. ตอบเป็นภาษาไทย</button>
+          </div>
+        </div>
+
+        <div class="builder-field">
+          <label for="b-data"><span class="bk">DATA</span> โค้ด/spec ที่จะแนบ (optional — จะห่อด้วย XML tag ให้)</label>
+          <textarea id="b-data" rows="2" placeholder="[paste code / Bruno spec here]"></textarea>
+        </div>
+
+        <div class="builder-output">
+          <div class="builder-output-head">
+            <span class="label"><span class="dot"></span>prompt ที่ประกอบแล้ว</span>
+            <button id="b-copy" class="example-copy">copy</button>
+          </div>
+          <pre><code id="b-preview"><span class="tok-dim">// กรอกช่องด้านบนเพื่อสร้าง prompt</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FORMULA ===== -->
+    <section id="formula">
+      <div class="section-head">
+        <span class="cat-num">∑</span>
+        <h2>สูตรลัด · ประกอบ prompt ใน 4 ส่วน</h2>
+      </div>
+      <p class="section-desc">จำแค่ 4 ช่องนี้: ใคร → ทำอะไร → ห้ามอะไร → ออกมาแบบไหน</p>
+
+      <div class="formula-grid">
+        <div class="formula-cell"><div class="k">Role</div><div class="v">ใคร — กำหนดบทบาท</div></div>
+        <div class="formula-cell"><div class="k">Task</div><div class="v">ทำอะไร — เนื้อหาไทยได้</div></div>
+        <div class="formula-cell"><div class="k">Constraints</div><div class="v">ห้ามอะไร</div></div>
+        <div class="formula-cell"><div class="k">Format</div><div class="v">ออกมาแบบไหน</div></div>
+      </div>
+
+      <div class="example" style="margin-top:24px">
+        <div class="example-head">
+          <span class="label"><span class="dot"></span>โครงพร้อมใช้</span>
+          <button class="example-copy">copy</button>
+        </div>
+        <pre><code><span class="tok-dim">[ROLE]</span>        <span class="tok-en">Act as a senior Vue engineer.</span>
+<span class="tok-dim">[TASK]</span>        <span class="tok-th">ช่วยรีวิว component นี้ โฟกัสที่ accessibility</span>
+<span class="tok-dim">[CONSTRAINTS]</span> <span class="tok-en">Only flag real issues. Use Pedpro conventions.</span>
+<span class="tok-dim">[FORMAT]</span>      <span class="tok-th">ตอบเป็นตารางภาษาไทย เรียงตามความรุนแรง</span>
+
+<span class="tok-tag">&lt;component&gt;</span>
+<span class="tok-dim">[code]</span>
+<span class="tok-tag">&lt;/component&gt;</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ===== TIPS ===== -->
+    <section id="tips">
+      <div class="section-head">
+        <span class="cat-num">!</span>
+        <h2>เกร็ดสำคัญสำหรับ Thai dev</h2>
+      </div>
+      <div class="tips">
+        <ol>
+          <li>โครงเป็นอังกฤษ เนื้อเป็นไทยได้ — model เข้าใจ pattern อังกฤษแม่นกว่า แต่ไม่บังคับให้คุณเขียนเนื้อหาเป็นอังกฤษ</li>
+          <li>ปิดท้ายด้วย <code>ตอบเป็นภาษาไทย</code> เสมอถ้า prompt ส่วนใหญ่เป็นอังกฤษ ไม่งั้น model จะตอบอังกฤษ</li>
+          <li>XML tags เช่น <code>&lt;component&gt;...&lt;/component&gt;</code> ช่วยมาก — แยก instruction ออกจาก data ชัดเจน ลดความสับสน</li>
+          <li>ยิ่งให้ constraint ชัด ยิ่งได้ผลตรง โดยเฉพาะกับ Pedpro ที่มี convention เยอะ</li>
+          <li>few-shot (หมวด 04) คือตัวแก้ปัญหา "Sonnet ทำผิด convention" — ชี้ไปหน้าเดิมที่ถูกต้อง ดีกว่าอธิบาย rule ยาว ๆ</li>
+        </ol>
+      </div>
+    </section>
+
+    <footer>
+      // prompt-patterns reference · TH/EN · v1.0 · ใช้กับ Claude · Gemini · Hermes Agent · Pedpro
+    </footer>
+  </main>
+</div>
+
+<script>
+  // ---- Copy buttons (inline patterns) ----
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const code = btn.parentElement.querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'copied ✓';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1400);
+      });
+    });
+  });
+
+  // ---- Copy buttons (example blocks) ----
+  document.querySelectorAll('.example-copy').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const code = btn.closest('.example').querySelector('pre code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'copied ✓';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1400);
+      });
+    });
+  });
+
+  // ---- Interactive 4-part builder ----
+  const bFields = {
+    role: document.getElementById('b-role'),
+    task: document.getElementById('b-task'),
+    constraints: document.getElementById('b-constraints'),
+    format: document.getElementById('b-format'),
+    data: document.getElementById('b-data')
+  };
+  const bPreview = document.getElementById('b-preview');
+
+  function buildPrompt() {
+    const role = bFields.role.value.trim();
+    const task = bFields.task.value.trim();
+    const constraintsRaw = bFields.constraints.value.trim();
+    const format = bFields.format.value.trim();
+    const data = bFields.data.value.trim();
+
+    const parts = [];
+    if (role) parts.push(role);
+    if (task) parts.push(task);
+    if (constraintsRaw) {
+      const lines = constraintsRaw.split('\n').map(l => l.trim()).filter(Boolean);
+      if (lines.length === 1) {
+        parts.push(lines[0]);
+      } else if (lines.length > 1) {
+        parts.push('Constraints:\n' + lines.map(l => '- ' + l).join('\n'));
+      }
+    }
+    if (data) {
+      parts.push('<data>\n' + data + '\n</data>');
+    }
+    if (format) parts.push(format);
+
+    return parts.join('\n\n');
+  }
+
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderPreview() {
+    const out = buildPrompt();
+    if (!out) {
+      bPreview.innerHTML = '<span class="tok-dim">// กรอกช่องด้านบนเพื่อสร้าง prompt</span>';
+      return;
+    }
+    // light syntax coloring: Thai chars greenish, xml tags rose
+    let html = esc(out)
+      .replace(/(&lt;\/?[a-z_]+&gt;)/g, '<span class="tok-tag">$1</span>')
+      .replace(/([\u0E00-\u0E7F][\u0E00-\u0E7F\s]*)/g, '<span class="tok-th">$1</span>');
+    bPreview.innerHTML = html;
+  }
+
+  Object.values(bFields).forEach(f => f && f.addEventListener('input', renderPreview));
+
+  // chip insertion
+  document.querySelectorAll('.chips').forEach(group => {
+    const targetId = group.getAttribute('data-target');
+    const mode = group.getAttribute('data-mode'); // "append" or replace
+    const target = document.getElementById(targetId);
+    group.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const text = chip.textContent;
+        if (mode === 'append') {
+          target.value = target.value.trim()
+            ? target.value.replace(/\s*$/, '') + '\n' + text
+            : text;
+        } else {
+          target.value = text;
+        }
+        renderPreview();
+        target.focus();
+      });
+    });
+  });
+
+  // copy assembled prompt
+  document.getElementById('b-copy').addEventListener('click', () => {
+    const out = buildPrompt();
+    if (!out) return;
+    const btn = document.getElementById('b-copy');
+    navigator.clipboard.writeText(out).then(() => {
+      btn.textContent = 'copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1400);
+    });
+  });
+
+  // ---- TOC scroll-spy ----
+  const links = document.querySelectorAll('.toc-link');
+  const sections = [...links].map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  const spy = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector('.toc-link[href="#' + e.target.id + '"]');
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  sections.forEach(s => spy.observe(s));
+</script>
+
+</body>
+</html>

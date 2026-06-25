@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw + Codex · คู่มือติดตั้งบน Ubuntu Server</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --abyss:#0a1416;        /* deep-sea background */
+    --trench:#0e1d20;       /* darker panel */
+    --shell:#13262a;        /* card surface */
+    --shell-hi:#18313616;   /* faint */
+    --line:#1f3a3f;         /* hairline */
+    --coral:#ff5a36;        /* OpenClaw signature */
+    --coral-dim:#ff5a3622;
+    --coral-glow:#ff5a3640;
+    --foam:#e9f1ef;         /* primary text */
+    --kelp:#7c9a96;         /* muted text */
+    --kelp-dim:#54706c;
+    --phosphor:#4ade80;     /* success / done only */
+    --phosphor-dim:#4ade8022;
+    --amber:#f5b042;        /* warning */
+    --amber-dim:#f5b04218;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --sans:'IBM Plex Sans Thai','IBM Plex Sans',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+  body{
+    margin:0;background:
+      radial-gradient(1200px 600px at 80% -10%, #102a2e 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, #11232622 0%, transparent 55%),
+      var(--abyss);
+    color:var(--foam);font-family:var(--sans);line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--coral);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  .wrap{display:grid;grid-template-columns:248px minmax(0,1fr);gap:0;max-width:1180px;margin:0 auto}
+
+  /* ---------- Depth gauge / sidebar ---------- */
+  .gauge{position:sticky;top:0;align-self:start;height:100vh;padding:34px 20px 24px;border-right:1px solid var(--line);overflow:hidden}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .brand .lob{font-size:22px;filter:drop-shadow(0 0 10px var(--coral-glow))}
+  .brand .nm{font-family:var(--mono);font-weight:600;letter-spacing:.04em;font-size:15px}
+  .brand .nm b{color:var(--coral)}
+  .gauge .sub{font-family:var(--mono);font-size:10.5px;color:var(--kelp-dim);letter-spacing:.14em;text-transform:uppercase;margin:0 0 26px}
+
+  .rail{position:relative;margin-left:8px;padding-left:26px}
+  .rail::before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:var(--line);border-radius:2px}
+  .rail .fill{position:absolute;left:5px;top:6px;width:2px;background:linear-gradient(var(--coral),#ff8a36);border-radius:2px;height:0;box-shadow:0 0 10px var(--coral-glow);transition:height .5s ease}
+  .diver{position:absolute;left:-6px;top:0;transform:translateY(-50%);font-size:15px;transition:top .5s ease;filter:drop-shadow(0 0 6px var(--coral-glow));z-index:3}
+  .node{position:relative;display:block;padding:7px 0 7px 4px;color:var(--kelp);font-size:13px;cursor:pointer;border:0;background:none;text-align:left;font-family:var(--sans);width:100%}
+  .node::before{content:"";position:absolute;left:-25.5px;top:13px;width:11px;height:11px;border-radius:50%;background:var(--trench);border:2px solid var(--line);transition:all .3s;z-index:2}
+  .node .nx{font-family:var(--mono);font-size:10px;color:var(--kelp-dim);display:block;letter-spacing:.1em}
+  .node.active{color:var(--foam)}
+  .node.active::before{border-color:var(--coral);box-shadow:0 0 0 4px var(--coral-dim)}
+  .node.done{color:var(--phosphor)}
+  .node.done::before{background:var(--phosphor);border-color:var(--phosphor)}
+  .node.done .nx{color:var(--phosphor-dim)}
+
+  /* ---------- Main ---------- */
+  main{padding:48px 40px 120px;min-width:0}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--coral);margin:0 0 14px}
+  h1{font-size:clamp(28px,4.4vw,42px);line-height:1.12;margin:0 0 14px;font-weight:700;letter-spacing:-.01em}
+  .thesis{font-size:16.5px;color:var(--kelp);max-width:62ch;margin:0 0 30px}
+  .thesis b{color:var(--foam);font-weight:600}
+
+  .meter{display:flex;align-items:center;gap:16px;background:var(--shell);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin-bottom:14px}
+  .meter .big{font-family:var(--mono);font-size:30px;font-weight:600;color:var(--coral);line-height:1;min-width:88px}
+  .meter .big small{font-size:15px;color:var(--kelp)}
+  .meter .bar{flex:1;height:8px;background:var(--trench);border-radius:6px;overflow:hidden}
+  .meter .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--coral),#ff9a36);border-radius:6px;transition:width .5s ease}
+  .meter .lab{font-size:13px;color:var(--kelp)}
+  .tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:34px}
+  .tbtn{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--kelp);background:var(--trench);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;transition:.2s}
+  .tbtn:hover{color:var(--foam);border-color:var(--coral)}
+
+  /* ---------- Callout ---------- */
+  .callout{border-radius:14px;padding:18px 20px;margin:0 0 34px;border:1px solid;display:grid;grid-template-columns:auto 1fr;gap:14px}
+  .callout .ic{font-size:20px;line-height:1.3}
+  .callout.warn{background:var(--amber-dim);border-color:#f5b04240}
+  .callout h4{margin:0 0 6px;font-size:14.5px;color:var(--amber)}
+  .callout p{margin:0 0 6px;font-size:14px;color:var(--foam)}
+  .callout ul{margin:6px 0 0;padding-left:18px;color:var(--kelp);font-size:13.5px}
+  .callout li{margin:3px 0}
+  .callout li b{color:var(--foam);font-weight:600}
+
+  /* ---------- Stage card ---------- */
+  .stage{background:var(--shell);border:1px solid var(--line);border-radius:16px;margin-bottom:18px;overflow:hidden;scroll-margin-top:20px}
+  .stage.done{border-color:#2c5a4d}
+  .shead{display:flex;align-items:center;gap:16px;padding:18px 22px;cursor:pointer;user-select:none;background:none;border:0;width:100%;text-align:left;font-family:var(--sans);color:var(--foam)}
+  .shead:focus-visible{outline:2px solid var(--coral);outline-offset:-2px}
+  .snum{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--coral);background:var(--coral-dim);border:1px solid var(--coral-glow);width:42px;height:42px;border-radius:11px;display:grid;place-items:center;flex:none;transition:.3s}
+  .stage.done .snum{color:var(--phosphor);background:var(--phosphor-dim);border-color:#4ade8040}
+  .stitle{flex:1;min-width:0}
+  .stitle .t{font-size:16.5px;font-weight:600;display:block}
+  .stitle .e{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--kelp-dim)}
+  .scount{font-family:var(--mono);font-size:11.5px;color:var(--kelp);background:var(--trench);border:1px solid var(--line);border-radius:20px;padding:4px 11px;flex:none}
+  .stage.done .scount{color:var(--phosphor);border-color:#2c5a4d}
+  .chev{flex:none;color:var(--kelp);transition:transform .3s;font-size:13px}
+  .stage[data-open="false"] .chev{transform:rotate(-90deg)}
+  .sbody{padding:0 22px 8px;border-top:1px solid var(--line)}
+  .stage[data-open="false"] .sbody{display:none}
+  .sbody>.intro{color:var(--kelp);font-size:14px;margin:16px 0 4px}
+
+  /* ---------- Checklist items ---------- */
+  .item{display:flex;gap:13px;padding:13px 0;border-bottom:1px solid #16292d}
+  .item:last-child{border-bottom:0}
+  .item input{appearance:none;-webkit-appearance:none;flex:none;width:21px;height:21px;margin:2px 0 0;border:2px solid var(--kelp-dim);border-radius:6px;background:var(--trench);cursor:pointer;position:relative;transition:.2s}
+  .item input:hover{border-color:var(--coral)}
+  .item input:checked{background:var(--phosphor);border-color:var(--phosphor)}
+  .item input:checked::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#062a17;font-size:13px;font-weight:700}
+  .item input:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+  .item .txt{flex:1;font-size:14.5px}
+  .item input:checked + .txt{color:var(--kelp);text-decoration:line-through;text-decoration-color:var(--kelp-dim)}
+  .item .txt small{display:block;color:var(--kelp);font-size:12.5px;text-decoration:none;margin-top:2px}
+  .item input:checked + .txt small{color:var(--kelp-dim)}
+
+  /* ---------- Code ---------- */
+  .code{position:relative;background:#081012;border:1px solid var(--line);border-radius:10px;margin:12px 0;overflow:hidden}
+  .code .cap{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--kelp-dim);padding:8px 14px 0}
+  .code pre{margin:0;padding:12px 56px 14px 14px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.7;color:#cfe3df}
+  .code pre .c{color:var(--kelp-dim)}     /* comment */
+  .code pre .p{color:var(--coral)}        /* prompt/cmd accent */
+  .copy{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:10.5px;color:var(--kelp);background:var(--trench);border:1px solid var(--line);border-radius:7px;padding:5px 9px;cursor:pointer;transition:.2s}
+  .copy:hover{color:var(--foam);border-color:var(--coral)}
+  .copy.ok{color:var(--phosphor);border-color:#2c5a4d}
+
+  .note{font-size:13px;color:var(--kelp);background:var(--trench);border-left:2px solid var(--coral);border-radius:0 8px 8px 0;padding:11px 14px;margin:12px 0}
+  .note b{color:var(--foam)}
+  .note.amber{border-left-color:var(--amber)}
+  .note.amber b{color:var(--amber)}
+
+  /* ---------- Next steps ---------- */
+  .step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #16292d}
+  .step:last-child{border-bottom:0}
+  .step .n{font-family:var(--mono);font-size:12px;color:var(--coral);font-weight:600;flex:none;width:24px}
+  .step .b strong{display:block;font-size:14.5px;margin-bottom:2px}
+  .step .b span{font-size:13.5px;color:var(--kelp)}
+
+  footer{margin-top:40px;padding-top:22px;border-top:1px solid var(--line);font-size:12.5px;color:var(--kelp-dim);font-family:var(--mono);letter-spacing:.03em}
+  footer a{color:var(--kelp)}
+
+  /* ---------- Mobile ---------- */
+  .mtop{display:none}
+  @media (max-width:860px){
+    .wrap{grid-template-columns:1fr}
+    .gauge{display:none}
+    main{padding:24px 18px 90px}
+    .mtop{display:block;position:sticky;top:0;z-index:10;background:#0a1416ee;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 18px;margin:-24px -18px 22px}
+    .mtop .row{display:flex;align-items:center;gap:12px}
+    .mtop .lob{font-size:18px}
+    .mtop .nm{font-family:var(--mono);font-size:13px;font-weight:600}
+    .mtop .nm b{color:var(--coral)}
+    .mtop .pct{margin-left:auto;font-family:var(--mono);font-size:13px;color:var(--coral);font-weight:600}
+    .mtop .bar{height:5px;background:var(--trench);border-radius:4px;overflow:hidden;margin-top:9px}
+    .mtop .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--coral),#ff9a36);transition:width .5s}
+    .meter .lab{display:none}
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" id="back-home-fab" aria-label="กลับคลังคู่มือ" style="position:fixed;right:18px;bottom:18px;z-index:99999;display:inline-flex;align-items:center;gap:7px;padding:10px 16px;font:600 14px/1 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#fff;background:#0284c7;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px rgba(2,132,199,.35)">🏠 หน้าแรก</a>
+<div class="wrap">
+
+  <!-- Depth gauge sidebar -->
+  <aside class="gauge" aria-hidden="true">
+    <div class="brand"><span class="lob">🦞</span><span class="nm">Open<b>Claw</b></span></div>
+    <p class="sub">Descent log · Pedpro</p>
+    <nav class="rail" id="rail">
+      <span class="fill" id="railFill"></span>
+      <span class="diver" id="diver" style="top:0">🦞</span>
+      <button class="node active" data-go="s0"><span class="nx">00</span>ก่อนเริ่ม</button>
+      <button class="node" data-go="s1"><span class="nx">01</span>ล้างของเก่า</button>
+      <button class="node" data-go="s2"><span class="nx">02</span>ติดตั้งใหม่</button>
+      <button class="node" data-go="s3"><span class="nx">03</span>เชื่อม Codex</button>
+      <button class="node" data-go="s4"><span class="nx">04</span>ต่อ Telegram</button>
+      <button class="node" data-go="s5"><span class="nx">05</span>รันเป็น service</button>
+      <button class="node" data-go="next"><span class="nx">06</span>เสร็จแล้วทำอะไร</button>
+    </nav>
+  </aside>
+
+  <main>
+    <!-- Mobile top progress -->
+    <div class="mtop">
+      <div class="row"><span class="lob">🦞</span><span class="nm">Open<b>Claw</b> + Codex</span><span class="pct" id="mPct">0%</span></div>
+      <div class="bar"><i id="mBar"></i></div>
+    </div>
+
+    <p class="eyebrow">Install Runbook · Ubuntu Server</p>
+    <h1>ติดตั้ง OpenClaw + Codex<br>แบบล้างเริ่มใหม่</h1>
+    <p class="thesis">OpenClaw ไม่ใช่ AI ตัวใหม่ที่ต้องเรียนใหม่หมด — มันคือ <b>gateway ตัวกลาง</b> ที่รันค้างบน server ตัวเดียว เชื่อมแอปแชต (Telegram) เข้ากับ coding agent อย่าง Codex. Codex คือ <b>คนทำงาน</b>, OpenClaw คือ <b>ประตูหน้า</b>, ส่วนคุณคือ <b>manager ที่กด approve</b>.</p>
+
+    <div class="meter">
+      <div class="big"><span id="doneN">0</span><small>/<span id="totN">0</span></small></div>
+      <div style="flex:1">
+        <div class="bar"><i id="bar"></i></div>
+        <div class="lab" id="meterLab" style="margin-top:8px">เริ่มจาก STAGE 00 — ติ๊กทีละข้อตอนทำจริง</div>
+      </div>
+    </div>
+    <div class="tools">
+      <button class="tbtn" id="expandAll">⊕ ขยายทั้งหมด</button>
+      <button class="tbtn" id="collapseAll">⊖ ย่อทั้งหมด</button>
+      <button class="tbtn" id="resetAll">↺ รีเซ็ตเช็กลิสต์</button>
+    </div>
+
+    <!-- Security callout -->
+    <div class="callout warn">
+      <span class="ic">⚠️</span>
+      <div>
+        <h4>อ่านก่อนลงบน server บริษัท — สำคัญกว่าทุก step</h4>
+        <p>OpenClaw แทบจะเหมือนให้ LLM มีสิทธิ์ระดับ <b>sudo</b> บนเครื่องที่มันรัน ถ้าตั้งค่าผิดคือช่องโหว่ใหญ่ และการป้อน proprietary code เข้าไป = ส่งข้อมูลบริษัทออกไปข้างนอก</p>
+        <ul>
+          <li><b>Isolate</b> — รันบน container / VM แยก ไม่ใช่เครื่อง prod ที่ใช้งานจริงอยู่</li>
+          <li><b>Allowlist</b> — ล็อกให้คุยกับ bot ได้เฉพาะ Telegram id ของคุณคนเดียว</li>
+          <li><b>อย่าชี้</b>ไปที่ production secrets / repo ที่ห้ามหลุด</li>
+          <li><b>ระวัง skill จาก ClawHub</b> — มีประวัติเคส supply-chain (ที่คุณเคยศึกษาจาก Arise #7)</li>
+          <li><b>คุยกับทีม</b>ให้ชัดเรื่อง scope ก่อนเริ่ม</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- STAGE 00 -->
+    <section class="stage" id="s0" data-stage="0" data-open="true">
+      <button class="shead"><span class="snum">00</span><span class="stitle"><span class="t">ก่อนเริ่ม — Pre-flight</span><span class="e">Prepare · Verify access</span></span><span class="scount">0/5</span><span class="chev">▾</span></button>
+      <div class="sbody">
+        <p class="intro">เช็กให้พร้อมก่อน อย่าเพิ่งแตะ install จนกว่าจะตอบ 5 ข้อนี้ได้</p>
+        <label class="item"><input type="checkbox"><span class="txt">เข้าถึง Ubuntu server ได้ผ่าน SSH และมีสิทธิ์ <code>sudo</code></span></label>
+        <label class="item"><input type="checkbox"><span class="txt">ตัดสินใจเรื่อง isolation แล้ว<small>container / VM แยก — ไม่ใช่เครื่องที่กำลังใช้งานจริง</small></span></label>
+        <label class="item"><input type="checkbox"><span class="txt">ยืนยันว่า ChatGPT plan ใช้ Codex ได้<small>Plus อาจมี quota จำกัด — เช็กให้ชัวร์ก่อนปักหมุดทั้งระบบ</small></span></label>
+        <label class="item"><input type="checkbox"><span class="txt">คุยกับทีม/หัวหน้าเรื่อง scope ของข้อมูลที่ agent แตะได้</span></label>
+        <label class="item"><input type="checkbox"><span class="txt">เช็ก Node เดิมบนเครื่อง (ถ้ามี)</span></label>
+        <div class="code"><span class="cap">terminal</span><button class="copy">copy</button><pre>node -v   <span class="c"># ต้องการ Node 24 (แนะนำ) หรือ 22.19+ — installer ลงให้เองได้</span></pre></div>
+      </div>
+    </section>
+
+    <!-- STAGE 01 -->
+    <section class="stage" id="s1" data-stage="1" data-open="true">
+      <button class="shead"><span class="snum">01</span><span class="stitle"><span class="t">ล้างของเก่าที่เละ — Clean wipe</span><span class="e">Uninstall · Remove state</span></span><span class="scount">0/3</span><span class="chev">▾</span></button>
+      <div class="sbody">
+        <p class="intro">ถอนของเดิมให้เกลี้ยงก่อนลงใหม่ จะได้ไม่มี config เก่าค้างมากวน</p>
+        <label class="item"><input type="checkbox"><span class="txt">รัน uninstaller ในตัว<small>หยุด service + ถอน service + ลบ state/config ที่ ~/.openclaw ให้อัตโนมัติ</small></span></label>
+        <div class="code"><span class="cap">terminal</span><button class="copy">copy</button><pre>openclaw uninstall --all --yes --non-interactive</pre></div>
+
+        <label class="item"><input type="checkbox"><span class="txt">ถ้า CLI หายแล้วแต่ service ยังค้าง → ลบ systemd user unit เอง</span></label>
+        <div class="code"><span class="cap">terminal · linux systemd</span><button class="copy">copy</button><pre>systemctl --user disable --now openclaw-gateway.service
+rm -f ~/.config/systemd/user/openclaw-gateway.service
+systemctl --user daemon-reload</pre></div>
+
+        <label class="item"><input type="checkbox"><span class="txt">ลบ state/workspace ที่เหลือ + ถอน CLI แล้วเช็กว่าเกลี้ยง</span></label>
+        <div class="code"><span class="cap">terminal</span><button class="copy">copy</button><pre>rm -rf ~/.openclaw
+npm rm -g openclaw          <span class="c"># หรือ pnpm remove -g / bun remove -g</span>
+which openclaw              <span class="c"># ควรไม่เจออะไรเลย = สะอาดแล้ว</span></pre></div>
+      </div>
+    </section>
+
+    <!-- STAGE 02 -->
+    <section class="stage" id="s2" data-stage="2" data-open="true">
+      <button class="shead"><span class="snum">02</span><span class="stitle"><span class="t">ติดตั้งใหม่ — Fresh install</span><span class="e">Installer · Verify</span></span><span class="scount">0/2</span><span class="chev">▾</span></button>
+      <div class="sbody">
+        <p class="intro">installer script จะ detect OS, ลง Node ให้ถ้าจำเป็น, ลง OpenClaw แล้วเปิด onboarding ให้</p>
+        <label class="item"><input type="checkbox"><span class="txt">รัน installer script</span></label>
+        <div class="code"><span class="cap">terminal · ubuntu</span><button class="copy">copy</button><pre>curl -fsSL https://openclaw.ai/install.sh | bash</pre></div>
+        <div class="note">อยากลงก่อนแล้วค่อย onboard ทีหลัง? เติม <code>bash -s -- --no-onboard</code> ต่อท้าย</div>
+
+        <label class="item"><input type="checkbox"><span class="txt">ยืนยันว่าติดตั้งสำเร็จ + เคลียร์ warning</span></label>
+        <div class="code"><span class="cap">terminal</span><button class="copy">copy</button><pre>openclaw --version
+openclaw doctor             <span class="c"># เช็กปัญหา config — ทำให้เขียว/ผ่านก่อนไปต่อ</span></pre></div>
+        <div class="note amber"><b>openclaw not found?</b> เพิ่ม global bin เข้า PATH: <code>export PATH="$(npm prefix -g)/bin:$PATH"</code> ใน ~/.bashrc แล้วเปิด terminal ใหม่</div>
+      </div>
+    </section>
+
+    <!-- STAGE 03 -->
+    <section class="stage" id="s3" data-stage="3" data-open="true">
+      <button class="shead"><span class="snum">03</span><span class="stitle"><span class="t">เชื่อม Codex (OpenAI subscription)</span><span class="e">Auth · OAuth · Default model</span></span><span class="scount">0/3</span><span class="chev">▾</span></button>
+      <div class="sbody">
+        <p class="intro">คุณมี GPT Plus → ใช้ route แบบ <b>subscription / OAuth</b> (ไม่ใช่ API key) คือ prefix <code>openai-codex/*</code> ซึ่งเป็นตัวเลือกแรกที่ดีที่สุดสำหรับ subscription setup</p>
+        <label class="item"><input type="checkbox"><span class="txt">เริ่ม onboarding แบบเลือก auth เป็น Codex</span></label>
+        <div class="code"><span class="cap">terminal</span><button class="copy">copy</button><pre>openclaw onboard --auth-choice openai-codex</pre></div>
+
+        <label class="item"><input type="checkbox"><span class="txt">ล็อกอินด้วย device-code (server ไม่มี browser ให้กด callback)</span></label>
+        <div class="code"><span class="cap">terminal · headless server</span><button class="copy">copy</button><pre>openclaw models auth login --provider openai-codex --device-code</pre></div>
+
+        <label class="item"><input type="checkbox"><span class="txt">ตั้ง default model แล้วเช็กว่าโมเดลใช้ได้</span></label>
+        <div class="code"><span class="cap">terminal</span><button class="copy">copy</button><pre>openclaw config set agents.defaults.model.primary openai-codex/gpt-5.5
+openclaw models list --provider openai-codex</pre></div>
+        <div class="note amber"><b>ตรวจสอบ:</b> Codex เข้าถึงได้แค่ไหนขึ้นกับ tier ของ ChatGPT plan ถ้า Plus ติด quota หรือเข้าไม่ได้ ค่อยพิจารณา route แบบ API key (<code>openai/*</code> + <code>OPENAI_API_KEY</code>) แทน</div>
+      </div>
+    </section>
+
+    <!-- STAGE 04 -->
+    <section class="stage" id="s4" data-stage="4" data-open="true">
+      <button class="shead"><span class="snum">04</span><span class="stitle"><span class="t">ต่อ Telegram — Channel</span><span class="e">BotFather · Pair · Allowlist</span></span><span class="scount">0/3</span><span class="chev">▾</span></button>
+      <div class="sbody">
+        <p class="intro">Telegram เป็น channel ที่ต่อเร็วสุด นี่คือ "ประตู" ที่คุณจะสั่งงาน Codex จากมือถือ</p>
+        <label class="item"><input type="checkbox"><span class="txt">สร้าง bot กับ <b>@BotFather</b> แล้วเก็บ token<small>ส่ง /newbot ใน Telegram → ตั้งชื่อ → ได้ token มา</small></span></label>
+        <label class="item"><input type="checkbox"><span class="txt">ใส่ token ตอน onboarding / pairing flow ของ OpenClaw</span></label>
+        <label class="item"><input type="checkbox"><span class="txt">ล็อก allowlist ให้คุยได้เฉพาะ Telegram id ของคุณ</span></label>
+        <div class="code"><span class="cap">~/.openclaw/openclaw.json · รูปแบบตัวอย่าง</span><button class="copy">copy</button><pre>{
+  channels: {
+    telegram: { allowFrom: ["&lt;your-telegram-user-id&gt;"] }
+  }
+}</pre></div>
+        <div class="note"><b>key ที่ถูกต้อง</b>ให้ดูตามที่ onboarding ถาม หรือหน้า <a href="https://docs.openclaw.ai/channels/telegram" target="_blank" rel="noopener">docs.openclaw.ai/channels/telegram</a> — อันนี้เป็นแพตเทิร์น allowlist เพื่อให้เห็นภาพ</div>
+      </div>
+    </section>
+
+    <!-- STAGE 05 -->
+    <section class="stage" id="s5" data-stage="5" data-open="true">
+      <button class="shead"><span class="snum">05</span><span class="stitle"><span class="t">รันเป็น service + ทดสอบ</span><span class="e">Daemon · Status · Smoke test</span></span><span class="scount">0/4</span><span class="chev">▾</span></button>
+      <div class="sbody">
+        <p class="intro">ทำให้ gateway รันค้างถาวร (systemd user service) แล้วลองยิงจริง</p>
+        <label class="item"><input type="checkbox"><span class="txt">ติดตั้ง daemon แล้วเช็กสถานะ gateway</span></label>
+        <div class="code"><span class="cap">terminal</span><button class="copy">copy</button><pre>openclaw onboard --install-daemon
+openclaw gateway status</pre></div>
+
+        <label class="item"><input type="checkbox"><span class="txt">เปิด dashboard ผ่าน SSH tunnel (server remote)</span></label>
+        <div class="code"><span class="cap">terminal · เครื่องคุณ (ไม่ใช่ server)</span><button class="copy">copy</button><pre>ssh -L 18789:127.0.0.1:18789 user@your-server
+<span class="c"># แล้วเปิด http://127.0.0.1:18789 บน browser เครื่องคุณ — หรือใช้ Tailscale</span></pre></div>
+
+        <label class="item"><input type="checkbox"><span class="txt"><b>Smoke test:</b> ทักหา bot ใน Telegram → ต้องได้ response กลับ</span></label>
+        <label class="item"><input type="checkbox"><span class="txt">เช็ก <code>/status</code> ในแชต ว่า Runtime = OpenAI Codex / Pi ตามที่ตั้งไว้</span></label>
+      </div>
+    </section>
+
+    <!-- NEXT -->
+    <section class="stage" id="next" data-stage="next" data-open="true">
+      <button class="shead"><span class="snum">06</span><span class="stitle"><span class="t">เสร็จแล้วทำอะไรต่อ?</span><span class="e">Operate · Scale slowly</span></span><span class="scount" style="opacity:0">·</span><span class="chev">▾</span></button>
+      <div class="sbody">
+        <p class="intro" style="color:var(--foam)">มันคือ pattern เดิมที่คุณทำมาแล้ว — <b>"parallelize agents, serialize human judgment"</b> แค่เปลี่ยน worker เป็น Codex และประตูหน้าเป็น OpenClaw ส่วนคุณคือ manager ที่กด approve. ไม่ต้องเข้าใจทุก layer วันนี้ ค่อยขยาย scope ทีละขั้นแบบ Stage 0 ที่วางไว้</p>
+        <div class="step"><span class="n">1</span><div class="b"><strong>เริ่มจากงาน read-only ก่อน</strong><span>text จากมือถือถาม Codex เรื่อง codebase / ให้สรุป PR — ยังไม่ให้แตะ git ดูว่า routing + Telegram + approve flow เวิร์ก</span></div></div>
+        <div class="step"><span class="n">2</span><div class="b"><strong>ต่อ Plan Review Gate ของคุณเข้ามา</strong><span>สั่งงาน → Codex ทำใน worktree → ส่ง diff + summary กลับ Telegram → กด "Open diff" แล้วค่อย /approve</span></div></div>
+        <div class="step"><span class="n">3</span><div class="b"><strong>งานประจำผ่าน cron / heartbeat</strong><span>daily-standup, ticket-to-vault จาก YouTrack ให้รันเองแล้วเด้งเข้า Telegram</span></div></div>
+        <div class="step"><span class="n">4</span><div class="b"><strong>Pedpro workflow</strong><span>YouTrack ticket → ให้ Codex ร่าง plan ตาม CLAUDE.md → รอคุณ approve ก่อนลงมือ</span></div></div>
+
+        <div class="code" style="margin-top:18px"><span class="cap">cheat sheet · คำสั่งที่ใช้บ่อย</span><button class="copy">copy</button><pre>openclaw doctor              <span class="c"># เช็ก config</span>
+openclaw gateway status      <span class="c"># สถานะ gateway</span>
+openclaw dashboard           <span class="c"># เปิด Control UI</span>
+openclaw models list         <span class="c"># ดูโมเดลที่ใช้ได้</span>
+openclaw update              <span class="c"># อัปเดตเวอร์ชัน</span></pre></div>
+      </div>
+    </section>
+
+    <footer>OpenClaw + Codex setup runbook · อ้างอิง docs.openclaw.ai · เวอร์ชัน/คำสั่งอาจเปลี่ยน — เช็ก docs ก่อนลงจริง 🦞</footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  var stages = Array.prototype.slice.call(document.querySelectorAll('.stage'));
+  var checks = Array.prototype.slice.call(document.querySelectorAll('.item input'));
+  var bar=document.getElementById('bar'), doneN=document.getElementById('doneN'), totN=document.getElementById('totN');
+  var railFill=document.getElementById('railFill'), diver=document.getElementById('diver');
+  var mBar=document.getElementById('mBar'), mPct=document.getElementById('mPct'), meterLab=document.getElementById('meterLab');
+  var nodes=Array.prototype.slice.call(document.querySelectorAll('.node'));
+  totN.textContent = checks.length;
+
+  function updateStage(st){
+    var ins = st.querySelectorAll('.item input');
+    if(!ins.length) return;
+    var done = Array.prototype.filter.call(ins,function(i){return i.checked}).length;
+    var cnt = st.querySelector('.scount');
+    if(cnt && cnt.style.opacity!=='0') cnt.textContent = done+'/'+ins.length;
+    var node = nodes.filter(function(n){return n.getAttribute('data-go')===st.id})[0];
+    var full = done===ins.length;
+    st.classList.toggle('done', full);
+    if(node) node.classList.toggle('done', full);
+  }
+
+  function update(){
+    var done = checks.filter(function(c){return c.checked}).length;
+    var pct = checks.length ? Math.round(done/checks.length*100) : 0;
+    doneN.textContent = done;
+    bar.style.width = pct+'%';
+    if(mBar) mBar.style.width = pct+'%';
+    if(mPct) mPct.textContent = pct+'%';
+    railFill.style.height = pct+'%';
+    diver.style.top = pct+'%';
+    stages.forEach(updateStage);
+    if(meterLab){
+      if(pct===0) meterLab.textContent='เริ่มจาก STAGE 00 — ติ๊กทีละข้อตอนทำจริง';
+      else if(pct===100) meterLab.textContent='ครบทุกข้อแล้ว 🦞 ไปต่อที่ STAGE 06 — เสร็จแล้วทำอะไร';
+      else meterLab.textContent='กำลังดำดิ่ง… '+done+' จาก '+checks.length+' ข้อ';
+    }
+    save();
+  }
+
+  // defensive persistence: works in a real browser, silently falls back in sandboxes
+  var KEY='openclaw-setup-v1';
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(checks.map(function(c){return c.checked}))); }catch(e){} }
+  function load(){
+    try{
+      var raw=localStorage.getItem(KEY); if(!raw) return;
+      var arr=JSON.parse(raw);
+      if(Array.isArray(arr)) checks.forEach(function(c,i){ if(typeof arr[i]==='boolean') c.checked=arr[i]; });
+    }catch(e){}
+  }
+
+  checks.forEach(function(c){ c.addEventListener('change', update); });
+
+  // collapsibles
+  stages.forEach(function(st){
+    st.querySelector('.shead').addEventListener('click', function(){
+      st.setAttribute('data-open', st.getAttribute('data-open')==='true'?'false':'true');
+    });
+  });
+  document.getElementById('expandAll').addEventListener('click',function(){stages.forEach(function(s){s.setAttribute('data-open','true')})});
+  document.getElementById('collapseAll').addEventListener('click',function(){stages.forEach(function(s){s.setAttribute('data-open','false')})});
+  document.getElementById('resetAll').addEventListener('click',function(){
+    if(!confirm('รีเซ็ตเช็กลิสต์ทั้งหมด?')) return;
+    checks.forEach(function(c){c.checked=false}); update();
+  });
+
+  // copy buttons
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var pre=btn.parentNode.querySelector('pre');
+      var txt=pre.innerText.replace(/\s+#.*$/gm,'').trim(); // strip trailing comments
+      var full=pre.innerText;
+      var toCopy=full; // copy full incl comments
+      var done=function(){ btn.textContent='copied ✓'; btn.classList.add('ok'); setTimeout(function(){btn.textContent='copy';btn.classList.remove('ok')},1400); };
+      if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(toCopy).then(done,function(){fallback(toCopy);done();}); }
+      else { fallback(toCopy); done(); }
+    });
+  });
+  function fallback(t){ var ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy')}catch(e){} document.body.removeChild(ta); }
+
+  // TOC scroll + active highlight
+  nodes.forEach(function(n){
+    n.addEventListener('click',function(){
+      var t=document.getElementById(n.getAttribute('data-go'));
+      if(t){ t.setAttribute('data-open','true'); t.scrollIntoView({behavior:'smooth',block:'start'}); }
+    });
+  });
+  if('IntersectionObserver' in window){
+    var obs=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){
+          var id=e.target.id;
+          nodes.forEach(function(n){ n.classList.toggle('active', n.getAttribute('data-go')===id && !n.classList.contains('done')); });
+        }
+      });
+    },{rootMargin:'-20% 0px -70% 0px'});
+    stages.forEach(function(s){obs.observe(s)});
+  }
+
+  load(); update();
+})();
+</script>
+</body>
+</html>

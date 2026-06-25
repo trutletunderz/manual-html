@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedpro Orchestrator — Build Spec</title>
+<style>
+  :root{
+    --bg:#16130e; --bg2:#1e1a13; --bg3:#262017; --border:#3a3225; --border2:#4a4030;
+    --amber:#e0a64e; --amber-dim:#b3823a; --text:#e8e2d4; --muted:#a59c87; --faint:#7d745f;
+    --teal:#5fb89a; --red:#d96b5a; --green:#8fb85f; --blue:#6fa8d4;
+    --mono:'SF Mono','JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,'Segoe UI','Noto Sans Thai',sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.7;font-size:15px}
+  a{color:var(--amber);text-decoration:none}
+  code{font-family:var(--mono);font-size:.88em;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--amber)}
+  .layout{display:flex;max-width:1180px;margin:0 auto;gap:0}
+  /* sidebar */
+  nav{position:sticky;top:0;align-self:flex-start;width:262px;height:100vh;overflow-y:auto;padding:26px 14px 40px 22px;border-right:1px solid var(--border);flex-shrink:0}
+  nav .brand{font-family:var(--mono);font-size:13px;color:var(--amber);letter-spacing:.5px;margin-bottom:4px}
+  nav .brandsub{font-size:11px;color:var(--faint);margin-bottom:22px;font-family:var(--mono)}
+  nav a{display:block;color:var(--muted);font-size:13px;padding:5px 10px;border-radius:6px;border-left:2px solid transparent;margin-bottom:1px;transition:color .12s,background .12s}
+  nav a:hover{color:var(--text);background:var(--bg2)}
+  nav a.active{color:var(--amber);border-left-color:var(--amber);background:var(--bg2)}
+  nav a .n{font-family:var(--mono);font-size:11px;color:var(--faint);margin-right:8px}
+  nav a.active .n{color:var(--amber-dim)}
+  /* main */
+  main{flex:1;min-width:0;padding:30px 46px 120px;max-width:880px}
+  header.hero{padding:30px 0 26px;border-bottom:1px solid var(--border);margin-bottom:34px}
+  header.hero h1{font-size:30px;margin:0 0 6px;font-weight:600;letter-spacing:-.5px}
+  header.hero .tag{font-family:var(--mono);font-size:12px;color:var(--amber);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px}
+  header.hero p{color:var(--muted);margin:6px 0;max-width:660px}
+  section{margin:0 0 50px;scroll-margin-top:24px}
+  section>h2{font-size:21px;font-weight:600;margin:0 0 4px;display:flex;align-items:baseline;gap:12px}
+  section>h2 .num{font-family:var(--mono);font-size:14px;color:var(--amber-dim);font-weight:400}
+  section .lead{color:var(--muted);margin:2px 0 20px}
+  h3{font-size:16px;margin:26px 0 8px;color:var(--amber);font-weight:600}
+  p{margin:10px 0}
+  ul{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  .en{color:var(--faint);font-size:13px;font-style:italic}
+  /* callouts */
+  .box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin:18px 0}
+  .box.amber{border-color:var(--amber-dim);background:#241d12}
+  .box.teal{border-color:#2f5d4f;background:#13201b}
+  .box.red{border-color:#5d3530;background:#221512}
+  .box .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px}
+  .box.amber .lbl{color:var(--amber)} .box.teal .lbl{color:var(--teal)} .box.red .lbl{color:var(--red)}
+  .litmus{font-size:17px;text-align:center;padding:8px 0;color:var(--text)}
+  .litmus b{color:var(--amber)}
+  .litmus .no{color:var(--red)}
+  /* code */
+  .code{background:#100e0a;border:1px solid var(--border);border-radius:10px;margin:16px 0;overflow:hidden}
+  .code .head{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border)}
+  .code .head .ttl{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .code .copy{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 10px;cursor:pointer;transition:all .12s}
+  .code .copy:hover{color:var(--amber);border-color:var(--amber-dim)}
+  .code pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.65;color:#d6cfbf}
+  .code pre .c{color:var(--faint)} .code pre .k{color:var(--amber)} .code pre .s{color:var(--green)} .code pre .f{color:var(--teal)}
+  /* table */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border)}
+  th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--amber-dim);font-weight:400}
+  td code{font-size:.85em}
+  .pill{display:inline-block;font-family:var(--mono);font-size:10.5px;padding:1px 8px;border-radius:100px;border:1px solid var(--border2)}
+  .pill.auto{color:var(--green);border-color:#3e5226} .pill.gate{color:var(--amber);border-color:var(--amber-dim)} .pill.opt{color:var(--blue);border-color:#2f4d63}
+  .phase{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--bg);background:var(--amber);border-radius:4px;padding:1px 7px;font-weight:600;margin-right:8px}
+  .phase.p2{background:var(--teal)} .phase.p3{background:var(--blue)}
+  hr{border:none;border-top:1px solid var(--border);margin:30px 0}
+  @media (max-width:840px){
+    nav{display:none} main{padding:24px 20px 80px} header.hero h1{font-size:24px}
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" id="back-home-fab" aria-label="กลับคลังคู่มือ" style="position:fixed;right:18px;bottom:18px;z-index:99999;display:inline-flex;align-items:center;gap:7px;padding:10px 16px;font:600 14px/1 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#fff;background:#0284c7;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px rgba(2,132,199,.35)">🏠 หน้าแรก</a>
+<div class="layout">
+<nav>
+  <div class="brand">PEDPRO ⟡ ORCHESTRATOR</div>
+  <div class="brandsub">build spec · v1</div>
+  <a href="#overview"><span class="n">00</span>ภาพรวม</a>
+  <a href="#principle"><span class="n">01</span>หลักการ + litmus test</a>
+  <a href="#schema"><span class="n">02</span>state schema (SQLite)</a>
+  <a href="#machine"><span class="n">03</span>state machine 7 ขั้น</a>
+  <a href="#runner"><span class="n">04</span>ตัวร้อย (orchestrator)</a>
+  <a href="#gates"><span class="n">05</span>gates + Telegram</a>
+  <a href="#risk"><span class="n">06</span>risk tiers</a>
+  <a href="#verify"><span class="n">07</span>build + verify</a>
+  <a href="#review"><span class="n">08</span>Codex review</a>
+  <a href="#kanban"><span class="n">09</span>Kanban board</a>
+  <a href="#hermes"><span class="n">10</span>Hermes — phase 1</a>
+  <a href="#hooks"><span class="n">11</span>Hermes — future hooks</a>
+  <a href="#rollout"><span class="n">12</span>rollout phases</a>
+  <a href="#runtime"><span class="n">13</span>runtime + security</a>
+  <a href="#feed"><span class="n">14</span>วิธีป้อนให้ Claude Code</a>
+  <a href="#install"><span class="n">15</span>ติดตั้งจริง — ทุก step</a>
+</nav>
+
+<main>
+<header class="hero">
+  <div class="tag">human-gated agentic pipeline · solo dev · local mac</div>
+  <h1>Pedpro Orchestrator — Build Spec</h1>
+  <p>สเปกไฟล์เดียวสำหรับสร้าง "ตัวร้อย" บางๆ ที่ขับ pipeline 7 ขั้นแบบ human-gated, อ่าน/เขียน state ลง SQLite, แสดงผลผ่าน Kanban, และเปิดช่องให้ Hermes เรียนสไตล์โดยไม่แตะ judgment ของมนุษย์</p>
+  <p class="en">A spec for Claude Code to build a thin orchestrator that drives a 7-stage human-gated pipeline on a local Mac. No inbound server — outbound-only, runs 24/7. State in SQLite. Hermes plugs in as a style layer that never touches the gates.</p>
+</header>
+
+<section id="overview">
+  <h2><span class="num">00</span>ภาพรวม</h2>
+  <p class="lead">ระบบนี้ทำให้นายเป็น "ผู้จัดการ" เหนือ agent — ตัดสินที่ 2 จุดเท่านั้น ที่เหลือเป็น auto</p>
+  <p>ส่วนประกอบเกือบทั้งหมดนายมีอยู่แล้ว สิ่งเดียวที่ต้องสร้างใหม่คือ <b>ตัวร้อย</b> — สคริปต์ Python บางๆ ที่อ่าน state แล้ว "กดปุ่ม" slash command ตามลำดับ ไม่ใช่ framework</p>
+  <table>
+    <tr><th>ส่วน</th><th>ทำหน้าที่</th><th>สถานะ</th></tr>
+    <tr><td><b>ตัวร้อย</b> (Python)</td><td>poll → อ่าน state → dispatch command → เขียน state</td><td>สร้างใหม่</td></tr>
+    <tr><td>State store</td><td>SQLite ไฟล์เดียว · จำว่า task ไหนอยู่ขั้นไหน (durable)</td><td>สร้างใหม่</td></tr>
+    <tr><td>Kanban</td><td>อ่าน state มาแสดงคอลัมน์ตาม "ใครถือลูก"</td><td>สร้างใหม่ (เล็ก)</td></tr>
+    <tr><td>Claude Code (Max ×5)</td><td>มือเขียน · build + self-heal</td><td>มีแล้ว</td></tr>
+    <tr><td>Codex (ChatGPT Plus)</td><td>reviewer อิสระ · คนละหัวกับคนเขียน</td><td>มีแล้ว</td></tr>
+    <tr><td><code>.claude/commands</code></td><td>นิยามแต่ละ stage (<code>/intake</code>, <code>/implement</code>)</td><td>มีแล้ว</td></tr>
+    <tr><td><code>CLAUDE.md</code></td><td>style layer แบบ static (convention)</td><td>มีแล้ว</td></tr>
+    <tr><td>Playwright</td><td>functional E2E + visual regression</td><td>มีแล้ว</td></tr>
+    <tr><td>Plan Review Gate</td><td>source of truth ของการอนุมัติ (TS/Firestore)</td><td>มีแล้ว</td></tr>
+    <tr><td>Hermes</td><td>เรียนสไตล์ตั้งแต่แรก → ป้อน plan ทีหลัง</td><td>learn-first</td></tr>
+  </table>
+</section>
+
+<section id="principle">
+  <h2><span class="num">01</span>หลักการ + litmus test</h2>
+  <p class="lead">"parallelize agents, serialize human judgment" — ขนาน agent ได้ แต่ judgment ต้องเรียงผ่านมนุษย์ทีละอัน</p>
+  <div class="box amber">
+    <div class="lbl">litmus test · ใช้เช็คทุกไอเดียในอนาคต</div>
+    <div class="litmus">ใช้ AI/Hermes เพื่อ <b>จำ / เสนอ / ร่าง</b> ได้<br>เพื่อ <span class="no">ตัดสิน / ลงมือแทนนาย</span> ไม่ได้</div>
+  </div>
+  <p>กฎที่ห้ามแตะ:</p>
+  <ul>
+    <li><b>gate ทั้งสองเป็นของนายคนเดียว</b> — ไม่มี agent ใด auto-approve, auto-merge, หรือสร้างแล้วรัน task เอง</li>
+    <li><b>operational state อยู่ใน SQLite</b> (deterministic, แม่นยำ) — ไม่ใช่ความจำของ LLM</li>
+    <li><b>self-heal loop ต้องมีเพดาน</b> — <code>max_attempts</code> แล้ว escalate ไม่วนไม่จบ</li>
+    <li><b><code>blind_approve_rate</code> คือ metric เตือนภัย</b> — ถ้า gate ไหนกดผ่าน 100% ติดกันนานๆ ให้สงสัยว่า gate นั้นกำลังตาย</li>
+  </ul>
+</section>
+
+<section id="schema">
+  <h2><span class="num">02</span>state schema (SQLite)</h2>
+  <p class="lead">หัวใจของทั้งระบบ — ตารางเดียวที่ทุกส่วนอ้างอิง ปิด/sleep เครื่องแล้วเปิดมาทำต่อจากตรงนี้</p>
+  <div class="code">
+    <div class="head"><span class="ttl">schema.sql</span><button class="copy">copy</button></div>
+<pre><span class="k">CREATE TABLE</span> tasks (
+  id            <span class="k">TEXT PRIMARY KEY</span>,        <span class="c">-- youtrack id เช่น PEDPRO-1320</span>
+  title         <span class="k">TEXT NOT NULL</span>,
+  stage         <span class="k">TEXT NOT NULL</span>,           <span class="c">-- ดู state machine ขั้น 03</span>
+  risk_tier     <span class="k">TEXT NOT NULL DEFAULT</span> <span class="s">'medium'</span>, <span class="c">-- low | medium | high</span>
+  attempts      <span class="k">INTEGER NOT NULL DEFAULT</span> <span class="s">0</span>,  <span class="c">-- นับรอบ self-heal</span>
+  worktree      <span class="k">TEXT</span>,                    <span class="c">-- path ของ git worktree</span>
+  plan_path     <span class="k">TEXT</span>,                    <span class="c">-- artifact ของ plan</span>
+  preview_url   <span class="k">TEXT</span>,                    <span class="c">-- link ให้นายดูที่ gate 2</span>
+  pr_url        <span class="k">TEXT</span>,
+  last_error    <span class="k">TEXT</span>,                    <span class="c">-- เก็บไว้ตอน escalate</span>
+  updated_at    <span class="k">TEXT NOT NULL</span>            <span class="c">-- ISO8601</span>
+);
+
+<span class="c">-- log ทุก transition ไว้ตรวจย้อนหลัง + feed metric</span>
+<span class="k">CREATE TABLE</span> transitions (
+  id         <span class="k">INTEGER PRIMARY KEY AUTOINCREMENT</span>,
+  task_id    <span class="k">TEXT NOT NULL</span>,
+  from_stage <span class="k">TEXT</span>, to_stage <span class="k">TEXT NOT NULL</span>,
+  actor      <span class="k">TEXT NOT NULL</span>,             <span class="c">-- system | user</span>
+  note       <span class="k">TEXT</span>,
+  at         <span class="k">TEXT NOT NULL</span>
+);
+
+<span class="c">-- ฟีดให้ Hermes เรียน (ขั้น 10) — เก็บการแก้/ตัดสินของนายที่ gate</span>
+<span class="k">CREATE TABLE</span> gate_feedback (
+  id        <span class="k">INTEGER PRIMARY KEY AUTOINCREMENT</span>,
+  task_id   <span class="k">TEXT NOT NULL</span>,
+  gate      <span class="k">TEXT NOT NULL</span>,              <span class="c">-- gate1 | gate2</span>
+  verdict   <span class="k">TEXT NOT NULL</span>,              <span class="c">-- approved | edited | rejected</span>
+  diff      <span class="k">TEXT</span>,                       <span class="c">-- สิ่งที่นายแก้ (training signal)</span>
+  at        <span class="k">TEXT NOT NULL</span>
+);</pre>
+  </div>
+  <p class="en">Single source of truth. The orchestrator is the only writer; Kanban and metrics are readers. <code>gate_feedback</code> is the data Hermes learns from — generated automatically by your normal gate decisions.</p>
+</section>
+
+<section id="machine">
+  <h2><span class="num">03</span>state machine 7 ขั้น</h2>
+  <p class="lead">แต่ละ task เดินผ่าน stage เหล่านี้ ตัวร้อยอ่าน <code>stage</code> แล้วรู้ว่าต้องทำอะไรต่อ</p>
+  <table>
+    <tr><th>stage</th><th>ใคร</th><th>ทำอะไร</th><th>→ ไปไหนต่อ</th></tr>
+    <tr><td><code>triage</code></td><td><span class="pill auto">auto</span></td><td>poll YouTrack, จัด risk, แจ้งนาย</td><td>นายเลือก → <code>planning</code></td></tr>
+    <tr><td><code>planning</code></td><td><span class="pill auto">auto</span></td><td><code>/intake</code> → ร่าง plan (+ Hermes style)</td><td><code>gate1</code></td></tr>
+    <tr><td><code>gate1</code></td><td><span class="pill gate">นาย</span></td><td>อนุมัติ plan (risk ต่ำ auto-pass)</td><td>approve → <code>building</code></td></tr>
+    <tr><td><code>building</code></td><td><span class="pill auto">auto</span></td><td><code>/implement</code> + lint/test/Playwright</td><td>เขียว → <code>review</code> · fail → self-heal</td></tr>
+    <tr><td><code>review</code></td><td><span class="pill auto">auto</span></td><td>Codex ตรวจ diff + visual diff</td><td><code>gate2</code></td></tr>
+    <tr><td><code>gate2</code></td><td><span class="pill gate">นาย</span></td><td>ดู preview · UX/logic/สวยงาม</td><td>approve → <code>ship</code> · แก้ → <code>planning</code></td></tr>
+    <tr><td><code>ship</code></td><td><span class="pill auto">auto</span></td><td>เปิด PR, ปิด YouTrack, แจ้งนาย</td><td><code>done</code> → task ถัดไป</td></tr>
+  </table>
+  <div class="box red">
+    <div class="lbl">loop guard</div>
+    <p style="margin:4px 0">ที่ <code>building</code>: ถ้า test fail → <code>attempts++</code> แล้ว self-heal วนใน stage เดิม <b>จนถึง <code>max_attempts</code> (เริ่มที่ 3)</b> เกินนั้น → set <code>last_error</code>, escalate หานายผ่าน Telegram, หยุดวน</p>
+  </div>
+</section>
+
+<section id="runner">
+  <h2><span class="num">04</span>ตัวร้อย (orchestrator)</h2>
+  <p class="lead">แก่นทั้งหมด: อ่าน state → เลือก stage ถัดไป → dispatch → เขียน state กลับ (next-step sequencing policy)</p>
+  <div class="code">
+    <div class="head"><span class="ttl">runner.py — โครงหลัก (pseudocode)</span><button class="copy">copy</button></div>
+<pre><span class="k">def</span> <span class="f">tick</span>():                       <span class="c"># เรียกทุก 1 ชม. ตอนเครื่องตื่น</span>
+    <span class="f">poll_youtrack_into_triage</span>()   <span class="c"># stage 1: เพิ่ม task ใหม่</span>
+    <span class="k">for</span> task <span class="k">in</span> <span class="f">load_actionable</span>():  <span class="c"># task ที่ stage เป็น auto</span>
+        <span class="k">match</span> task.stage:
+            <span class="k">case</span> <span class="s">"planning"</span>:
+                plan = <span class="f">dispatch</span>(<span class="s">f"/intake {task.id}"</span>, model=<span class="s">"opus"</span>)
+                <span class="f">advance</span>(task, <span class="s">"gate1"</span>); <span class="f">notify_gate</span>(task, <span class="s">"gate1"</span>)
+            <span class="k">case</span> <span class="s">"building"</span>:
+                res = <span class="f">dispatch</span>(<span class="s">f"/implement {task.id}"</span>, model=<span class="s">"sonnet"</span>,
+                               worktree=task.worktree)
+                <span class="k">if</span> res.green:
+                    <span class="f">advance</span>(task, <span class="s">"review"</span>)
+                <span class="k">elif</span> task.attempts &lt; MAX_ATTEMPTS:
+                    <span class="f">bump_attempt</span>(task)         <span class="c"># self-heal วนต่อ</span>
+                <span class="k">else</span>:
+                    <span class="f">escalate</span>(task, res.error)   <span class="c"># เกินเพดาน → หานาย</span>
+            <span class="k">case</span> <span class="s">"review"</span>:
+                verdict = <span class="f">codex_review</span>(task)    <span class="c"># reviewer อิสระ</span>
+                <span class="f">advance</span>(task, <span class="s">"gate2"</span>); <span class="f">notify_gate</span>(task, <span class="s">"gate2"</span>)
+            <span class="k">case</span> <span class="s">"ship"</span>:
+                <span class="f">open_pr</span>(task); <span class="f">close_youtrack</span>(task); <span class="f">advance</span>(task, <span class="s">"done"</span>)
+
+<span class="c"># gate ไม่ได้อยู่ใน tick — มันถูก trigger ด้วย Telegram callback (ขั้น 05)</span>
+<span class="c"># dispatch = subprocess: claude -p "&lt;cmd&gt;" --output-format json --permission-mode ...</span></pre>
+  </div>
+  <div class="code">
+    <div class="head"><span class="ttl">dispatch ผ่าน headless bridge</span><button class="copy">copy</button></div>
+<pre>claude -p <span class="s">"/intake PEDPRO-1320"</span> \
+  --output-format json \
+  --permission-mode plan \      <span class="c"># intake = read-only</span>
+  --model opus
+
+claude -p <span class="s">"/implement PEDPRO-1320"</span> \
+  --output-format json \
+  --allowedTools <span class="s">"Edit,Bash(npm test),Bash(npm run lint)"</span> \  <span class="c"># scope แคบ</span>
+  --model sonnet</pre>
+  </div>
+  <div class="box">
+    <div class="lbl" style="color:var(--muted)">หมายเหตุ</div>
+    <p style="margin:4px 0">ตัวร้อยเป็น <b>stateless ต่อ tick</b> — ทุกอย่างที่ต้องจำอยู่ใน SQLite ไม่ใช่ในตัวแปร process เพราะงั้นปิดเครื่องกลางคันแล้วเปิดมา tick ใหม่ ทุก task เดินต่อจากเดิมได้</p>
+  </div>
+</section>
+
+<section id="gates">
+  <h2><span class="num">05</span>gates + Telegram</h2>
+  <p class="lead">2 จุดที่นายตัดสิน — async ผ่านมือถือ โค้ดวิ่งจริงตอนเครื่องตื่นรอบถัดไป</p>
+  <p>Telegram = <b>push</b> (เด้งมาหานายตอนถึง gate) · Kanban = <b>pull</b> (นายเปิดดูภาพรวมเมื่อต้องการ) สองช่องเสริมกัน</p>
+  <div class="code">
+    <div class="head"><span class="ttl">gate callback contract</span><button class="copy">copy</button></div>
+<pre><span class="c"># gate 1 — อนุมัติ plan</span>
+<span class="c"># Telegram ส่งปุ่ม: [ดู diff] [/approve] [/reject] [แก้: พิมพ์ตอบ]</span>
+<span class="c"># เงื่อนไขกันการกดมั่ว: ต้องแตะ "ดู diff" ก่อน /approve จึงจะรับ</span>
+on_callback(<span class="s">"approve"</span>, task_id, gate=<span class="s">"gate1"</span>):
+    <span class="f">record_feedback</span>(task_id, <span class="s">"gate1"</span>, <span class="s">"approved"</span>)
+    <span class="f">advance</span>(task_id, <span class="s">"building"</span>)
+    <span class="f">create_worktree</span>(task_id)
+
+on_callback(<span class="s">"reject"</span> | edit_text, task_id, gate=<span class="s">"gate1"</span>):
+    <span class="f">record_feedback</span>(task_id, <span class="s">"gate1"</span>, <span class="s">"edited"</span>, diff=edit_text)
+    <span class="f">advance</span>(task_id, <span class="s">"planning"</span>)   <span class="c"># ร่างใหม่ตาม feedback</span>
+
+<span class="c"># gate 2 — ตรวจผลที่เขียวแล้ว (UX / logic / ความสวยงาม)</span>
+on_callback(<span class="s">"approve"</span>, task_id, gate=<span class="s">"gate2"</span>):
+    <span class="f">record_feedback</span>(task_id, <span class="s">"gate2"</span>, <span class="s">"approved"</span>)
+    <span class="f">advance</span>(task_id, <span class="s">"ship"</span>)
+
+on_callback(edit_text, task_id, gate=<span class="s">"gate2"</span>):
+    <span class="f">record_feedback</span>(task_id, <span class="s">"gate2"</span>, <span class="s">"edited"</span>, diff=edit_text)
+    <span class="f">advance</span>(task_id, <span class="s">"planning"</span>)   <span class="c"># human-feedback loop</span></pre>
+  </div>
+  <div class="box amber">
+    <div class="lbl">สำคัญ</div>
+    <p style="margin:4px 0">ทุก callback <b>เขียน <code>gate_feedback</code> เสมอ</b> — นี่คือจุดที่การตัดสินของนายกลายเป็น training data ให้ Hermes โดยอัตโนมัติ (ดูขั้น 10)</p>
+  </div>
+</section>
+
+<section id="risk">
+  <h2><span class="num">06</span>risk tiers</h2>
+  <p class="lead">ไม่ใช่ทุก task ต้องผ่าน gate 1 เต็มรูปแบบ — risk ต่ำ auto-pass เพื่อให้นาย "ดูจริง" เฉพาะที่ควรดู</p>
+  <table>
+    <tr><th>tier</th><th>ตัวอย่าง</th><th>gate 1</th></tr>
+    <tr><td><span class="pill auto">low</span></td><td>copy, docs, component เดี่ยวที่ไม่มี mutation</td><td>auto-pass (log ไว้)</td></tr>
+    <tr><td><span class="pill gate">medium</span></td><td>UI หลายส่วน, state ในหน้าเดียว</td><td>นายดู (เด้ง Telegram)</td></tr>
+    <tr><td><span class="pill gate">high</span></td><td>mutation, auth, payment, migration, shared state</td><td>บังคับดู · ห้าม auto</td></tr>
+  </table>
+  <p>ใช้ <code>risk_policy.py</code> / <code>risk-tiers.json</code> ที่มีอยู่แล้ว · gate 2 ไม่ขึ้นกับ risk — ตรวจ "สวยงาม" เป็นมนุษย์เสมอ (Playwright ตรวจไม่ได้)</p>
+</section>
+
+<section id="verify">
+  <h2><span class="num">07</span>build + verify</h2>
+  <p class="lead">verify ก่อนรบกวนนาย — นายเห็นแค่งานที่ "เขียวแล้ว" เท่านั้น</p>
+  <p>check แยก 3 ชั้น ไปคนละปลายทาง:</p>
+  <table>
+    <tr><th>check</th><th>เครื่องตรวจได้?</th><th>ปลายทาง</th></tr>
+    <tr><td>functional E2E (Playwright), lint, build, test</td><td>ได้ (deterministic)</td><td>self-heal loop ใน <code>building</code> (≤3)</td></tr>
+    <tr><td>visual regression (pixel diff)</td><td>ได้แต่กำกวม</td><td>escalate → gate 2 (ตั้งใจ? หรือพัง?)</td></tr>
+    <tr><td>ความสวยงาม / UX</td><td><b>ไม่ได้</b></td><td>gate 2 — นายดู preview เท่านั้น</td></tr>
+  </table>
+  <div class="box red">
+    <div class="lbl">baseline ownership</div>
+    <p style="margin:4px 0">visual baseline ของ Playwright <b>ต้องมาจาก mockup ที่นายอนุมัติ</b> ไม่ใช่ auto-baseline จาก output ของ agent — ไม่งั้นนายให้ agent ตรวจการบ้านตัวเอง</p>
+  </div>
+</section>
+
+<section id="review">
+  <h2><span class="num">08</span>Codex review (อิสระ)</h2>
+  <p class="lead">คนเขียน ≠ คนตรวจ — ทำให้คำว่า "เขียว" เชื่อถือได้</p>
+  <p>Claude Code (Sonnet) เป็นคนเขียนที่ <code>building</code> → Codex เป็นคนตรวจที่ <code>review</code> ตรวจ diff เทียบ Bruno spec, รัน scrutinize, เช็ก visual diff ก่อนส่งถึง gate 2</p>
+  <div class="box amber">
+    <div class="lbl">ทำไมสำคัญ</div>
+    <p style="margin:4px 0">ถ้า agent ตัวเดียวเขียนทั้งโค้ดและ test "ผ่าน" แทบไม่มีความหมาย — มันเขียน test ให้ตัวเองผ่านได้ test ต้องผูกกับ <b>Bruno spec / mockup</b> (source of truth) ไม่ใช่ผูกกับ implementation</p>
+  </div>
+</section>
+
+<section id="kanban">
+  <h2><span class="num">09</span>Kanban board</h2>
+  <p class="lead">หน้าต่างอ่าน state — ไม่ใช่ระบบใหม่ แค่ <code>SELECT</code> จาก SQLite มา render</p>
+  <p>จัดคอลัมน์ตาม "ใครถือลูก" ไม่ใช่ตาม 7 ขั้น (รอเลือก / ระบบกำลังทำ / รอนายตัดสิน / เสร็จ) การ์ดบอกขั้นปัจจุบัน + progress · คอลัมน์ "รอนายตัดสิน" ไฮไลต์</p>
+  <div class="code">
+    <div class="head"><span class="ttl">kanban query — จัดกลุ่มตาม actor lane</span><button class="copy">copy</button></div>
+<pre><span class="k">SELECT</span> id, title, stage, risk_tier, attempts, preview_url,
+  <span class="k">CASE</span>
+    <span class="k">WHEN</span> stage = <span class="s">'triage'</span>                <span class="k">THEN</span> <span class="s">'รอเลือก'</span>
+    <span class="k">WHEN</span> stage <span class="k">IN</span> (<span class="s">'gate1'</span>,<span class="s">'gate2'</span>)      <span class="k">THEN</span> <span class="s">'รอนายตัดสิน'</span>
+    <span class="k">WHEN</span> stage = <span class="s">'done'</span>                  <span class="k">THEN</span> <span class="s">'เสร็จ'</span>
+    <span class="k">ELSE</span>                                  <span class="s">'ระบบกำลังทำ'</span>
+  <span class="k">END</span> <span class="k">AS</span> lane
+<span class="k">FROM</span> tasks <span class="k">WHERE</span> stage != <span class="s">'archived'</span>
+<span class="k">ORDER BY</span> updated_at <span class="k">DESC</span>;</pre>
+  </div>
+  <p>render ด้วย pattern Vue 3.5 + Naive UI + Pinia ที่มีอยู่ (จาก Plan Review Gate dashboard) · รันเป็นหน้า localhost บน Mac เปิดใน browser ตอนทำงาน · orchestrator ขยับ stage = การ์ดขยับคอลัมน์เอง</p>
+</section>
+
+<section id="hermes">
+  <h2><span class="num">10</span>Hermes — phase 1 (style → plan)</h2>
+  <p class="lead">Hermes อยู่คนละท่อกับ Kanban โดยสิ้นเชิง — มันเรียน "สไตล์" ส่วน SQLite จำ "สถานะ"</p>
+  <p>วงเรียนรู้ปิด 2 ทิศ — เสียบที่ <code>planning</code> เท่านั้น ไม่แตะ gate:</p>
+  <ul>
+    <li><b>ป้อนออก</b> (เส้นเขียวทึบ): ตอน <code>/intake</code> เรียก Hermes ขอ style hint → plan ร่างมา "เป็นนาย" ตั้งแต่แรก</li>
+    <li><b>เรียนกลับ</b> (เส้นเขียวประ): ทุก row ใน <code>gate_feedback</code> (นายแก้/อนุมัติ/ปฏิเสธ) ไหลกลับสอน Hermes ว่า "ที่ถูกควรเป็นแบบนี้"</li>
+  </ul>
+  <div class="code">
+    <div class="head"><span class="ttl">hermes hook — interface เท่านั้น (phase 1)</span><button class="copy">copy</button></div>
+<pre><span class="c"># ป้อน style เข้า plan — เปิดเมื่อ Hermes มีข้อมูลพอ (ทีหลัง)</span>
+<span class="k">if</span> HERMES_SUGGEST:
+    style = hermes.<span class="f">suggest_style</span>(task)   <span class="c"># คืน hint, ไม่ตัดสินใจ</span>
+    intake_prompt += style.<span class="f">as_context</span>()
+
+<span class="c"># เรียนจาก gate — เปิดตั้งแต่ loop นิ่ง (เก็บ data ทันที, ไม่ป้อนกลับ)</span>
+<span class="k">def</span> <span class="f">on_gate_feedback</span>(row):
+    <span class="k">if</span> HERMES_LEARN:
+        hermes.<span class="f">learn</span>(row.task_id, row.verdict, row.diff)</pre>
+  </div>
+  <div class="box teal">
+    <div class="lbl">เส้นแบ่งที่ห้ามข้าม</div>
+    <p style="margin:4px 0">Hermes เรียน <b>จาก</b> การตัดสินของนายได้ — แต่ห้ามเรียนแล้ว <b>แทน</b> การตัดสิน · ห้ามมีเส้นจาก Hermes ไปยัง <code>advance(task, "building")</code> หรือ <code>"ship"</code> เด็ดขาด gate ยังเป็นของนายเสมอ</p>
+  </div>
+  <div class="box teal">
+    <div class="lbl">เริ่มด้วยกัน — เรียนก่อน ป้อนทีหลัง</div>
+    <p style="margin:4px 0">เสียบ Hermes ตั้งแต่แรกได้ แต่เปิดทีละเส้น: <code>HERMES_LEARN=true</code> ตั้งแต่ loop นิ่ง (เก็บการตัดสินของนายสะสมทันที) · <code>HERMES_SUGGEST=false</code> ไว้ก่อน เพราะวันแรก Hermes ยัง data-starved + <code>CLAUDE.md</code> ครบอยู่แล้ว · พอ feedback สะสมพอ (plan เริ่มมีจุดที่ CLAUDE.md เขียนเป็นกฎไม่ได้) ค่อยพลิก <code>HERMES_SUGGEST=true</code> — ตอนนั้น Hermes มีข้อมูลหลายสัปดาห์รออยู่แล้ว ไม่เริ่มจากศูนย์</p>
+  </div>
+</section>
+
+<section id="hooks">
+  <h2><span class="num">11</span>Hermes — future hooks</h2>
+  <p class="lead">จุดต่อที่เว้นไว้ — ทุกอันผ่าน litmus test (จำ/เสนอ/ร่าง) เปิดทีละอันเมื่อ data แน่น</p>
+
+  <h3><span class="phase">P1</span>project memory ให้ intake</h3>
+  <p>Hermes สะสมความรู้ codebase ข้ามเวลา (pattern เคยใช้, Bruno convention, เคยแก้คล้ายนี้ยังไง) → <code>/intake</code> query "เรื่องนี้เคยทำไหม" ต่อยอด vault-search ที่มีอยู่</p>
+
+  <h3><span class="phase p2">P2</span>เสนอลำดับ task ที่ triage</h3>
+  <p>การ <b>ดึง</b> task ยังเป็นงาน deterministic ของตัวร้อย (poll → เขียน state) — Hermes ไม่ดึงเอง เพราะนั่นคือ "ลงมือ" และทำให้ Hermes กลายเป็น orchestrator ซ้อน · แต่หลังดึงมาแล้ว Hermes เรียนได้ว่านายมักเลือกอะไรก่อน (bug ก่อน feature, task เล็กตอนเช้า) → <b>เสนอลำดับ/ไฮไลต์ "น่าทำตัวนี้ก่อน"</b> นายยังเป็นคนเลือก ผ่าน litmus (เสนอ)</p>
+
+  <h3><span class="phase p2">P2</span>rationale log → CLAUDE.md promotion</h3>
+  <p>บันทึก "ทำไม" นายแก้ที่ gate · ถ้ากฎเดิมโผล่ซ้ำหลายครั้ง → เตือนนายว่า "อันนี้ควรเลื่อนจาก soft memory เป็นกฎตายตัวใน CLAUDE.md" Hermes เป็นตัวค้นว่าอะไรควรกลายเป็น convention</p>
+
+  <h3><span class="phase p2">P2</span>ร่างงานในสำเนียงนาย</h3>
+  <p>PR description, YouTrack comment, commit message, changelog — Hermes ร่างก่อน นายอ่านแล้วกดส่ง (เสนอ/ร่าง ไม่ใช่ส่งเอง)</p>
+
+  <h3><span class="phase p3">P3</span>advisory digest เชิงรุก</h3>
+  <p>เฝ้า codebase เป็นสัปดาห์ → "pattern นี้ซ้ำ 6 ที่ น่า refactor" หรือ "component นี้โดน reject บ่อย" → สรุปเป็น <b>draft task</b> ส่ง Telegram · เสนอเท่านั้น ไม่ลงมือ</p>
+
+  <h3><span class="phase p3">P3</span>จำ spec ข้าม session</h3>
+  <p>ถือ HTML-as-spec ไว้ระหว่าง session (workflow "เริ่มหน้าใหม่") ไม่ต้อง re-feed context เองทุกครั้ง</p>
+
+  <div class="box red">
+    <div class="lbl">ห้าม (ตก litmus)</div>
+    <ul style="margin:4px 0">
+      <li>ให้ Hermes เฝ้าซ่อม orchestrator เอง — overkill, log + alert พอ</li>
+      <li>ให้ Hermes ดึง/route task เอง — เป็นงาน deterministic ของตัวร้อย (ตก "ลงมือ")</li>
+      <li>auto-approve / auto-merge / สร้างแล้วรัน task เอง — ตก "ตัดสิน/ลงมือแทนนาย"</li>
+    </ul>
+  </div>
+</section>
+
+<section id="rollout">
+  <h2><span class="num">12</span>rollout phases</h2>
+  <p class="lead">อย่าโหลดทุกอย่างวันแรก — พิสูจน์ทีละชั้นว่าคุ้ม แล้วค่อยเพิ่ม</p>
+  <table>
+    <tr><th>phase</th><th>เพิ่มอะไร</th><th>เกณฑ์ผ่านไปต่อ</th></tr>
+    <tr><td><b>0</b></td><td>ตัวร้อย + SQLite + 2 gate + Telegram (Hermes ปิดหมด)</td><td>วิ่งครบ loop กับ task จริง 1 ตัว</td></tr>
+    <tr><td><b>1</b></td><td>Kanban + Codex review + risk auto-pass + <code>HERMES_LEARN=true</code></td><td><code>blind_approve_rate</code> นิ่ง + Hermes เริ่มสะสม feedback</td></tr>
+    <tr><td><b>2</b></td><td>พลิก <code>HERMES_SUGGEST=true</code> (style → plan)</td><td>plan reject น้อยลงวัดได้</td></tr>
+    <tr><td><b>3</b></td><td>future hooks ทีละอัน (P1 → P2 → P3)</td><td>data ของ hook ก่อนหน้าแน่น</td></tr>
+  </table>
+</section>
+
+<section id="runtime">
+  <h2><span class="num">13</span>runtime + security</h2>
+  <p class="lead">รัน 24/7 บน MacBook Air M4 (เปิดทิ้งไว้) — ปลอดภัยได้เพราะ outbound-only + มี guard กั้น runaway</p>
+  <div class="box teal">
+    <div class="lbl">ทำไม 24/7 ยังปลอดภัย</div>
+    <p style="margin:4px 0">security win เดิม (vs OpenClaw) คือ "ไม่มี inbound server เปิดออกเน็ต" — <b>ไม่ใช่ "uptime ต่ำ"</b> · ตัวร้อยเป็น outbound-only (poll YouTrack, long-poll Telegram, เรียก claude -p) ไม่เปิด port รับเข้า เปิดทิ้ง 24 ชม. หรือ 1 ชม. attack surface เท่ากัน</p>
+  </div>
+  <ul>
+    <li><b>24/7 ช่วยเฉพาะ auto-stage</b> — planning/build/review เดินตอนนายหลับได้ แต่ gate ยังหยุดรอนายอยู่ดี · ประโยชน์จริง = "อนุมัติ plan ก่อนนอน → ตื่นมาเจอผลที่ build+review เสร็จรอที่ gate 2"</li>
+    <li><b>runaway ถูกกั้น</b> — เปิดทิ้งไว้ไม่เผา token มั่ว เพราะ self-heal cap ที่ <code>max_attempts</code> และทุกอย่างหยุดที่ gate</li>
+    <li><b>กัน sleep</b> — ใช้ <code>caffeinate</code> ตอนรัน หรือ pmset · เสียบสายไฟไว้ (งานเบา M4 fanless รับได้สบาย เพราะ inference อยู่บน cloud ไม่รันโมเดล local)</li>
+    <li><b>รันผ่าน launchd LaunchAgent</b> — survive restart, รัน unattended · เริ่มจากรันมือเห็น log ก่อน แล้วค่อยอัปเป็น LaunchAgent</li>
+    <li><b>คง outbound-only (เส้นห้ามข้าม)</b> — Telegram ใช้ getUpdates (long-poll) ไม่ใช่ webhook · Kanban bind <code>localhost</code> เท่านั้น ห้าม <code>0.0.0.0</code> · ข้ามเมื่อไหร่ security win หายทันที</li>
+    <li>secret (YouTrack/Telegram token) เก็บใน <code>.env</code> นอก git · SQLite ไฟล์ local ไม่ sync ออก · 16GB ไม่ใช่คอขวด</li>
+  </ul>
+</section>
+
+<section id="feed">
+  <h2><span class="num">14</span>วิธีป้อนให้ Claude Code</h2>
+  <p class="lead">ไฟล์นี้คือ spec — โยนเข้า Claude Code แล้วให้มันสร้างตามนี้ทีละ phase</p>
+  <div class="code">
+    <div class="head"><span class="ttl">prompt เริ่มต้น (phase 0)</span><button class="copy">copy</button></div>
+<pre>อ่าน spec ใน pedpro-orchestrator-spec.html
+
+สร้าง phase 0 ก่อน:
+1. schema.sql ตามขั้น 02
+2. runner.py ตามขั้น 04 (tick loop, dispatch ผ่าน claude -p)
+3. gate handler ตามขั้น 05 (Telegram callback + gate_feedback)
+4. max_attempts + escalate ตามขั้น 03
+
+ยังไม่ต้องทำ: Kanban, Codex, Hermes (เปิด flag ไว้ปิด)
+ใช้ convention ใน CLAUDE.md · ทุก state เขียนลง SQLite ไม่ใช่ตัวแปร process
+ทำ plan มาก่อน ฉันจะอนุมัติเอง</pre>
+  </div>
+  <p style="color:var(--muted)">สังเกตบรรทัดสุดท้าย — แม้แต่ตอนสร้างระบบ นายก็ยัง serialize judgment ของตัวเอง: ให้มันทำ plan มาให้นายอนุมัติก่อน ลงมือ หลักการเดียวกับระบบที่กำลังสร้าง</p>
+</section>
+
+<section id="install">
+  <h2><span class="num">15</span>ติดตั้งจริง — ทุก step</h2>
+  <p class="lead">setup environment + รัน phase 0 + ขยับเป็น 24/7 · code ของระบบ (runner.py ฯลฯ) ให้ Claude Code สร้างจากส่วน 14 ลงใน scaffold นี้</p>
+  <div class="box">
+    <div class="lbl" style="color:var(--muted)">ก่อนเริ่ม</div>
+    <p style="margin:4px 0">ของส่วนใหญ่นายมีแล้ว (Claude Code Max, Codex, repo Pedpro, Playwright) — step ด้านล่างคือ "verify ของเดิม + สร้าง scaffold ของตัวร้อยรอบๆ มัน" แทนที่ <code>YOU</code> / <code>YOURORG</code> ด้วยค่าจริงของนาย</p>
+  </div>
+
+  <h3>step 1 — เช็ก prerequisites</h3>
+  <div class="code">
+    <div class="head"><span class="ttl">terminal</span><button class="copy">copy</button></div>
+<pre>sw_vers                  <span class="c"># macOS</span>
+python3 --version        <span class="c"># ต้อง 3.12+ (f-string, match-case)</span>
+node --version           <span class="c"># 18+ แนะนำ 22 LTS — สำหรับ Playwright/tooling</span>
+git --version
+claude --version         <span class="c"># Claude Code ติดตั้งแล้ว</span>
+claude whoami            <span class="c"># ล็อกอิน Max แล้ว (subscription)</span>
+codex --version          <span class="c"># Codex CLI (ChatGPT Plus)</span></pre>
+  </div>
+  <p>ถ้าขาดอะไร: <code>brew install python@3.12</code> · Node ผ่าน nvm (<code>nvm install 22</code>) · Claude Code: native installer หรือ <code>npm install -g @anthropic-ai/claude-code</code> (อย่าใช้ sudo)</p>
+
+  <h3>step 2 — scaffold โปรเจกต์ตัวร้อย</h3>
+  <div class="code">
+    <div class="head"><span class="ttl">terminal</span><button class="copy">copy</button></div>
+<pre>mkdir -p ~/pedpro-orchestrator/{db,logs}
+cd ~/pedpro-orchestrator
+<span class="c"># ไฟล์ที่จะมี: runner.py · telegram.py · db.py · schema.sql · .env</span>
+<span class="c"># slash command อยู่ใน repo Pedpro (.claude/commands) ไม่ใช่ที่นี่</span></pre>
+  </div>
+
+  <h3>step 3 — Python venv + deps</h3>
+  <div class="code">
+    <div class="head"><span class="ttl">terminal</span><button class="copy">copy</button></div>
+<pre>python3 -m venv .venv
+source .venv/bin/activate
+pip install requests python-dotenv   <span class="c"># sqlite3 เป็น stdlib ไม่ต้องลง</span></pre>
+  </div>
+
+  <h3>step 4 — สร้าง state DB</h3>
+  <div class="code">
+    <div class="head"><span class="ttl">terminal — ใช้ schema.sql จากส่วน 02</span><button class="copy">copy</button></div>
+<pre>sqlite3 db/state.sqlite &lt; schema.sql
+sqlite3 db/state.sqlite <span class="s">".tables"</span>   <span class="c"># เช็ก: tasks transitions gate_feedback</span></pre>
+  </div>
+
+  <h3>step 5 — YouTrack token</h3>
+  <p>ใน YouTrack: avatar → <b>Profile → Account Security → New token</b> (scope: YouTrack) → คัดลอกค่า <code>perm:...</code></p>
+  <div class="code">
+    <div class="head"><span class="ttl">ทดสอบ token</span><button class="copy">copy</button></div>
+<pre>curl -H <span class="s">"Authorization: Bearer perm:xxxx"</span> \
+  <span class="s">"https://YOURORG.youtrack.cloud/api/issues?query=project:PEDPRO%20State:Open&amp;fields=idReadable,summary&amp;\$top=5"</span></pre>
+  </div>
+
+  <h3>step 6 — Telegram bot + chat id</h3>
+  <div class="code">
+    <div class="head"><span class="ttl">1) สร้าง bot กับ @BotFather</span><button class="copy">copy</button></div>
+<pre><span class="c"># เปิด Telegram → คุยกับ @BotFather</span>
+/newbot
+<span class="c"># ตั้งชื่อ + username → ได้ token เช่น 123456:ABC-xyz...</span></pre>
+  </div>
+  <div class="code">
+    <div class="head"><span class="ttl">2) หา chat id ของนาย</span><button class="copy">copy</button></div>
+<pre><span class="c"># ส่งข้อความอะไรก็ได้หา bot ก่อน 1 ที แล้วรัน:</span>
+curl <span class="s">"https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates"</span>
+<span class="c"># อ่านค่า result[].message.chat.id → คือ TELEGRAM_CHAT_ID</span></pre>
+  </div>
+  <p>เก็บ chat id ไว้ allowlist — ตัวร้อยรับคำสั่งเฉพาะจาก id นี้ ป้องกันคนอื่นสั่ง</p>
+
+  <h3>step 7 — ไฟล์ .env</h3>
+  <div class="code">
+    <div class="head"><span class="ttl">.env (อยู่นอก git)</span><button class="copy">copy</button></div>
+<pre>YOUTRACK_URL=https://YOURORG.youtrack.cloud
+YOUTRACK_TOKEN=perm:xxxx
+TELEGRAM_TOKEN=123456:ABC-xyz
+TELEGRAM_CHAT_ID=987654321
+PEDPRO_REPO=/Users/YOU/code/pedpro
+MAX_ATTEMPTS=3
+POLL_INTERVAL=3600          <span class="c"># วินาที = 1 ชม.</span>
+HERMES_LEARN=true           <span class="c"># เรียนตั้งแต่ loop นิ่ง (เก็บ gate_feedback)</span>
+HERMES_SUGGEST=false        <span class="c"># ป้อน plan ทีหลังเมื่อ data พอ (ส่วน 10)</span></pre>
+  </div>
+  <div class="box red">
+    <div class="lbl">อย่าลืม</div>
+    <p style="margin:4px 0"><code>echo ".env" &gt;&gt; .gitignore</code> และ <code>echo "db/" &gt;&gt; .gitignore</code> — token กับ state ห้ามขึ้น git</p>
+  </div>
+
+  <h3>step 8 — verify Claude Code headless</h3>
+  <div class="code">
+    <div class="head"><span class="ttl">terminal — ใน repo Pedpro</span><button class="copy">copy</button></div>
+<pre><span class="c"># ล็อกอินครั้งเดียว (browser) ถ้ายังไม่เคย — token เก็บใน ~/.claude</span>
+claude
+
+<span class="c"># ทดสอบ headless ด้วย command จริง</span>
+cd $PEDPRO_REPO
+claude -p <span class="s">"/intake PEDPRO-1320"</span> --output-format json \
+  --permission-mode plan --model opus</pre>
+  </div>
+  <div class="box amber">
+    <div class="lbl">subscription auth</div>
+    <p style="margin:4px 0">Max ล็อกอินแล้ว <code>claude -p</code> ใช้ได้เลย <b>ไม่ต้องตั้ง ANTHROPIC_API_KEY</b> · usage หักจากโควต้าแพลน (overnight build กิน quota ด้วย) · <b>ห้ามใช้ <code>--dangerously-skip-permissions</code> บนเครื่องหลัก</b> — พึ่ง <code>--allowedTools</code> + git worktree แทน</p>
+  </div>
+
+  <h3>step 9 — Playwright baseline</h3>
+  <div class="code">
+    <div class="head"><span class="ttl">terminal — ใน repo Pedpro</span><button class="copy">copy</button></div>
+<pre>npx playwright install            <span class="c"># ถ้ายังไม่มี browser</span>
+npx playwright test               <span class="c"># functional E2E</span>
+npx playwright test --update-snapshots   <span class="c"># สร้าง visual baseline</span></pre>
+  </div>
+  <div class="box red">
+    <div class="lbl">baseline ownership</div>
+    <p style="margin:4px 0">รัน <code>--update-snapshots</code> <b>เฉพาะตอนหน้าจอตรงกับ mockup ที่นายอนุมัติแล้ว</b> — ถ้า baseline มาจาก output ที่ยังไม่ตรวจ = ให้ agent ตรวจการบ้านตัวเอง</p>
+  </div>
+
+  <h3>step 10 — รัน phase 0 แบบมือ (ดู log ก่อน)</h3>
+  <div class="code">
+    <div class="head"><span class="ttl">terminal</span><button class="copy">copy</button></div>
+<pre>cd ~/pedpro-orchestrator
+source .venv/bin/activate
+python runner.py --once     <span class="c"># tick เดียว ดูว่า poll + แจ้ง Telegram ทำงาน</span>
+<span class="c"># ลองอนุมัติ plan จาก Telegram → เช็กว่า stage ขยับใน SQLite</span>
+python runner.py            <span class="c"># รัน loop ตาม POLL_INTERVAL</span></pre>
+  </div>
+  <div class="box amber">
+    <div class="lbl">อย่าเพิ่ง 24/7</div>
+    <p style="margin:4px 0">รันมือกับ task จริง 2-3 ตัวให้ครบ loop ก่อน (เห็น log, Ctrl-C ปิดได้) แล้วค่อยขึ้น step 11-12 — บั๊กตอนตี 3 หายาก</p>
+  </div>
+
+  <h3>step 11 — กัน sleep (สำหรับ 24/7)</h3>
+  <div class="code">
+    <div class="head"><span class="ttl">terminal</span><button class="copy">copy</button></div>
+<pre><span class="c"># วิธีง่าย: ห่อ orchestrator ด้วย caffeinate</span>
+caffeinate -is python runner.py
+
+<span class="c"># หรือกัน sleep ระดับระบบตอนเสียบไฟ (ต้อง sudo)</span>
+sudo pmset -c sleep 0 disablesleep 1</pre>
+  </div>
+  <p>เสียบสายไฟไว้ · M4 fanless รับงานนี้สบาย เพราะ inference อยู่บน cloud ไม่รันโมเดล local</p>
+
+  <h3>step 12 — launchd LaunchAgent (24/7)</h3>
+  <div class="code">
+    <div class="head"><span class="ttl">~/Library/LaunchAgents/com.pedpro.orchestrator.plist</span><button class="copy">copy</button></div>
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+  &lt;key&gt;Label&lt;/key&gt;&lt;string&gt;com.pedpro.orchestrator&lt;/string&gt;
+  &lt;key&gt;ProgramArguments&lt;/key&gt;
+  &lt;array&gt;
+    &lt;string&gt;/usr/bin/caffeinate&lt;/string&gt;
+    &lt;string&gt;-is&lt;/string&gt;
+    &lt;string&gt;/Users/YOU/pedpro-orchestrator/.venv/bin/python&lt;/string&gt;
+    &lt;string&gt;/Users/YOU/pedpro-orchestrator/runner.py&lt;/string&gt;
+  &lt;/array&gt;
+  &lt;key&gt;WorkingDirectory&lt;/key&gt;&lt;string&gt;/Users/YOU/pedpro-orchestrator&lt;/string&gt;
+  &lt;key&gt;RunAtLoad&lt;/key&gt;&lt;true/&gt;
+  &lt;key&gt;KeepAlive&lt;/key&gt;&lt;true/&gt;
+  &lt;key&gt;StandardOutPath&lt;/key&gt;&lt;string&gt;/Users/YOU/pedpro-orchestrator/logs/out.log&lt;/string&gt;
+  &lt;key&gt;StandardErrorPath&lt;/key&gt;&lt;string&gt;/Users/YOU/pedpro-orchestrator/logs/err.log&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;</pre>
+  </div>
+  <div class="code">
+    <div class="head"><span class="ttl">โหลดให้รัน 24/7</span><button class="copy">copy</button></div>
+<pre>launchctl load -w ~/Library/LaunchAgents/com.pedpro.orchestrator.plist
+launchctl list | grep pedpro     <span class="c"># เช็กว่ารันอยู่</span></pre>
+  </div>
+
+  <h3>step 13 — ดูแล / ดู log / restart</h3>
+  <div class="code">
+    <div class="head"><span class="ttl">terminal</span><button class="copy">copy</button></div>
+<pre>tail -f ~/pedpro-orchestrator/logs/out.log    <span class="c"># ดู log สด</span>
+
+<span class="c"># หยุด</span>
+launchctl unload ~/Library/LaunchAgents/com.pedpro.orchestrator.plist
+<span class="c"># แก้โค้ดแล้วเริ่มใหม่</span>
+launchctl load -w ~/Library/LaunchAgents/com.pedpro.orchestrator.plist</pre>
+  </div>
+  <div class="box teal">
+    <div class="lbl">คง outbound-only</div>
+    <p style="margin:4px 0">Telegram ใช้ getUpdates (long-poll) · Kanban (ถ้ารัน) bind <code>127.0.0.1</code> เท่านั้น ห้าม <code>0.0.0.0</code> · ไม่เปิด inbound port = security เท่าเดิมแม้รัน 24/7</p>
+  </div>
+
+  <hr>
+  <p class="en" style="text-align:center;color:var(--faint)">Pedpro Orchestrator Build Spec · parallelize agents, serialize human judgment</p>
+</section>
+
+</main>
+</div>
+
+<script>
+  document.querySelectorAll('.copy').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const pre=btn.closest('.code').querySelector('pre');
+      navigator.clipboard.writeText(pre.innerText).then(()=>{
+        const o=btn.textContent;btn.textContent='copied ✓';btn.style.color='#8fb85f';
+        setTimeout(()=>{btn.textContent=o;btn.style.color='';},1400);
+      });
+    });
+  });
+  const links=[...document.querySelectorAll('nav a')];
+  const map={};links.forEach(a=>map[a.getAttribute('href').slice(1)]=a);
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        if(map[e.target.id])map[e.target.id].classList.add('active');
+      }
+    });
+  },{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  document.querySelectorAll('section').forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>

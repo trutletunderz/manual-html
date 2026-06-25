@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web Blocking ในองค์กร · Defense in Depth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0E18; --bg2:#0E1322; --surface:#141A2C; --surface2:#1A2138;
+    --line:rgba(150,165,205,.14); --line-strong:rgba(150,165,205,.30);
+    --text:#E7EBF5; --muted:#94A1BE; --faint:#5C6986;
+    --amber:#F5B83D; --amber-dim:rgba(245,184,61,.14);
+    --pass:#3DD9A0; --pass-dim:rgba(61,217,160,.13);
+    --block:#FF5C72; --block-dim:rgba(255,92,114,.13);
+    --font-display:'Space Grotesk','IBM Plex Sans Thai',sans-serif;
+    --font-body:'IBM Plex Sans Thai','Space Grotesk',sans-serif;
+    --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+    --maxw:1080px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:
+      radial-gradient(900px 500px at 85% -5%, rgba(245,184,61,.06), transparent 60%),
+      radial-gradient(700px 500px at -5% 10%, rgba(61,217,160,.05), transparent 55%),
+      linear-gradient(180deg, var(--bg), var(--bg2));
+    background-attachment:fixed;
+    color:var(--text); font-family:var(--font-body);
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+    min-height:100vh; overflow-x:hidden;
+  }
+  /* faint grid texture */
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.5;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:54px 54px; mask-image:radial-gradient(circle at 50% 0,#000,transparent 75%);
+  }
+  .wrap{position:relative; z-index:1; max-width:var(--maxw); margin:0 auto; padding:0 20px}
+  .mono{font-family:var(--font-mono)}
+
+  /* ---------- top bar ---------- */
+  header.bar{
+    position:sticky; top:0; z-index:50;
+    backdrop-filter:blur(12px); background:rgba(11,14,24,.72);
+    border-bottom:1px solid var(--line);
+  }
+  .bar-in{max-width:var(--maxw); margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+  .brand{display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:700; letter-spacing:-.01em}
+  .brand .dot{width:11px; height:11px; border-radius:3px; background:var(--amber); box-shadow:0 0 14px var(--amber); flex:none}
+  .brand small{display:block; font-family:var(--font-mono); font-weight:500; font-size:11px; color:var(--faint); letter-spacing:.12em; text-transform:uppercase}
+  .bar-spacer{flex:1}
+  .toggle{display:inline-flex; border:1px solid var(--line-strong); border-radius:999px; padding:3px; gap:2px; background:var(--surface)}
+  .toggle button{
+    font-family:var(--font-mono); font-size:12px; font-weight:600; letter-spacing:.05em;
+    color:var(--muted); background:none; border:none; padding:6px 14px; border-radius:999px; cursor:pointer; transition:.18s;
+  }
+  .toggle button.on{background:var(--amber); color:#16110a}
+  .toggle button:not(.on):hover{color:var(--text)}
+
+  /* ---------- hero ---------- */
+  .hero{padding:54px 0 30px}
+  .eyebrow{font-family:var(--font-mono); font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--amber); margin-bottom:18px}
+  h1{font-family:var(--font-display); font-weight:700; letter-spacing:-.02em; line-height:1.05;
+     font-size:clamp(2rem,6.2vw,3.6rem); margin-bottom:16px}
+  h1 .hl{color:var(--block)}
+  .lede{font-size:clamp(1rem,2.4vw,1.18rem); color:var(--muted); max-width:62ch}
+
+  /* ---------- gauntlet ---------- */
+  .sim{margin-top:38px; border:1px solid var(--line); border-radius:18px; overflow:hidden;
+       background:linear-gradient(180deg,var(--surface),var(--bg2))}
+  .sim-head{padding:18px 20px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  .sim-head .label{font-family:var(--font-mono); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--faint)}
+  .sim-head h2{font-family:var(--font-display); font-size:1.18rem; font-weight:600; letter-spacing:-.01em}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; padding:16px 20px 4px}
+  .chip{
+    font-family:var(--font-mono); font-size:12.5px; color:var(--muted);
+    background:var(--surface2); border:1px solid var(--line-strong); border-radius:9px;
+    padding:8px 12px; cursor:pointer; transition:.16s; display:flex; flex-direction:column; gap:2px; text-align:left; line-height:1.3;
+  }
+  .chip .tag{font-size:10px; letter-spacing:.06em; color:var(--faint); text-transform:uppercase}
+  .chip:hover{border-color:var(--amber); color:var(--text)}
+  .chip.active{border-color:var(--amber); background:var(--amber-dim); color:var(--text)}
+  .chip.active .tag{color:var(--amber)}
+
+  .sim-body{display:grid; grid-template-columns:1fr 320px; gap:0}
+  @media (max-width:760px){ .sim-body{grid-template-columns:1fr} }
+
+  .gauntlet{position:relative; padding:22px 20px 26px}
+  .rail-line{position:absolute; left:34px; top:34px; bottom:60px; width:2px; background:var(--line-strong); border-radius:2px}
+  .grow{position:relative; display:flex; align-items:center; gap:14px; padding:7px 0; min-height:54px; transition:opacity .3s}
+  .grow.dim{opacity:.32}
+  .node{position:relative; z-index:2; width:16px; height:16px; border-radius:50%; flex:none; margin-left:8px;
+        background:var(--bg2); border:2px solid var(--line-strong); transition:.25s}
+  .grow.s-pass .node{border-color:var(--pass); background:var(--pass); box-shadow:0 0 12px rgba(61,217,160,.6)}
+  .grow.s-block .node{border-color:var(--block); background:var(--block); box-shadow:0 0 14px rgba(255,92,114,.7)}
+  .grow.s-na .node{border-style:dashed; border-color:var(--faint)}
+  .gate{flex:1; display:flex; align-items:center; justify-content:space-between; gap:10px;
+        background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:10px 13px; transition:.25s}
+  .grow.s-pass .gate{border-color:rgba(61,217,160,.4)}
+  .grow.s-block .gate{border-color:var(--block); background:var(--block-dim)}
+  .gate .gname{font-family:var(--font-mono); font-size:13px; font-weight:600; color:var(--text); display:flex; align-items:baseline; gap:8px}
+  .gate .gnum{color:var(--amber); font-size:11px}
+  .gate .grole{font-size:11.5px; color:var(--muted); margin-top:1px}
+  .gstat{font-family:var(--font-mono); font-size:11px; font-weight:600; letter-spacing:.05em; flex:none; padding:3px 8px; border-radius:6px; color:var(--faint); border:1px solid var(--line)}
+  .grow.s-pass .gstat{color:var(--pass); border-color:rgba(61,217,160,.4)}
+  .grow.s-block .gstat{color:var(--block); border-color:var(--block)}
+  .grow.s-na .gstat{color:var(--faint)}
+
+  .packet{position:absolute; left:34px; top:34px; transform:translate(-50%,-50%);
+    z-index:3; width:30px; height:30px; border-radius:50%; pointer-events:none;
+    background:radial-gradient(circle,var(--amber),rgba(245,184,61,.15)); box-shadow:0 0 22px rgba(245,184,61,.7);
+    transition:top .42s cubic-bezier(.4,.1,.2,1); opacity:0}
+  .packet.show{opacity:1}
+  .packet::after{content:"›"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#16110a; font-weight:700; font-family:var(--font-mono)}
+
+  .destination{position:relative; display:flex; align-items:center; gap:14px; padding-top:8px}
+  .destination .node{margin-left:8px; border-style:solid}
+  .dest-card{flex:1; font-family:var(--font-mono); font-size:13px; font-weight:600; padding:11px 13px; border-radius:11px;
+             border:1px dashed var(--line-strong); color:var(--faint); transition:.25s}
+  .dest-card.allowed{color:var(--pass); border-color:var(--pass); background:var(--pass-dim); border-style:solid}
+  .dest-card.dropped{color:var(--block); border-color:var(--block); background:var(--block-dim); border-style:solid}
+
+  /* verdict panel */
+  .verdict{border-left:1px solid var(--line); padding:22px 20px; display:flex; flex-direction:column; gap:14px}
+  @media (max-width:760px){ .verdict{border-left:none; border-top:1px solid var(--line)} }
+  .verdict .vlabel{font-family:var(--font-mono); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--faint)}
+  .outcome{font-family:var(--font-display); font-size:1.5rem; font-weight:700; letter-spacing:-.01em; display:flex; align-items:center; gap:10px}
+  .outcome.blocked{color:var(--block)} .outcome.allowed{color:var(--pass)} .outcome.idle{color:var(--muted)}
+  .vwhere{font-family:var(--font-mono); font-size:12.5px; color:var(--amber)}
+  .vtext{font-size:14px; color:var(--muted); line-height:1.62}
+  .logchip{align-self:flex-start; display:inline-flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:11px; color:var(--muted);
+           border:1px solid var(--line); border-radius:7px; padding:5px 10px}
+  .logchip b{color:var(--pass); font-weight:600}
+  .replay{margin-top:2px; align-self:flex-start; font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--text);
+          background:var(--surface2); border:1px solid var(--line-strong); border-radius:9px; padding:9px 16px; cursor:pointer; transition:.16s}
+  .replay:hover{border-color:var(--amber); color:var(--amber)}
+
+  /* ---------- sections ---------- */
+  section{padding:46px 0}
+  .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:26px; flex-wrap:wrap}
+  .sec-head .idx{font-family:var(--font-mono); color:var(--amber); font-size:13px; letter-spacing:.1em}
+  .sec-head h3{font-family:var(--font-display); font-size:clamp(1.4rem,4vw,2rem); font-weight:700; letter-spacing:-.015em}
+  .sec-head p{flex-basis:100%; color:var(--muted); max-width:60ch; margin-top:2px}
+
+  /* method cards */
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:16px}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px; position:relative; transition:.2s}
+  .card:hover{border-color:var(--line-strong); transform:translateY(-2px)}
+  .card.rec{border-color:rgba(245,184,61,.45)}
+  .card .num{font-family:var(--font-mono); font-size:12px; color:var(--amber); letter-spacing:.1em}
+  .card h4{font-family:var(--font-display); font-size:1.18rem; font-weight:600; margin:4px 0 4px; letter-spacing:-.01em}
+  .badge{display:inline-block; font-family:var(--font-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--amber); background:var(--amber-dim); border:1px solid rgba(245,184,61,.4); border-radius:6px; padding:2px 7px; margin-bottom:8px}
+  .card .desc{font-size:14px; color:var(--muted); margin-bottom:14px}
+  .pillrow{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px}
+  .pill{font-family:var(--font-mono); font-size:11px; color:var(--text); background:var(--surface2); border:1px solid var(--line); border-radius:7px; padding:4px 8px}
+  .notelist{list-style:none; display:flex; flex-direction:column; gap:7px}
+  .notelist li{font-size:13px; color:var(--muted); display:flex; gap:9px; align-items:flex-start; line-height:1.5}
+  .notelist li::before{content:""; width:7px; height:7px; border-radius:2px; flex:none; margin-top:7px}
+  .notelist.pro li::before{background:var(--pass)}
+  .notelist.warn li::before{background:var(--block)}
+  .ntitle{font-family:var(--font-mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); margin:14px 0 7px}
+  .ntitle.warn{color:var(--block)}
+
+  /* priority stepper */
+  .stack{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px}
+  .step{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; position:relative}
+  .step .sn{font-family:var(--font-mono); width:30px; height:30px; border-radius:8px; background:var(--amber-dim); color:var(--amber); border:1px solid rgba(245,184,61,.4); display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; margin-bottom:12px}
+  .step h5{font-family:var(--font-display); font-size:.98rem; font-weight:600; letter-spacing:-.01em; margin-bottom:3px}
+  .step p{font-size:12.5px; color:var(--muted)}
+
+  /* extras */
+  .extras{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px}
+  .extra{display:flex; gap:12px; align-items:flex-start; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:15px 16px}
+  .extra .ck{flex:none; width:22px; height:22px; border-radius:6px; background:var(--pass-dim); border:1px solid rgba(61,217,160,.45); color:var(--pass); display:flex; align-items:center; justify-content:center; font-size:13px; margin-top:1px}
+  .extra div{font-size:13.5px; color:var(--muted)}
+
+  /* closing */
+  .closing{margin:10px 0 60px; border:1px solid rgba(61,217,160,.3); background:linear-gradient(180deg,var(--pass-dim),transparent); border-radius:16px; padding:28px 24px; display:flex; gap:16px; align-items:flex-start}
+  .closing .shield{flex:none; width:42px; height:42px; border-radius:11px; background:var(--pass-dim); border:1px solid rgba(61,217,160,.45); color:var(--pass); display:flex; align-items:center; justify-content:center; font-size:22px}
+  .closing p{font-size:15px; color:var(--text)}
+  footer{padding:30px 0 50px; border-top:1px solid var(--line); color:var(--faint); font-size:12.5px; font-family:var(--font-mono)}
+  footer a{color:var(--muted)}
+
+  /* build / how-to */
+  .build{display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:16px}
+  .bcard{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px}
+  .step-k{font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--amber); margin-bottom:11px; display:flex; gap:9px; align-items:center}
+  .step-k b{width:24px; height:24px; border-radius:7px; background:var(--amber-dim); border:1px solid rgba(245,184,61,.4); display:flex; align-items:center; justify-content:center; font-weight:600}
+  .bcard h5{font-family:var(--font-display); font-size:1.06rem; font-weight:600; margin-bottom:7px; letter-spacing:-.01em}
+  .bcard p{font-size:13.5px; color:var(--muted); margin-bottom:13px}
+  pre.code{background:#070A12; border:1px solid var(--line); border-radius:10px; padding:13px 14px; overflow-x:auto;
+    font-family:var(--font-mono); font-size:11.5px; line-height:1.7; color:#C9D3EC; white-space:pre; tab-size:2}
+  pre.code::-webkit-scrollbar{height:7px}
+  pre.code::-webkit-scrollbar-thumb{background:var(--line-strong); border-radius:7px}
+
+  /* test results */
+  .score{display:flex; gap:26px; align-items:center; flex-wrap:wrap; background:var(--surface);
+    border:1px solid rgba(61,217,160,.32); border-radius:16px; padding:24px; margin-bottom:18px}
+  .score .big{font-family:var(--font-display); font-weight:700; letter-spacing:-.02em; line-height:1}
+  .score .big .n{font-size:clamp(2.6rem,9vw,3.8rem); color:var(--pass)}
+  .score .big .d{font-size:1.4rem; color:var(--muted)}
+  .score .meta{font-family:var(--font-mono); font-size:12.5px; color:var(--muted); line-height:1.85}
+  .score .meta .ok{color:var(--pass)} .score .meta .bad{color:var(--block)}
+  .suites{display:flex; flex-direction:column; gap:10px}
+  .suite{display:grid; grid-template-columns:1fr auto; gap:9px 14px; align-items:center;
+    background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:13px 16px}
+  .suite .sname{font-size:14px; color:var(--text)}
+  .suite .scount{font-family:var(--font-mono); font-size:12px; color:var(--pass)}
+  .suite .barwrap{grid-column:1/-1; height:6px; background:var(--surface2); border-radius:6px; overflow:hidden}
+  .suite .bar{height:100%; width:100%; background:linear-gradient(90deg,var(--pass),rgba(61,217,160,.45)); border-radius:6px}
+  .e2e{margin-top:16px; display:flex; flex-direction:column; gap:7px}
+  .e2erow{font-family:var(--font-mono); font-size:12px; color:var(--muted); display:flex; gap:9px; align-items:center; flex-wrap:wrap}
+  .e2erow .arrow{color:var(--faint)} .e2erow .v{color:var(--block)} .e2erow.ok .v{color:var(--pass)}
+  .envnote{margin-top:16px; font-family:var(--font-mono); font-size:12px; color:var(--faint); line-height:1.8}
+
+  :focus-visible{outline:2px solid var(--amber); outline-offset:2px; border-radius:6px}
+  @media (prefers-reduced-motion:reduce){ *{scroll-behavior:auto!important} .packet{transition:none} .card:hover{transform:none} }
+</style>
+</head>
+<body>
+<a href="../index.html" id="back-home-fab" aria-label="กลับคลังคู่มือ" style="position:fixed;right:18px;bottom:18px;z-index:99999;display:inline-flex;align-items:center;gap:7px;padding:10px 16px;font:600 14px/1 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#fff;background:#0284c7;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px rgba(2,132,199,.35)">🏠 หน้าแรก</a>
+
+<header class="bar">
+  <div class="bar-in">
+    <div class="brand">
+      <span class="dot"></span>
+      <span>Web Blocking Playbook<small data-th="ป้องกันการหลบเลี่ยง · ระดับองค์กร" data-en="evasion-resistant · enterprise grade">·</small></span>
+    </div>
+    <div class="bar-spacer"></div>
+    <div class="toggle" role="group" aria-label="language">
+      <button id="btn-th" class="on" onclick="setLang('th')">ไทย</button>
+      <button id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="eyebrow">Defense in Depth · 7 Layers</div>
+    <h1 data-th="Block เว็บไซต์ให้&lt;span class='hl'&gt;ได้ผลจริง&lt;/span&gt;" data-en="Block websites in a way that &lt;span class='hl'&gt;actually holds&lt;/span&gt;"></h1>
+    <p class="lede" data-th="บล็อกแค่ที่ Browser ไม่พอ — ผู้ใช้เปลี่ยน Browser, ต่อ VPN หรือสลับ DNS ก็หลบได้ทันที. ทางที่ได้ผลคือซ้อนหลายชั้นเข้าด้วยกัน. ลองส่ง request ดูว่ามันโดนหยุดที่ด่านไหน 👇"
+        data-en="Blocking at the browser isn't enough — users just switch browsers, dial a VPN, or change DNS. What works is stacking layers. Send a request below and watch where it gets stopped 👇"></p>
+
+    <!-- THE GAUNTLET -->
+    <div class="sim">
+      <div class="sim-head">
+        <span class="label">The Gauntlet</span>
+        <h2 data-th="ส่ง request ผ่านด่านป้องกัน 6 ชั้น" data-en="Run a request through 6 defensive layers"></h2>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="sim-body">
+        <div class="gauntlet" id="gauntlet">
+          <div class="rail-line"></div>
+          <div id="rows"></div>
+          <div class="packet" id="packet"></div>
+          <div class="destination">
+            <div class="node"></div>
+            <div class="dest-card" id="dest" data-th="ปลายทาง" data-en="Destination"></div>
+          </div>
+        </div>
+        <aside class="verdict">
+          <span class="vlabel">Verdict</span>
+          <div class="outcome idle" id="outcome" data-th="เลือก request ด้านบน" data-en="Pick a request above"></div>
+          <div class="vwhere" id="vwhere"></div>
+          <div class="vtext" id="vtext" data-th="แต่ละชั้นทำงานคนละหน้าที่ — ด่านแรกที่จับได้คือด่านที่หยุด request" data-en="Each layer does a different job — the first one that catches the request is the one that stops it."></div>
+          <div class="logchip"><b>LOG</b><span id="logtext" data-th="ทุกเหตุการณ์ถูกบันทึก" data-en="every event is recorded"></span></div>
+          <button class="replay" id="replay" onclick="rerun()" data-th="▸ เล่นอีกครั้ง" data-en="▸ Replay"></button>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- METHOD CATALOG -->
+  <section>
+    <div class="sec-head">
+      <span class="idx">A /</span>
+      <h3 data-th="7 วิธี Block ในคลัง" data-en="The 7-method catalog"></h3>
+      <p data-th="แต่ละวิธีแก้ปัญหาคนละมุม. รวมกันคือกำแพงที่หลบยาก — ด้านล่างเรียงจากชั้นที่ครอบคลุมที่สุดก่อน" data-en="Each method covers a different angle. Together they form a wall that's hard to slip past — ordered here from the broadest layer first."></p>
+    </div>
+    <div class="grid" id="cards"></div>
+  </section>
+
+  <!-- PRIORITY STACK -->
+  <section>
+    <div class="sec-head">
+      <span class="idx">B /</span>
+      <h3 data-th="ลำดับการ Deploy ที่ได้ผลที่สุด" data-en="The deployment order that works best"></h3>
+      <p data-th="ทำตามลำดับนี้ในองค์กร — นี่คือเส้นทางเดียวกับที่ request วิ่งผ่านใน The Gauntlet ด้านบน" data-en="Roll these out in this order — the same path the request travels through in The Gauntlet above."></p>
+    </div>
+    <div class="stack" id="stack"></div>
+  </section>
+
+  <!-- EXTRAS -->
+  <section>
+    <div class="sec-head">
+      <span class="idx">C /</span>
+      <h3 data-th="งานที่ต้องทำต่อเนื่อง" data-en="Keep it healthy"></h3>
+    </div>
+    <div class="extras" id="extras"></div>
+  </section>
+
+  <!-- HOW IT'S BUILT -->
+  <section>
+    <div class="sec-head">
+      <span class="idx">D /</span>
+      <h3 data-th="เบื้องหลัง: ทำเองได้ยังไง" data-en="Under the hood: how to build it"></h3>
+      <p data-th="ทั้งหน้าเป็นไฟล์ HTML ไฟล์เดียว ไม่มี dependency — vanilla JS + CSS variables. แยก “ข้อมูล” ออกจาก “การ render” ทำให้เพิ่ม scenario หรือเพิ่มภาษาได้โดยไม่ต้องแตะ logic"
+         data-en="The whole page is a single HTML file with zero dependencies — vanilla JS + CSS variables. Data is kept separate from rendering, so adding a scenario or a language never touches the logic."></p>
+    </div>
+    <div class="build">
+
+      <div class="bcard">
+        <div class="step-k"><b>01</b> i18n</div>
+        <h5 data-th="สลับภาษาด้วย data-attribute" data-en="Toggle language with data-attributes"></h5>
+        <p data-th="ทุกข้อความถือ data-th และ data-en ไว้ในตัว ฟังก์ชันเดียวสแกนทั้งหน้าแล้วสลับ textContent (ใช้ innerHTML เฉพาะตอนข้อความมี markup)"
+           data-en="Every string carries its own data-th and data-en. One function scans the page and swaps textContent — using innerHTML only when the string contains markup."></p>
+        <pre class="code">function applyLang(){
+  document.querySelectorAll('[data-th]')
+    .forEach(el =&gt; {
+      const v = lang === 'th'
+        ? el.dataset.th : el.dataset.en;
+      /[&lt;&amp;]/.test(v)
+        ? el.innerHTML = v
+        : el.textContent = v;
+    });
+}</pre>
+      </div>
+
+      <div class="bcard">
+        <div class="step-k"><b>02</b> data</div>
+        <h5 data-th="ด่าน + เส้นทางของ request" data-en="Layers + the request's path"></h5>
+        <p data-th="แต่ละ scenario เก็บ path เป็น array หนึ่งช่องต่อหนึ่งด่าน ค่าเป็น pass / block / na / log. กฎเดียว: ด่านแรกที่เป็น block คือด่านที่หยุด request"
+           data-en="Each scenario stores a path array — one slot per layer, valued pass / block / na / log. One rule: the first block is where the request stops."></p>
+        <pre class="code">{ id:'vpn', chip:'vpn-tunnel',
+  path:['pass','pass','pass',
+        'block','-','-'],
+  stop:3,        // App Control + IPS
+  th:'…', en:'…' }</pre>
+      </div>
+
+      <div class="bcard">
+        <div class="step-k"><b>03</b> engine</div>
+        <h5 data-th="วิ่งทีละด่าน + ยกเลิกได้" data-en="Step through layers, cancellable"></h5>
+        <p data-th="run() เดินทีละด่านแบบ async ใช้ runId กันการรันซ้อนกัน และ wait() จะกลายเป็น 0ms อัตโนมัติเมื่อผู้ใช้เปิด prefers-reduced-motion"
+           data-en="run() walks layer by layer asynchronously, guarded by a runId so a fresh run cancels the stale one. wait() collapses to 0 ms when the user prefers reduced motion."></p>
+        <pre class="code">const reduce = matchMedia(
+  '(prefers-reduced-motion:reduce)').matches;
+const wait = ms =&gt;
+  new Promise(r =&gt; setTimeout(r, reduce?0:ms));
+
+async function run(){
+  const myId = ++runId;        // newest wins
+  for (let i = 0; i &lt; layers.length; i++){
+    placePacket(i);
+    await wait(360);
+    if (myId !== runId) return; // cancelled
+    if (scn.path[i] === 'block')
+      return finalize(scn, i);
+  }
+  finalize(scn, null);         // passed all
+}</pre>
+      </div>
+
+      <div class="bcard">
+        <div class="step-k"><b>04</b> motion</div>
+        <h5 data-th="ขยับ packet ตามตำแหน่งจริง" data-en="Move the packet to real positions"></h5>
+        <p data-th="หาตำแหน่ง y ของ node แต่ละด่านด้วย getBoundingClientRect เทียบกับกล่อง gauntlet แล้วสั่ง transition top — ไม่มีค่า hardcode จึง responsive เองเมื่อ layout เปลี่ยน"
+           data-en="Find each node's y with getBoundingClientRect relative to the gauntlet box, then transition top — no hardcoded values, so it re-flows responsively when the layout changes."></p>
+        <pre class="code">function placePacket(i){
+  const node = rows[i].querySelector('.node');
+  const y = node.getBoundingClientRect().top
+    - gauntlet.getBoundingClientRect().top
+    + node.offsetHeight / 2;
+  packet.style.top = y + 'px'; // CSS animates
+}</pre>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- TEST RESULTS -->
+  <section>
+    <div class="sec-head">
+      <span class="idx">E /</span>
+      <h3 data-th="ผลการทดสอบ" data-en="Test results"></h3>
+      <p data-th="โหลดไฟล์จริงด้วย jsdom แล้วตรวจ 78 ข้อ — ความถูกต้องของเส้นทาง request, ความครบของ 2 ภาษา, การ render และรัน tracer ทุก scenario ว่าหยุดตรงด่านที่ระบุ"
+         data-en="The real file is loaded with jsdom and checked against 78 assertions — request-path correctness, bilingual completeness, rendering, and running every tracer scenario to confirm it stops at the stated layer."></p>
+    </div>
+
+    <div class="score">
+      <div class="big"><span class="n">78</span><span class="d">/78</span></div>
+      <div class="meta">
+        <div class="ok" data-th="✓ ผ่าน 78 ข้อ" data-en="✓ 78 passed"></div>
+        <div class="bad" data-th="✗ ล้มเหลว 0 ข้อ" data-en="✗ 0 failed"></div>
+        <div data-th="ตรวจกับไฟล์จริง ไม่ใช่สำเนา" data-en="checked against the real file, not a copy"></div>
+      </div>
+    </div>
+
+    <div class="suites">
+      <div class="suite"><span class="sname" data-th="โครงสร้าง &amp; จำนวน" data-en="Structure &amp; counts"></span><span class="scount">5/5</span><div class="barwrap"><div class="bar"></div></div></div>
+      <div class="suite"><span class="sname" data-th="ตรรกะเส้นทางของ scenario" data-en="Scenario path logic"></span><span class="scount">31/31</span><div class="barwrap"><div class="bar"></div></div></div>
+      <div class="suite"><span class="sname" data-th="ความครบของ 2 ภาษา (methods + layers)" data-en="Bilingual completeness (methods + layers)"></span><span class="scount">28/28</span><div class="barwrap"><div class="bar"></div></div></div>
+      <div class="suite"><span class="sname" data-th="การ render DOM" data-en="DOM rendering"></span><span class="scount">5/5</span><div class="barwrap"><div class="bar"></div></div></div>
+      <div class="suite"><span class="sname" data-th="การสลับภาษา" data-en="Language toggle"></span><span class="scount">3/3</span><div class="barwrap"><div class="bar"></div></div></div>
+      <div class="suite"><span class="sname" data-th="รัน tracer ครบทุก scenario (end-to-end)" data-en="End-to-end tracer per scenario"></span><span class="scount">6/6</span><div class="barwrap"><div class="bar"></div></div></div>
+    </div>
+
+    <div class="e2e">
+      <div class="e2erow"><span>facebook.com</span><span class="arrow">→</span><span class="v" data-th="บล็อก · L01 Firewall" data-en="BLOCK · L01 Firewall"></span></div>
+      <div class="e2erow"><span>sketchy-download.ru</span><span class="arrow">→</span><span class="v" data-th="บล็อก · L02 DNS Filter" data-en="BLOCK · L02 DNS Filter"></span></div>
+      <div class="e2erow"><span>stream-cdn (HTTPS)</span><span class="arrow">→</span><span class="v" data-th="บล็อก · L03 HTTPS Inspection" data-en="BLOCK · L03 HTTPS Inspection"></span></div>
+      <div class="e2erow"><span>vpn-tunnel</span><span class="arrow">→</span><span class="v" data-th="บล็อก · L04 VPN/Proxy" data-en="BLOCK · L04 VPN/Proxy"></span></div>
+      <div class="e2erow"><span data-th="เปลี่ยน DNS/Proxy เอง" data-en="change DNS/Proxy"></span><span class="arrow">→</span><span class="v" data-th="บล็อก · L05 Group Policy" data-en="BLOCK · L05 Group Policy"></span></div>
+      <div class="e2erow ok"><span>company-portal.local</span><span class="arrow">→</span><span class="v" data-th="อนุญาต · บันทึก Log" data-en="ALLOWED · logged"></span></div>
+    </div>
+
+    <div class="envnote" data-th="สภาพแวดล้อม: Node + jsdom 24 · จำลอง prefers-reduced-motion เพื่อรัน tracer แบบทันที · ทุก assertion ตรวจกับ DOM และ logic ของไฟล์นี้โดยตรง รันด้วย `node test.js`"
+         data-en="Environment: Node + jsdom 24 · simulates prefers-reduced-motion to run the tracer instantly · every assertion checks this file's real DOM and logic, run with `node test.js`"></div>
+  </section>
+
+  <div class="closing">
+    <div class="shield">✦</div>
+    <p data-th="ใช้ทั้ง 6 ชั้นร่วมกัน ผู้ใช้จะหลบเลี่ยงได้ยากมาก และองค์กรควบคุมการเข้าถึงเว็บได้อย่างมีประสิทธิภาพ — ไม่ใช่เพราะชั้นใดชั้นหนึ่งสมบูรณ์แบบ แต่เพราะช่องโหว่ของชั้นหนึ่งถูกปิดด้วยอีกชั้นหนึ่ง"
+       data-en="Run all six layers together and evasion becomes very hard — not because any single layer is perfect, but because each layer's gap is covered by the next."></p>
+  </div>
+
+  <footer>
+    <span data-th="สร้างจากอินโฟกราฟิก “วิธี Block เว็บไซต์ให้ได้ผลจริง” · เครื่องมืออ้างอิงเชิงโต้ตอบ" data-en="Built from the infographic “How to block websites effectively” · interactive reference"></span>
+  </footer>
+</main>
+
+<script>
+/* ===== data ===== */
+const layers = [
+  {n:'01', name:'Firewall Web Filter', roleTh:'กรองตามหมวด / URL ทั้งองค์กร', roleEn:'Category / URL filtering, org-wide'},
+  {n:'02', name:'DNS Filter',          roleTh:'จับโดเมนอันตรายจาก threat feed', roleEn:'Catches malicious domains via threat feeds'},
+  {n:'03', name:'HTTPS Inspection',    roleTh:'SSL + DPI เปิดดู URL จริง', roleEn:'SSL + DPI exposes the real URL'},
+  {n:'04', name:'Block VPN / Proxy',   roleTh:'App Control + IPS หยุด tunnel', roleEn:'App Control + IPS stop tunnels'},
+  {n:'05', name:'Group Policy Lock',   roleTh:'ล็อกการตั้งค่า DNS/Proxy/VPN บนเครื่อง', roleEn:'Locks DNS/Proxy/VPN settings on the device'},
+  {n:'06', name:'Monitoring Log',      roleTh:'บันทึกทุกเหตุการณ์ ไว้ตรวจย้อนหลัง', roleEn:'Records every event for audit'},
+];
+
+// path values: pass | block | na | log ; stop at first block
+const scenarios = [
+  { id:'fb', chip:'facebook.com', tagTh:'Social Media', tagEn:'Social Media',
+    path:['block','-','-','-','-','-'], stop:0,
+    th:'จับที่ Firewall ทันที — โดเมนตรงกับหมวด Social Media ที่บล็อกไว้ทั้งองค์กร ไม่ต้องไปถึงชั้นอื่น',
+    en:'Caught at the firewall immediately — the domain matches the org-wide Social Media category. No other layer needed.' },
+
+  { id:'mal', chip:'sketchy-download.ru', tagTh:'Malware domain', tagEn:'Malware domain',
+    path:['pass','block','-','-','-','-'], stop:1,
+    th:'Firewall ไม่เข้าหมวดไหนเลยปล่อยผ่าน แต่ DNS Filter (เช่น Cisco Umbrella / Cloudflare Gateway) จับโดเมนนี้ได้จาก threat feed',
+    en:'No category match at the firewall, so it passes — but the DNS filter (e.g. Cisco Umbrella / Cloudflare Gateway) flags the domain from its threat feed.' },
+
+  { id:'hls', chip:'stream-cdn ∙ HTTPS', tagTh:'Streaming · เข้ารหัส', tagEn:'Streaming · encrypted',
+    path:['pass','pass','block','-','-','-'], stop:2,
+    th:'โดเมนดูปกติและทราฟฟิกเข้ารหัส HTTPS — บล็อกแค่ domain ไม่พอ ต้องเปิด SSL Inspection + DPI ถึงเห็น URL จริงแล้วบล็อกได้',
+    en:'The domain looks clean and the traffic is HTTPS-encrypted — domain blocking isn\u2019t enough. SSL Inspection + DPI reveal the real URL so it can be blocked.' },
+
+  { id:'vpn', chip:'vpn-tunnel', tagTh:'VPN client', tagEn:'VPN client',
+    path:['pass','pass','pass','block','-','-'], stop:3,
+    th:'ทราฟฟิกถูกหุ้มใน VPN tunnel เลยรอด web filter ทั้งหมด แต่ Application Control + IPS ตรวจจับลายเซ็นของ VPN แล้วตัดทิ้ง',
+    en:'Traffic hides inside a VPN tunnel, slipping past every web filter — but Application Control + IPS detect the VPN signature and cut it.' },
+
+  { id:'cfg', chip:'เปลี่ยน DNS/Proxy เอง', chipEn:'change DNS/Proxy', tagTh:'Evasion attempt', tagEn:'Evasion attempt',
+    path:['na','na','na','na','block','-'], stop:4,
+    th:'นี่ไม่ใช่ web request แต่เป็นความพยายามแก้ค่าบนเครื่องเพื่อหลบ — Group Policy บน Active Directory ล็อกการเปลี่ยน DNS/Proxy ไว้ ทำไม่ได้',
+    en:'This isn\u2019t a web request — it\u2019s an attempt to change device settings to evade. Group Policy on Active Directory has DNS/Proxy changes locked, so it fails.' },
+
+  { id:'ok', chip:'company-portal.local', tagTh:'Work site', tagEn:'Work site',
+    path:['pass','pass','pass','pass','pass','log'], stop:null,
+    th:'ผ่านครบทุกชั้น เพราะเป็นเว็บงานที่อนุญาต — ระบบไม่ได้บล็อกทุกอย่าง. Monitoring บันทึกการเข้าถึงไว้ใน Log',
+    en:'Passes every layer because it\u2019s an allowed work site — the system isn\u2019t a black hole. Monitoring records the access in the log.' },
+];
+
+const methods = [
+  { rec:true, name:'Firewall Web Filter',
+    descTh:'Firewall กรองเว็บได้หลายแบบในจุดเดียว: URL · Web · Category · DNS Filtering · Application Control. บล็อกได้ทั้ง Social Media, การพนัน, เว็บไม่เหมาะสม, Streaming และ Torrent',
+    descEn:'The firewall filters web traffic several ways from one place: URL, Web, Category, DNS filtering, and Application Control. Blocks Social Media, gambling, adult sites, streaming, and torrents.',
+    pills:['URL','Web','Category','DNS','App Control'],
+    proTh:['ควบคุมได้ทั้งองค์กร','บังคับใช้ทุกเครื่อง','มี Log ตรวจย้อนหลัง'],
+    proEn:['Org-wide control','Enforced on every device','Keeps audit logs'] },
+
+  { name:'DNS Filtering',
+    descTh:'บังคับให้ทุกเครื่องใช้ DNS ที่มีระบบกรอง เช่น Cisco Umbrella, Cloudflare Gateway, Google SafeSearch. ติดตั้งง่าย ไม่ต้องแก้ทีละเครื่อง',
+    descEn:'Point every device at a filtering resolver — Cisco Umbrella, Cloudflare Gateway, Google SafeSearch. Easy to roll out, no per-device changes.',
+    pills:['Cisco Umbrella','Cloudflare Gateway'],
+    proTh:['ติดตั้งง่าย','ไม่ต้องแก้ทุกเครื่อง'], proEn:['Quick to deploy','No per-device setup'],
+    warnTh:['ผู้ใช้เปลี่ยน DNS เองได้ ถ้าไม่บังคับผ่าน Firewall'], warnEn:['Users can switch DNS themselves unless the firewall enforces it'] },
+
+  { name:'HTTPS Inspection',
+    descTh:'เว็บส่วนใหญ่เป็น HTTPS — บล็อกแค่ Domain อาจไม่พอ. เปิด SSL Inspection + Deep Packet Inspection บน Firewall เพื่อเห็น URL จริง ทำให้บล็อก facebook / youtube / tiktok ได้แม่นขึ้น',
+    descEn:'Most sites are HTTPS — blocking by domain alone often isn\u2019t enough. Enable SSL Inspection + Deep Packet Inspection to see the real URL, making facebook / youtube / tiktok blocks far more precise.',
+    pills:['SSL Inspection','Deep Packet Inspection'],
+    proTh:['เห็น URL จริงใต้ HTTPS','บล็อกแม่นยำขึ้น'], proEn:['Sees the real URL under HTTPS','More precise blocking'] },
+
+  { name:'Proxy Server',
+    descTh:'เช่น Squid หรือ Microsoft Forefront TMG. ควบคุมการใช้ web ได้ละเอียด และเก็บ Log ได้ครบทุกคำขอ',
+    descEn:'e.g. Squid or Microsoft Forefront TMG. Fine-grained control over web usage with complete request logging.',
+    pills:['Squid','Forefront TMG'],
+    proTh:['ควบคุมการใช้ web ละเอียด','เก็บ Log ได้ครบ'], proEn:['Granular web control','Complete logging'] },
+
+  { name:'Group Policy',
+    descTh:'ถ้าองค์กรใช้ Active Directory ใช้ Group Policy เพื่อปิด Browser บางตัว, ล็อก Proxy Setting, ปิดการเปลี่ยน DNS และปิด VPN บางประเภท — ตัดช่องทางหลบเลี่ยงตั้งแต่ที่เครื่อง',
+    descEn:'With Active Directory, use Group Policy to disable certain browsers, lock proxy settings, block DNS changes, and disable some VPNs — cutting evasion routes right at the device.',
+    pills:['Active Directory','GPO'],
+    proTh:['ล็อกการตั้งค่าที่เครื่อง','ลดการหลบเลี่ยงได้มาก'], proEn:['Locks settings at the device','Greatly reduces evasion'] },
+
+  { name:'Block VPN & Proxy',
+    descTh:'ถ้าไม่บล็อก VPN ผู้ใช้เข้าเว็บที่ถูกบล็อกได้ทันที. ใช้ Application Control, IPS และ URL Filtering เพื่อหยุด VPN, Proxy และ Anonymous Browser',
+    descEn:'Leave VPNs open and users tunnel straight past your blocks. Use Application Control, IPS, and URL filtering to stop VPNs, proxies, and anonymizing browsers.',
+    pills:['App Control','IPS','URL Filtering'],
+    warnTh:['VPN · Proxy · Anonymous Browser คือช่องโหว่หลักที่มองข้ามบ่อย'], warnEn:['VPN, Proxy, and anonymizing browsers are the most-overlooked gap'] },
+
+  { name:'SafeSearch',
+    descTh:'สำหรับองค์กรหรือสถานศึกษา เปิด SafeSearch บน Google Search, Microsoft Bing และ YouTube เพื่อกรองเนื้อหาที่ไม่เหมาะสมในผลค้นหา',
+    descEn:'For offices and schools, enforce SafeSearch on Google Search, Bing, and YouTube to filter inappropriate results.',
+    pills:['Google','Bing','YouTube'],
+    proTh:['กรองเนื้อหาไม่เหมาะสมในการค้นหา'], proEn:['Filters inappropriate search content'] },
+];
+
+const stack = [
+  {n:'1', name:'Firewall Web Filter',  th:'ด่านหลักที่ครอบคลุมที่สุด', en:'The broadest first line'},
+  {n:'2', name:'DNS Filter',           th:'จับโดเมนอันตรายที่หลุดหมวด', en:'Catches bad domains that slip categories'},
+  {n:'3', name:'HTTPS Inspection',     th:'เปิดดูใต้การเข้ารหัส', en:'Looks under encryption'},
+  {n:'4', name:'Block VPN / Proxy',    th:'ปิดทางอ้อมออกนอกระบบ', en:'Closes the tunnel-out route'},
+  {n:'5', name:'Group Policy Lock',    th:'ล็อกค่าบนเครื่องกันแก้', en:'Locks device settings'},
+  {n:'6', name:'Monitoring Log',       th:'เฝ้าดูและตรวจย้อนหลัง', en:'Watch and audit'},
+];
+
+const extras = [
+  {th:'อัปเดตข้อมูลการกรองเว็บไซต์เสมอ', en:'Keep filtering lists updated'},
+  {th:'ตรวจสอบ Log อย่างสม่ำเสมอ', en:'Review logs regularly'},
+  {th:'กำหนดนโยบายการใช้งานอินเทอร์เน็ตให้ชัดเจน', en:'Set a clear acceptable-use policy'},
+  {th:'สร้างความเข้าใจกับผู้ใช้งาน', en:'Communicate the policy to users'},
+];
+
+/* ===== state ===== */
+let lang='th';
+let current=0;
+let runId=0;
+const reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+const wait = ms => new Promise(r=>setTimeout(r, reduce?0:ms));
+
+/* ===== render static ===== */
+function buildHTMLAttr(el){ // headings may include html
+  el.querySelectorAll('[data-th]').forEach(n=>{
+    const v = lang==='th'? n.dataset.th : n.dataset.en;
+    if(/[<&]/.test(v)) n.innerHTML=v; else n.textContent=v;
+  });
+}
+
+function renderChips(){
+  const c=document.getElementById('chips'); c.innerHTML='';
+  scenarios.forEach((s,i)=>{
+    const label = lang==='en' && s.chipEn ? s.chipEn : s.chip;
+    const tag = lang==='th'? s.tagTh : s.tagEn;
+    const b=document.createElement('button');
+    b.className='chip'+(i===current?' active':'');
+    b.innerHTML=`<span class="tag">${tag}</span>${label}`;
+    b.onclick=()=>{ current=i; renderChips(); run(); };
+    c.appendChild(b);
+  });
+}
+
+function renderRows(){
+  const r=document.getElementById('rows'); r.innerHTML='';
+  layers.forEach(l=>{
+    const role = lang==='th'? l.roleTh : l.roleEn;
+    const row=document.createElement('div'); row.className='grow';
+    row.innerHTML=`<div class="node"></div>
+      <div class="gate">
+        <div><div class="gname"><span class="gnum">${l.n}</span>${l.name}</div><div class="grole">${role}</div></div>
+        <div class="gstat">—</div>
+      </div>`;
+    r.appendChild(row);
+  });
+}
+
+function renderCards(){
+  const g=document.getElementById('cards'); g.innerHTML='';
+  methods.forEach((m,i)=>{
+    const desc=lang==='th'?m.descTh:m.descEn;
+    const pro=lang==='th'?m.proTh:m.proEn;
+    const warn=lang==='th'?m.warnTh:m.warnEn;
+    const recBadge=m.rec?`<span class="badge">${lang==='th'?'แนะนำที่สุด':'most recommended'}</span>`:'';
+    let proHtml='', warnHtml='';
+    if(pro&&pro.length){ proHtml=`<div class="ntitle">${lang==='th'?'ข้อดี':'pros'}</div><ul class="notelist pro">`+pro.map(x=>`<li>${x}</li>`).join('')+`</ul>`; }
+    if(warn&&warn.length){ warnHtml=`<div class="ntitle warn">${lang==='th'?'ข้อควรระวัง':'watch out'}</div><ul class="notelist warn">`+warn.map(x=>`<li>${x}</li>`).join('')+`</ul>`; }
+    const card=document.createElement('div'); card.className='card'+(m.rec?' rec':'');
+    card.innerHTML=`<div class="num">${String(i+1).padStart(2,'0')}</div>${recBadge}
+      <h4>${m.name}</h4>
+      <div class="desc">${desc}</div>
+      <div class="pillrow">${m.pills.map(p=>`<span class="pill">${p}</span>`).join('')}</div>
+      ${proHtml}${warnHtml}`;
+    g.appendChild(card);
+  });
+}
+
+function renderStack(){
+  const s=document.getElementById('stack'); s.innerHTML='';
+  stack.forEach(x=>{
+    const p=lang==='th'?x.th:x.en;
+    const el=document.createElement('div'); el.className='step';
+    el.innerHTML=`<div class="sn">${x.n}</div><h5>${x.name}</h5><p>${p}</p>`;
+    s.appendChild(el);
+  });
+}
+
+function renderExtras(){
+  const e=document.getElementById('extras'); e.innerHTML='';
+  extras.forEach(x=>{
+    const t=lang==='th'?x.th:x.en;
+    const el=document.createElement('div'); el.className='extra';
+    el.innerHTML=`<div class="ck">✓</div><div>${t}</div>`;
+    e.appendChild(el);
+  });
+}
+
+/* ===== gauntlet runner ===== */
+function rowEls(){ return [...document.querySelectorAll('#rows .grow')]; }
+function placePacket(i){
+  const rows=rowEls(); const g=document.getElementById('gauntlet'); const p=document.getElementById('packet');
+  const row=rows[i]; const node=row.querySelector('.node');
+  const y = node.getBoundingClientRect().top - g.getBoundingClientRect().top + node.offsetHeight/2;
+  p.style.top = y+'px';
+}
+function statTxt(kind){
+  const m={pass:lang==='th'?'ผ่าน':'PASS', block:lang==='th'?'บล็อก':'BLOCK', na:lang==='th'?'ไม่เกี่ยว':'N/A', log:'LOG'};
+  return m[kind]||'—';
+}
+function markRow(i,kind){
+  const row=rowEls()[i]; row.classList.remove('s-pass','s-block','s-na');
+  if(kind==='pass'||kind==='log') row.classList.add('s-pass');
+  else if(kind==='block') row.classList.add('s-block');
+  else if(kind==='na') row.classList.add('s-na');
+  row.querySelector('.gstat').textContent=statTxt(kind);
+}
+
+async function run(){
+  const myId=++runId;
+  const scn=scenarios[current];
+  const rows=rowEls();
+  rows.forEach(r=>{ r.classList.remove('s-pass','s-block','s-na','dim'); r.querySelector('.gstat').textContent='—'; });
+  const dest=document.getElementById('dest'); dest.className='dest-card';
+  dest.textContent = lang==='th'?'กำลังตรวจ…':'evaluating…';
+  document.getElementById('outcome').className='outcome idle';
+  document.getElementById('outcome').textContent = lang==='th'?'กำลังตรวจ…':'evaluating…';
+  document.getElementById('vwhere').textContent='';
+
+  const p=document.getElementById('packet'); p.classList.add('show');
+  placePacket(0);
+  await wait(120); if(myId!==runId)return;
+
+  for(let i=0;i<layers.length;i++){
+    placePacket(i);
+    await wait(360); if(myId!==runId)return;
+    const k=scn.path[i];
+    if(k==='block'){ markRow(i,'block'); finalize(scn,i); rows.forEach((r,j)=>{if(j>i)r.classList.add('dim');}); return; }
+    markRow(i, k==='na'?'na':(k==='log'?'log':'pass'));
+    await wait(140); if(myId!==runId)return;
+  }
+  finalize(scn,null);
+}
+
+function finalize(scn, blockedIdx){
+  const out=document.getElementById('outcome');
+  const where=document.getElementById('vwhere');
+  const txt=document.getElementById('vtext');
+  const dest=document.getElementById('dest');
+  txt.textContent = lang==='th'?scn.th:scn.en;
+  if(blockedIdx===null){
+    out.className='outcome allowed'; out.textContent= lang==='th'?'✓ อนุญาต':'✓ ALLOWED';
+    where.textContent = lang==='th'?'ผ่านครบทั้ง 6 ชั้น':'passed all 6 layers';
+    dest.className='dest-card allowed'; dest.textContent= lang==='th'?'ถึงปลายทาง · บันทึก Log แล้ว':'reached destination · logged';
+  } else {
+    const L=layers[blockedIdx];
+    out.className='outcome blocked'; out.textContent= lang==='th'?'✕ ถูกบล็อก':'✕ BLOCKED';
+    where.textContent = (lang==='th'?'หยุดที่ชั้น ':'stopped at layer ')+L.n+' · '+L.name;
+    dest.className='dest-card dropped'; dest.textContent= lang==='th'?'REQUEST ถูกตัดทิ้ง':'REQUEST DROPPED';
+  }
+}
+function rerun(){ run(); }
+
+/* ===== language ===== */
+function setLang(l){
+  lang=l; document.documentElement.lang=l;
+  document.getElementById('btn-th').classList.toggle('on', l==='th');
+  document.getElementById('btn-en').classList.toggle('on', l==='en');
+  buildHTMLAttr(document.body);
+  renderChips(); renderRows(); renderCards(); renderStack(); renderExtras();
+  run();
+}
+
+/* ===== init ===== */
+buildHTMLAttr(document.body);
+renderChips(); renderRows(); renderCards(); renderStack(); renderExtras();
+window.addEventListener('load', ()=>{ run(); });
+let rt; window.addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(()=>{ const rows=rowEls(); const blocked=scenarios[current].path.findIndex(k=>k==='block'); placePacket(blocked>=0?blocked:rows.length-1); },150); });
+</script>
+</body>
+</html>

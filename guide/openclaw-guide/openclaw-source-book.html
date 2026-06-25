@@ -1,0 +1,2378 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw × Pedpro — Source Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F1117; --ink-2:#161922; --ink-3:#1E2330; --ink-4:#252B3A; --line:#2A3140;
+    --amber:#E9B44C; --amber-dim:#9c7a36; --teal:#5FC9C3; --teal-dim:#3a7d79;
+    --text:#E7E4DC; --muted:#9097A8; --muted-2:#646B7D;
+    --disp:'Anuphan',sans-serif; --body:'IBM Plex Sans Thai',sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--ink); color:var(--text); font-family:var(--body); line-height:1.7; font-size:16px;
+    -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(900px 500px at 85% -5%, #1a1f2e 0%, transparent 60%);
+    background-attachment:fixed;}
+  ::selection{background:var(--amber); color:#1a1407}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 22px; display:grid; grid-template-columns:248px 1fr; gap:36px}
+  @media (max-width:900px){.wrap{grid-template-columns:1fr}}
+  h1,h2{font-family:var(--disp); font-weight:700; letter-spacing:-0.015em}
+
+  nav.toc{position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:30px 0 40px; border-right:1px solid var(--line)}
+  nav.toc .brand{font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--amber)}
+  nav.toc .bt{font-family:var(--disp); font-weight:700; font-size:18px; line-height:1.2; margin:4px 0 18px}
+  nav.toc .tg{font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted-2); margin:16px 0 6px; padding-left:12px}
+  nav.toc a{display:block; font-family:var(--mono); font-size:11.5px; color:var(--muted); text-decoration:none; padding:4px 12px; border-left:2px solid transparent; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  nav.toc a:hover{color:var(--text); border-left-color:var(--line)}
+  nav.toc a.active{color:var(--amber); border-left-color:var(--amber); background:#e9b44c0a}
+  @media (max-width:900px){nav.toc{position:static; height:auto; border-right:none; border-bottom:1px solid var(--line)}}
+
+  main{min-width:0; padding:30px 0 80px}
+  .hero{padding:8px 0 26px; border-bottom:1px solid var(--line); margin-bottom:10px}
+  .hero .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--amber); margin-bottom:14px}
+  .hero h1{font-size:clamp(30px,5vw,46px)}
+  .hero p{margin-top:14px; color:var(--muted); max-width:640px}
+  .hero .meta{margin-top:16px; font-family:var(--mono); font-size:12px; color:var(--muted-2)}
+  .hero .meta b{color:var(--amber)}
+
+  h2.grp{font-size:15px; font-family:var(--mono); font-weight:600; letter-spacing:.06em; color:var(--amber);
+    text-transform:uppercase; margin:42px 0 4px; padding-top:18px; border-top:1px solid var(--line)}
+  h2.grp:first-of-type{border-top:none; padding-top:0}
+
+  .code{margin:16px 0; border:1px solid var(--line); border-radius:11px; overflow:hidden; background:#0b0d13; scroll-margin-top:14px}
+  .code .bar{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 14px; background:var(--ink-3); border-bottom:1px solid var(--line)}
+  .code .fn{font-family:var(--mono); font-size:12.5px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .code .fn .tag{color:var(--muted-2); margin-right:9px; font-size:10px; letter-spacing:.1em; text-transform:uppercase}
+  .code .fn .by{color:var(--muted-2); margin-left:10px; font-size:10.5px}
+  .code .cp{flex:none; font-family:var(--mono); font-size:11px; color:var(--muted); background:transparent; border:1px solid var(--line); border-radius:6px; padding:3px 12px; cursor:pointer; transition:.15s}
+  .code .cp:hover{color:var(--amber); border-color:var(--amber-dim)}
+  .code .cp.ok{color:var(--teal); border-color:var(--teal-dim)}
+  .code pre{margin:0; padding:15px 16px; overflow-x:auto; font-family:var(--mono); font-size:12.6px; line-height:1.6; color:#cdd3df; tab-size:2}
+  .code pre::-webkit-scrollbar{height:8px} .code pre::-webkit-scrollbar-thumb{background:var(--ink-4); border-radius:8px}
+
+  .top{position:fixed; right:18px; bottom:18px; font-family:var(--mono); font-size:12px; color:var(--muted);
+    background:var(--ink-3); border:1px solid var(--line); border-radius:9px; padding:8px 12px; text-decoration:none}
+  .top:hover{color:var(--amber); border-color:var(--amber-dim)}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<a href="../../index.html" id="back-home-fab" aria-label="กลับคลังคู่มือ" style="position:fixed;right:18px;bottom:18px;z-index:99999;display:inline-flex;align-items:center;gap:7px;padding:10px 16px;font:600 14px/1 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#fff;background:#0284c7;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px rgba(2,132,199,.35)">🏠 หน้าแรก</a>
+<div class="wrap">
+  <nav class="toc">
+    <div class="brand">Source Book</div>
+    <div class="bt">OpenClaw ×<br>Pedpro</div>
+    <div class="tg">A · root</div>
+<a href="#f-readme-md">README.md</a>
+<a href="#f-contributing-md">CONTRIBUTING.md</a>
+<a href="#f-claude-md">CLAUDE.md</a>
+<a href="#f-justfile">justfile</a>
+<a href="#f-dockerfile">Dockerfile</a>
+<a href="#f-pyproject-toml">pyproject.toml</a>
+<a href="#f-env-example">.env.example</a>
+<a href="#f-pre-commit-config-yaml">.pre-commit-config.yaml</a>
+<div class="tg">B · .claude (config)</div>
+<a href="#f-claude-settings-json">.claude/settings.json</a>
+<a href="#f-claude-commands-goal-md">.claude/commands/goal.md</a>
+<a href="#f-claude-goal-json">.claude/goal.json</a>
+<a href="#f-claude-progress-txt">.claude/progress.txt</a>
+<div class="tg">B · .claude/hooks</div>
+<a href="#f-claude-hooks-load-context-sh">.claude/hooks/load-context.sh</a>
+<a href="#f-claude-hooks-git-gate-sh">.claude/hooks/git-gate.sh</a>
+<a href="#f-claude-hooks-typecheck-changed-sh">.claude/hooks/typecheck-changed.sh</a>
+<a href="#f-claude-hooks-append-progress-sh">.claude/hooks/append-progress.sh</a>
+<a href="#f-claude-hooks-goal-check-sh">.claude/hooks/goal-check.sh</a>
+<div class="tg">B · .claude/skills</div>
+<a href="#f-claude-skills-bruno-contract-skill-md">.claude/skills/bruno-contract/SKILL.md</a>
+<a href="#f-claude-skills-pedpro-tdd-skill-md">.claude/skills/pedpro-tdd/SKILL.md</a>
+<div class="tg">C · openclaw (middleware)</div>
+<a href="#f-openclaw-integration-py">openclaw/integration.py</a>
+<a href="#f-openclaw-integration-demo-py">openclaw/integration_demo.py</a>
+<a href="#f-openclaw-integration-live-py">openclaw/integration_live.py</a>
+<a href="#f-openclaw-supervisor-py">openclaw/supervisor.py</a>
+<a href="#f-openclaw-run-py">openclaw/run.py</a>
+<a href="#f-openclaw-telegram-service-py">openclaw/telegram_service.py</a>
+<a href="#f-openclaw-claim-py">openclaw/claim.py</a>
+<a href="#f-openclaw-approval-router-py">openclaw/approval_router.py</a>
+<a href="#f-openclaw-gate-py">openclaw/gate.py</a>
+<a href="#f-openclaw-trace-py">openclaw/trace.py</a>
+<a href="#f-openclaw-metrics-py">openclaw/metrics.py</a>
+<a href="#f-openclaw-eval-py">openclaw/eval.py</a>
+<a href="#f-openclaw-judge-py">openclaw/judge.py</a>
+<a href="#f-openclaw-alerts-py">openclaw/alerts.py</a>
+<a href="#f-openclaw-golden-jsonl">openclaw/golden.jsonl</a>
+<a href="#f-openclaw-requirements-txt">openclaw/requirements.txt</a>
+<a href="#f-openclaw-demo-py">openclaw/demo.py</a>
+<div class="tg">D · tests</div>
+<a href="#f-openclaw-tests-test-smoke-py">openclaw/tests/test_smoke.py</a>
+<a href="#f-openclaw-tests-test-gate-routing-py">openclaw/tests/test_gate_routing.py</a>
+<a href="#f-openclaw-tests-test-youtrack-claim-py">openclaw/tests/test_youtrack_claim.py</a>
+<a href="#f-openclaw-tests-test-telegram-service-py">openclaw/tests/test_telegram_service.py</a>
+<div class="tg">E · fixtures</div>
+<a href="#f-fixtures-ped-1423-json">fixtures/PED-1423.json</a>
+<a href="#f-fixtures-ped-1480-json">fixtures/PED-1480.json</a>
+<a href="#f-fixtures-ped-1502-json">fixtures/PED-1502.json</a>
+<div class="tg">F · CI</div>
+<a href="#f-github-workflows-ci-yml">.github/workflows/ci.yml</a>
+<a href="#f-github-workflows-agent-eval-yml">.github/workflows/agent-eval.yml</a>
+  </nav>
+  <main>
+    <div class="hero">
+      <div class="eyebrow">ทุกไฟล์ · copy ได้ทีละไฟล์</div>
+      <h1>ซอร์สครบทั้ง kit ในหน้าเดียว</h1>
+      <p>ทุกไฟล์ใน <code>openclaw-pedpro-kit.zip</code> อยู่ที่นี่หมด กดปุ่ม Copy ที่หัวแต่ละบล็อกแล้วเอาไปวางในไฟล์ตาม path ที่ระบุได้เลย ไม่ต้องแตก zip. โค้ดดึงจากไฟล์จริงที่ผ่าน ruff + mypy + 18 tests แล้ว</p>
+      <div class="meta"><b>45</b> ไฟล์ · จัดกลุ่มตาม path · ปุ่ม Copy ต่อไฟล์</div>
+    </div>
+    <h2 class="grp" id="g-a-root">A · root</h2>
+<div class="code" id="f-readme-md"><div class="bar"><span class="fn"><span class="tag">markdown</span>README.md<span class="by">14746 B</span></span><button class="cp">Copy</button></div><pre># OpenClaw × Pedpro — Agentic Workflow Kit
+
+ไฟล์จริงทั้งหมดจากซีรีส์ handbook 4 พาร์ท วางลง repo ได้เลย
+(`.claude/` ลงที่ root ของ Pedpro, `openclaw/` เป็น middleware แยก).
+
+ทุกไฟล์ใน `openclaw/` เป็น **reference scaffold** — เชื่อมกับระบบจริงผ่าน
+`openclaw/integration.py` (จุดที่ raise NotImplementedError คือสิ่งที่ต้อง wire เอง).
+ส่วน `.claude/` ใช้งานได้ทันทีหลังปรับชื่อ script/path ให้ตรง repo.
+
+แก่นเดียวที่ร้อยทั้งซีรีส์: **ขนาน agent ให้สุด, serialize วิจารณญาณเสมอ.**
+
+## ซีรีส์เต็ม
+
+| # | เนื้อหา | รูปแบบ |
+|---|---|---|
+| Part 1 | แนวคิด prompt → agent (context, reasoning, vocab, HITL) | handbook |
+| Part 2 | หนึ่งลูปปิดตัวเองได้ (skills/hooks/goal/progress/gate) | handbook → ไฟล์ใน kit นี้ |
+| Part 3 | N ลูปขนานปลอดภัย (worktrees/supervisor/fan-in) | handbook → ไฟล์ใน kit นี้ |
+| Part 4 | ลูปที่วัด+พัฒนาตัวเอง (trace/metrics/eval/judge/alerts) | handbook → ไฟล์ใน kit นี้ |
+| **kit** | ไฟล์จริงรันได้ + live + Docker + 18 tests + CI | **โฟลเดอร์นี้** |
+
+---
+
+## รันได้ทันที (demo mode)
+
+ไม่ต้องมี YouTrack/Telegram/API key — `OPENCLAW_MODE=demo` จะสลับทุก seam เป็น
+local fakes (`openclaw/integration_demo.py`) ให้ลูปทั้งวงรันจริง:
+
+```
+just demo      # spawn 2 runs ขนาน -&gt; loop -&gt; goal_met -&gt; เข้าคิว merge gate -&gt; metrics
+just eval      # รัน regression suite (golden.jsonl) ด้วย demo wiring
+just test      # smoke test (pytest)
+just verify    # ตรวจ bash/json/python syntax
+```
+
+ตัวอย่างผล `just demo` (ของจริงจากการรัน):
+
+```
+== driving loops ==
+   [telegram] [PED-1423 · a91444] approve merge?
+              5 files changed, 142 insertions(+), 18 deletions(-) | checks: {...pass...}
+              reply: /approve a91444 &lt;reason&gt;   or   /reject a91444 &lt;reason&gt;
+   [telegram] [PED-1480 · 17b9b3] approve merge?  ...
+== metrics rollup ==
+   runs 2 | success_rate 1.0 | intervention_rate 0.0 | median_iters 2 | usd_per_issue 0.84
+```
+
+ทุก run ขนานกัน แต่แต่ละ merge มาเป็นคำขออนุมัติ**แยกตัว มี tag issue+id** เข้าช่อง
+เดียว — นี่คือ "ขนาน agent, serialize วิจารณญาณ" ที่เห็นเป็นรูปธรรม.
+เมื่อพร้อมใช้จริง ลบ env `OPENCLAW_MODE` แล้ว implement seam ใน `integration.py`.
+
+---
+
+## ใช้จริง (live mode)
+
+`OPENCLAW_MODE=live` ใช้ `openclaw/integration_live.py` ที่ wire ของจริง:
+
+| seam | ของจริงที่ต่อ |
+|---|---|
+| YouTrack | REST `/api/issues` + `/api/commands` (claim = optimistic-verify เพราะ YouTrack ไม่มี CAS) |
+| Telegram | Bot API `sendMessage` + inline button "Open diff" ผ่าน tracker |
+| Anthropic | `AsyncAnthropic().messages.create` (judge) |
+| Claude Code | `claude -p --output-format json --max-turns N --model ... --permission-mode dontAsk` → parse `total_cost_usd`/`usage`, แล้ว**รัน acceptance เองเพื่อตัดสิน goal_met** (ไม่เชื่อคำโมเดล) |
+
+ตั้งค่าใน `.env` (ดู `.env.example`): `YOUTRACK_BASE_URL/TOKEN`, `TELEGRAM_BOT_TOKEN/CHAT_ID`,
+`ANTHROPIC_API_KEY`. ติดตั้ง deps: `pip install -r openclaw/requirements.txt`.
+
+&gt; ⚠️ verify endpoint shape กับ YouTrack/Telegram เวอร์ชันคุณก่อน — โค้ดเป็น reference.
+&gt; `claude -p` headless field `total_cost_usd`/`usage` อิง docs ปัจจุบัน (code.claude.com/docs/en/headless).
+
+### Docker
+
+`Dockerfile` ทำ image ของ middleware (python + node + claude-code + pnpm + git + jq):
+
+```
+docker build -t openclaw .
+docker run --rm --env-file .env -v /path/to/pedpro:/app/pedpro openclaw
+```
+
+mount repo Pedpro เข้าไป; worktrees จะถูกสร้างใต้ `OPENCLAW_WORKTREE_BASE`.
+
+### ปิดลูปอนุมัติ (inbound)
+
+`telegram_service.py` คือขาเข้าที่ขาดไป — long-poll `getUpdates` แล้ว route:
+
+```
+ส่งคำขอ (supervisor) ──▶ Telegram  [PED-1423 · 8994d7] + ปุ่ม [Open diff]
+   ผู้ใช้แตะ [Open diff] ─▶ callback "open:&lt;rid&gt;" ─▶ gate.mark_diff_opened(rid,user)
+   ผู้ใช้พิมพ์ /approve 8994d7 reviewed... ─▶ on_reply ถอด tag ─▶ gate.handle_decision
+        ตรวจ: เปิด diff แล้ว? + มีเหตุผล? ──▶ ผ่าน ─▶ execute(push/deploy)
+```
+
+`run.py` รัน supervisor + listener **ในโปรเซสเดียว** เพื่อแชร์คิวอนุมัติในเมมโมรี
+(หลายโปรเซส → ย้าย `PENDING`/`_OPENED` ไป Redis/SQLite). พฤติกรรม anti-rubber-stamp
+มีเทสต์คุม: `pytest openclaw/tests` (**18 ผ่าน**, mock-free/network-free):
+gate routing (approve โดยไม่เปิด diff/ไม่มีเหตุผล/ไม่มี tag ถูก block, คำขอค้างคิว),
+YouTrack optimistic-verify claim (จำลอง race ด้วย httpx mock — ใครชนะ re-read คนนั้นได้งาน),
+และ telegram dispatch (จำลอง payload callback/message จริง). `ci.yml` รัน `ruff check` + `pytest` ให้ทุก push/PR (`just lint` / `just test` รันเองก็ได้).
+
+---
+
+## โครงไฟล์
+
+```
+.
+├── CLAUDE.md                         # P2 §01 — context (factual, ไม่ใช่คำสั่ง)
+├── .claude/
+│   ├── settings.json                 # P2 §04 — ลงทะเบียน hooks ทั้งหมด
+│   ├── goal.json                     # P2 §05 — stop condition (ตัวอย่าง)
+│   ├── progress.txt                  # P2 §06 — working memory (ตัวอย่าง)
+│   ├── commands/
+│   │   └── goal.md                   # P2 §05 — /goal เซ็ตเส้นชัย
+│   ├── hooks/
+│   │   ├── load-context.sh           # P2 §06 — SessionStart: inject goal+progress
+│   │   ├── git-gate.sh               # P2 §04 — PreToolUse: block push/deploy/rm -rf
+│   │   ├── typecheck-changed.sh      # P2 §04 — PostToolUse: type ต้องผ่านก่อนไปต่อ
+│   │   ├── append-progress.sh        # P2 §04 — PostToolUse: log ลง progress.txt
+│   │   └── goal-check.sh             # P2 §05 — Stop: ปิดลูปเมื่อ acceptance เขียวหมด
+│   └── skills/
+│       ├── bruno-contract/SKILL.md   # P2 §02 — ห้ามเดา field, อ่าน .bru ก่อน
+│       └── pedpro-tdd/SKILL.md       # P2 §03 — test-first
+└── openclaw/                         # middleware (deterministic, ไม่ใช่ LLM)
+    ├── integration.py                # ★ จุดเชื่อมระบบจริง — เริ่มที่นี่
+    ├── integration_demo.py           # local fakes สำหรับ OPENCLAW_MODE=demo
+    ├── integration_live.py           # ของจริง: YouTrack/Telegram/Anthropic/Claude CLI
+    ├── requirements.txt              # httpx, anthropic (live mode)
+    ├── demo.py                       # รันลูปทั้งวง end-to-end (ไม่ต้องมี deps)
+    ├── supervisor.py                 # P3 §03 — orchestrator loop
+    ├── run.py                         # entrypoint: supervisor + telegram listener (โปรเซสเดียว)
+    ├── telegram_service.py            # ขาเข้า gate: /approve /reject /pending + ปุ่ม Open diff
+    ├── claim.py                      # P3 §02 — claim งานกัน race ผ่าน YouTrack
+    ├── approval_router.py            # P3 §05-06 — คิว gate หลายลูป + merge
+    ├── gate.py                       # P2 §07 — ประตูอนุมัติ anti-rubber-stamp
+    ├── trace.py                      # P4 §01 — telemetry ต่อ iteration
+    ├── metrics.py                    # P4 §02-03 — rollup + cost by model
+    ├── eval.py                       # P4 §04 — regression suite ของระบบ
+    ├── judge.py                      # P4 §05 — LLM-as-judge
+    ├── alerts.py                     # P4 §07 — alert สองชั้นเข้า Telegram
+    ├── golden.jsonl                  # P4 §04 — frozen eval tasks
+    └── tests/                        # 18 tests: smoke + gate routing + youtrack claim + telegram
+        ├── test_smoke.py
+        ├── test_gate_routing.py
+        ├── test_youtrack_claim.py    # mock-httpx race guard
+        └── test_telegram_service.py  # mock Telegram payloads
+├── fixtures/                         # ตัวอย่าง issue payload สำหรับ eval
+│   ├── PED-1423.json
+│   ├── PED-1480.json
+│   └── PED-1502.json
+├── justfile                          # just demo / eval / test / verify
+├── Dockerfile                        # middleware image (python+node+claude-code)
+├── .env.example                      # env สำหรับ live mode
+├── CONTRIBUTING.md                   # วิธีแก้ระบบอย่างปลอดภัย (แก้ instruction → eval → merge)
+├── .pre-commit-config.yaml           # ruff + hook syntax + pytest ตอน commit
+├── pyproject.toml                    # ruff + mypy config
+└── .github/workflows/
+    ├── ci.yml                        # lint (ruff) + pytest ทุก push/PR
+    └── agent-eval.yml                # P4 §04 — gate การแก้ระบบด้วย eval
+```
+
+(P1 = handbook พาร์ทแนวคิด ไม่มีไฟล์ — เป็นที่มาของ "ทำไม")
+
+---
+
+## ลำดับลงมือ (rollout)
+
+1. **วันแรก — ความปลอดภัย+คุณภาพ ด้วยแรงน้อยสุด**
+   `CLAUDE.md` + `.claude/settings.json` + `git-gate.sh` + `typecheck-changed.sh`
+   ปรับ `pnpm run typecheck` ในhook ให้ตรง script จริง (เช่น `nuxt typecheck`).
+   รัน `/hooks` ใน Claude Code เพื่อยืนยันว่าโหลดแล้ว.
+
+2. **วันถัดมา — ลด error**
+   วาง 2 skills (`bruno-contract`, `pedpro-tdd`). ปรับ path collection `.bru`.
+
+3. **ทำลูปจริง**
+   `/goal` + `goal.json` + `progress.txt` + `load-context.sh` + `goal-check.sh`.
+   ลูปจะปิดตัวเองเมื่อ acceptance เขียวหมด.
+
+4. **ขนานหลายลูป** (ต้องมี middleware)
+   เริ่มแบบ manual ด้วย `git worktree` ก่อน → ต่อ `supervisor.py` แบบหยุดที่
+   `queue_merge_gate` → ต่อ gate/router → เปิด fan-in อัตโนมัติเป็นอันสุดท้าย.
+
+5. **มองเห็น+พัฒนา**
+   `trace.py` → `metrics.py` → `alerts.py` (เน้น `blind_approve_rate`) →
+   `golden.jsonl` + `eval.py` เป็น gate ทุกการแก้ `.claude/`.
+
+---
+
+## จุดเชื่อมที่ต้อง implement (openclaw/integration.py)
+
+| seam | ทำอะไร |
+|---|---|
+| `yt` / `yt_transition` | YouTrack: query + conditional transition (canonical state + lock) |
+| `telegram` | ช่องอนุมัติเดียว: send / reply |
+| `claude_code_session` | spawn `claude` แบบ non-interactive ใน worktree, อ่านผล |
+| `run_loop_to_completion` | ขับ session จนจบ/ชน budget (ใช้ใน eval) |
+| `anthropic` / `extract_text` | Anthropic SDK สำหรับ judge |
+| `write_goal_json` / `fresh_worktree` / `teardown` | worktree + goal helpers |
+| `sh` / `sh_ok` / `git` | มีให้แล้ว (subprocess) — ปรับได้ตามต้องการ |
+
+---
+
+## ข้อควรระวัง
+
+- **ทดสอบ `exit 2` จริงก่อนพึ่งเป็นด่านความปลอดภัย** — แก้ไฟล์ให้ type พังแล้วดูว่า
+  typecheck hook block จริง; ลองสั่ง `git push` ดูว่า git-gate block จริง.
+- **eval รันโมเดลจริง = มีต้นทุน** — รันเมื่อแตะ `.claude/`/`openclaw/` หรือ nightly
+  ไม่ใช่ทุก commit. golden set เล็กแต่ครอบ failure mode สำคัญ.
+- **judge มี bias + drift** — calibrate กับ human spot-check เป็นระยะ,
+  ห้าม judge อนุมัติ irreversible action แทนคน.
+- **`blind_approve_rate` คือ metric ที่ต้องเฝ้าที่สุด** — ถ้ามันไต่ขึ้น แปลว่า gate
+  กำลังกลายเป็นตรายาง (โรค Starbucks "Tank Day"). gate มีไว้ให้ "ดูจริง" ไม่ใช่ "กดผ่าน".
+
+---
+
+## สเปกอ้างอิง
+
+hooks (events, `exit 2`, `hookSpecificOutput`) และ skills
+(`.claude/skills/&lt;name&gt;/SKILL.md`, frontmatter) อิงเอกสาร Claude Code ปัจจุบัน
+(มิ.ย. 2026). ตรวจซ้ำด้วย `/hooks` หลังวาง.
+</pre></div>
+<div class="code" id="f-contributing-md"><div class="bar"><span class="fn"><span class="tag">markdown</span>CONTRIBUTING.md<span class="by">2048 B</span></span><button class="cp">Copy</button></div><pre># Contributing / changing the system
+
+Two kinds of change live in this repo. Keep them separate.
+
+## 1. Product change (a Pedpro feature)
+The agent loop handles these. You write the YouTrack issue + acceptance; the
+loop implements until `goal.json` acceptance is green, then routes a merge to
+the Telegram gate. You review the diff and `/approve &lt;tag&gt; &lt;reason&gt;`.
+
+## 2. System change (the agent itself)
+Editing **CLAUDE.md, a skill, a hook, a prompt, or anything in `openclaw/`**
+changes how every future run behaves. Treat instructions like code:
+
+```
+1. make the change
+2. just lint           # ruff
+3. just test           # 18 mock/network-free tests
+4. just eval           # golden.jsonl run through the whole loop (costs tokens)
+5. open a PR           # ci.yml gates lint+test; agent-eval.yml gates pass@1
+```
+
+**Never change an instruction without running eval.** A prompt tweak that helps
+one case often regresses another; the golden set is how you find out before
+shipping, not after.
+
+### When you find a new failure mode in production
+From metrics/traces (Part 4 §06), if you spot a recurring failure (a guessed
+field, a skipped test, a runaway iteration count):
+
+1. add a **golden task that reproduces it** to `openclaw/golden.jsonl` first
+2. then fix the instruction/skill/hook
+3. confirm the new task passes AND nothing else regressed
+
+That is TDD applied to the agent system — the same discipline `pedpro-tdd`
+asks of product code.
+
+## Local dev
+- `just demo`   — run the whole loop with local fakes (no creds)
+- `just test`   — pytest
+- `just lint`   — ruff
+- `mypy openclaw` — optional, lenient type check (config in pyproject.toml)
+- pre-commit: `pip install pre-commit &amp;&amp; pre-commit install` (runs ruff + hook syntax on commit)
+
+## The one rule that matters most
+Parallelize the agents, serialize the judgment. Any change that makes approval
+easier to give without looking (auto-approve, batching, dropping the reason
+requirement) is a regression even if every test passes — watch
+`blind_approve_rate` (Part 4 §07).
+</pre></div>
+<div class="code" id="f-claude-md"><div class="bar"><span class="fn"><span class="tag">markdown</span>CLAUDE.md<span class="by">878 B</span></span><button class="cp">Copy</button></div><pre># Pedpro
+
+Pedpro is a Thai-language fantasy gaming portal.
+
+## Stack (facts)
+- Vue 3.5+ Composition API, Nuxt 4 (flat root, not app/ layout).
+- TypeScript strict mode. Tailwind + Naive UI. Pinia for state.
+- Path aliases ~/ and @/ resolve to the project root.
+- Page-local components live in pages/&lt;feature&gt;/components/ and need explicit imports.
+- Bruno .bru specs in the sibling repo are the contract source of truth.
+
+## Conventions this repo follows
+- API field names come from .bru files, not from memory. The bruno-contract
+  skill resolves them.
+- No custom CSS and no arbitrary Tailwind values; only base utility classes.
+- No raw HTML &lt;form&gt; elements; forms use Naive UI components.
+- Deploys go to GCP Cloud Run via Dockerfile + cloudbuild.yaml.
+
+## What stays out of scope for the agent
+- git push, git reset --hard, and gcloud run deploy are human-approved actions.
+</pre></div>
+<div class="code" id="f-justfile"><div class="bar"><span class="fn"><span class="tag">just</span>justfile<span class="by">868 B</span></span><button class="cp">Copy</button></div><pre># OpenClaw x Pedpro — common commands. Run from the repo root.
+default:
+    @just --list
+
+# end-to-end demo with local fakes (no YouTrack/Telegram/API needed)
+demo:
+    OPENCLAW_MODE=demo python3 openclaw/demo.py
+
+# roll up metrics from whatever traces exist
+metrics:
+    python3 openclaw/metrics.py
+
+# run the agent eval suite under demo wiring
+eval:
+    OPENCLAW_MODE=demo python3 openclaw/eval.py
+
+# smoke test
+test:
+    python3 -m pytest openclaw/tests -q
+
+# lint with ruff
+lint:
+    ruff check .
+
+# static checks: hook bash syntax, json/jsonl validity, python compiles
+verify:
+    bash -n .claude/hooks/*.sh
+    python3 -c "import json; [json.load(open(f)) for f in ['.claude/settings.json','.claude/goal.json']]"
+    python3 -c "import json; [json.loads(l) for l in open('openclaw/golden.jsonl')]"
+    python3 -m py_compile openclaw/*.py
+    @echo "verify ok"
+</pre></div>
+<div class="code" id="f-dockerfile"><div class="bar"><span class="fn"><span class="tag">docker</span>Dockerfile<span class="by">962 B</span></span><button class="cp">Copy</button></div><pre># OpenClaw middleware image. Runs the deterministic supervisor + headless Claude
+# Code. Mount your Pedpro git repo as a volume; the worktrees it spawns live
+# under OPENCLAW_WORKTREE_BASE relative to the working dir.
+FROM python:3.12-slim
+
+# git + jq are required by the .claude hooks; node + claude-code for headless runs
+RUN apt-get update &amp;&amp; apt-get install -y --no-install-recommends \
+        git jq curl ca-certificates \
+    &amp;&amp; curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    &amp;&amp; apt-get install -y --no-install-recommends nodejs \
+    &amp;&amp; npm install -g @anthropic-ai/claude-code pnpm \
+    &amp;&amp; apt-get clean &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY openclaw/requirements.txt openclaw/requirements.txt
+RUN pip install --no-cache-dir -r openclaw/requirements.txt
+
+COPY . .
+ENV OPENCLAW_MODE=live PYTHONUNBUFFERED=1
+
+# run from a dir where `from integration import ...` resolves
+WORKDIR /app/openclaw
+ENTRYPOINT ["python", "run.py"]
+</pre></div>
+<div class="code" id="f-pyproject-toml"><div class="bar"><span class="fn"><span class="tag">toml</span>pyproject.toml<span class="by">540 B</span></span><button class="cp">Copy</button></div><pre>[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+# the kit intentionally sets env / sys.path before importing local modules
+ignore = ["E402"]
+
+[tool.ruff.lint.per-file-ignores]
+"openclaw/tests/*" = ["E402", "E501"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+check_untyped_defs = false
+warn_return_any = false
+warn_unused_ignores = false
+disable_error_code = ["attr-defined", "no-redef", "assignment", "union-attr"]
+exclude = ["openclaw/tests/", "openclaw/demo\\.py"]
+</pre></div>
+<div class="code" id="f-env-example"><div class="bar"><span class="fn"><span class="tag">env</span>.env.example<span class="by">632 B</span></span><button class="cp">Copy</button></div><pre># OpenClaw middleware — copy to .env and fill in. Used by OPENCLAW_MODE=live.
+
+# demo | live  (unset = stubs that raise NotImplementedError)
+OPENCLAW_MODE=demo
+
+# --- YouTrack (canonical state owner) ---
+YOUTRACK_BASE_URL=https://youtrack.example.com
+YOUTRACK_TOKEN=perm:xxxxxxxxxxxxxxxx
+
+# --- Telegram (sole human approval channel) ---
+TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
+TELEGRAM_CHAT_ID=-1001234567890
+
+# --- Anthropic (judge + headless Claude Code) ---
+ANTHROPIC_API_KEY=sk-ant-...
+
+# --- session knobs ---
+OPENCLAW_SESSION_MODEL=sonnet
+OPENCLAW_MAX_TURNS=12
+OPENCLAW_SESSION_TIMEOUT=900
+OPENCLAW_WORKTREE_BASE=../pedpro-wt
+</pre></div>
+<div class="code" id="f-pre-commit-config-yaml"><div class="bar"><span class="fn"><span class="tag">yaml</span>.pre-commit-config.yaml<span class="by">571 B</span></span><button class="cp">Copy</button></div><pre># pip install pre-commit &amp;&amp; pre-commit install
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.17
+    hooks:
+      - id: ruff
+        args: [--fix]
+  - repo: local
+    hooks:
+      - id: claude-hook-syntax
+        name: bash -n on .claude hooks
+        entry: bash -c 'for f in .claude/hooks/*.sh; do bash -n "$f"; done'
+        language: system
+        pass_filenames: false
+      - id: pytest
+        name: pytest (mock/network-free)
+        entry: python3 -m pytest openclaw/tests -q
+        language: system
+        pass_filenames: false
+</pre></div>
+<h2 class="grp" id="g-b-claude-config">B · .claude (config)</h2>
+<div class="code" id="f-claude-settings-json"><div class="bar"><span class="fn"><span class="tag">json</span>.claude/settings.json<span class="by">1043 B</span></span><button class="cp">Copy</button></div><pre>{
+  "permissions": {
+    "deny": ["Read(./.env)", "Read(./.env.*)", "Bash(git push:*)", "Bash(gcloud run deploy:*)"]
+  },
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [
+        { "type": "command", "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/load-context.sh" }
+      ] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [
+        { "type": "command", "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/git-gate.sh", "timeout": 10 }
+      ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Write|Edit|MultiEdit", "hooks": [
+        { "type": "command", "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/typecheck-changed.sh", "timeout": 180 }
+      ] },
+      { "matcher": "Write|Edit|MultiEdit|Bash", "hooks": [
+        { "type": "command", "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/append-progress.sh", "timeout": 10 }
+      ] }
+    ],
+    "Stop": [
+      { "hooks": [
+        { "type": "command", "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/goal-check.sh", "timeout": 60 }
+      ] }
+    ]
+  }
+}
+</pre></div>
+<div class="code" id="f-claude-commands-goal-md"><div class="bar"><span class="fn"><span class="tag">markdown</span>.claude/commands/goal.md<span class="by">586 B</span></span><button class="cp">Copy</button></div><pre>---
+description: Define this run's stop condition — writes .claude/goal.json
+---
+Define the goal for this session and write it to `.claude/goal.json`.
+
+Source the issue from YouTrack key: $ARGUMENTS
+
+Produce JSON with:
+- id: the YouTrack issue key
+- title: one-line goal
+- acceptance: shell commands that must each exit 0 for "done" (tests,
+  typecheck, artifact existence). The Stop hook runs these.
+- max_iterations: hard ceiling on loop iterations
+
+After writing the file, restate the acceptance checks back to me and wait for
+my confirmation before doing any implementation work.
+</pre></div>
+<div class="code" id="f-claude-goal-json"><div class="bar"><span class="fn"><span class="tag">json</span>.claude/goal.json<span class="by">271 B</span></span><button class="cp">Copy</button></div><pre>{
+  "id": "PED-1423",
+  "title": "BotLine: persist channel config",
+  "acceptance": [
+    "pnpm vitest run app/composables/useBotLineConfig.test.ts",
+    "pnpm run typecheck",
+    "test -f docs/specs/botline-config.html"
+  ],
+  "max_iterations": 25,
+  "owner": "human"
+}
+</pre></div>
+<div class="code" id="f-claude-progress-txt"><div class="bar"><span class="fn"><span class="tag">text</span>.claude/progress.txt<span class="by">541 B</span></span><button class="cp">Copy</button></div><pre># GOAL PED-1423 · BotLine: persist channel config
+# started 2026-06-15T09:02Z
+
+## DECISIONS
+- store: useBotLineConfig composable wraps Pinia store, not raw fetch
+- field casing: API uses snake_case (channel_token); map to camelCase in store
+
+## DONE
+2026-06-15T09:14Z  test       app/composables/useBotLineConfig.test.ts (RED ok)
+2026-06-15T09:21Z  Edit       app/composables/useBotLineConfig.ts (GREEN)
+2026-06-15T09:22Z  typecheck  pass
+
+## NEXT
+- wire store to BotLineForm.vue
+- write docs/specs/botline-config.html
+
+## BLOCKED
+- (none)
+</pre></div>
+<h2 class="grp" id="g-b-claude-hooks">B · .claude/hooks</h2>
+<div class="code" id="f-claude-hooks-load-context-sh"><div class="bar"><span class="fn"><span class="tag">bash</span>.claude/hooks/load-context.sh<span class="by">503 B</span></span><button class="cp">Copy</button></div><pre>#!/usr/bin/env bash
+# SessionStart: inject the active goal + recent progress so a resumed/compacted
+# session knows where it left off.
+set -euo pipefail
+goal="$(cat "$CLAUDE_PROJECT_DIR/.claude/goal.json" 2&gt;/dev/null || echo '{}')"
+prog="$(tail -n 40 "$CLAUDE_PROJECT_DIR/.claude/progress.txt" 2&gt;/dev/null || true)"
+
+jq -n --arg g "$goal" --arg p "$prog" '{
+  hookSpecificOutput: {
+    hookEventName: "SessionStart",
+    additionalContext: ("ACTIVE GOAL:\n" + $g + "\n\nRECENT PROGRESS:\n" + $p)
+  }
+}'
+</pre></div>
+<div class="code" id="f-claude-hooks-git-gate-sh"><div class="bar"><span class="fn"><span class="tag">bash</span>.claude/hooks/git-gate.sh<span class="by">598 B</span></span><button class="cp">Copy</button></div><pre>#!/usr/bin/env bash
+# PreToolUse(Bash): irreversible git/deploy actions never run autonomously.
+set -euo pipefail
+cmd="$(cat | jq -r '.tool_input.command // empty')"
+
+block() {
+  echo "BLOCKED: \"$1\" is irreversible. Route it through the Telegram approval gate (/approve); do not run it directly." &gt;&amp;2
+  exit 2
+}
+
+case "$cmd" in
+  *"git push --force"*|*"git push -f"*) block "force push" ;;
+  *"git push"*)          block "git push" ;;
+  *"git reset --hard"*)  block "git reset --hard" ;;
+  *"gcloud run deploy"*) block "cloud run deploy" ;;
+  *"rm -rf"*)            block "rm -rf" ;;
+esac
+exit 0
+</pre></div>
+<div class="code" id="f-claude-hooks-typecheck-changed-sh"><div class="bar"><span class="fn"><span class="tag">bash</span>.claude/hooks/typecheck-changed.sh<span class="by">666 B</span></span><button class="cp">Copy</button></div><pre>#!/usr/bin/env bash
+# PostToolUse(Write|Edit|MultiEdit): block the loop from moving on if types break.
+set -euo pipefail
+input="$(cat)"
+file="$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.path // empty')"
+
+# React only to TS / Vue sources
+case "$file" in
+  *.ts|*.tsx|*.vue) ;;
+  *) exit 0 ;;
+esac
+
+cd "$CLAUDE_PROJECT_DIR" || exit 0
+
+# Wire this to your real script: e.g. "nuxt typecheck" or "vue-tsc --noEmit"
+if ! out="$(pnpm run typecheck 2&gt;&amp;1)"; then
+  {
+    echo "Typecheck failed after editing $file. Fix before continuing:"
+    echo "$out" | tail -n 40
+  } &gt;&amp;2
+  exit 2   # feeds stderr back to Claude as actionable feedback
+fi
+exit 0
+</pre></div>
+<div class="code" id="f-claude-hooks-append-progress-sh"><div class="bar"><span class="fn"><span class="tag">bash</span>.claude/hooks/append-progress.sh<span class="by">390 B</span></span><button class="cp">Copy</button></div><pre>#!/usr/bin/env bash
+# PostToolUse: append one working-memory line to progress.txt.
+set -euo pipefail
+input="$(cat)"
+tool="$(printf '%s' "$input" | jq -r '.tool_name // "?"')"
+file="$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.path // empty')"
+ts="$(date -u +%FT%TZ)"
+printf '%s  %-11s %s\n' "$ts" "$tool" "$file" &gt;&gt; "$CLAUDE_PROJECT_DIR/.claude/progress.txt"
+exit 0
+</pre></div>
+<div class="code" id="f-claude-hooks-goal-check-sh"><div class="bar"><span class="fn"><span class="tag">bash</span>.claude/hooks/goal-check.sh<span class="by">857 B</span></span><button class="cp">Copy</button></div><pre>#!/usr/bin/env bash
+# Stop: do not let the agent stop until every acceptance check passes.
+set -euo pipefail
+input="$(cat)"
+
+# Prevent an infinite stop/continue loop: if we already blocked once, allow stop.
+if [ "$(printf '%s' "$input" | jq -r '.stop_hook_active // false')" = "true" ]; then
+  exit 0
+fi
+
+goal="$CLAUDE_PROJECT_DIR/.claude/goal.json"
+[ -f "$goal" ] || exit 0   # no active goal -&gt; nothing to enforce
+
+cd "$CLAUDE_PROJECT_DIR"
+remaining=""
+while IFS= read -r check; do
+  [ -z "$check" ] &amp;&amp; continue
+  if ! bash -c "$check" &gt;/dev/null 2&gt;&amp;1; then
+    remaining="$remaining"$'\n'"  - FAILED: $check"
+  fi
+done &lt; &lt;(jq -r '.acceptance[]?' "$goal")
+
+if [ -n "$remaining" ]; then
+  { echo "Goal not met. Remaining acceptance checks:"; printf '%s\n' "$remaining"; } &gt;&amp;2
+  exit 2   # block stop; hand the list back to Claude to keep working
+fi
+exit 0
+</pre></div>
+<h2 class="grp" id="g-b-claude-skills">B · .claude/skills</h2>
+<div class="code" id="f-claude-skills-bruno-contract-skill-md"><div class="bar"><span class="fn"><span class="tag">markdown</span>.claude/skills/bruno-contract/SKILL.md<span class="by">1582 B</span></span><button class="cp">Copy</button></div><pre>---
+name: bruno-contract
+description: Resolve exact API field names, types, and request/response shapes from Bruno .bru files. Use BEFORE writing or editing any composable, Pinia store, TypeScript type, or $fetch/useFetch call that maps to a backend endpoint, and any time an API field name is about to be written. Returns a contract summary; does not write code.
+allowed-tools: Read, Grep, Glob
+---
+
+# bruno-contract
+
+API field names are never guessed. The Bruno collection is the single source
+of truth for every request and response shape.
+
+## Locate the spec
+The collection lives in the sibling repo. Default path: ../pedpro-api-bruno/
+(adjust if your checkout differs).
+1. Glob `**/*.bru` under the collection root.
+2. Grep the endpoint path or feature keyword to find the matching file.
+
+## Extract the contract
+Read the matched .bru in full and pull out, verbatim:
+- method + URL path + path/query params
+- the body block: field names, nesting, types implied by example values
+- the response example / docs block: field names and shape
+- auth (headers / bearer)
+
+## Return (do not write code here)
+Hand the parent a summary:
+- METHOD path
+- request: field: type  (one per line)
+- response: field: type (one per line)
+- note any casing mismatch between request and response
+
+## Hard rules
+- A field name that does not appear verbatim in a .bru does not exist.
+  Report "no contract found for &lt;endpoint&gt;" instead of inventing one.
+- Copy casing exactly. snake_case vs camelCase is decided by the contract,
+  not by Vue convention. Surface the mapping the calling code must do.
+</pre></div>
+<div class="code" id="f-claude-skills-pedpro-tdd-skill-md"><div class="bar"><span class="fn"><span class="tag">markdown</span>.claude/skills/pedpro-tdd/SKILL.md<span class="by">1711 B</span></span><button class="cp">Copy</button></div><pre>---
+name: pedpro-tdd
+description: Drive feature work test-first. Use before writing implementation code for any composable, Pinia store, util, or component behavior that has a definable expected output. Write a failing test that encodes the requirement, get it approved, then implement until green.
+---
+
+# pedpro-tdd
+
+Implementation follows a failing test. The test encodes the requirement;
+the code makes it pass. No implementation before a test exists and is
+confirmed failing for the right reason.
+
+## Stack
+- Runner: Vitest. Components: @vue/test-utils.
+- Single file: `pnpm vitest run &lt;path&gt;`. Tests sit beside the unit as
+  &lt;unit&gt;.test.ts, or under __tests__/ for components.
+
+## Loop
+1. RESTATE the requirement in one sentence. If ambiguous, ask before testing.
+2. RED — write the smallest test that fails because the behavior is missing.
+   Run it. Confirm it fails on the assertion, not on import/setup.
+3. APPROVE — present the test to the human. The test is the contract and is
+   reviewed here, before implementation.
+4. GREEN — write the minimum code to pass. Run the single file, then the suite.
+5. REFACTOR — clean up with the suite green. No behavior change without a
+   test change.
+
+## Pedpro specifics
+- API-shaped data: resolve field names via the bruno-contract skill first;
+  assert against contract names, never guessed ones.
+- Composables: mount through a thin host component or a withSetup helper;
+  assert reactive output, not internals.
+- Naive UI: test emitted events and behavior, not Naive's internals.
+
+## Hard rules
+- No implementation change without a matching test in the same change.
+- A test that passes the first time it is written is suspect — prove it can fail.
+</pre></div>
+<h2 class="grp" id="g-c-openclaw-middleware">C · openclaw (middleware)</h2>
+<div class="code" id="f-openclaw-integration-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/integration.py<span class="by">4767 B</span></span><button class="cp">Copy</button></div><pre>"""
+Integration points — implement these for YOUR stack.
+
+Everything in openclaw/ is a reference scaffold from the OpenClaw x Pedpro
+handbook (Parts 2-4). The functions and clients below are the seams where the
+scaffold meets your real systems: shell, git, YouTrack, Telegram, the Anthropic
+API, and the Claude Code runner. The unimplemented ones raise NotImplementedError
+on purpose so unfinished wiring fails loudly instead of silently doing nothing.
+"""
+from __future__ import annotations
+import subprocess
+
+
+# ---- shell / git -----------------------------------------------------------
+def sh(cmd: str, cwd: str | None = None) -&gt; str:
+    """Run a shell command, return stdout, raise on nonzero exit."""
+    return subprocess.run(cmd, shell=True, cwd=cwd, check=True,
+                          capture_output=True, text=True).stdout
+
+
+def sh_ok(cmd: str, cwd: str | None = None) -&gt; bool:
+    """Run a shell command, return True iff it exits 0."""
+    return subprocess.run(cmd, shell=True, cwd=cwd,
+                          capture_output=True, text=True).returncode == 0
+
+
+def git(args: str, cwd: str | None = None) -&gt; str:
+    return sh(f"git {args}", cwd=cwd)
+
+
+# ---- YouTrack (canonical state owner, Part 3 §02) --------------------------
+class _YouTrack:
+    async def find_one(self, state: str, order_by: str):
+        raise NotImplementedError("wire your YouTrack query here")
+
+    async def transition(self, issue_id, expect_state, to_state, assignee) -&gt; bool:
+        """Conditional transition: must succeed ONLY if state is still
+        `expect_state` at write time (that is the collision guard)."""
+        raise NotImplementedError("wire your YouTrack conditional transition here")
+
+
+yt = _YouTrack()
+
+
+def yt_transition(issue: str, to_state: str, note: str = "") -&gt; None:
+    raise NotImplementedError("wire your YouTrack state update here")
+
+
+# ---- Telegram (sole human approval channel, Part 3 §05) --------------------
+class _Telegram:
+    async def send(self, text: str):
+        raise NotImplementedError("wire your Telegram send here")
+
+    async def reply(self, text: str):
+        raise NotImplementedError("wire your Telegram reply here")
+
+
+telegram = _Telegram()
+
+
+# ---- Anthropic API (judge, Part 4 §05) -------------------------------------
+class _Anthropic:
+    class messages:
+        @staticmethod
+        async def create(**kwargs):
+            raise NotImplementedError("wire the Anthropic SDK here")
+
+
+anthropic = _Anthropic()
+
+
+def extract_text(msg) -&gt; str:
+    """Pull the text content out of an Anthropic API response."""
+    raise NotImplementedError("return msg.content[0].text or equivalent")
+
+
+# ---- Claude Code runner ----------------------------------------------------
+class SessionResult:
+    model: str
+    tool_count: int
+    tokens_in: int
+    tokens_out: int
+    cost_usd: float
+    duration_ms: int
+    goal_met: bool       # the Stop hook reported acceptance pass
+    failed: bool
+    checks: dict
+
+
+async def claude_code_session(cwd: str) -&gt; "SessionResult":
+    """Run ONE bounded Claude Code session in `cwd`. The Stop hook
+    (.claude/hooks/goal-check.sh) decides goal_met by running goal.json
+    acceptance commands."""
+    raise NotImplementedError("spawn `claude` non-interactively in cwd and parse the result")
+
+
+def run_loop_to_completion(cwd: str, max_iters: int, cost_ceiling: float):
+    """Drive sessions until goal_met / budget hit. Used by eval.py.
+    Returns an object with .goal_met, .cost_usd, .iterations."""
+    raise NotImplementedError("loop claude_code_session until done or budget hit")
+
+
+# ---- worktree / goal helpers (Part 3 §01, Part 4 §04) ----------------------
+def write_goal_json(worktree: str, issue) -&gt; None:
+    """Build .claude/goal.json inside `worktree` from a YouTrack issue."""
+    raise NotImplementedError
+
+
+def fresh_worktree(fixture: str) -&gt; str:
+    """Create a clean worktree seeded from an eval fixture; return its path."""
+    raise NotImplementedError
+
+
+def teardown(worktree: str) -&gt; None:
+    raise NotImplementedError
+
+
+# ---- demo wiring -----------------------------------------------------------
+# When OPENCLAW_MODE=demo, swap every seam above for local fakes (no YouTrack,
+# Telegram, API, git, or pnpm needed) so the whole loop runs end-to-end.
+# This runs at import time, BEFORE any module does `from integration import ...`,
+# so the names they bind are already the demo versions. It is also a worked
+# example of how to inject your own real implementations.
+import os as _os
+import sys as _sys
+_mode = _os.environ.get("OPENCLAW_MODE")
+if _mode == "demo":
+    import integration_demo as _wiring
+    _wiring.wire(_sys.modules[__name__])
+elif _mode == "live":
+    import integration_live as _wiring
+    _wiring.wire(_sys.modules[__name__])
+</pre></div>
+<div class="code" id="f-openclaw-integration-demo-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/integration_demo.py<span class="by">4306 B</span></span><button class="cp">Copy</button></div><pre>"""Local fakes for OPENCLAW_MODE=demo — run the whole loop with no external deps.
+
+Wired into integration.py at import time. Every fake mirrors the async/sync
+shape of the real seam so the reference modules run unchanged. This is a
+demonstration harness, not production code.
+"""
+from __future__ import annotations
+import json
+import os
+import tempfile
+import types
+import hashlib
+
+
+# ---- fake shell / git ------------------------------------------------------
+def sh(cmd: str, cwd: str | None = None) -&gt; str:
+    if "sha256sum" in cmd:
+        return hashlib.sha256(cmd.encode()).hexdigest() + "  -"
+    return ""
+
+
+def sh_ok(cmd: str, cwd: str | None = None) -&gt; bool:
+    return True   # in demo, rebase/checks are clean
+
+
+def git(args: str, cwd: str | None = None) -&gt; str:
+    if "diff --shortstat" in args:
+        return "5 files changed, 142 insertions(+), 18 deletions(-)"
+    return ""
+
+
+# ---- fake YouTrack ---------------------------------------------------------
+class FakeYouTrack:
+    async def find_one(self, state, order_by):
+        return None   # demo.py feeds issues directly; supervise() not used
+
+    async def transition(self, issue_id, expect_state, to_state, assignee):
+        return True
+
+
+def yt_transition(issue, to_state, note=""):
+    print(f"   [youtrack] {issue} -&gt; {to_state}  ({note})")
+
+
+# ---- fake Telegram (the single approval channel) ---------------------------
+class FakeTelegram:
+    async def send(self, text, reply_markup=None):
+        print("   [telegram] " + text.replace("\n", "\n              "))
+
+    async def reply(self, text):
+        print("   [telegram:reply] " + text)
+
+
+# ---- fake Anthropic (judge) ------------------------------------------------
+class _Msgs:
+    @staticmethod
+    async def create(**kw):
+        return {"content": [{"type": "text",
+                "text": '{"clarity":4,"scope_match":5,"risk_flagged":4,"notes":"demo"}'}]}
+
+
+class FakeAnthropic:
+    messages = _Msgs()
+
+
+def extract_text(msg) -&gt; str:
+    return msg["content"][0]["text"]
+
+
+# ---- fake Claude Code session ----------------------------------------------
+_SESSION_STATE: dict[str, int] = {}   # worktree -&gt; iterations seen
+
+_MODELS = ["sonnet", "sonnet", "haiku"]
+
+
+def _result(model, goal_met, failed):
+    r = types.SimpleNamespace()
+    r.model, r.goal_met, r.failed = model, goal_met, failed
+    r.tool_count, r.tokens_in, r.tokens_out = 7, 4200, 1100
+    r.cost_usd, r.duration_ms = 0.42, 18000
+    r.checks = {"typecheck": "pass", "tests": "pass 12/12", "lint": "pass"}
+    return r
+
+
+async def claude_code_session(cwd: str):
+    n = _SESSION_STATE.get(cwd, 0) + 1
+    _SESSION_STATE[cwd] = n
+    model = _MODELS[min(n - 1, len(_MODELS) - 1)]
+    # simulate: one "continue" iteration, then goal met
+    return _result(model, goal_met=(n &gt;= 2), failed=False)
+
+
+def run_loop_to_completion(cwd, max_iters, cost_ceiling):
+    out = types.SimpleNamespace(goal_met=False, cost_usd=0.0, iterations=0)
+    for _ in range(max_iters):
+        out.iterations += 1
+        out.cost_usd += 0.42
+        if out.cost_usd &gt;= cost_ceiling:
+            break
+        if out.iterations &gt;= 2:           # demo: converges on the 2nd pass
+            out.goal_met = True
+            break
+    return out
+
+
+# ---- worktree / goal helpers ----------------------------------------------
+def write_goal_json(worktree, issue):
+    os.makedirs(os.path.join(worktree, ".claude"), exist_ok=True)
+    goal = {"id": issue.key, "title": f"demo goal for {issue.key}",
+            "acceptance": ["true"], "max_iterations": 25}
+    with open(os.path.join(worktree, ".claude", "goal.json"), "w") as f:
+        json.dump(goal, f)
+
+
+def fresh_worktree(fixture):
+    d = tempfile.mkdtemp(prefix="evalwt-")
+    return d
+
+
+def teardown(worktree):
+    pass
+
+
+# ---- the injector ----------------------------------------------------------
+def wire(mod):
+    mod.sh = sh
+    mod.sh_ok = sh_ok
+    mod.git = git
+    mod.yt = FakeYouTrack()
+    mod.yt_transition = yt_transition
+    mod.telegram = FakeTelegram()
+    mod.anthropic = FakeAnthropic()
+    mod.extract_text = extract_text
+    mod.claude_code_session = claude_code_session
+    mod.run_loop_to_completion = run_loop_to_completion
+    mod.write_goal_json = write_goal_json
+    mod.fresh_worktree = fresh_worktree
+    mod.teardown = teardown
+</pre></div>
+<div class="code" id="f-openclaw-integration-live-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/integration_live.py<span class="by">8906 B</span></span><button class="cp">Copy</button></div><pre>"""Live wiring for OPENCLAW_MODE=live — real YouTrack, Telegram, Anthropic, Claude CLI.
+
+Reference implementation: verify endpoint shapes against YOUR YouTrack/Telegram
+versions. Activated from integration.py at import time. Required env vars:
+  YOUTRACK_BASE_URL, YOUTRACK_TOKEN, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID,
+  ANTHROPIC_API_KEY  (+ OPENCLAW_MODE=live)
+Deps: httpx, anthropic  (see openclaw/requirements.txt)
+"""
+from __future__ import annotations
+import os
+import json
+import time
+import types
+import asyncio
+import subprocess
+
+import httpx
+
+YT_BASE = os.environ.get("YOUTRACK_BASE_URL", "").rstrip("/")
+YT_TOKEN = os.environ.get("YOUTRACK_TOKEN", "")
+TG_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+TG_CHAT = os.environ.get("TELEGRAM_CHAT_ID", "")
+SESSION_MODEL = os.environ.get("OPENCLAW_SESSION_MODEL", "sonnet")
+MAX_TURNS_PER_SESSION = int(os.environ.get("OPENCLAW_MAX_TURNS", "12"))
+WALL_CLOCK_SECONDS = int(os.environ.get("OPENCLAW_SESSION_TIMEOUT", "900"))
+
+SESSION_PROMPT = (
+    "Continue working toward the goal described in .claude/goal.json. "
+    "Follow this repo's conventions in CLAUDE.md. Use the bruno-contract skill "
+    "before writing any API field name, and pedpro-tdd for new behavior. "
+    "Do not run git push or deploy — those are human-approved."
+)
+
+
+# ---- shell / git (real) ----------------------------------------------------
+def sh(cmd: str, cwd: str | None = None) -&gt; str:
+    return subprocess.run(cmd, shell=True, cwd=cwd, check=True,
+                          capture_output=True, text=True).stdout
+
+
+def sh_ok(cmd: str, cwd: str | None = None) -&gt; bool:
+    return subprocess.run(cmd, shell=True, cwd=cwd,
+                          capture_output=True, text=True).returncode == 0
+
+
+def git(args: str, cwd: str | None = None) -&gt; str:
+    return sh(f"git {args}", cwd=cwd)
+
+
+# ---- YouTrack REST ---------------------------------------------------------
+# NOTE: YouTrack has no native compare-and-swap. "Claim" is optimistic:
+# apply the transition, then re-read and confirm WE hold it. If two pollers
+# race, only one re-read will show assignee=openclaw + In Progress.
+_yt_headers = {"Authorization": f"Bearer {YT_TOKEN}", "Accept": "application/json",
+               "Content-Type": "application/json"}
+
+
+class LiveYouTrack:
+    async def find_one(self, state: str, order_by: str):
+        params = {
+            "query": f"State: {{{state}}} sort by: {order_by} desc",
+            "fields": "idReadable,summary,customFields(name,value(name))",
+            "$top": "1",
+        }
+        async with httpx.AsyncClient(timeout=20) as c:
+            r = await c.get(f"{YT_BASE}/api/issues", headers=_yt_headers, params=params)
+            r.raise_for_status()
+            items = r.json()
+        if not items:
+            return None
+        it = items[0]
+        return types.SimpleNamespace(key=it["idReadable"], id=it["idReadable"],
+                                     summary=it.get("summary", ""))
+
+    async def transition(self, issue_id, expect_state, to_state, assignee) -&gt; bool:
+        body = {"query": f"State {to_state} for {assignee}",
+                "issues": [{"idReadable": issue_id}]}
+        async with httpx.AsyncClient(timeout=20) as c:
+            r = await c.post(f"{YT_BASE}/api/commands", headers=_yt_headers, json=body)
+            if r.status_code &gt;= 400:
+                return False
+            # optimistic-verify: re-read and confirm we hold it
+            chk = await c.get(
+                f"{YT_BASE}/api/issues/{issue_id}",
+                headers=_yt_headers,
+                params={"fields": "customFields(name,value(name,login))"})
+        fields = {f["name"]: f.get("value") for f in chk.json().get("customFields", [])}
+        st = (fields.get("State") or {}).get("name")
+        who = (fields.get("Assignee") or {}).get("login")
+        return st == to_state and who == assignee
+
+
+yt = LiveYouTrack()
+
+
+def yt_transition(issue: str, to_state: str, note: str = "") -&gt; None:
+    body = {"query": f"State {to_state}", "comment": note,
+            "issues": [{"idReadable": issue}]}
+    httpx.post(f"{YT_BASE}/api/commands", headers=_yt_headers, json=body, timeout=20)
+
+
+# ---- Telegram Bot API ------------------------------------------------------
+class LiveTelegram:
+    async def send(self, text: str, reply_markup: dict | None = None):
+        payload = {"chat_id": TG_CHAT, "text": text, "disable_web_page_preview": True}
+        if reply_markup:
+            payload["reply_markup"] = reply_markup
+        async with httpx.AsyncClient(timeout=20) as c:
+            await c.post(f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage", json=payload)
+
+    async def reply(self, text: str):
+        await self.send(text)
+
+
+telegram = LiveTelegram()
+
+
+# ---- Anthropic SDK (judge) -------------------------------------------------
+try:
+    from anthropic import AsyncAnthropic
+    _anthropic_client = AsyncAnthropic()   # reads ANTHROPIC_API_KEY
+except Exception:                          # SDK not installed at import time
+    _anthropic_client = None
+
+
+class _Messages:
+    @staticmethod
+    async def create(**kwargs):
+        return await _anthropic_client.messages.create(**kwargs)
+
+
+class LiveAnthropic:
+    messages = _Messages()
+
+
+anthropic = LiveAnthropic()
+
+
+def extract_text(msg) -&gt; str:
+    return "".join(b.text for b in msg.content if getattr(b, "type", None) == "text")
+
+
+# ---- Claude Code runner (headless) -----------------------------------------
+async def claude_code_session(cwd: str):
+    """Run ONE bounded `claude -p` session in `cwd`, then determine goal_met by
+    running goal.json acceptance OURSELVES (never trust the model's say-so)."""
+    cmd = [
+        "claude", "-p", SESSION_PROMPT,
+        "--output-format", "json",
+        "--max-turns", str(MAX_TURNS_PER_SESSION),
+        "--model", SESSION_MODEL,
+        "--permission-mode", "dontAsk",
+    ]
+    t0 = time.time()
+    proc = await asyncio.create_subprocess_exec(
+        *cmd, cwd=cwd,
+        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    try:
+        out, _ = await asyncio.wait_for(proc.communicate(), timeout=WALL_CLOCK_SECONDS)
+    except asyncio.TimeoutError:
+        proc.kill()
+        out, _ = b"{}", b"timeout"
+
+    data = json.loads(out.decode() or "{}")
+    cost = data.get("total_cost_usd", data.get("cost_usd", 0.0)) or 0.0
+    usage = data.get("usage", {}) or {}
+    is_error = bool(data.get("is_error")) or proc.returncode not in (0, None)
+
+    goal = json.load(open(os.path.join(cwd, ".claude", "goal.json")))
+    goal_met = all(sh_ok(c, cwd=cwd) for c in goal.get("acceptance", []))
+
+    r = types.SimpleNamespace()
+    r.model = SESSION_MODEL
+    r.tool_count = data.get("num_turns", 0)
+    r.tokens_in = usage.get("input_tokens", 0)
+    r.tokens_out = usage.get("output_tokens", 0)
+    r.cost_usd = float(cost)
+    r.duration_ms = int((time.time() - t0) * 1000)
+    r.goal_met = goal_met
+    r.failed = is_error and not goal_met
+    r.checks = {"acceptance": "pass" if goal_met else "fail"}
+    return r
+
+
+def run_loop_to_completion(cwd, max_iters, cost_ceiling):
+    out = types.SimpleNamespace(goal_met=False, cost_usd=0.0, iterations=0)
+    loop = asyncio.new_event_loop()
+    try:
+        for _ in range(max_iters):
+            if out.cost_usd &gt;= cost_ceiling:
+                break
+            out.iterations += 1
+            res = loop.run_until_complete(claude_code_session(cwd))
+            out.cost_usd += res.cost_usd
+            if res.goal_met:
+                out.goal_met = True
+                break
+    finally:
+        loop.close()
+    return out
+
+
+# ---- worktree / goal helpers -----------------------------------------------
+WT_BASE = os.environ.get("OPENCLAW_WORKTREE_BASE", "../pedpro-wt")
+
+
+def write_goal_json(worktree: str, issue) -&gt; None:
+    os.makedirs(os.path.join(worktree, ".claude"), exist_ok=True)
+    goal = {
+        "id": issue.key,
+        "title": getattr(issue, "summary", issue.key),
+        # acceptance MUST be derived from the issue/its tests in your real impl
+        "acceptance": ["pnpm run typecheck"],
+        "max_iterations": 25,
+    }
+    with open(os.path.join(worktree, ".claude", "goal.json"), "w") as f:
+        json.dump(goal, f, indent=2)
+
+
+def fresh_worktree(fixture: str) -&gt; str:
+    data = json.load(open(fixture))
+    key = data["key"]
+    wt = f"{WT_BASE}/eval-{key}"
+    git(f"worktree add {wt} -b eval/{key}")
+    return wt
+
+
+def teardown(worktree: str) -&gt; None:
+    sh(f"git worktree remove --force {worktree} || true")
+
+
+# ---- the injector ----------------------------------------------------------
+def wire(mod):
+    for name in ("sh", "sh_ok", "git", "yt", "yt_transition", "telegram",
+                 "anthropic", "extract_text", "claude_code_session",
+                 "run_loop_to_completion", "write_goal_json", "fresh_worktree",
+                 "teardown"):
+        setattr(mod, name, globals()[name])
+</pre></div>
+<div class="code" id="f-openclaw-supervisor-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/supervisor.py<span class="by">3707 B</span></span><button class="cp">Copy</button></div><pre>"""OpenClaw supervisor — deterministic orchestrator (no LLM in control flow).
+
+Handbook Part 3 §03-04, §07 + Part 4 cost ceiling (§03) and tracing (§01).
+Reference scaffold: wire integration.py to your stack before running.
+"""
+from __future__ import annotations
+import asyncio
+from dataclasses import dataclass, field
+
+from integration import git, sh, claude_code_session, write_goal_json, yt_transition
+from claim import claim_next_ready
+from approval_router import queue_merge_gate
+from trace import emit
+
+MAX_CONCURRENT = 3            # bounded by disk + API cost + rate limit (Part 3 §04)
+MAX_ITER = 25
+ERROR_BUDGET = 4
+POLL_SECONDS = 15
+COST_CEILING_PER_ISSUE = 4.0  # USD; set from usd_per_issue p90 + buffer (Part 4 §03)
+
+
+@dataclass
+class Run:
+    issue: str
+    worktree: str
+    branch: str
+    iterations: int = 0
+    errors: int = 0
+    cost_usd: float = 0.0
+    checks: dict = field(default_factory=dict)
+
+
+async def supervise():
+    sem = asyncio.Semaphore(MAX_CONCURRENT)
+    active: dict[str, Run] = {}
+    while True:
+        await sem.acquire()                 # block here if at capacity
+        issue = await claim_next_ready()    # Part 3 §02
+        if issue is None:
+            sem.release()
+            await asyncio.sleep(POLL_SECONDS)
+            continue
+        run = spawn_run(issue)
+        active[run.issue] = run
+        asyncio.create_task(drive(run, sem, active))
+
+
+def spawn_run(issue) -&gt; Run:
+    branch, wt = f"feat/{issue.key}", f"../pedpro-wt/{issue.key}"
+    git(f"worktree add {wt} -b {branch}")
+    sh("pnpm install --prefer-offline", cwd=wt)
+    write_goal_json(wt, issue)              # acceptance built from the issue
+    return Run(issue.key, wt, branch)
+
+
+async def drive(run: Run, sem, active):
+    try:
+        while run.iterations &lt; MAX_ITER and run.errors &lt; ERROR_BUDGET:
+            if run.cost_usd &gt;= COST_CEILING_PER_ISSUE:
+                park(run, reason=f"cost ceiling ${COST_CEILING_PER_ISSUE} hit")
+                return
+            run.iterations += 1
+            # ONE bounded Claude Code session in this worktree.
+            # Stop hook decides goal_met by running goal.json acceptance.
+            result = await claude_code_session(cwd=run.worktree)
+            run.cost_usd += result.cost_usd
+            run.checks = result.checks
+            emit({
+                "issue": run.issue, "iter": run.iterations, "model": result.model,
+                "tools": result.tool_count, "tok_in": result.tokens_in,
+                "tok_out": result.tokens_out, "usd": result.cost_usd,
+                "ms": result.duration_ms,
+                "outcome": ("goal_met" if result.goal_met
+                            else "fail" if result.failed else "continue"),
+            })
+            if result.goal_met:
+                await queue_merge_gate(run)     # Part 3 §06 — never auto-merge
+                return
+            if result.failed:
+                run.errors += 1
+        park(run, reason="iteration/error budget exhausted")    # Part 3 §07
+    finally:
+        sem.release()
+        active.pop(run.issue, None)
+
+
+def park(run: Run, reason: str):
+    # do NOT remove a parked worktree — keep it for inspection
+    sh(f"git -C {run.worktree} add -A &amp;&amp; "
+       f"git -C {run.worktree} commit -m 'WIP park: {reason}' --no-verify || true")
+    yt_transition(run.issue, to_state="Needs Human", note=reason)
+    emit({"issue": run.issue, "outcome": "park", "parked": True, "reason": reason})
+
+
+def cleanup(run: Run):
+    # call only after a successful merge
+    sh(f"git worktree remove {run.worktree}")
+    sh(f"git branch -d {run.branch}")
+    sh("git worktree prune")
+
+
+if __name__ == "__main__":
+    asyncio.run(supervise())
+</pre></div>
+<div class="code" id="f-openclaw-run-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/run.py<span class="by">708 B</span></span><button class="cp">Copy</button></div><pre>"""OpenClaw entrypoint — supervisor + Telegram listener in ONE process.
+
+They must share the same in-memory approval queue (approval_router.PENDING) and
+the diff-opened set (gate._OPENED), so run them together. For a multi-process
+deployment, back those two with a shared store (Redis/SQLite) instead.
+
+Run:  OPENCLAW_MODE=live python3 openclaw/run.py
+"""
+import os
+import sys
+import asyncio
+
+os.environ.setdefault("OPENCLAW_MODE", "live")
+sys.path.insert(0, os.path.dirname(__file__))
+
+import supervisor
+import telegram_service
+
+
+async def main():
+    await asyncio.gather(
+        supervisor.supervise(),
+        telegram_service.run_polling(),
+    )
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+</pre></div>
+<div class="code" id="f-openclaw-telegram-service-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/telegram_service.py<span class="by">3088 B</span></span><button class="cp">Copy</button></div><pre>"""Telegram approval listener — the INBOUND half of the human gate.
+
+Receives /approve, /reject, /pending and 'Open diff' button taps and routes
+them to the gate. Long-polls getUpdates (no public webhook needed) and shares
+the in-memory approval queue with the supervisor (run them in one process via
+run.py). Deps: httpx.
+
+Run standalone:  OPENCLAW_MODE=live python3 openclaw/telegram_service.py
+"""
+import os
+import sys
+import types
+import asyncio
+
+os.environ.setdefault("OPENCLAW_MODE", "live")
+sys.path.insert(0, os.path.dirname(__file__))
+
+import httpx
+import approval_router
+import gate as gate_mod
+
+TG_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+API = f"https://api.telegram.org/bot{TG_TOKEN}"
+
+
+def _msg(text: str, user) -&gt; types.SimpleNamespace:
+    return types.SimpleNamespace(text=text, user=str(user))
+
+
+async def _post(method: str, payload: dict):
+    async with httpx.AsyncClient(timeout=20) as c:
+        await c.post(f"{API}/{method}", json=payload)
+
+
+async def _send(chat_id, text):
+    await _post("sendMessage", {"chat_id": chat_id, "text": text})
+
+
+async def handle_update(update: dict):
+    # 1) 'Open diff' tap -&gt; record that this user actually looked (anti-rubber-stamp)
+    if "callback_query" in update:
+        cq = update["callback_query"]
+        data = cq.get("data", "")
+        user = cq["from"]["id"]
+        if data.startswith("open:"):
+            rid = data.split(":", 1)[1]
+            gate_mod.mark_diff_opened(rid, str(user))
+            req = approval_router.PENDING.get(rid)
+            await _post("answerCallbackQuery",
+                        {"callback_query_id": cq["id"],
+                         "text": "diff opened — now reply /approve &lt;tag&gt; &lt;reason&gt;"})
+            if req:
+                await _send(cq["message"]["chat"]["id"], f"diff: {req.diff_url}")
+        return
+
+    # 2) text commands
+    msg = update.get("message") or {}
+    text = (msg.get("text") or "").strip()
+    if not text:
+        return
+    user = msg.get("from", {}).get("id")
+    chat = msg.get("chat", {}).get("id")
+    verb = text.split()[0]
+
+    if verb == "/pending":
+        await _send(chat, await approval_router.cmd_pending())
+    elif verb in ("/approve", "/reject"):
+        await approval_router.on_reply(_msg(text, user))
+
+
+async def run_polling():
+    offset = None
+    async with httpx.AsyncClient(timeout=45) as c:
+        while True:
+            params = {"timeout": 30}
+            if offset is not None:
+                params["offset"] = offset
+            try:
+                r = await c.get(f"{API}/getUpdates", params=params)
+                for upd in r.json().get("result", []):
+                    offset = upd["update_id"] + 1
+                    try:
+                        await handle_update(upd)
+                    except Exception as e:        # never let one bad update kill the loop
+                        print("handle_update error:", e)
+            except Exception as e:
+                print("getUpdates error:", e)
+                await asyncio.sleep(3)
+
+
+if __name__ == "__main__":
+    asyncio.run(run_polling())
+</pre></div>
+<div class="code" id="f-openclaw-claim-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/claim.py<span class="by">683 B</span></span><button class="cp">Copy</button></div><pre>"""Atomic work claiming via YouTrack conditional transition. Handbook Part 3 §02.
+
+The claim is the collision guard: two supervisor pollers cannot both win the
+same issue, because the transition succeeds only if the state is STILL "Ready"
+at write time. State lives in YouTrack, so the lock survives a process restart.
+"""
+from integration import yt
+
+
+async def claim_next_ready():
+    issue = await yt.find_one(state="Ready", order_by="priority")
+    if not issue:
+        return None
+    won = await yt.transition(
+        issue.id, expect_state="Ready", to_state="In Progress", assignee="openclaw")
+    return issue if won else None   # lost the race -&gt; caller retries next poll
+</pre></div>
+<div class="code" id="f-openclaw-approval-router-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/approval_router.py<span class="by">3740 B</span></span><button class="cp">Copy</button></div><pre>"""Route gate requests for many parallel runs through ONE Telegram channel.
+
+Handbook Part 3 §05-06. A pending approval parks ONE run, never the whole
+system. Every request carries a request_id + issue tag so the human always
+knows WHICH run they are approving (the parallel version of the Starbucks fix).
+"""
+import uuid
+import types
+from dataclasses import dataclass, field
+
+from integration import telegram, sh, sh_ok, git
+import gate as gate_mod
+
+PENDING: dict[str, "GateRequest"] = {}
+
+
+@dataclass
+class GateRequest:
+    issue: str
+    action: str
+    kind: str                 # "irreversible" | "conflict" | ...
+    diff_summary: str
+    diff_hash: str
+    diff_url: str
+    checks: dict
+    request_id: str = field(default_factory=lambda: "appr_" + uuid.uuid4().hex)
+    expires_at = None         # set a datetime for TTL in your impl
+
+
+def _diff_summary(branch: str) -&gt; str:
+    return git(f"diff --shortstat origin/main..{branch}").strip()
+
+
+def _diff_hash(branch: str) -&gt; str:
+    return sh(f"git diff origin/main..{branch} | sha256sum").split()[0]
+
+
+async def queue_merge_gate(run):
+    git("fetch origin main", cwd=run.worktree)
+    # rebase so the diff the human approves is EXACTLY what lands (Part 3 §06)
+    if not sh_ok("git rebase origin/main", cwd=run.worktree):
+        sh("git rebase --abort", cwd=run.worktree)
+        await telegram.send(
+            f"[{run.issue}] CONFLICT vs main — not queued for approval. "
+            f"Sending back to a fresh session to resolve.")
+        return   # hand back into a new session in your supervisor
+
+    req = GateRequest(
+        issue=run.issue, kind="irreversible",
+        action=f"git -C {run.worktree} push origin {run.branch}",  # adapt: merge + deploy
+        diff_summary=_diff_summary(run.branch),
+        diff_hash=_diff_hash(run.branch),
+        diff_url=f"https://openclaw.internal/diff/{run.branch}",
+        checks=run.checks,
+    )
+    PENDING[req.request_id] = req
+    tag = req.request_id[-6:]
+    # the 'Open diff' button carries the full request_id; tapping it makes the
+    # telegram service call gate.mark_diff_opened (the anti-rubber-stamp proof).
+    markup = {"inline_keyboard": [[
+        {"text": "Open diff", "callback_data": f"open:{req.request_id}"}]]}
+    await telegram.send(
+        f"[{req.issue} · {tag}] approve merge?\n"
+        f"{req.diff_summary} | checks: {req.checks}\n"
+        f"diff: {req.diff_url}\n"
+        f"reply: /approve {tag} &lt;reason&gt;   or   /reject {tag} &lt;reason&gt;",
+        reply_markup=markup)
+
+
+async def on_reply(msg):
+    rid = _resolve(msg)
+    req = PENDING.get(rid)
+    if not req:
+        return await telegram.reply("request not found / expired — /pending to list the queue")
+    # strip the routing tag so the gate sees `/verb &lt;reason&gt;` (Part 2 §07 shape)
+    parts = msg.text.split()
+    verb = parts[0]
+    reason = " ".join(parts[2:]) if len(parts) &gt; 2 else ""
+    cleaned = types.SimpleNamespace(text=f"{verb} {reason}".strip(), user=msg.user)
+    status = await gate_mod.handle_decision(req, cleaned)
+    if status in ("approved", "rejected", "expired"):
+        PENDING.pop(rid, None)   # keep it queued while status == "pending"
+
+
+def _tag(msg) -&gt; str:
+    parts = msg.text.split()
+    return parts[1] if len(parts) &gt; 1 else ""
+
+
+def _resolve(msg):
+    tag = _tag(msg)
+    if not tag:
+        return None      # an approve with no tag must NOT match a random request
+    for rid in PENDING:
+        if rid.endswith(tag):
+            return rid
+    return None
+
+
+async def cmd_pending() -&gt; str:
+    # /pending shows EVERY run awaiting approval, each tagged by issue
+    return "\n".join(f"[{r.issue} · {rid[-6:]}] {r.action}"
+                     for rid, r in PENDING.items()) or "queue empty"
+</pre></div>
+<div class="code" id="f-openclaw-gate-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/gate.py<span class="by">2710 B</span></span><button class="cp">Copy</button></div><pre>"""Human approval gate — hardened against rubber-stamping. Handbook Part 2 §07.
+
+The two lines that break autopilot: an irreversible action requires both a
+typed reason AND proof that the diff was actually opened. That ~10s of friction
+is exactly what the Starbucks "Tank Day" approvers skipped.
+"""
+import json
+from datetime import datetime, timezone
+
+from integration import telegram, sh
+
+
+def _now():
+    return datetime.now(timezone.utc)
+
+
+def now_iso():
+    return _now().isoformat()
+
+
+# Track which (request_id, user) pairs opened the diff link. In a real bot this
+# is set when the user taps the diff URL (a tracked redirect).
+_OPENED: set = set()
+
+
+def mark_diff_opened(request_id: str, user: str) -&gt; None:
+    _OPENED.add((request_id, user))
+
+
+def diff_was_opened(request_id: str, user: str) -&gt; bool:
+    return (request_id, user) in _OPENED
+
+
+def audit_append(record: dict, path: str = "openclaw/audit.jsonl") -&gt; None:
+    with open(path, "a") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
+def execute(action: str):
+    # only reached after a genuine human approval
+    return sh(action)
+
+
+async def handle_decision(req, msg) -&gt; str:
+    """Returns one of: 'approved' | 'rejected' | 'expired' | 'pending'.
+    'pending' means more input is needed (open the diff / give a reason) and the
+    request must stay in the queue."""
+    if req.expires_at and _now() &gt; req.expires_at:
+        await telegram.reply(f"[{req.issue}] expired")
+        return "expired"
+
+    verb, _, reason = msg.text.partition(" ")
+    reason = reason.strip()
+
+    if verb == "/reject":
+        audit_append({"request_id": req.request_id, "decision": "reject",
+                      "actor": msg.user, "reason": reason or "rejected",
+                      "at": now_iso()})
+        await telegram.reply(f"[{req.issue}] rejected")
+        return "rejected"
+
+    if verb == "/approve":
+        if req.kind == "irreversible":
+            if not reason:
+                await telegram.reply(f"[{req.issue}] irreversible — reply /approve &lt;reason&gt;")
+                return "pending"
+            if not diff_was_opened(req.request_id, msg.user):
+                await telegram.reply(
+                    f"[{req.issue}] open the diff before approving:\n{req.diff_url}")
+                return "pending"
+        audit_append({"request_id": req.request_id, "decision": "approve",
+                      "actor": msg.user, "reason": reason, "diff_hash": req.diff_hash,
+                      "saw_diff": True, "at": now_iso()})
+        execute(req.action)   # only now does push/deploy run
+        return "approved"
+
+    await telegram.reply("reply /approve &lt;reason&gt; or /reject &lt;reason&gt;")
+    return "pending"
+</pre></div>
+<div class="code" id="f-openclaw-trace-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/trace.py<span class="by">471 B</span></span><button class="cp">Copy</button></div><pre>"""Structured telemetry — one JSON event per loop iteration. Handbook Part 4 §01.
+
+Use the YouTrack issue key as trace_id so events join for free with YouTrack
+and Telegram. progress.txt is for humans; this is for machines to aggregate.
+"""
+import json
+import time
+
+
+def emit(event: dict, path: str = "openclaw/traces.jsonl") -&gt; None:
+    event.setdefault("ts", time.time())
+    with open(path, "a") as f:
+        f.write(json.dumps(event, ensure_ascii=False) + "\n")
+</pre></div>
+<div class="code" id="f-openclaw-metrics-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/metrics.py<span class="by">1581 B</span></span><button class="cp">Copy</button></div><pre>"""Roll raw traces up into the few outcome-based numbers that matter.
+
+Handbook Part 4 §02-03. Avoid vanity metrics (tool counts, lines of code);
+track whether work finished, whether a human had to step in, and what it cost.
+"""
+import json
+import collections
+import statistics
+
+
+def rollup(path: str = "openclaw/traces.jsonl") -&gt; dict:
+    runs = collections.defaultdict(list)
+    for line in open(path):
+        e = json.loads(line)
+        runs[e["issue"]].append(e)
+
+    done = total_cost = interventions = 0
+    iters = []
+    for evs in runs.values():
+        total_cost += sum(e.get("usd", 0) for e in evs)
+        iters.append(max(e["iter"] for e in evs if "iter" in e))
+        if evs[-1]["outcome"] == "goal_met":
+            done += 1
+        if any(e.get("parked") or e.get("human_fix") for e in evs):
+            interventions += 1
+
+    n = len(runs) or 1
+    return {
+        "runs": len(runs),
+        "success_rate": round(done / n, 3),
+        "intervention_rate": round(interventions / n, 3),
+        "median_iters": int(statistics.median(iters)) if iters else 0,
+        "usd_per_issue": round(total_cost / n, 4),
+    }
+
+
+def cost_by_model(path: str = "openclaw/traces.jsonl") -&gt; dict:
+    """Attribute cost per model to validate Opus/Sonnet/Haiku routing."""
+    agg: dict = {}
+    for line in open(path):
+        e = json.loads(line)
+        m = agg.setdefault(e.get("model", "?"), {"usd": 0.0, "iters": 0})
+        m["usd"] += e.get("usd", 0)
+        m["iters"] += 1
+    return agg
+
+
+if __name__ == "__main__":
+    print(rollup())
+    print(cost_by_model())
+</pre></div>
+<div class="code" id="f-openclaw-eval-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/eval.py<span class="by">1567 B</span></span><button class="cp">Copy</button></div><pre>"""Regression suite for the SYSTEM, not the product. Handbook Part 4 §04.
+
+Freeze a small golden set of representative issues, run the WHOLE loop against
+them, and gate any change to the agent system (.claude/, openclaw/) on the
+result. This is "test before you change the instructions" — pedpro-tdd one
+level up. NOTE: this runs real model calls and costs money/time; run on system
+changes or nightly, not every commit.
+"""
+import json
+import statistics
+import sys
+
+from integration import fresh_worktree, run_loop_to_completion, teardown, sh_ok
+
+
+def run_eval(golden: str = "openclaw/golden.jsonl", min_pass: float = 0.9):
+    results = []
+    for line in open(golden):
+        t = json.loads(line)
+        wt = fresh_worktree(t["fixture"])          # clean sandbox per task
+        out = run_loop_to_completion(
+            wt, max_iters=t["max_iters"], cost_ceiling=t["max_usd"])
+        passed = out.goal_met and all(sh_ok(c, cwd=wt) for c in t["acceptance"])
+        results.append({"id": t["id"], "pass": passed,
+                        "usd": out.cost_usd, "iters": out.iterations})
+        teardown(wt)
+
+    pr = sum(r["pass"] for r in results) / (len(results) or 1)
+    print(f"pass@1 {pr:.0%} | "
+          f"usd mean {statistics.mean(r['usd'] for r in results):.2f} | "
+          f"iter mean {statistics.mean(r['iters'] for r in results):.1f}")
+    for r in results:
+        if not r["pass"]:
+            print(f"  FAIL {r['id']}")
+    sys.exit(0 if pr &gt;= min_pass else 1)   # nonzero = gate fails the merge
+
+
+if __name__ == "__main__":
+    run_eval()
+</pre></div>
+<div class="code" id="f-openclaw-judge-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/judge.py<span class="by">1206 B</span></span><button class="cp">Copy</button></div><pre>"""LLM-as-judge for quality that acceptance commands cannot capture.
+
+Handbook Part 4 §05. A stronger model grades cheaper output against a fixed
+rubric. Caveats: judges over-reward long/confident answers and drift over time,
+so calibrate against human spot-checks, version the rubric, and NEVER let the
+judge approve an irreversible action — it informs the human at the gate, it
+does not replace them.
+"""
+import json
+
+from integration import anthropic, extract_text
+
+JUDGE_MODEL = "claude-opus-4-8"   # judge with a stronger model than the worker
+
+RUBRIC = """Score the PR description 1-5 per criterion.
+Return ONLY JSON: {{"clarity":n,"scope_match":n,"risk_flagged":n,"notes":"..."}}
+- clarity: can a reviewer understand what changed and why?
+- scope_match: does it match the linked issue's acceptance, no scope creep?
+- risk_flagged: are irreversible/risky parts flagged for the gate?
+ISSUE: {issue}
+PR: {pr}"""
+
+
+async def judge(issue: str, pr_text: str) -&gt; dict:
+    msg = await anthropic.messages.create(
+        model=JUDGE_MODEL, max_tokens=512,
+        messages=[{"role": "user",
+                   "content": RUBRIC.format(issue=issue, pr=pr_text)}])
+    return json.loads(extract_text(msg))
+</pre></div>
+<div class="code" id="f-openclaw-alerts-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/alerts.py<span class="by">886 B</span></span><button class="cp">Copy</button></div><pre>"""Two-threshold alerting into the single Telegram channel. Handbook Part 4 §07.
+
+Send signal, not noise. blind_approve_rate is the most important one: it is the
+early warning that the gate is decaying into a rubber stamp — the human failure
+mode behind Starbucks "Tank Day".
+"""
+from integration import telegram
+
+ALERTS = {
+    "park_rate":          {"warn": 0.15, "page": 0.30},
+    "intervention_rate":  {"warn": 0.25, "page": 0.40},
+    "usd_per_issue":      {"warn": 2.0,  "page": 4.0},
+    "blind_approve_rate": {"warn": 0.05, "page": 0.15},
+}
+
+
+async def check(metrics: dict):
+    for key, th in ALERTS.items():
+        v = metrics.get(key)
+        if v is None:
+            continue
+        if v &gt;= th["page"]:
+            await telegram.send(f"PAGE {key}={v} &gt;= {th['page']}")
+        elif v &gt;= th["warn"]:
+            await telegram.send(f"WARN {key}={v} &gt;= {th['warn']}")
+</pre></div>
+<div class="code" id="f-openclaw-golden-jsonl"><div class="bar"><span class="fn"><span class="tag">jsonl</span>openclaw/golden.jsonl<span class="by">486 B</span></span><button class="cp">Copy</button></div><pre>{"id":"EV-botline-config","fixture":"fixtures/PED-1423.json","acceptance":["pnpm vitest run app/composables/useBotLineConfig.test.ts","pnpm run typecheck"],"max_usd":1.5,"max_iters":12}
+{"id":"EV-wallet-map","fixture":"fixtures/PED-1480.json","acceptance":["pnpm vitest run app/stores/wallet.test.ts"],"max_usd":1.0,"max_iters":8}
+{"id":"EV-bruno-guess","fixture":"fixtures/PED-1502.json","acceptance":["pnpm vitest run app/composables/useReward.test.ts"],"max_usd":1.2,"max_iters":10}
+</pre></div>
+<div class="code" id="f-openclaw-requirements-txt"><div class="bar"><span class="fn"><span class="tag">text</span>openclaw/requirements.txt<span class="by">28 B</span></span><button class="cp">Copy</button></div><pre>httpx&gt;=0.27
+anthropic&gt;=0.40
+</pre></div>
+<div class="code" id="f-openclaw-demo-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/demo.py<span class="by">1519 B</span></span><button class="cp">Copy</button></div><pre>"""End-to-end demo of the OpenClaw loop with local fakes. No external deps.
+
+Run from the repo root:   OPENCLAW_MODE=demo python3 openclaw/demo.py
+It drives two parallel runs through spawn -&gt; loop -&gt; goal_met -&gt; merge gate,
+writes real traces, then rolls them up with the real metrics module.
+"""
+import os
+import sys
+import asyncio
+
+os.environ.setdefault("OPENCLAW_MODE", "demo")
+sys.path.insert(0, os.path.dirname(__file__))   # make flat imports resolve
+
+import types
+import supervisor          # noqa: E402  (imports after env + path setup)
+import metrics             # noqa: E402
+
+TRACES = os.path.join(os.path.dirname(__file__), "traces.jsonl")
+
+
+def issue(key):
+    return types.SimpleNamespace(key=key, id=key)
+
+
+async def main():
+    open(TRACES, "w").close()                      # fresh trace file
+    issues = [issue("PED-1423"), issue("PED-1480")]
+    print("== spawning parallel runs ==")
+    runs = [supervisor.spawn_run(i) for i in issues]
+    sem = asyncio.Semaphore(len(runs))
+    for _ in runs:
+        await sem.acquire()
+    active = {}
+    print("\n== driving loops ==")
+    await asyncio.gather(*(supervisor.drive(r, sem, active) for r in runs))
+
+    print("\n== metrics rollup (real metrics.py) ==")
+    for k, v in metrics.rollup(TRACES).items():
+        print(f"   {k:18} {v}")
+    print("\n== cost by model ==")
+    for m, agg in metrics.cost_by_model(TRACES).items():
+        print(f"   {m:8} usd={agg['usd']:.2f}  iters={agg['iters']}")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+</pre></div>
+<h2 class="grp" id="g-d-tests">D · tests</h2>
+<div class="code" id="f-openclaw-tests-test-smoke-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/tests/test_smoke.py<span class="by">870 B</span></span><button class="cp">Copy</button></div><pre>"""Smoke test: prove the real metrics module rolls up real traces."""
+import json
+import os
+import tempfile
+
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+import metrics   # noqa: E402
+
+
+def test_rollup_basic():
+    fd, path = tempfile.mkstemp(suffix=".jsonl")
+    with os.fdopen(fd, "w") as f:
+        f.write(json.dumps({"issue": "A", "iter": 1, "usd": 0.4, "outcome": "continue"}) + "\n")
+        f.write(json.dumps({"issue": "A", "iter": 2, "usd": 0.4, "outcome": "goal_met"}) + "\n")
+        f.write(json.dumps({"issue": "B", "iter": 1, "usd": 0.5, "outcome": "park", "parked": True}) + "\n")
+    m = metrics.rollup(path)
+    os.unlink(path)
+    assert m["runs"] == 2
+    assert m["success_rate"] == 0.5            # A done, B parked
+    assert m["intervention_rate"] == 0.5       # B needed a human
+    assert m["median_iters"] == 1
+</pre></div>
+<div class="code" id="f-openclaw-tests-test-gate-routing-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/tests/test_gate_routing.py<span class="by">2843 B</span></span><button class="cp">Copy</button></div><pre>"""Prove the anti-rubber-stamp gate routing end-to-end (no network).
+
+Runs under demo wiring (fake telegram/sh). Exercises the full inbound path:
+approval_router.on_reply -&gt; tag strip -&gt; gate.handle_decision.
+"""
+import os
+os.environ["OPENCLAW_MODE"] = "demo"   # must be set before importing integration
+
+import sys
+import types
+import asyncio
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+import gate
+import approval_router as ar
+
+
+def _req():
+    return ar.GateRequest(
+        issue="PED-1", action="echo ok", kind="irreversible",
+        diff_summary="5 files", diff_hash="h", diff_url="http://d", checks={})
+
+
+def _reply(text, user="42"):
+    return types.SimpleNamespace(text=text, user=user)
+
+
+def _run(coro):
+    loop = asyncio.new_event_loop()
+    try:
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
+
+
+def _seed():
+    ar.PENDING.clear()
+    gate._OPENED.clear()
+    req = _req()
+    ar.PENDING[req.request_id] = req
+    return req, req.request_id[-6:]
+
+
+def test_approve_without_opening_diff_is_blocked(monkeypatch):
+    executed = []
+    monkeypatch.setattr(gate, "execute", lambda a: executed.append(a))
+    req, tag = _seed()
+    _run(ar.on_reply(_reply(f"/approve {tag} looks fine")))
+    assert executed == []                       # blocked: diff never opened
+    assert req.request_id in ar.PENDING         # stays queued for a real review
+
+
+def test_approve_after_opening_diff_executes(monkeypatch):
+    executed = []
+    monkeypatch.setattr(gate, "execute", lambda a: executed.append(a))
+    req, tag = _seed()
+    gate.mark_diff_opened(req.request_id, "42")  # simulate the 'Open diff' tap
+    _run(ar.on_reply(_reply(f"/approve {tag} reviewed, contract fields match")))
+    assert executed == ["echo ok"]              # executed once, with a reason
+    assert req.request_id not in ar.PENDING     # resolved -&gt; dequeued
+
+
+def test_approve_without_reason_is_blocked(monkeypatch):
+    executed = []
+    monkeypatch.setattr(gate, "execute", lambda a: executed.append(a))
+    req, tag = _seed()
+    gate.mark_diff_opened(req.request_id, "42")
+    _run(ar.on_reply(_reply(f"/approve {tag}")))   # opened diff but no reason
+    assert executed == []
+    assert req.request_id in ar.PENDING
+
+
+def test_tagless_approve_matches_nothing(monkeypatch):
+    executed = []
+    monkeypatch.setattr(gate, "execute", lambda a: executed.append(a))
+    req, _ = _seed()
+    gate.mark_diff_opened(req.request_id, "42")
+    _run(ar.on_reply(_reply("/approve looks good")))  # no tag -&gt; must not match
+    assert executed == []
+    assert req.request_id in ar.PENDING
+
+
+def test_reject_dequeues(monkeypatch):
+    monkeypatch.setattr(gate, "execute", lambda a: None)
+    req, tag = _seed()
+    _run(ar.on_reply(_reply(f"/reject {tag} not now")))
+    assert req.request_id not in ar.PENDING
+</pre></div>
+<div class="code" id="f-openclaw-tests-test-youtrack-claim-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/tests/test_youtrack_claim.py<span class="by">3831 B</span></span><button class="cp">Copy</button></div><pre>"""Mock-httpx tests for the YouTrack optimistic-verify claim (no network).
+
+YouTrack has no compare-and-swap, so claim = apply transition then re-read and
+confirm WE hold it. These tests prove the race guard: if the re-read shows
+someone else as assignee, the claim loses (returns None / False).
+"""
+import os
+import sys
+import asyncio
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+import integration_live as live
+import claim as claim_mod
+
+
+# ---- fake httpx ------------------------------------------------------------
+class FakeResp:
+    def __init__(self, data, status=200):
+        self._data, self.status_code = data, status
+
+    def json(self):
+        return self._data
+
+    def raise_for_status(self):
+        if self.status_code &gt;= 400:
+            raise RuntimeError(f"http {self.status_code}")
+
+
+class FakeClient:
+    def __init__(self, queue):
+        self.queue = queue
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *a):
+        return False
+
+    async def get(self, url, headers=None, params=None):
+        return self.queue.pop(0)
+
+    async def post(self, url, headers=None, json=None):
+        return self.queue.pop(0)
+
+
+class FakeHTTPX:
+    def __init__(self, queue):
+        self.queue = queue
+
+    def AsyncClient(self, *a, **k):
+        return FakeClient(self.queue)
+
+
+def _patch(monkeypatch, queue):
+    monkeypatch.setattr(live, "httpx", FakeHTTPX(queue))
+
+
+def _run(coro):
+    loop = asyncio.new_event_loop()
+    try:
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
+
+
+def _issue_fields(state, login):
+    return {"customFields": [
+        {"name": "State", "value": {"name": state}},
+        {"name": "Assignee", "value": {"login": login}},
+    ]}
+
+
+READY_HIT = [{"idReadable": "PED-1", "summary": "do the thing"}]
+
+
+def test_find_one_returns_issue(monkeypatch):
+    _patch(monkeypatch, [FakeResp(READY_HIT)])
+    issue = _run(live.LiveYouTrack().find_one("Ready", "priority"))
+    assert issue.key == "PED-1"
+
+
+def test_find_one_empty(monkeypatch):
+    _patch(monkeypatch, [FakeResp([])])
+    assert _run(live.LiveYouTrack().find_one("Ready", "priority")) is None
+
+
+def test_transition_won(monkeypatch):
+    # post ok, re-read shows us -&gt; True
+    _patch(monkeypatch, [FakeResp({}, 200), FakeResp(_issue_fields("In Progress", "openclaw"))])
+    won = _run(live.LiveYouTrack().transition("PED-1", "Ready", "In Progress", "openclaw"))
+    assert won is True
+
+
+def test_transition_lost_race(monkeypatch):
+    # post ok, but re-read shows SOMEONE ELSE holds it -&gt; False
+    _patch(monkeypatch, [FakeResp({}, 200), FakeResp(_issue_fields("In Progress", "someone_else"))])
+    won = _run(live.LiveYouTrack().transition("PED-1", "Ready", "In Progress", "openclaw"))
+    assert won is False
+
+
+def test_transition_command_rejected(monkeypatch):
+    # command POST fails (e.g. 409) -&gt; False, no re-read needed
+    _patch(monkeypatch, [FakeResp({}, 409)])
+    won = _run(live.LiveYouTrack().transition("PED-1", "Ready", "In Progress", "openclaw"))
+    assert won is False
+
+
+def test_claim_next_ready_won(monkeypatch):
+    # find (1) + transition post (1) + transition verify (1)
+    _patch(monkeypatch, [
+        FakeResp(READY_HIT),
+        FakeResp({}, 200),
+        FakeResp(_issue_fields("In Progress", "openclaw")),
+    ])
+    monkeypatch.setattr(claim_mod, "yt", live.LiveYouTrack())
+    issue = _run(claim_mod.claim_next_ready())
+    assert issue is not None and issue.key == "PED-1"
+
+
+def test_claim_next_ready_lost(monkeypatch):
+    _patch(monkeypatch, [
+        FakeResp(READY_HIT),
+        FakeResp({}, 200),
+        FakeResp(_issue_fields("In Progress", "someone_else")),
+    ])
+    monkeypatch.setattr(claim_mod, "yt", live.LiveYouTrack())
+    assert _run(claim_mod.claim_next_ready()) is None   # lost the race
+</pre></div>
+<div class="code" id="f-openclaw-tests-test-telegram-service-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/tests/test_telegram_service.py<span class="by">3410 B</span></span><button class="cp">Copy</button></div><pre>"""Tests for telegram_service.handle_update with realistic Telegram payloads.
+
+Verifies DISPATCH (the gate routing itself is covered by test_gate_routing):
+- an 'Open diff' button tap (callback_query) records mark_diff_opened
+- /approve and /reject route to approval_router.on_reply with the raw text
+- /pending replies with the queue
+No network: _send/_post and on_reply/cmd_pending are recorded.
+"""
+import os
+os.environ.setdefault("OPENCLAW_MODE", "demo")   # avoid needing live creds
+
+import sys
+import asyncio
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+import telegram_service as ts
+import approval_router as ar
+import gate
+
+
+def _run(coro):
+    loop = asyncio.new_event_loop()
+    try:
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
+
+
+def _recorders(monkeypatch):
+    sent, posted, replies = [], [], []
+
+    async def fake_send(chat_id, text):
+        sent.append((chat_id, text))
+
+    async def fake_post(method, payload):
+        posted.append((method, payload))
+
+    async def fake_on_reply(msg):
+        replies.append((msg.text, msg.user))
+
+    monkeypatch.setattr(ts, "_send", fake_send)
+    monkeypatch.setattr(ts, "_post", fake_post)
+    monkeypatch.setattr(ar, "on_reply", fake_on_reply)
+    return sent, posted, replies
+
+
+def test_open_diff_tap_marks_opened(monkeypatch):
+    sent, posted, _ = _recorders(monkeypatch)
+    gate._OPENED.clear()
+    ar.PENDING.clear()
+    req = ar.GateRequest(issue="PED-7", action="echo", kind="irreversible",
+                         diff_summary="x", diff_hash="h", diff_url="http://diff/7",
+                         checks={})
+    req.request_id = "appr_open7"
+    ar.PENDING[req.request_id] = req
+
+    update = {"callback_query": {
+        "id": "cb1", "data": "open:appr_open7",
+        "from": {"id": 42}, "message": {"chat": {"id": 99}}}}
+    _run(ts.handle_update(update))
+
+    assert ("appr_open7", "42") in gate._OPENED          # recorded the look
+    assert any(m == "answerCallbackQuery" for m, _ in posted)
+    assert any("http://diff/7" in t for _, t in sent)    # diff link surfaced
+
+
+def test_approve_routes_to_on_reply(monkeypatch):
+    _, _, replies = _recorders(monkeypatch)
+    update = {"message": {"text": "/approve abc123 looks good",
+                          "from": {"id": 42}, "chat": {"id": 99}}}
+    _run(ts.handle_update(update))
+    assert replies == [("/approve abc123 looks good", "42")]
+
+
+def test_reject_routes_to_on_reply(monkeypatch):
+    _, _, replies = _recorders(monkeypatch)
+    update = {"message": {"text": "/reject abc123 nope",
+                          "from": {"id": 42}, "chat": {"id": 99}}}
+    _run(ts.handle_update(update))
+    assert replies == [("/reject abc123 nope", "42")]
+
+
+def test_pending_replies_with_queue(monkeypatch):
+    sent, _, _ = _recorders(monkeypatch)
+
+    async def fake_pending():
+        return "[PED-7 · appr_o] echo"
+
+    monkeypatch.setattr(ar, "cmd_pending", fake_pending)
+    update = {"message": {"text": "/pending", "from": {"id": 42}, "chat": {"id": 99}}}
+    _run(ts.handle_update(update))
+    assert sent == [(99, "[PED-7 · appr_o] echo")]
+
+
+def test_non_command_ignored(monkeypatch):
+    sent, posted, replies = _recorders(monkeypatch)
+    update = {"message": {"text": "hello there", "from": {"id": 42}, "chat": {"id": 99}}}
+    _run(ts.handle_update(update))
+    assert sent == [] and posted == [] and replies == []
+</pre></div>
+<h2 class="grp" id="g-e-fixtures">E · fixtures</h2>
+<div class="code" id="f-fixtures-ped-1423-json"><div class="bar"><span class="fn"><span class="tag">json</span>fixtures/PED-1423.json<span class="by">249 B</span></span><button class="cp">Copy</button></div><pre>{
+  "key": "PED-1423",
+  "title": "BotLine: persist channel config",
+  "state": "Ready",
+  "acceptance_hint": ["useBotLineConfig composable", "snake_case -&gt; camelCase mapping"],
+  "bruno_endpoints": ["POST /botline/config", "GET /botline/config"]
+}
+</pre></div>
+<div class="code" id="f-fixtures-ped-1480-json"><div class="bar"><span class="fn"><span class="tag">json</span>fixtures/PED-1480.json<span class="by">222 B</span></span><button class="cp">Copy</button></div><pre>{
+  "key": "PED-1480",
+  "title": "Wallet store: map balance payload",
+  "state": "Ready",
+  "acceptance_hint": ["wallet Pinia store", "assert against contract field names"],
+  "bruno_endpoints": ["GET /wallet/balance"]
+}
+</pre></div>
+<div class="code" id="f-fixtures-ped-1502-json"><div class="bar"><span class="fn"><span class="tag">json</span>fixtures/PED-1502.json<span class="by">215 B</span></span><button class="cp">Copy</button></div><pre>{
+  "key": "PED-1502",
+  "title": "Reward composable: claim flow",
+  "state": "Ready",
+  "acceptance_hint": ["useReward composable", "do not guess reward field names"],
+  "bruno_endpoints": ["POST /reward/claim"]
+}
+</pre></div>
+<h2 class="grp" id="g-f-ci">F · CI</h2>
+<div class="code" id="f-github-workflows-ci-yml"><div class="bar"><span class="fn"><span class="tag">yaml</span>.github/workflows/ci.yml<span class="by">445 B</span></span><button class="cp">Copy</button></div><pre># Lint + tests for the kit itself. Fast, no API key (tests are mock/network-free).
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff pytest httpx
+      - name: Lint
+        run: ruff check .
+      - name: Test
+        run: pytest openclaw/tests -q
+</pre></div>
+<div class="code" id="f-github-workflows-agent-eval-yml"><div class="bar"><span class="fn"><span class="tag">yaml</span>.github/workflows/agent-eval.yml<span class="by">647 B</span></span><button class="cp">Copy</button></div><pre># Gate changes to the AGENT SYSTEM on the eval suite. Handbook Part 4 §04.
+# Runs real model calls, so it needs ANTHROPIC_API_KEY and costs money/time —
+# keep the golden set small (5-15 representative tasks).
+name: agent-eval
+on:
+  pull_request:
+    paths:
+      - ".claude/**"
+      - "openclaw/**"
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run agent eval
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python openclaw/eval.py   # exit nonzero = block merge
+</pre></div>
+  </main>
+</div>
+<a href="#" class="top">↑ top</a>
+<script>
+  document.querySelectorAll('.code').forEach(function(block){
+    var btn=block.querySelector('.cp'), pre=block.querySelector('pre');
+    if(!btn||!pre) return;
+    btn.addEventListener('click', function(){
+      var text=pre.innerText;
+      var done=function(){btn.textContent='Copied'; btn.classList.add('ok'); setTimeout(function(){btn.textContent='Copy'; btn.classList.remove('ok');},1400);};
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done).catch(function(){fb(text);done();});}
+      else{fb(text);done();}
+    });
+  });
+  function fb(t){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);}
+  var links=[].slice.call(document.querySelectorAll('nav.toc a')), map={};
+  links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a;});
+  var spy=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(l){l.classList.remove('active');});var m=map[e.target.id]; if(m){m.classList.add('active'); m.scrollIntoView({block:'nearest'});}}});},{rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('.code').forEach(function(c){spy.observe(c);});
+</script>
+</body>
+</html>

@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedpro Claude Code Toolkit — คู่มือติดตั้ง</title>
+<style>
+  :root{
+    --ink:#09080f; --panel:#14111f; --panel-2:#1b1730;
+    --line:#2b2542; --line-soft:#211c36; --code-bg:#0b0915;
+    --violet:#8b5cf6; --violet-bright:#a78bfa; --violet-dim:#6d28d9;
+    --gold:#f5b942; --green:#34d399; --red:#fb7185; --cyan:#5eead4;
+    --text:#eae7f5; --muted:#9d98b8; --muted-2:#6f6a8f;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI","Noto Sans Thai","Sarabun",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:
+      radial-gradient(900px 500px at 85% -10%, rgba(139,92,246,.12), transparent 60%),
+      radial-gradient(700px 400px at 0% 5%, rgba(245,185,66,.06), transparent 55%),
+      var(--ink);
+    color:var(--text);font-family:var(--sans);line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--violet-bright);text-decoration:none}
+  code{font-family:var(--mono);overflow-wrap:anywhere}
+
+  /* progress bar */
+  .progress-wrap{position:fixed;top:0;left:0;right:0;height:3px;background:transparent;z-index:50}
+  .progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--violet),var(--gold));transition:width .3s ease}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px 120px}
+
+  /* two-column layout: sticky sidebar + content */
+  .layout{display:grid;grid-template-columns:228px minmax(0,1fr);gap:46px;align-items:start}
+  .sidebar{position:sticky;top:26px;align-self:start}
+  .main{min-width:0}            /* critical: lets content shrink so nothing overflows */
+  .toc-label{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted-2);margin:0 0 12px;padding-left:12px}
+  .toc{display:flex;flex-direction:column;gap:2px;border-left:1px solid var(--line)}
+  .toc a{display:block;padding:7px 14px;font-size:13.5px;color:var(--muted);border-left:2px solid transparent;margin-left:-1px;transition:.15s;border-radius:0 6px 6px 0}
+  .toc a:hover{color:var(--text);background:rgba(139,92,246,.06)}
+  .toc a.active{color:var(--violet-bright);border-left-color:var(--violet);background:rgba(139,92,246,.1);font-weight:600}
+  .toc-foot{margin:16px 0 0 12px;font-family:var(--mono);font-size:11px;color:var(--muted-2)}
+  .toc-foot b{color:var(--violet-bright)}
+
+  /* hero */
+  header{padding:74px 0 30px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--violet-bright);margin:0 0 18px}
+  h1{font-size:clamp(30px,5vw,46px);line-height:1.08;margin:0 0 16px;font-weight:800;letter-spacing:-.02em}
+  h1 .accent{background:linear-gradient(120deg,var(--violet-bright),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{font-size:18px;color:var(--muted);max-width:640px;margin:0 0 26px}
+
+  /* terminal hero */
+  .term{background:var(--code-bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 24px 60px -30px rgba(139,92,246,.5)}
+  .term-bar{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line-soft);background:#100d1c}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .term-title{margin-left:8px;font-family:var(--mono);font-size:12px;color:var(--muted-2)}
+  .term-body{padding:18px 18px 20px;font-family:var(--mono);font-size:13.5px;line-height:1.85;overflow-x:auto}
+  .term-body .pr{color:var(--violet-bright)}
+  .term-body .cmd{color:var(--text)}
+  .term-body .cm{color:var(--muted-2)}
+  .term-body .add{color:var(--green)}
+  .term-body .del{color:var(--red)}
+  .term-body .dim{color:var(--muted)}
+
+  /* sections */
+  section{margin-top:64px}
+  h2{font-size:25px;font-weight:750;letter-spacing:-.01em;margin:0 0 6px}
+  .sub{color:var(--muted);margin:0 0 22px}
+  h3{font-size:17px;margin:30px 0 10px;font-weight:700}
+
+  /* generic panel */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+  .panel + .panel{margin-top:14px}
+
+  /* tables */
+  .tbl{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0 4px;overflow:hidden;border-radius:10px;border:1px solid var(--line)}
+  .tbl th{ text-align:left;background:var(--panel-2);color:var(--violet-bright);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:11px 14px;border-bottom:1px solid var(--line)}
+  .tbl td{padding:11px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl td code,.tbl th code{background:var(--code-bg);padding:1px 6px;border-radius:5px;font-size:12.5px;color:var(--cyan)}
+
+  /* steps */
+  .steps{position:relative;margin-top:30px}
+  .step{position:relative;padding:0 0 8px 60px;margin-bottom:30px}
+  .step::before{content:"";position:absolute;left:21px;top:40px;bottom:-30px;width:2px;background:var(--line)}
+  .step:last-child::before{display:none}
+  .step-num{position:absolute;left:0;top:0;width:44px;height:44px;border-radius:11px;
+    display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:15px;
+    background:linear-gradient(160deg,var(--panel-2),var(--panel));border:1px solid var(--line);color:var(--violet-bright);z-index:2}
+  .step.done .step-num{background:linear-gradient(160deg,var(--violet-dim),var(--violet));color:#fff;border-color:var(--violet)}
+  .step-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:4px}
+  .step h3{margin:6px 0 4px;font-size:19px}
+  .step-opt{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(245,185,66,.35);padding:2px 7px;border-radius:20px;margin-top:9px}
+  .step p{margin:8px 0 12px;color:var(--muted)}
+  .step p strong{color:var(--text);font-weight:650}
+
+  .check{display:flex;align-items:center;gap:9px;margin:14px 0 2px;cursor:pointer;user-select:none;font-size:13.5px;color:var(--muted)}
+  .check input{appearance:none;width:19px;height:19px;border:1.5px solid var(--line);border-radius:6px;background:var(--code-bg);cursor:pointer;position:relative;flex:none;transition:.15s}
+  .check input:checked{background:var(--violet);border-color:var(--violet)}
+  .check input:checked::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800}
+  .check input:focus-visible{outline:2px solid var(--violet-bright);outline-offset:2px}
+
+  /* code blocks */
+  .codecard{border:1px solid var(--line);border-radius:11px;overflow:hidden;margin:14px 0;background:var(--code-bg)}
+  .codecard-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 10px 9px 14px;background:#100d1c;border-bottom:1px solid var(--line-soft)}
+  .fname{font-family:var(--mono);font-size:12.5px;color:var(--text);display:flex;align-items:center;gap:9px;min-width:0;flex:1;overflow:hidden}
+  .fname .ic{color:var(--violet-bright);flex:none}
+  .fname .path{color:var(--muted-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .copy-btn{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--violet-bright);background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.4);
+    padding:6px 12px;border-radius:7px;cursor:pointer;flex:none;transition:.15s;display:inline-flex;align-items:center;gap:6px}
+  .copy-btn:hover{background:rgba(139,92,246,.2)}
+  .copy-btn.ok{color:var(--green);border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.12)}
+  pre{margin:0;padding:16px 16px;overflow-x:auto;font-family:var(--mono);font-size:12.8px;line-height:1.7;color:#d6d2ec;max-height:460px;overflow-y:auto}
+  pre.sh{max-height:none}
+  pre code{color:inherit;white-space:pre;overflow-wrap:normal}
+  .scroll-note{font-family:var(--mono);font-size:11px;color:var(--muted-2);padding:6px 14px;border-top:1px solid var(--line-soft);background:#100d1c}
+
+  /* callout */
+  .note{border-left:3px solid var(--violet);background:rgba(139,92,246,.07);padding:13px 16px;border-radius:0 9px 9px 0;margin:14px 0;font-size:14px}
+  .note.warn{border-color:var(--gold);background:rgba(245,185,66,.08)}
+  .note.danger{border-color:var(--red);background:rgba(251,113,133,.08)}
+  .note .tag{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;display:block;margin-bottom:4px}
+  .note.warn .tag{color:var(--gold)} .note .tag{color:var(--violet-bright)} .note.danger .tag{color:var(--red)}
+
+  /* tree */
+  .tree{font-family:var(--mono);font-size:13px;line-height:1.85;color:var(--muted);white-space:pre;overflow-x:auto}
+  .tree .d{color:var(--violet-bright)}
+  .tree .f{color:var(--text)}
+  .tree .new{color:var(--green)}
+  .tree .cm{color:var(--muted-2)}
+
+  footer{margin-top:80px;padding-top:26px;border-top:1px solid var(--line-soft);color:var(--muted-2);font-size:13px;text-align:center;font-family:var(--mono)}
+
+  ::selection{background:rgba(139,92,246,.35)}
+  pre::-webkit-scrollbar{height:9px;width:9px}
+  pre::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
+  @media (max-width:920px){
+    .layout{grid-template-columns:1fr;gap:0}
+    .sidebar{position:sticky;top:3px;z-index:40;margin:0 -22px 26px;padding:10px 16px;
+      background:rgba(12,10,21,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+    .toc-label,.toc-foot{display:none}
+    .toc{flex-direction:row;border-left:none;gap:6px;overflow-x:auto;scrollbar-width:none}
+    .toc::-webkit-scrollbar{display:none}
+    .toc a{white-space:nowrap;border-left:none;border-radius:7px;padding:6px 12px;font-size:12.5px;background:var(--panel)}
+    .toc a.active{border-left:none;background:rgba(139,92,246,.18)}
+  }
+  @media (max-width:560px){
+    .step{padding-left:50px}.step-num{width:38px;height:38px}.step::before{left:18px}
+    .term-body{font-size:12px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<a href="../index.html" id="back-home-fab" aria-label="กลับคลังคู่มือ" style="position:fixed;right:18px;bottom:18px;z-index:99999;display:inline-flex;align-items:center;gap:7px;padding:10px 16px;font:600 14px/1 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#fff;background:#0284c7;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px rgba(2,132,199,.35)">🏠 หน้าแรก</a>
+<div class="progress-wrap"><div class="progress-bar" id="pbar"></div></div>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Claude Code · Pedpro · Install Runbook</p>
+  <h1>Pedpro <span class="accent">Toolkit</span><br>คู่มือติดตั้งทีละขั้นตอน</h1>
+  <p class="lede">ชุดเครื่องมือ 3 ส่วนที่ลด token ของ HTML mockup, ย่อการ tweak ดีไซน์ให้สั้น และ resolve color token จาก source จริง — ติดตั้งลง <code>.claude/</code> แล้วใช้ได้ทันที</p>
+
+  <div class="term">
+    <div class="term-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="term-title">~/pedpro — claude code</span>
+    </div>
+    <div class="term-body">
+<span class="cm"># เดิม: อ่าน mockup เต็มๆ + พิมพ์กฎยาว + พิมพ์ตำแหน่งเป็นภาษาพูดทุกครั้ง</span>
+<span class="cm"># ใหม่: hook strip อัตโนมัติ + สั่งสั้นด้วย class-diff</span>
+
+<span class="pr">&gt;</span> <span class="cmd">/tweak .stats-card +ml-auto +bg-primary -flex-col</span>
+
+<span class="dim">→ อ่าน tailwind.config.ts เพื่อยืนยัน token "primary" ✓</span>
+<span class="dim">--- pages/dashboard/components/StatsCard.vue</span>
+<span class="del">-  &lt;div class="stats-card flex flex-col gap-2 ..."&gt;</span>
+<span class="add">+  &lt;div class="stats-card flex gap-2 ml-auto bg-primary ..."&gt;</span>
+
+<span class="cm"># input เบาลง 60–85% · output เป็น diff สั้น · ไม่ต้อง re-type กฎ</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <p class="toc-label">เนื้อหา</p>
+    <nav class="toc" id="toc">
+      <a href="#overview">1 · ภาพรวม</a>
+      <a href="#prereq">2 · Prerequisites</a>
+      <a href="#install">3 · ติดตั้ง</a>
+      <a href="#workshop">4 · Workshop</a>
+      <a href="#tuning">5 · ปรับจูน</a>
+      <a href="#trouble">6 · แก้ปัญหา</a>
+      <a href="#cheat">7 · Cheat sheet</a>
+    </nav>
+    <p class="toc-foot">ความคืบหน้า <b id="toc-count">0</b></p>
+  </aside>
+
+  <main class="main">
+
+<!-- WHAT YOU INSTALL -->
+<section id="overview">
+  <h2>1 · ภาพรวมสิ่งที่จะติดตั้ง</h2>
+  <p class="sub">5 ไฟล์ 3 ความสามารถ — แต่ละไฟล์มีปุ่ม Copy ในขั้นตอนด้านล่าง</p>
+  <table class="tbl">
+    <thead><tr><th>ไฟล์</th><th>หน้าที่</th><th>ปลายทาง</th></tr></thead>
+    <tbody>
+      <tr><td><code>SKILL.md</code></td><td>design-tweak skill — กฎ Pedpro + class-diff + token resolve + output diff</td><td><code>.claude/skills/design-tweak/</code></td></tr>
+      <tr><td><code>tweak.md</code></td><td>slash command <code>/tweak</code> เรียกใช้ skill</td><td><code>.claude/commands/</code></td></tr>
+      <tr><td><code>posttooluse-strip-html.mjs</code></td><td>hook — strip mockup ใหญ่อัตโนมัติก่อนเข้า context</td><td><code>.claude/hooks/</code></td></tr>
+      <tr><td><code>settings (snippet)</code></td><td>ลงทะเบียน hook</td><td><code>.claude/settings.json</code></td></tr>
+      <tr><td><code>strip-mockup.mjs</code></td><td>standalone stripper สำหรับ pipeline (optional)</td><td><code>scripts/</code> (อิสระ)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>โครงสร้างปลายทางที่ได้</h3>
+  <div class="panel">
+<div class="tree"><span class="d">.claude/</span>
+├── <span class="d">skills/</span>
+│   └── <span class="d new">design-tweak/</span>
+│       └── <span class="f new">SKILL.md</span>          <span class="cm"># skill ปรับดีไซน์</span>
+├── <span class="d new">commands/</span>
+│   └── <span class="f new">tweak.md</span>              <span class="cm"># /tweak</span>
+├── <span class="d new">hooks/</span>
+│   └── <span class="f new">posttooluse-strip-html.mjs</span>  <span class="cm"># auto-strip</span>
+└── <span class="f new">settings.json</span>             <span class="cm"># ลงทะเบียน hook</span>
+
+<span class="d">scripts/</span>
+└── <span class="f new">strip-mockup.mjs</span>          <span class="cm"># optional · ใช้ในไปป์ไลน์</span></div>
+  </div>
+</section>
+
+<!-- PREREQ -->
+<section id="prereq">
+  <h2>2 · ตรวจ Prerequisites</h2>
+  <p class="sub">เช็ค 2 อย่างก่อนเริ่ม — ตัว hook พึ่งทั้งคู่</p>
+
+  <div class="codecard">
+    <div class="codecard-head">
+      <span class="fname"><span class="ic">$</span> ตรวจเวอร์ชัน</span>
+      <button class="copy-btn" onclick="copyText(this,'node -v\nclaude --version')"><span>Copy</span></button>
+    </div>
+    <pre class="sh"><code>node -v          <span style="color:var(--muted-2)"># ต้องมี Node (มากับ Claude Code) — hook รันด้วย node</span>
+claude --version <span style="color:var(--muted-2)"># ต้อง &gt;= 2.1.121</span></code></pre>
+  </div>
+
+  <div class="note warn">
+    <span class="tag">สำคัญ — เวอร์ชัน</span>
+    ตัว hook ใช้ <code>updatedToolOutput</code> ซึ่งรองรับกับ built-in tool (เช่น Read) ตั้งแต่ <strong>Claude Code v2.1.121</strong> เป็นต้นไป ถ้าเวอร์ชันเก่ากว่านี้ hook จะไม่ strip output ให้ (ส่วน <code>/tweak</code> และ skill ยังใช้ได้ปกติ) — ถ้าอัปไม่ได้ บอกได้ จะทำเวอร์ชัน fallback แบบ PreToolUse ให้แทน
+  </div>
+
+  <label class="check"><input type="checkbox" data-step> Node + Claude Code v2.1.121+ พร้อม</label>
+</section>
+
+<!-- STEPS -->
+<section id="install">
+  <h2>3 · ติดตั้งทีละขั้นตอน</h2>
+  <p class="sub">ทำตามลำดับ ทุกขั้นมี checkbox กดเก็บความคืบหน้าได้ (แถบบนสุดจะขยับ)</p>
+
+  <div class="steps">
+
+    <!-- STEP 1 -->
+    <div class="step" id="s1">
+      <div class="step-num">01</div>
+      <h3>สร้างโครงโฟลเดอร์</h3>
+      <p>รันที่ <strong>root ของ project Pedpro</strong> (โฟลเดอร์เดียวกับ <code>nuxt.config</code>) สร้าง 3 โฟลเดอร์ย่อยใน <code>.claude/</code> รวดเดียว</p>
+      <div class="codecard">
+        <div class="codecard-head">
+          <span class="fname"><span class="ic">$</span> bash</span>
+          <button class="copy-btn" onclick="copyText(this,'mkdir -p .claude/skills/design-tweak .claude/commands .claude/hooks')"><span>Copy</span></button>
+        </div>
+        <pre class="sh"><code>mkdir -p .claude/skills/design-tweak .claude/commands .claude/hooks</code></pre>
+      </div>
+      <p><code>skills/</code> = ความสามารถที่ Claude หยิบเองตามบริบท · <code>commands/</code> = slash command · <code>hooks/</code> = สคริปต์ที่ยิงตาม lifecycle</p>
+      <label class="check"><input type="checkbox" data-step> สร้างโฟลเดอร์แล้ว</label>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step" id="s2">
+      <div class="step-num">02</div>
+      <h3>ติดตั้ง design-tweak skill</h3>
+      <p>วางเนื้อหานี้เป็นไฟล์ <strong>SKILL.md</strong> ฝังกฎ Pedpro (Tailwind core only / ห้าม arbitrary / Naive UI mapping), syntax class-diff <code>+/-</code>, การ resolve token จาก source, และบังคับ output เป็น unified diff ไม่ต้อง enable เอง Claude Code จะค้นเจอจากโฟลเดอร์ <code>skills/</code> อัตโนมัติ</p>
+      <div class="codecard">
+        <div class="codecard-head">
+          <span class="fname"><span class="ic">▣</span> SKILL.md <span class="path">→ .claude/skills/design-tweak/</span></span>
+          <button class="copy-btn" onclick="copyCode(this)"><span>Copy</span></button>
+        </div>
+        <pre><code>---
+name: design-tweak
+description: Apply small surgical position, color, spacing, or layout adjustments to existing Pedpro HTML mockups or Vue components using Tailwind class-diff syntax. Use when the user wants to MOVE, RECOLOR, RESIZE, or REPOSITION existing UI elements rather than build new ones — especially when they give a selector plus +/- class changes, or short prose like "ย้ายการ์ดไปขวา" / "เปลี่ยนพื้นหลังเป็นสีหลัก". Do NOT use for building new components from scratch or full-page generation.
+---
+
+# Design Tweak (Pedpro)
+
+เป้าหมาย: แก้ดีไซน์เล็กๆ (ตำแหน่ง / สี / spacing / layout) แบบ **surgical, deterministic, token-cheap**
+อย่าแก้เกินกว่าที่สั่ง อย่า reformat อย่าจัดระเบียบ class ที่ไม่เกี่ยว
+
+---
+
+## 1. Class-diff syntax (รูปแบบ input หลัก)
+
+ผู้ใช้สั่งเป็น `+`/`-` ต่อ selector — apply ตรงๆ ไม่ต้องตีความ
+
+| สัญลักษณ์ | ความหมาย |
+|---|---|
+| `+class` | เพิ่ม class นี้เข้า element |
+| `-class` | ลบ class นี้ออก |
+| `+a -b` | ทำพร้อมกันได้ ตามลำดับซ้ายไปขวา |
+
+ตัวอย่าง mapping จาก prose → class-diff (ถ้าผู้ใช้พิมพ์เป็นภาษาพูด ให้แปลงเป็นอันนี้ในใจก่อน):
+
+| ภาษาพูด | class-diff |
+|---|---|
+| ย้ายไปขวาสุด | `+ml-auto` |
+| ชิดบน / ชิดล่างในแนวตั้ง | `+self-start` / `+self-end` |
+| เรียงแนวนอนแทนแนวตั้ง ชิดขวา | `-flex-col +flex-row +justify-end` |
+| เว้นห่างมากขึ้นระหว่าง item | `-gap-2 +gap-4` |
+| พื้นหลังสีหลัก ตัวอักษรขาว | `+bg-primary +text-white` |
+| ทำให้กว้างเต็ม | `+w-full` |
+| ซ่อนบนมือถือ โชว์บน desktop | `+hidden +md:block` |
+
+ถ้าตำแหน่งบอกเป็น class ยาก (เช่น absolute positioning ซับซ้อน) และผู้ใช้แนบรูปมีลูกศร/กรอบ → อ้างอิงรูปได้ ไม่ต้องเดาพิกัด
+
+---
+
+## 2. กฎ Pedpro (บังคับ — ห้ามฝ่าฝืน)
+
+1. **Tailwind core utility เท่านั้น** — ห้าม arbitrary value เด็ดขาด
+   - ❌ `w-[437px]` `text-[#1a2b3c]` `mt-[13px]`
+   - ✅ `w-full` `max-w-md` `text-primary` `mt-3`
+   - ถ้าผู้ใช้สั่ง arbitrary value มา → หยุด ทักก่อน เสนอ token/utility ใกล้เคียง อย่าเงียบแล้ว apply
+2. **ห้าม custom CSS / `&lt;style&gt;` / inline `style=""`** — ทุกอย่างผ่าน class
+3. **ห้าม raw HTML form** (`&lt;form&gt;` `&lt;input&gt;` `&lt;select&gt;` ดิบ) — ใช้ Naive UI component
+4. **สีต้องเป็น token** ของ design system ไม่ใช่ hex ดิบ ไม่ใช่ `blue-500` ลอยๆ
+   - **ห้ามเดาชื่อ token** — ก่อน flag หรือเสนอชื่อสี ให้อ่านจาก source จริงก่อน (resolve ตามลำดับด้านล่าง) เหมือนกฎ "ห้ามเดา Bruno field ก่อนอ่าน .bru"
+   - ถ้า resolve แล้วไม่เจอ token ที่ตรง → บอกตรงๆ ว่าไม่เจอ อย่าแต่งชื่อขึ้นมาเอง
+5. แตะเฉพาะ element ที่ระบุใน selector — element อื่นห้ามขยับ
+
+### Token resolution order (อ่านไฟล์แรกที่เจอ แล้วใช้ชื่อจากที่นั่น)
+1. `tailwind.config.ts` / `tailwind.config.js` → `theme.extend.colors` (ชื่อ token + alias เช่น `primary`, `surface`)
+2. theme override ของ Naive UI (เช่น ที่ตั้ง `commonThemeOverrides` / `themeOverrides` — มัก provide ผ่าน `NConfigProvider`) → สีระดับ component
+3. CSS custom properties `--*` ใน global stylesheet / `app.vue` `&lt;style&gt;` หรือ `assets/css/*`
+- เจอจากไฟล์ไหน ให้ยึดชื่อจากไฟล์นั้น และอ้างอิง path ที่อ่านมาในบรรทัดเตือน (สั้นๆ) เพื่อให้ตรวจย้อนได้
+
+---
+
+## 3. Naive UI mapping (เตือนถ้าเข้าข่าย)
+
+ถ้า element ที่กำลังแก้เป็น raw HTML ที่ควรเป็น Naive UI component อยู่แล้ว ให้เตือนสั้นๆ 1 บรรทัดก่อน apply (ไม่ต้องบังคับเปลี่ยนถ้าผู้ใช้แค่จะ tweak สี แต่ flag ไว้):
+
+| raw HTML pattern | → Naive UI |
+|---|---|
+| `&lt;table&gt;` แสดงข้อมูล | `NDataTable` |
+| `&lt;button&gt;` | `NButton` |
+| `&lt;input&gt;` / `&lt;select&gt;` / `&lt;textarea&gt;` | `NInput` / `NSelect` / `NInput type="textarea"` |
+| card container | `NCard` |
+| modal / popup | `NModal` |
+| dropdown menu | `NDropdown` |
+| tag / badge | `NTag` |
+| tab bar | `NTabs` |
+
+---
+
+## 4. Output format (สำคัญที่สุดสำหรับประหยัด token)
+
+- **output เป็น unified diff เท่านั้น** — แสดงเฉพาะบรรทัดที่เปลี่ยน พร้อม context 1-2 บรรทัด
+- ห้าม print ทั้งไฟล์
+- ห้ามเขียนคำอธิบายยาว — ถ้าจำเป็นต้องเตือน (กฎข้อ 2/3) ให้สั้นที่สุด 1 บรรทัด แล้วตามด้วย diff
+- ถ้าแก้หลายไฟล์ ให้แยก diff เป็น block ต่อไฟล์ หัวบล็อกเป็น path
+
+ตัวอย่าง output ที่ถูก:
+```
+~ ลบ flex-col เพื่อเรียงแนวนอน, ขยับการ์ดชิดขวา
+
+--- pages/dashboard/components/StatsCard.vue
+   &lt;div class="flex flex-col gap-2"&gt;
++  &lt;div class="flex flex-row justify-end gap-4 ml-auto"&gt;
+```
+
+---
+
+## 5. กรณีกำกวม
+
+- selector ตรงกับหลาย element → ถามว่าหมายถึงตัวไหน อย่าแก้มั่ว
+- class-diff ขัดแย้งกันเอง (เช่น `+flex-col +flex-row`) → ทักก่อน
+- ผู้ใช้สั่งเปลี่ยนแบบที่กระทบ component อื่น → flag ผลข้างเคียงสั้นๆ ก่อน apply</code></pre>
+        <div class="scroll-note">เลื่อนดูเนื้อหาเต็มในกล่องได้ · ปุ่ม Copy คัดลอกทั้งไฟล์</div>
+      </div>
+      <label class="check"><input type="checkbox" data-step> วาง SKILL.md แล้ว</label>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step" id="s3">
+      <div class="step-num">03</div>
+      <h3>ติดตั้ง <code>/tweak</code> command</h3>
+      <p>slash command ที่รับ <code>&lt;selector&gt; &lt;class-diff&gt;</code> แล้วสั่งให้ skill ทำงาน ฝัง <code>model</code> และ <code>allowed-tools</code> ไว้ในตัว — ปรับ model เป็น Haiku ได้ถ้าต้องการประหยัด (ดูส่วน Tuning)</p>
+      <div class="codecard">
+        <div class="codecard-head">
+          <span class="fname"><span class="ic">▸</span> tweak.md <span class="path">→ .claude/commands/</span></span>
+          <button class="copy-btn" onclick="copyCode(this)"><span>Copy</span></button>
+        </div>
+        <pre><code>---
+description: ปรับตำแหน่ง/สี/spacing ของ element ที่มีอยู่แล้วแบบ surgical ด้วย Tailwind class-diff
+argument-hint: &lt;selector&gt; &lt;class-diff&gt;  เช่น  .stats-card +ml-auto +bg-primary -flex-col
+allowed-tools: Read, Edit
+model: claude-sonnet-4-6
+---
+
+ใช้ skill `design-tweak` เพื่อแก้ไขครั้งนี้
+
+**Target &amp; diff:** $ARGUMENTS
+
+ขั้นตอน:
+1. หา element จาก selector ตัวแรกใน `$ARGUMENTS` (เป็น CSS selector / class / id / data-attr)
+2. อ่านไฟล์เป้าหมายเฉพาะส่วนที่เกี่ยว — อย่าอ่านทั้งไฟล์ถ้าไม่จำเป็น
+3. apply class-diff ตามกฎใน skill (`+` เพิ่ม class, `-` ลบ class)
+4. บังคับกฎ Pedpro: Tailwind core only / ห้าม arbitrary value / ห้าม custom CSS / ห้าม raw HTML form
+5. ถ้า element นี้ map กับ Naive UI component ได้ ให้เตือนสั้นๆ ก่อน (ดูตาราง mapping ใน skill)
+6. **output เป็น unified diff เท่านั้น** ไม่ต้อง print ทั้งไฟล์ ไม่ต้องอธิบายยาว
+
+ถ้า class-diff ขัดกับกฎ (เช่นมี arbitrary value `w-[437px]`) → ทักก่อน แล้วเสนอ token/utility ที่ใกล้เคียงแทน อย่าเงียบแล้ว apply</code></pre>
+      </div>
+      <p>ใช้งานเช่น: <code>/tweak .stats-card +ml-auto +bg-primary</code> หรือพิมพ์ภาษาพูด <code>/tweak ย้ายการ์ดไปขวา เปลี่ยนพื้นหลังเป็นสีหลัก</code> ก็ได้ — skill จะแปลงเป็น class-diff เอง</p>
+      <label class="check"><input type="checkbox" data-step> วาง tweak.md แล้ว</label>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step" id="s4">
+      <div class="step-num">04</div>
+      <h3>ติดตั้ง strip hook</h3>
+      <p>วางไฟล์ <strong>.mjs</strong> นี้ลง <code>.claude/hooks/</code> ไม่ต้อง <code>chmod</code> (เรียกผ่าน <code>node</code>) ตัวมัน self-contained ไม่มี dependency อ่าน mockup จาก disk → strip → คืนผ่าน <code>updatedToolOutput</code> และ <strong>fail-safe</strong>: error/JSON เพี้ยน/partial read/ไม่ใช่ .html → ปล่อยผ่านเงียบ ไม่เคยบล็อก Read</p>
+      <div class="codecard">
+        <div class="codecard-head">
+          <span class="fname"><span class="ic">⎔</span> posttooluse-strip-html.mjs <span class="path">→ .claude/hooks/</span></span>
+          <button class="copy-btn" onclick="copyCode(this)"><span>Copy</span></button>
+        </div>
+        <pre><code>#!/usr/bin/env node
+/**
+ * posttooluse-strip-html.mjs — Claude Code PostToolUse hook (matcher: Read)
+ *
+ * When Claude reads a large .html mockup, this rewrites the tool output with a
+ * stripped version BEFORE it enters Claude's context (uses updatedToolOutput,
+ * supported for built-in tools in Claude Code v2.1.121+).
+ *
+ * Self-contained (no imports, no deps) so it works regardless of cwd.
+ *
+ * Register in .claude/settings.json:
+ *   {
+ *     "hooks": {
+ *       "PostToolUse": [
+ *         {
+ *           "matcher": "Read",
+ *           "hooks": [
+ *             { "type": "command", "command": "node .claude/hooks/posttooluse-strip-html.mjs" }
+ *           ]
+ *         }
+ *       ]
+ *     }
+ *   }
+ *
+ * Safety: on ANY uncertainty it passes through untouched (exit 0, no output).
+ * It never blocks a read and never throws into Claude Code.
+ */
+
+const THRESHOLD_CHARS = 6000; // ~1.5k tokens; below this, not worth stripping
+
+function strip(html) {
+  return html
+    .replace(/&lt;!--[\s\S]*?--&gt;/g, '')
+    .replace(/&lt;script\b[^&gt;]*&gt;[\s\S]*?&lt;\/script&gt;/gi, '')
+    .replace(/&lt;style\b[^&gt;]*&gt;[\s\S]*?&lt;\/style&gt;/gi, '')
+    .replace(/&lt;noscript\b[^&gt;]*&gt;[\s\S]*?&lt;\/noscript&gt;/gi, '')
+    .replace(/&lt;link\b[^&gt;]*&gt;/gi, '')
+    .replace(/&lt;meta\b[^&gt;]*&gt;/gi, '')
+    .replace(/(&lt;svg\b[^&gt;]*&gt;)[\s\S]*?&lt;\/svg&gt;/gi, '$1&lt;/svg&gt;')
+    .replace(/data:image\/[a-z.+-]+;base64,[A-Za-z0-9+/=\s]+/gi, 'data:image-stripped')
+    .replace(/&gt;\s+&lt;/g, '&gt;\n&lt;')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+const passThrough = () =&gt; process.exit(0); // do nothing, Claude sees original
+
+async function main() {
+  // read hook JSON from stdin
+  let input = '';
+  process.stdin.setEncoding('utf8');
+  for await (const chunk of process.stdin) input += chunk;
+
+  let payload;
+  try {
+    payload = JSON.parse(input);
+  } catch {
+    return passThrough();
+  }
+
+  if (payload.tool_name !== 'Read') return passThrough();
+
+  const ti = payload.tool_input || {};
+  const filePath = ti.file_path || '';
+
+  // only html mockups
+  if (!/\.html?$/i.test(filePath)) return passThrough();
+  // skip partial reads — re-reading the whole file would change what was asked for
+  if (ti.offset != null || ti.limit != null) return passThrough();
+
+  // read the clean file from disk (avoids Read's line-number formatting)
+  let raw;
+  try {
+    const fs = await import('node:fs/promises');
+    raw = await fs.readFile(filePath, 'utf8');
+  } catch {
+    return passThrough();
+  }
+
+  if (raw.length &lt; THRESHOLD_CHARS) return passThrough();
+
+  const stripped = strip(raw);
+
+  // only intervene if we actually saved something meaningful (&gt;15%)
+  if (stripped.length &gt;= raw.length * 0.85) return passThrough();
+
+  const note =
+    `&lt;!-- [auto-stripped mockup: ${raw.length}-&gt;${stripped.length} chars, ` +
+    `~${Math.round((raw.length - stripped.length) / 4)} tokens saved. ` +
+    `scripts/styles/meta/svg-paths/base64 removed; DOM + Tailwind classes + text intact] --&gt;\n`;
+
+  const out = {
+    hookSpecificOutput: {
+      hookEventName: 'PostToolUse',
+      updatedToolOutput: note + stripped,
+    },
+  };
+  process.stdout.write(JSON.stringify(out));
+  process.exit(0);
+}
+
+main().catch(() =&gt; passThrough());</code></pre>
+        <div class="scroll-note">self-contained · zero-dependency · removal-only</div>
+      </div>
+      <label class="check"><input type="checkbox" data-step> วาง hook แล้ว</label>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step" id="s5">
+      <div class="step-num">05</div>
+      <h3>ลงทะเบียน hook ใน settings.json</h3>
+      <p>เปิด (หรือสร้าง) <code>.claude/settings.json</code> ที่ root ของ project แล้ว merge บล็อกนี้เข้าไป</p>
+      <div class="codecard">
+        <div class="codecard-head">
+          <span class="fname"><span class="ic">⚙</span> settings.json <span class="path">→ .claude/</span></span>
+          <button class="copy-btn" onclick="copyCode(this)"><span>Copy</span></button>
+        </div>
+        <pre class="sh"><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/posttooluse-strip-html.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+      </div>
+      <div class="note">
+        <span class="tag">วิธี merge</span>
+        ถ้ามี <code>settings.json</code> และมี key <code>hooks.PostToolUse</code> อยู่แล้ว — ให้ <strong>เพิ่ม object ที่ matcher เป็น "Read" เข้าไปใน array เดิม</strong> อย่าเขียนทับทั้ง key ทับแล้ว hook อื่นจะหาย
+      </div>
+      <div class="note warn">
+        <span class="tag">scope</span>
+        ใช้ <code>.claude/settings.json</code> (ระดับ project) เพื่อให้ hook ทำงานเฉพาะ Pedpro และ commit แชร์ทีมได้ · ถ้าต้องการเฉพาะเครื่องตัวเองไม่ commit ใช้ <code>.claude/settings.local.json</code> แทน
+      </div>
+      <label class="check"><input type="checkbox" data-step> ลงทะเบียน hook แล้ว</label>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="step" id="s6">
+      <div class="step-num">06</div>
+      <div class="step-head"><h3>standalone stripper</h3><span class="step-opt">optional</span></div>
+      <p>ตัวเดียวกับ hook แต่เรียกตรงจาก CLI/โค้ดได้ เหมาะเสียบเป็น step ก่อน Opus vision ใน pipeline spec generation (Hermes/Vultr) วางที่ไหนก็ได้ เช่น <code>scripts/strip-mockup.mjs</code></p>
+      <div class="codecard">
+        <div class="codecard-head">
+          <span class="fname"><span class="ic">⎔</span> strip-mockup.mjs <span class="path">→ scripts/ (อิสระ)</span></span>
+          <button class="copy-btn" onclick="copyCode(this)"><span>Copy</span></button>
+        </div>
+        <pre><code>#!/usr/bin/env node
+/**
+ * strip-mockup.mjs — deterministic HTML mockup noise remover (zero-dependency)
+ *
+ * Removes the heavy, design-irrelevant parts of an HTML mockup while keeping
+ * the DOM structure, Tailwind classes, and text intact — so an LLM gets the
+ * design intent at a fraction of the token cost.
+ *
+ * It only DELETES well-delimited blocks (never re-parses/rebuilds structure),
+ * so it is safe and deterministic without a DOM library.
+ *
+ * Usage (standalone):
+ *   node strip-mockup.mjs path/to/mockup.html        # -&gt; stripped HTML to stdout, stats to stderr
+ *   cat mockup.html | node strip-mockup.mjs          # -&gt; reads stdin
+ *
+ * Importable:
+ *   import { strip } from './strip-mockup.mjs'
+ *   const { html, stats } = strip(rawHtml)
+ */
+
+export function strip(html) {
+  const before = html.length;
+
+  let out = html
+    // HTML comments
+    .replace(/&lt;!--[\s\S]*?--&gt;/g, '')
+    // &lt;script&gt;...&lt;/script&gt;  (with or without attributes / body)
+    .replace(/&lt;script\b[^&gt;]*&gt;[\s\S]*?&lt;\/script&gt;/gi, '')
+    // &lt;style&gt;...&lt;/style&gt;  (Tailwind utilities live in class=, not here)
+    .replace(/&lt;style\b[^&gt;]*&gt;[\s\S]*?&lt;\/style&gt;/gi, '')
+    // &lt;noscript&gt;...&lt;/noscript&gt;
+    .replace(/&lt;noscript\b[^&gt;]*&gt;[\s\S]*?&lt;\/noscript&gt;/gi, '')
+    // &lt;link ...&gt; and &lt;meta ...&gt;  (preload/charset/og noise — keep &lt;title&gt;)
+    .replace(/&lt;link\b[^&gt;]*&gt;/gi, '')
+    .replace(/&lt;meta\b[^&gt;]*&gt;/gi, '')
+    // SVG icons: keep the opening &lt;svg&gt; tag (its class = sizing/color matters),
+    // drop the long path soup inside.
+    .replace(/(&lt;svg\b[^&gt;]*&gt;)[\s\S]*?&lt;\/svg&gt;/gi, '$1&lt;/svg&gt;')
+    // base64 data URIs inside any attribute: keep the attribute, kill the payload
+    .replace(/data:image\/[a-z.+-]+;base64,[A-Za-z0-9+/=\s]+/gi, 'data:image-stripped')
+    // collapse whitespace between tags
+    .replace(/&gt;\s+&lt;/g, '&gt;\n&lt;')
+    // collapse 3+ blank lines
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  const after = out.length;
+  const tokEst = (n) =&gt; Math.round(n / 4); // ~4 chars per token, rough
+  const stats = {
+    beforeChars: before,
+    afterChars: after,
+    reductionPct: before ? Math.round((1 - after / before) * 100) : 0,
+    beforeTokensEst: tokEst(before),
+    afterTokensEst: tokEst(after),
+    savedTokensEst: tokEst(before) - tokEst(after),
+  };
+  return { html: out, stats };
+}
+
+// ---- CLI entry ----
+const isMain = import.meta.url === `file://${process.argv[1]}`;
+if (isMain) {
+  const readAll = (stream) =&gt;
+    new Promise((res) =&gt; {
+      let d = '';
+      stream.setEncoding('utf8');
+      stream.on('data', (c) =&gt; (d += c));
+      stream.on('end', () =&gt; res(d));
+    });
+
+  const run = async () =&gt; {
+    const fileArg = process.argv[2];
+    let raw;
+    if (fileArg) {
+      const fs = await import('node:fs/promises');
+      raw = await fs.readFile(fileArg, 'utf8');
+    } else {
+      raw = await readAll(process.stdin);
+    }
+    const { html, stats } = strip(raw);
+    process.stdout.write(html);
+    process.stderr.write(
+      `\n[strip-mockup] ${stats.beforeChars}→${stats.afterChars} chars ` +
+        `(-${stats.reductionPct}%) ~${stats.savedTokensEst} tokens saved\n`
+    );
+  };
+  run().catch((e) =&gt; {
+    process.stderr.write(`[strip-mockup] error: ${e.message}\n`);
+    process.exit(1);
+  });
+}</code></pre>
+      </div>
+      <div class="codecard">
+        <div class="codecard-head">
+          <span class="fname"><span class="ic">$</span> วิธีเรียก</span>
+          <button class="copy-btn" onclick="copyText(this,'node scripts/strip-mockup.mjs mockup.html > mockup.stripped.html\ncat mockup.html | node scripts/strip-mockup.mjs')"><span>Copy</span></button>
+        </div>
+        <pre class="sh"><code>node scripts/strip-mockup.mjs mockup.html &gt; mockup.stripped.html  <span style="color:var(--muted-2)"># stats ไป stderr</span>
+cat mockup.html | node scripts/strip-mockup.mjs                   <span style="color:var(--muted-2)"># หรือ pipe</span></code></pre>
+      </div>
+      <label class="check"><input type="checkbox" data-step> (optional) วาง stripper แล้ว</label>
+    </div>
+
+    <!-- STEP 7 -->
+    <div class="step" id="s7">
+      <div class="step-num">07</div>
+      <h3>ตรวจสอบว่าใช้งานได้</h3>
+      <p>เปิด Claude Code ใหม่ในโฟลเดอร์ project แล้วไล่เช็ค 3 อย่าง</p>
+      <table class="tbl">
+        <thead><tr><th>เช็ค</th><th>วิธี</th><th>ผลที่ควรเห็น</th></tr></thead>
+        <tbody>
+          <tr><td>hook ลงทะเบียน</td><td>พิมพ์ <code>/hooks</code></td><td>เห็น hook ใต้ <code>PostToolUse</code> matcher <code>Read</code></td></tr>
+          <tr><td>strip ทำงาน</td><td>ให้อ่าน mockup .html ที่ใหญ่กว่า ~6KB</td><td>หัวไฟล์ขึ้น comment <code>[auto-stripped mockup: …]</code></td></tr>
+          <tr><td>tweak ทำงาน</td><td><code>/tweak .stats-card +ml-auto</code></td><td>ได้ unified diff สั้นๆ ไม่ใช่ทั้งไฟล์</td></tr>
+        </tbody>
+      </table>
+      <label class="check"><input type="checkbox" data-step> ผ่านทั้ง 3 เช็ค — ติดตั้งเสร็จ</label>
+    </div>
+
+  </div>
+</section>
+
+<!-- WORKSHOP -->
+<section id="workshop">
+  <h2>4 · Workshop — ลงมือจริงตั้งแต่ต้นจนจบ</h2>
+  <p class="sub">สถานการณ์: mockup หน้า <strong>Game Lobby</strong> ของ Pedpro ส่งเข้ามา ไล่ตั้งแต่ Claude อ่าน → strip → สร้าง Vue component → tweak → จบที่ใช้งานได้จริง · ทุกตัวเลขในแล็บนี้มาจากการรันจริง</p>
+
+  <div class="steps">
+
+    <!-- LAB 1 -->
+    <div class="step" id="l1">
+      <div class="step-num">L1</div>
+      <h3>mockup เข้ามา → strip อัตโนมัติ</h3>
+      <p>วางไฟล์ mockup ลง project แล้วให้ Claude อ่าน — hook จะ strip ให้เองก่อนเข้า context พิมพ์ prompt ธรรมดาได้เลย</p>
+      <div class="codecard">
+        <div class="codecard-head">
+          <span class="fname"><span class="ic">&gt;</span> prompt</span>
+          <button class="copy-btn" onclick="copyText(this,'อ่าน docs/mockups/game-lobby.html แล้วสรุปโครงสร้าง UI ให้หน่อย')"><span>Copy</span></button>
+        </div>
+        <pre class="sh"><code>อ่าน docs/mockups/game-lobby.html แล้วสรุปโครงสร้าง UI ให้หน่อย</code></pre>
+      </div>
+      <p>ไฟล์จริงมี base64 thumbnail 3 รูป + script + style — Claude ไม่ได้เห็นของหนักพวกนั้น เห็นแค่ตัว strip:</p>
+      <div class="term">
+        <div class="term-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">hook output (PostToolUse · Read)</span></div>
+        <div class="term-body"><span class="cm"># auto-stripped mockup: 24,910 → 2,283 chars (−91%, ~5,657 tokens saved)</span>
+<span class="dim">scripts / styles / meta / svg-paths / base64 removed</span>
+<span class="add">DOM + Tailwind classes + ข้อความไทย ครบทุกตัว</span></div>
+      </div>
+      <div class="codecard">
+        <div class="codecard-head">
+          <span class="fname"><span class="ic">▣</span> สิ่งที่ Claude เห็นจริง <span class="path">game-lobby.html (stripped)</span></span>
+          <button class="copy-btn" onclick="copyCode(this)"><span>Copy</span></button>
+        </div>
+        <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="th"&gt;
+&lt;head&gt;
+&lt;title&gt;Pedpro — เกมแนะนำ&lt;/title&gt;
+&lt;/head&gt;
+&lt;body class="text-white"&gt;
+&lt;section class="px-6 py-8"&gt;
+&lt;header class="flex items-center justify-between mb-6"&gt;
+&lt;h2 class="text-2xl font-bold"&gt;เกมแนะนำวันนี้&lt;/h2&gt;
+&lt;button class="flex items-center gap-1 text-sm text-muted"&gt;
+        ดูทั้งหมด
+        &lt;svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"&gt;&lt;/svg&gt;
+&lt;/button&gt;
+&lt;/header&gt;
+&lt;div class="grid grid-cols-3 gap-4"&gt;
+&lt;article class="game-card glow rounded-2xl bg-surface-2 overflow-hidden"&gt;
+&lt;img src="data:image-stripped" class="w-full h-32 object-cover" alt="thumb"&gt;
+&lt;div class="p-4 flex flex-col gap-2"&gt;
+&lt;div class="flex items-center gap-2"&gt;
+&lt;span class="live-dot w-2 h-2 rounded-full bg-green-400"&gt;&lt;/span&gt;
+&lt;span class="text-xs text-muted"&gt;2,481 กำลังเล่น&lt;/span&gt;
+&lt;/div&gt;
+&lt;h3 class="font-bold text-lg"&gt;มังกรไฟทมิฬ&lt;/h3&gt;
+&lt;div class="flex items-center justify-between"&gt;
+&lt;span class="text-primary font-bold"&gt;฿50 / ตา&lt;/span&gt;
+&lt;button class="px-3 py-1 rounded-lg bg-primary text-sm"&gt;เล่นเลย&lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/article&gt;
+&lt;article class="game-card glow rounded-2xl bg-surface-2 overflow-hidden"&gt;
+&lt;img src="data:image-stripped" class="w-full h-32 object-cover" alt="thumb"&gt;
+&lt;div class="p-4 flex flex-col gap-2"&gt;
+&lt;div class="flex items-center gap-2"&gt;
+&lt;span class="live-dot w-2 h-2 rounded-full bg-green-400"&gt;&lt;/span&gt;
+&lt;span class="text-xs text-muted"&gt;1,209 กำลังเล่น&lt;/span&gt;
+&lt;/div&gt;
+&lt;h3 class="font-bold text-lg"&gt;นางพญางูขาว&lt;/h3&gt;
+&lt;div class="flex items-center justify-between"&gt;
+&lt;span class="text-primary font-bold"&gt;฿20 / ตา&lt;/span&gt;
+&lt;button class="px-3 py-1 rounded-lg bg-primary text-sm"&gt;เล่นเลย&lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/article&gt;
+&lt;article class="game-card glow rounded-2xl bg-surface-2 overflow-hidden"&gt;
+&lt;img src="data:image-stripped" class="w-full h-32 object-cover" alt="thumb"&gt;
+&lt;div class="p-4 flex flex-col gap-2"&gt;
+&lt;div class="flex items-center gap-2"&gt;
+&lt;span class="live-dot w-2 h-2 rounded-full bg-green-400"&gt;&lt;/span&gt;
+&lt;span class="text-xs text-muted"&gt;874 กำลังเล่น&lt;/span&gt;
+&lt;/div&gt;
+&lt;h3 class="font-bold text-lg"&gt;ขุมทรัพย์สุครีพ&lt;/h3&gt;
+&lt;div class="flex items-center justify-between"&gt;
+&lt;span class="text-primary font-bold"&gt;฿10 / ตา&lt;/span&gt;
+&lt;button class="px-3 py-1 rounded-lg bg-primary text-sm"&gt;เล่นเลย&lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/article&gt;
+&lt;/div&gt;
+&lt;/section&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+      </div>
+      <div class="note"><span class="tag">takeaway</span> ไม่ต้องเปลี่ยน prompt อะไรเลย — แค่อ่านไฟล์ก็ประหยัด token ทันที โครงสร้าง/คลาส/ข้อความครบพอให้ทำงานต่อ</div>
+      <label class="check"><input type="checkbox" data-step> เข้าใจ Lab 1</label>
+    </div>
+
+    <!-- LAB 2 -->
+    <div class="step" id="l2">
+      <div class="step-num">L2</div>
+      <h3>mockup → Vue component</h3>
+      <p>ต่อยอดจากตัว strip สั่งให้สร้าง component ตาม stack Pedpro — skill/กฎจะคุม Naive UI mapping (raw <code>&lt;button&gt;</code> → <code>NButton</code>) และใช้ token แทนค่าดิบ</p>
+      <div class="codecard">
+        <div class="codecard-head">
+          <span class="fname"><span class="ic">&gt;</span> prompt</span>
+          <button class="copy-btn" onclick="copyText(this,'สร้าง GameCard.vue จาก mockup นี้ ตาม stack Pedpro: Vue 3.5 script setup + TS, Naive UI, Tailwind token, page-local component ที่ pages/lobby/components/')"><span>Copy</span></button>
+        </div>
+        <pre class="sh"><code>สร้าง GameCard.vue จาก mockup นี้ ตาม stack Pedpro: Vue 3.5 script setup + TS,
+Naive UI, Tailwind token, page-local component ที่ pages/lobby/components/</code></pre>
+      </div>
+      <div class="codecard">
+        <div class="codecard-head">
+          <span class="fname"><span class="ic">▣</span> GameCard.vue <span class="path">→ pages/lobby/components/</span></span>
+          <button class="copy-btn" onclick="copyCode(this)"><span>Copy</span></button>
+        </div>
+        <pre><code>&lt;script setup lang="ts"&gt;
+import { NButton } from 'naive-ui'
+
+interface GameCard {
+  id: string
+  title: string
+  thumbnail: string
+  pricePerRound: number
+  livePlayers: number
+}
+
+defineProps&lt;{ game: GameCard }&gt;()
+const emit = defineEmits&lt;{ play: [id: string] }&gt;()
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;article class="game-card rounded-2xl bg-surface-2 overflow-hidden shadow-glow"&gt;
+    &lt;img :src="game.thumbnail" class="w-full h-32 object-cover" :alt="game.title" /&gt;
+
+    &lt;div class="p-4 flex flex-col gap-2"&gt;
+      &lt;div class="flex items-center gap-2"&gt;
+        &lt;span class="live-dot w-2 h-2 rounded-full bg-green-400" /&gt;
+        &lt;span class="text-xs text-muted"&gt;
+          {{ game.livePlayers.toLocaleString('th-TH') }} กำลังเล่น
+        &lt;/span&gt;
+      &lt;/div&gt;
+
+      &lt;h3 class="font-bold text-lg"&gt;{{ game.title }}&lt;/h3&gt;
+
+      &lt;div class="flex items-center justify-between"&gt;
+        &lt;span class="text-primary font-bold"&gt;฿{{ game.pricePerRound }} / ตา&lt;/span&gt;
+        &lt;NButton size="small" type="primary" @click="emit('play', game.id)"&gt;
+          เล่นเลย
+        &lt;/NButton&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/article&gt;
+&lt;/template&gt;</code></pre>
+      </div>
+      <div class="note"><span class="tag">สังเกต</span> <code>&lt;button&gt;</code> ดิบกลายเป็น <code>NButton type="primary"</code> · ใช้ <code>bg-surface-2</code> / <code>text-primary</code> / <code>text-muted</code> (token) ไม่มี hex ดิบ ไม่มี arbitrary value · component เป็น page-local ตาม convention Pedpro (ต้อง import เอง)</div>
+      <label class="check"><input type="checkbox" data-step> เข้าใจ Lab 2</label>
+    </div>
+
+    <!-- LAB 3 -->
+    <div class="step" id="l3">
+      <div class="step-num">L3</div>
+      <h3>tweak ตำแหน่ง/สี ด้วย <code>/tweak</code></h3>
+      <p>รอบปรับดีไซน์ ไม่ต้อง re-send ไฟล์ ไม่ต้องพิมพ์กฎ — สั่ง class-diff สั้นๆ ได้ diff กลับมา</p>
+      <div class="codecard">
+        <div class="codecard-head"><span class="fname"><span class="ic">&gt;</span> 3 รอบ tweak</span>
+          <button class="copy-btn" onclick="copyText(this,'/tweak .grid-cols-3 -grid-cols-3 +grid-cols-1 +md:grid-cols-3\n/tweak button[เล่นเลย] -size-small +size-medium +w-full\n/tweak .game-card +hover:shadow-glow')"><span>Copy</span></button>
+        </div>
+        <pre class="sh"><code>/tweak .grid-cols-3 -grid-cols-3 +grid-cols-1 +md:grid-cols-3   <span style="color:var(--muted-2)"># มือถือ 1 คอลัมน์</span>
+/tweak ปุ่มเล่นเลย ทำให้กว้างเต็มการ์ด                          <span style="color:var(--muted-2)"># ภาษาพูดก็ได้</span>
+/tweak .game-card เพิ่ม glow ตอน hover</code></pre>
+      </div>
+      <div class="term">
+        <div class="term-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">ผลรอบแรก</span></div>
+        <div class="term-body"><span class="dim">--- pages/lobby/components/GameCard.vue</span>
+<span class="del">-    &lt;div class="grid grid-cols-3 gap-4"&gt;</span>
+<span class="add">+    &lt;div class="grid grid-cols-1 md:grid-cols-3 gap-4"&gt;</span></div>
+      </div>
+      <div class="note"><span class="tag">takeaway</span> output เป็น diff เฉพาะบรรทัดที่เปลี่ยน — review เร็ว ประหยัด output token ปรับซ้ำได้รัวๆ</div>
+      <label class="check"><input type="checkbox" data-step> เข้าใจ Lab 3</label>
+    </div>
+
+    <!-- LAB 4 -->
+    <div class="step" id="l4">
+      <div class="step-num">L4</div>
+      <h3>token resolution — กันไม่ให้มั่ว</h3>
+      <p>ลองสั่งสีแบบ arbitrary value ดู — skill จะ <strong>ไม่</strong> apply มั่ว แต่ไปอ่าน <code>tailwind.config.ts</code> จริงก่อน แล้วเสนอ token ที่ตรง</p>
+      <div class="codecard">
+        <div class="codecard-head"><span class="fname"><span class="ic">&gt;</span> prompt (ตั้งใจผิด)</span>
+          <button class="copy-btn" onclick="copyText(this,'/tweak ปุ่มเล่นเลย +bg-[#6d28d9]')"><span>Copy</span></button>
+        </div>
+        <pre class="sh"><code>/tweak ปุ่มเล่นเลย +bg-[#6d28d9]</code></pre>
+      </div>
+      <div class="term">
+        <div class="term-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">การตอบของ skill</span></div>
+        <div class="term-body"><span class="del">⚠ bg-[#6d28d9] เป็น arbitrary value — ไม่ apply</span>
+<span class="dim">อ่าน tailwind.config.ts → theme.extend.colors พบ primary = #6d28d9</span>
+<span class="add">เสนอใช้ +bg-primary แทน (สีเดียวกัน เป็น token)</span></div>
+      </div>
+      <p>ไฟล์ token ที่ skill อ่าน (ตัวอย่างของ Pedpro):</p>
+      <div class="codecard">
+        <div class="codecard-head"><span class="fname"><span class="ic">⚙</span> tailwind.config.ts <span class="path">theme.extend.colors</span></span>
+          <button class="copy-btn" onclick="copyCode(this)"><span>Copy</span></button>
+        </div>
+        <pre class="sh"><code>// tailwind.config.ts — Pedpro (ตัวอย่างที่ skill จะอ่านตอน resolve token)
+export default {
+  theme: {
+    extend: {
+      colors: {
+        primary:     '#6d28d9',
+        'surface':   '#0f0d1a',
+        'surface-2': '#1b1730',
+        muted:       '#9d98b8',
+      },
+      boxShadow: {
+        glow: '0 0 32px rgba(109,40,217,.35)',
+      },
+    },
+  },
+}</code></pre>
+      </div>
+      <div class="note warn"><span class="tag">หัวใจ</span> เหมือนกฎ “ห้ามเดา Bruno field ก่อนอ่าน .bru” — สีก็ห้ามเดา ต้อง resolve จาก source จริง ลำดับ: <code>tailwind.config</code> → Naive UI <code>themeOverrides</code> → CSS <code>--*</code></div>
+      <label class="check"><input type="checkbox" data-step> เข้าใจ Lab 4</label>
+    </div>
+
+    <!-- LAB 5 -->
+    <div class="step" id="l5">
+      <div class="step-num">L5</div>
+      <div class="step-head"><h3>เสียบ pipeline (นอก Claude Code)</h3><span class="step-opt">advanced</span></div>
+      <p>ใช้ <code>strip-mockup.mjs</code> ตัว standalone เป็น step ก่อน Opus vision ในไปป์ไลน์ spec generation (Hermes/Vultr) — strip ทั้ง batch แล้วค่อยส่งเข้าโมเดล</p>
+      <div class="codecard">
+        <div class="codecard-head"><span class="fname"><span class="ic">$</span> strip ทั้งโฟลเดอร์ก่อนเข้าไปป์</span>
+          <button class="copy-btn" onclick="copyText(this,'for f in docs/mockups/*.html; do\n  node scripts/strip-mockup.mjs \"$f\" > \"${f%.html}.stripped.html\" 2>> strip.log\ndone\n# จากนั้นส่ง *.stripped.html เข้า Opus vision ในไปป์ไลน์เดิม')"><span>Copy</span></button>
+        </div>
+        <pre class="sh"><code>for f in docs/mockups/*.html; do
+  node scripts/strip-mockup.mjs "$f" &gt; "${f%.html}.stripped.html" 2&gt;&gt; strip.log
+done
+<span style="color:var(--muted-2)"># แล้วป้อน *.stripped.html เข้า Opus vision ในไปป์ไลน์เดิม</span></code></pre>
+      </div>
+      <div class="note"><span class="tag">วัดผล</span> <code>strip.log</code> เก็บสถิติทุกไฟล์ (เช่น −91% ที่วัดได้ใน Lab 1) เอาไปรวมดู token รวมที่ประหยัดทั้ง batch ได้</div>
+      <label class="check"><input type="checkbox" data-step> เข้าใจ Lab 5</label>
+    </div>
+
+    <!-- LAB 6 -->
+    <div class="step" id="l6">
+      <div class="step-num">L6</div>
+      <div class="step-head"><h3>ปรับ hook ให้ strip เฉพาะโฟลเดอร์ mockup</h3><span class="step-opt">advanced</span></div>
+      <p>ไม่อยากให้ไฟล์ <code>.html</code> ทุกตัวโดน strip (เช่น email template, ไฟล์ test) — เพิ่มเงื่อนไข path เข้าไปที่จุดเช็คใน hook</p>
+      <div class="codecard">
+        <div class="codecard-head"><span class="fname"><span class="ic">⎔</span> แก้ใน posttooluse-strip-html.mjs</span>
+          <button class="copy-btn" onclick="copyCode(this)"><span>Copy</span></button>
+        </div>
+        <pre class="sh"><code>// Lab 6 — จำกัด strip เฉพาะ docs/mockups/  (แก้ที่จุดเช็ค filePath ในไฟล์ hook)
+
+  // เดิม:
+  if (!/\.html?$/i.test(filePath)) return passThrough();
+
+  // เพิ่มเงื่อนไข path — strip เฉพาะ mockup ในโฟลเดอร์ที่กำหนด:
+  if (!/\.html?$/i.test(filePath)) return passThrough();
+  if (!filePath.includes('docs/mockups/')) return passThrough();</code></pre>
+      </div>
+      <div class="note"><span class="tag">ผสมกับ tuning</span> จับคู่กับ <code>THRESHOLD_CHARS</code> ได้ เช่น mockup เล็กในโฟลเดอร์นั้นก็ยัง strip ด้วยการลด threshold ลง</div>
+      <label class="check"><input type="checkbox" data-step> เข้าใจ Lab 6</label>
+    </div>
+
+    <!-- LAB 7 -->
+    <div class="step" id="l7">
+      <div class="step-num">L7</div>
+      <h3>Capstone — ลูปเต็มในรอบเดียว</h3>
+      <p>รวมทุกอย่างเป็น flow เดียวที่ใช้จริงทุกวัน:</p>
+      <div class="panel">
+<div class="tree"><span class="new">①</span> mockup เข้า <span class="cm">docs/mockups/*.html</span>
+   <span class="cm">↓ hook strip อัตโนมัติ (−91%)</span>
+<span class="new">②</span> "สร้าง component จาก mockup นี้" <span class="cm">→ GameCard.vue (Naive UI + token)</span>
+   <span class="cm">↓</span>
+<span class="new">③</span> review บนจอ → ปรับด้วย <span class="d">/tweak</span> <span class="cm">class-diff สั้นๆ → diff กลับ</span>
+   <span class="cm">↓ token ถูก resolve จาก tailwind.config เสมอ</span>
+<span class="new">④</span> commit <span class="cm">— จบ ไม่ต้อง re-send ไฟล์ ไม่ต้อง re-type กฎ</span></div>
+      </div>
+      <div class="note"><span class="tag">เช็คว่าพร้อมจริง</span> ถ้าทำ Lab 1–4 ผ่านหมด = workflow ใหม่ใช้งานได้เต็มรูปแบบแล้ว Lab 5–6 ไว้ scale/ปรับจูนทีหลัง</div>
+      <label class="check"><input type="checkbox" data-step> ทำ Capstone ครบ — พร้อมใช้จริง</label>
+    </div>
+
+  </div>
+</section>
+
+<!-- TUNING -->
+<section id="tuning">
+  <h2>5 · ปรับจูน</h2>
+  <p class="sub">ปุ่มหมุนที่ปรับได้ตามการใช้งานจริง</p>
+  <table class="tbl">
+    <thead><tr><th>ตั้งค่า</th><th>ไฟล์</th><th>ค่าเริ่มต้น</th><th>ความหมาย</th></tr></thead>
+    <tbody>
+      <tr><td><code>THRESHOLD_CHARS</code></td><td>hook</td><td><code>6000</code></td><td>ไฟล์เล็กกว่านี้ปล่อยผ่าน (ไม่คุ้ม strip)</td></tr>
+      <tr><td>เกณฑ์ <code>* 0.85</code></td><td>hook</td><td>15%</td><td>strip เฉพาะเมื่อลดได้เกิน 15%</td></tr>
+      <tr><td><code>model</code></td><td>tweak.md</td><td><code>sonnet-4-6</code></td><td>งาน tweak สี/ตำแหน่งล้วน ลองสลับเป็น Haiku ประหยัดกว่า</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <span class="tag">จำกัดเฉพาะโฟลเดอร์ mockup</span>
+    อยากให้ strip เฉพาะ <code>docs/mockups/</code> เพิ่มเงื่อนไขเช็ค path ในจุดที่ hook ตรวจ <code>filePath</code> ได้ (ดูในไฟล์ ส่วน <code>/\.html?$/i.test(filePath)</code>)
+  </div>
+</section>
+
+<!-- TROUBLESHOOT -->
+<section id="trouble">
+  <h2>6 · แก้ปัญหา</h2>
+  <table class="tbl">
+    <thead><tr><th>อาการ</th><th>สาเหตุ / วิธีแก้</th></tr></thead>
+    <tbody>
+      <tr><td>hook ไม่ strip เลย</td><td>① Claude Code เก่ากว่า v2.1.121 → อัป ② path ใน command ผิด (ต้อง relative จาก root) ③ <code>node</code> ไม่อยู่ใน PATH ④ ไฟล์เล็กกว่า threshold (ตั้งใจ)</td></tr>
+      <tr><td><code>/hooks</code> ไม่เห็น hook</td><td>JSON ใน settings.json พัง หรือ merge ผิดที่ — เช็ควงเล็บปีกกาให้ครบ แล้วเปิด session ใหม่</td></tr>
+      <tr><td><code>/tweak</code> ไม่ขึ้น</td><td>ไฟล์ต้องชื่อ <code>.claude/commands/tweak.md</code> เป๊ะ แล้วเริ่ม session ใหม่</td></tr>
+      <tr><td>strip บางไฟล์ไม่เกิด</td><td>เป็น partial read (มี offset/limit) — hook ตั้งใจข้าม เพื่อไม่คืนเกินที่ขอ</td></tr>
+      <tr><td>token ถูก flag ผิด</td><td>skill หา <code>tailwind.config</code> ไม่เจอ/ผิด path — ปรับลำดับ resolve ในส่วน Token resolution ของ SKILL.md ให้ตรงโครง Pedpro</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- CHEATSHEET -->
+<section id="cheat">
+  <h2>7 · Cheat sheet — class-diff</h2>
+  <p class="sub">พิมพ์เป็น <code>+</code> เพิ่ม / <code>-</code> ลบ class แทนการบรรยายยาว</p>
+  <table class="tbl">
+    <thead><tr><th>อยากได้</th><th>class-diff</th></tr></thead>
+    <tbody>
+      <tr><td>ย้ายไปขวาสุด</td><td><code>+ml-auto</code></td></tr>
+      <tr><td>เรียงแนวนอนแทนแนวตั้ง ชิดขวา</td><td><code>-flex-col +flex-row +justify-end</code></td></tr>
+      <tr><td>เว้นห่างขึ้น</td><td><code>-gap-2 +gap-4</code></td></tr>
+      <tr><td>พื้นหลังสีหลัก ตัวอักษรขาว</td><td><code>+bg-primary +text-white</code></td></tr>
+      <tr><td>ซ่อนมือถือ โชว์ desktop</td><td><code>+hidden +md:block</code></td></tr>
+      <tr><td>กว้างเต็ม</td><td><code>+w-full</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+  </main>
+</div>
+
+<footer>
+  Pedpro Claude Code Toolkit · input strip · /tweak · token resolve<br>
+  สร้างเพื่อใช้กับ Nuxt 4 · Vue 3.5 · Tailwind · Naive UI
+</footer>
+
+</div>
+
+<script>
+  // ---- copy from a <code> block (round-trips HTML entities via textContent) ----
+  function flash(btn){
+    var span=btn.querySelector('span'); var old=span.textContent;
+    btn.classList.add('ok'); span.textContent='✓ Copied';
+    setTimeout(function(){btn.classList.remove('ok');span.textContent=old;},1600);
+  }
+  function copyCode(btn){
+    var card=btn.closest('.codecard');
+    var code=card.querySelector('pre code');
+    var text=code.textContent;
+    navigator.clipboard.writeText(text).then(function(){flash(btn);},function(){fallback(text,btn);});
+  }
+  function copyText(btn,text){
+    navigator.clipboard.writeText(text).then(function(){flash(btn);},function(){fallback(text,btn);});
+  }
+  function fallback(text,btn){
+    var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);
+    ta.select();try{document.execCommand('copy');flash(btn);}catch(e){}document.body.removeChild(ta);
+  }
+
+  // ---- progress + step done state ----
+  var boxes=document.querySelectorAll('input[data-step]');
+  var bar=document.getElementById('pbar');
+  var tocCount=document.getElementById('toc-count');
+  function update(){
+    var total=boxes.length,done=0;
+    boxes.forEach(function(b){
+      if(b.checked){done++;}
+      var step=b.closest('.step'); if(step){step.classList.toggle('done',b.checked);}
+    });
+    bar.style.width=(total?Math.round(done/total*100):0)+'%';
+    if(tocCount){tocCount.textContent=done+'/'+total;}
+  }
+  boxes.forEach(function(b){b.addEventListener('change',update);});
+  update();
+
+  // ---- scrollspy: highlight active section in sidebar ----
+  var links={};
+  document.querySelectorAll('#toc a').forEach(function(a){
+    links[a.getAttribute('href').slice(1)]=a;
+  });
+  var sections=document.querySelectorAll('main section[id]');
+  var spy=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      var a=links[e.target.id];
+      if(!a)return;
+      if(e.isIntersecting){
+        Object.keys(links).forEach(function(k){links[k].classList.remove('active');});
+        a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  sections.forEach(function(s){spy.observe(s);});
+</script>
+</body>
+</html>

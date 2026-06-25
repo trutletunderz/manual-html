@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw × Pedpro — Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F1117; --ink-2:#161922; --ink-3:#1E2330; --ink-4:#252B3A;
+    --line:#2A3140;
+    --amber:#E9B44C; --amber-dim:#9c7a36;
+    --teal:#5FC9C3; --teal-dim:#3a7d79;
+    --coral:#E07A5F; --coral-dim:#9c5343;
+    --blue:#8fa3c9;
+    --text:#E7E4DC; --muted:#9097A8; --muted-2:#646B7D;
+    --disp:'Anuphan',sans-serif; --body:'IBM Plex Sans Thai',sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--ink); color:var(--text); font-family:var(--body); line-height:1.72; font-size:16px;
+    -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(1000px 560px at 82% -8%, #1b2030 0%, transparent 60%),
+                     radial-gradient(760px 420px at -12% 6%, #19211f 0%, transparent 55%);
+    background-attachment:fixed;
+  }
+  ::selection{background:var(--amber); color:#1a1407}
+  .wrap{max-width:880px; margin:0 auto; padding:0 24px}
+  .amber{color:var(--amber)} .teal{color:var(--teal)} .coral{color:var(--coral)} .blue{color:var(--blue)}
+  .mono{font-family:var(--mono)}
+  h1,h2,h3{font-family:var(--disp); font-weight:700; line-height:1.16; letter-spacing:-0.015em}
+
+  /* ---------- hero ---------- */
+  header.hero{position:relative; padding:96px 0 60px; overflow:hidden}
+  .ring{position:absolute; top:-90px; right:-90px; width:340px; height:340px; border-radius:50%;
+    border:1.5px dashed #2f384a; opacity:.7}
+  .ring.spin{animation:spin 46s linear infinite}
+  .ring::after{content:""; position:absolute; inset:34px; border-radius:50%; border:1px dashed #262e3e}
+  .ring .dot{position:absolute; top:-6px; left:50%; width:11px; height:11px; border-radius:50%; background:var(--amber); transform:translateX(-50%); box-shadow:0 0 14px var(--amber)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .hero .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:var(--amber); margin-bottom:22px}
+  .hero h1{font-size:clamp(40px,7.6vw,72px); letter-spacing:-0.03em; position:relative}
+  .hero h1 .x{color:var(--amber); font-family:var(--mono); font-weight:400; padding:0 .12em; display:inline-block; transform:translateY(-5px)}
+  .hero .lede{margin-top:24px; font-size:clamp(16px,2.3vw,20px); color:var(--muted); max-width:600px}
+  .hero .lede b{color:var(--text); font-weight:600}
+  .tagline{margin-top:30px; padding:16px 22px; border:1px solid var(--line); border-radius:13px; background:linear-gradient(100deg,#e9b44c10,transparent 60%); max-width:600px}
+  .tagline .tl{font-family:var(--disp); font-weight:700; font-size:clamp(17px,2.6vw,21px)}
+  .tagline .ts{font-size:13.5px; color:var(--muted); margin-top:3px}
+
+  /* ---------- journey strip ---------- */
+  .journey{display:flex; align-items:stretch; gap:0; margin:8px 0 4px; overflow-x:auto; padding-bottom:6px}
+  .jstep{flex:1; min-width:96px; text-align:center; position:relative; padding:0 6px}
+  .jstep .bub{font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--muted-2);
+    border:1px solid var(--line); border-radius:9px; padding:9px 4px; background:var(--ink-2); position:relative; z-index:1}
+  .jstep.on .bub{color:var(--ink); background:var(--amber); border-color:var(--amber); font-weight:600}
+  .jstep .lbl{font-size:11.5px; color:var(--muted); margin-top:8px; line-height:1.3}
+  .jstep::before{content:""; position:absolute; top:18px; left:-50%; width:100%; height:1px; background:var(--line); z-index:0}
+  .jstep:first-child::before{display:none}
+
+  /* ---------- sections ---------- */
+  section{padding:44px 0; border-top:1px solid var(--line)}
+  .kicker{font-family:var(--mono); font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--amber-dim)}
+  h2{font-size:clamp(24px,4vw,33px); margin-top:9px}
+  h2 + .sub{color:var(--muted); margin-top:11px; font-size:16px; max-width:640px}
+  p{margin:12px 0; color:#d6d3cb}
+  p .hl{color:var(--text); font-weight:600}
+  code{font-family:var(--mono); font-size:.85em; background:#00000045; border:1px solid var(--line); padding:1.5px 6px; border-radius:5px; color:var(--teal); white-space:nowrap}
+
+  /* part cards */
+  .cards{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:24px}
+  @media (max-width:640px){.cards{grid-template-columns:1fr}}
+  .pc{border:1px solid var(--line); border-radius:14px; padding:20px 22px; background:var(--ink-2); position:relative; overflow:hidden; transition:transform .18s, border-color .18s}
+  .pc:hover{transform:translateY(-3px); border-color:var(--ink-4)}
+  .pc::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px}
+  .pc.p1::before{background:var(--blue)} .pc.p2::before{background:var(--teal)}
+  .pc.p3::before{background:var(--amber)} .pc.p4::before{background:var(--coral)}
+  .pc .pn{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted-2)}
+  .pc h3{font-size:19px; margin:7px 0 4px}
+  .pc .q{font-size:13.5px; color:var(--muted); font-style:italic; margin-bottom:10px}
+  .pc .tags{display:flex; flex-wrap:wrap; gap:6px}
+  .pc .tags span{font-family:var(--mono); font-size:10.5px; color:#c2c8d6; background:#ffffff08; border:1px solid var(--line); border-radius:6px; padding:2px 8px}
+  .pc .file{font-family:var(--mono); font-size:11px; color:var(--muted-2); margin-top:12px}
+
+  /* kit manifest */
+  .manifest{border:1px solid var(--line); border-radius:14px; background:var(--ink-2); padding:22px 24px; margin-top:22px}
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:2px; margin-bottom:20px; border-radius:11px; overflow:hidden; border:1px solid var(--line)}
+  @media (max-width:560px){.stats{grid-template-columns:1fr 1fr}}
+  .stat{background:var(--ink-3); padding:15px 14px; text-align:center}
+  .stat .v{font-family:var(--disp); font-weight:700; font-size:24px; color:var(--amber)}
+  .stat .k{font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-top:3px}
+  .tree{font-family:var(--mono); font-size:12.5px; line-height:1.7; color:#c2c8d6; white-space:pre; overflow-x:auto; margin:0}
+  .tree .d{color:var(--amber)} .tree .c{color:var(--muted-2)}
+
+  .modes{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:22px}
+  @media (max-width:560px){.modes{grid-template-columns:1fr}}
+  .mode{border:1px solid var(--line); border-radius:12px; padding:15px 16px; background:var(--ink-2)}
+  .mode .mt{font-family:var(--mono); font-size:12px; font-weight:600; margin-bottom:5px}
+  .mode.u .mt{color:var(--muted)} .mode.d .mt{color:var(--teal)} .mode.l .mt{color:var(--coral)}
+  .mode p{font-size:13px; color:var(--muted); margin:0}
+
+  /* arch diagram */
+  .flow{margin:22px 0 0; border:1px solid var(--line); border-radius:12px; background:#0c0e14; padding:22px; overflow-x:auto}
+  .flow pre{font-family:var(--mono); font-size:12px; line-height:1.5; color:var(--muted); white-space:pre; margin:0}
+  .flow b{color:var(--amber); font-weight:500} .flow .t{color:var(--teal)} .flow .c{color:var(--coral)} .flow .bl{color:var(--blue)}
+
+  /* code */
+  .code{margin:20px 0 0; border:1px solid var(--line); border-radius:11px; overflow:hidden; background:#0b0d13}
+  .code .bar{display:flex; align-items:center; justify-content:space-between; padding:9px 14px; background:var(--ink-3); border-bottom:1px solid var(--line)}
+  .code .fn{font-family:var(--mono); font-size:12px; color:var(--text)}
+  .code .cp{font-family:var(--mono); font-size:11px; color:var(--muted); background:transparent; border:1px solid var(--line); border-radius:6px; padding:3px 10px; cursor:pointer; transition:.15s}
+  .code .cp:hover{color:var(--amber); border-color:var(--amber-dim)}
+  .code .cp.ok{color:var(--teal); border-color:var(--teal-dim)}
+  .code pre{margin:0; padding:16px; overflow-x:auto; font-family:var(--mono); font-size:13px; line-height:1.7; color:#cdd3df}
+
+  /* closing panel */
+  .closing{border:1px solid var(--amber-dim); border-radius:16px; padding:30px 28px; margin-top:24px;
+    background:radial-gradient(420px 200px at 100% 0%, #e9b44c14, transparent 70%), var(--ink-2)}
+  .closing .big{font-family:var(--disp); font-weight:700; font-size:clamp(20px,3.4vw,27px); line-height:1.3}
+  .closing p{margin-top:12px; color:#d6d3cb}
+  .closing .watch{margin-top:16px; font-family:var(--mono); font-size:12.5px; color:var(--coral); border-top:1px solid var(--line); padding-top:14px}
+
+  footer{border-top:1px solid var(--line); padding:36px 0 72px; color:var(--muted-2); font-family:var(--mono); font-size:12px; line-height:1.85; text-align:center}
+  footer .gt{font-size:20px; letter-spacing:.3em; color:var(--amber); margin-bottom:10px}
+
+  @media (prefers-reduced-motion:reduce){.ring.spin{animation:none} html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<a href="../../index.html" id="back-home-fab" aria-label="กลับคลังคู่มือ" style="position:fixed;right:18px;bottom:18px;z-index:99999;display:inline-flex;align-items:center;gap:7px;padding:10px 16px;font:600 14px/1 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#fff;background:#0284c7;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px rgba(2,132,199,.35)">🏠 หน้าแรก</a>
+<div class="wrap">
+
+  <!-- ============ HERO ============ -->
+  <header class="hero">
+    <div class="ring spin"><span class="dot"></span></div>
+    <div class="eyebrow">Field Guide · ปิดท้ายซีรีส์</div>
+    <h1>จาก Prompt<span class="x">→</span>Agentic System</h1>
+    <p class="lede">เริ่มจากบทความสรุปคอร์ส OpenAI Academy หนึ่งโพสต์ — จบที่<b>ระบบ agentic ที่รันได้จริง</b> มีลูปปิดตัวเอง ขนานได้ วัดผลได้ และมีมนุษย์คุมที่ประตูสำคัญ. หน้านี้คือสารบัญรวมของทั้งเส้นทาง</p>
+    <div class="tagline">
+      <div class="tl">ขนาน agent ให้สุด, serialize วิจารณญาณเสมอ</div>
+      <div class="ts">แก่นเดียวที่ร้อยทุกพาร์ทตั้งแต่ต้นจนจบ</div>
+    </div>
+  </header>
+
+  <!-- ============ JOURNEY ============ -->
+  <section style="border-top:none; padding-top:8px">
+    <div class="journey">
+      <div class="jstep"><div class="bub">บทความ</div><div class="lbl">OpenAI Academy<br>10 ไอเดีย</div></div>
+      <div class="jstep"><div class="bub">P1</div><div class="lbl">แนวคิด<br>prompt → agent</div></div>
+      <div class="jstep"><div class="bub">P2</div><div class="lbl">หนึ่งลูป<br>ปิดตัวเอง</div></div>
+      <div class="jstep"><div class="bub">P3</div><div class="lbl">N ลูป<br>ขนาน</div></div>
+      <div class="jstep"><div class="bub">P4</div><div class="lbl">วัด +<br>พัฒนา</div></div>
+      <div class="jstep on"><div class="bub">KIT</div><div class="lbl">ไฟล์จริง<br>รันได้</div></div>
+    </div>
+  </section>
+
+  <!-- ============ THE 4 PARTS ============ -->
+  <section>
+    <div class="kicker">The Series</div>
+    <h2>4 handbook ที่พาขึ้นทีละขั้น</h2>
+    <p class="sub">แต่ละพาร์ทตอบคำถามเดียวที่ชัด และต่อยอดจากพาร์ทก่อนหน้าโดยตรง</p>
+    <div class="cards">
+      <div class="pc p1">
+        <div class="pn">Part 1 · Concept</div>
+        <h3>Prompt → Agent</h3>
+        <div class="q">"AI ทำงานแทนเราได้ยังไง?"</div>
+        <div class="tags"><span>Context engineering</span><span>Reasoning</span><span>Workflow vs Agent</span><span>Human-in-the-loop</span></div>
+        <div class="file">prompt-to-agent-deep-dive.html</div>
+      </div>
+      <div class="pc p2">
+        <div class="pn">Part 2 · One Loop</div>
+        <h3>หนึ่งลูปปิดตัวเอง</h3>
+        <div class="q">"ลูปเดียวจบงานเองได้ยังไง?"</div>
+        <div class="tags"><span>skills</span><span>hooks</span><span>/goal</span><span>progress.txt</span><span>approval gate</span></div>
+        <div class="file">openclaw-implementation-handbook.html</div>
+      </div>
+      <div class="pc p3">
+        <div class="pn">Part 3 · Parallel</div>
+        <h3>N ลูปขนานปลอดภัย</h3>
+        <div class="q">"รันหลายงานพร้อมกันโดยไม่ชนกันยังไง?"</div>
+        <div class="tags"><span>git worktrees</span><span>supervisor</span><span>claim race guard</span><span>fan-in</span></div>
+        <div class="file">openclaw-parallel-orchestration.html</div>
+      </div>
+      <div class="pc p4">
+        <div class="pn">Part 4 · Observe</div>
+        <h3>ลูปที่วัด + พัฒนาตัวเอง</h3>
+        <div class="q">"รู้ได้ไงว่ามันทำงานดีจริง?"</div>
+        <div class="tags"><span>trace</span><span>metrics</span><span>eval</span><span>LLM-as-judge</span><span>alerts</span></div>
+        <div class="file">openclaw-observability-eval.html</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ THE KIT ============ -->
+  <section>
+    <div class="kicker">The Kit</div>
+    <h2>ไฟล์จริงที่ทุกแนวคิดกลายเป็นโค้ด</h2>
+    <p class="sub">ทุกอย่างใน handbook ถูกแปลงเป็นไฟล์รันได้ใน <code>openclaw-pedpro-kit.zip</code></p>
+    <div class="manifest">
+      <div class="stats">
+        <div class="stat"><div class="v">45</div><div class="k">ไฟล์</div></div>
+        <div class="stat"><div class="v">18</div><div class="k">tests ✓</div></div>
+        <div class="stat"><div class="v">3</div><div class="k">modes</div></div>
+        <div class="stat"><div class="v">CI</div><div class="k">lint+test</div></div>
+      </div>
+      <pre class="tree"><span class="d">.claude/</span>   <span class="c"># ใช้ได้ทันที</span>
+  settings.json · 5 hooks · 2 skills · /goal · goal.json · progress.txt
+<span class="d">openclaw/</span>  <span class="c"># middleware (deterministic)</span>
+  supervisor · claim · approval_router · gate · trace · metrics
+  eval · judge · alerts · telegram_service · run · integration{,_demo,_live}
+<span class="d">fixtures/</span> · <span class="d">tests/</span> · Dockerfile · justfile · pyproject.toml
+<span class="d">.github/</span>  ci.yml · agent-eval.yml      CONTRIBUTING.md · README.md</pre>
+      <div class="modes">
+        <div class="mode u"><div class="mt">unset</div><p>stubs — raise NotImplementedError ดัง ๆ ถ้ายังไม่ wire</p></div>
+        <div class="mode d"><div class="mt">demo</div><p>local fakes — รันลูปทั้งวงได้ ไม่ต้องมี infra</p></div>
+        <div class="mode l"><div class="mt">live</div><p>YouTrack + Telegram + Anthropic + Claude CLI จริง</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ARCHITECTURE ============ -->
+  <section>
+    <div class="kicker">At a Glance</div>
+    <h2>ลูปทั้งระบบในภาพเดียว</h2>
+    <div class="flow"><pre>      <span class="t">YouTrack</span> (canonical state + lock)
+        Ready ──claim──▶ In Progress ──done──▶ Closed
+            │                                     ▲
+            ▼                                     │ approve → merge/deploy
+   ┌──────────────── <b>SUPERVISOR</b> (deterministic) ───────────────┐
+   │  semaphore · นับ iter/error/cost · ถือคิว gate                 │
+   └───┬──────────────┬──────────────┬────────────────────────────┘
+       ▼ fan-out       ▼              ▼   worktrees (คนละ branch/goal/progress)
+   ┌────────┐     ┌────────┐     ┌────────┐   hooks ติดมาเองทุกตัว:
+   │Claude CC│    │Claude CC│    │Claude CC│   <b>git-gate · typecheck · goal-check</b>
+   │ loop ↻ │     │ loop ↻ │     │ loop ↻ │   <span class="c">// แต่ละลูป emit trace</span>
+   └───┬────┘     └───┬────┘     └───┬────┘
+       └──────────────┴──────────────┘ goal_met → rebase + conflict check
+                      │
+                      ▼
+   ┌──────────── <span class="c">TELEGRAM</span> — ช่องอนุมัติเดียว ────────────┐
+   │ [PED-1423 · a914] + ปุ่ม Open diff                       │
+   │ /approve a914 &lt;reason&gt;  ── ต้องเปิด diff + มีเหตุผล ──▶ ✓ │
+   └─────────────────────────────────────────────────────────┘
+                      │
+        trace ──▶ metrics ──▶ alerts ⚠ <span class="c">blind_approve_rate</span>
+                      └──▶ eval (golden) gate การแก้ระบบ</pre></div>
+  </section>
+
+  <!-- ============ QUICKSTART ============ -->
+  <section>
+    <div class="kicker">Quickstart</div>
+    <h2>เริ่มเล่นใน 30 วินาที</h2>
+    <p class="sub">ไม่ต้องมี YouTrack/Telegram/API key — demo mode รันลูปทั้งวงด้วย local fakes</p>
+    <div class="code">
+      <div class="bar"><span class="fn">terminal</span><button class="cp">Copy</button></div>
+      <pre>unzip openclaw-pedpro-kit.zip &amp;&amp; cd kit
+
+just demo      # spawn 2 runs ขนาน → goal_met → เข้าคิว merge gate → metrics
+just test      # 18 tests (gate routing / YouTrack race / Telegram dispatch)
+just lint      # ruff
+
+# ใช้จริง: เปิด .env.example → .env, implement seam ใน integration.py
+docker build -t openclaw . &amp;&amp; docker run --env-file .env -v $(pwd):/app/pedpro openclaw</pre>
+    </div>
+    <p style="margin-top:16px; font-size:14px; color:var(--muted)">จุดเริ่มแก้: <code>openclaw/integration.py</code> (seam ที่ต้อง wire) และ <code>CONTRIBUTING.md</code> (วินัยการแก้ระบบ: แก้ instruction → รัน eval → merge)</p>
+    <p style="margin-top:10px; font-size:14px; color:var(--muted)">ไม่อยากแตก zip? เปิด <code>openclaw-source-book.html</code> — มีซอร์สครบทั้ง 45 ไฟล์ กดปุ่ม Copy ทีละไฟล์แล้ววางตาม path ได้เลย</p>
+  </section>
+
+  <!-- ============ CLOSING ============ -->
+  <section>
+    <div class="kicker">The One Rule</div>
+    <h2>กฎเดียวที่อยู่เหนือทุก test</h2>
+    <div class="closing">
+      <div class="big">ขนาน agent ให้สุด<br>— serialize วิจารณญาณเสมอ</div>
+      <p>ระบบทั้งหมดนี้กัน failure ด้านเทคนิคได้: type พังหยุดเอง, push เองไม่ได้, งานแย่งกันไม่ได้, การตัดสินใจที่ gate มีเทสต์คุม. แต่ความล้มเหลวที่ร้ายที่สุดไม่ใช่เทคนิค — มันคือ<span class="hl">มนุษย์กด approve โดยไม่เปิดดู</span> (บทเรียน Starbucks "Tank Day": ผู้บริหาร 7 คนเซ็นผ่านงานที่ไม่มีใครเปิดไฟล์แนบ)</p>
+      <p>การแก้ใด ๆ ที่ทำให้ "อนุมัติง่ายขึ้นโดยไม่ต้องดู" — auto-approve, batching, ตัดเงื่อนไขเหตุผล — คือ regression แม้ทุก test จะเขียว</p>
+      <div class="watch">▸ metric ที่ต้องเฝ้าที่สุด: <span class="amber">blind_approve_rate</span> — ตราบใดที่มันต่ำ แปลว่าวิจารณญาณยังตื่นอยู่จริง</div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="gt">⟳</div>
+    <div>OPENCLAW × PEDPRO · FIELD GUIDE</div>
+    <div>4 handbooks + runnable kit (45 files · 18 tests · CI) · ซีรีส์สมบูรณ์</div>
+    <div style="margin-top:10px; color:var(--muted-2)">ขนาน agent ให้สุด · serialize วิจารณญาณเสมอ</div>
+  </footer>
+</div>
+
+<script>
+  document.querySelectorAll('.code').forEach(function(block){
+    var btn = block.querySelector('.cp'), pre = block.querySelector('pre');
+    if(!btn || !pre) return;
+    btn.addEventListener('click', function(){
+      var text = pre.innerText;
+      var done = function(){ btn.textContent='Copied'; btn.classList.add('ok'); setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('ok'); }, 1400); };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done).catch(function(){ fallback(text); done(); });
+      } else { fallback(text); done(); }
+    });
+  });
+  function fallback(text){
+    var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }catch(e){}
+    document.body.removeChild(ta);
+  }
+</script>
+</body>
+</html>
