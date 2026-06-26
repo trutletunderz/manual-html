@@ -544,7 +544,7 @@
   <!-- ============ MAIN ============ -->
   <main>
     <div class="hero">
-      <div class="hero-eyebrow">REFERENCE GUIDE / สำหรับ Claude · Gemini · Hermes Agent · Pedpro</div>
+      <div class="hero-eyebrow">REFERENCE GUIDE / สำหรับ Claude · Gemini · Hermes Agent · xFish</div>
       <h1>40 Prompt Patterns<br>ที่ <span class="accent">Thai Dev</span> ควรรู้</h1>
       <p>โครง prompt เป็นอังกฤษเพราะ model เข้าใจ pattern พวกนี้แม่นกว่า — แต่เนื้อหาและคำตอบยังเป็นภาษาไทยได้ ไม่ต้องเขียนอังกฤษคล่อง</p>
       <div class="principle">
@@ -606,11 +606,11 @@
 
       <div class="example">
         <div class="example-head">
-          <span class="label"><span class="dot"></span>ตัวอย่างใช้กับ Pedpro</span>
+          <span class="label"><span class="dot"></span>ตัวอย่างใช้กับ xFish</span>
           <button class="example-copy">copy</button>
         </div>
         <pre><code><span class="tok-en">Act as a senior Vue 3.5 engineer. Review this Pinia store for
-Pedpro conventions (no semicolons, double quotes, res?.Result pattern).</span>
+xFish conventions (no semicolons, double quotes, res?.Result pattern).</span>
 
 <span class="tok-tag">&lt;store&gt;</span>
 <span class="tok-dim">[paste code]</span>
@@ -818,7 +818,7 @@ Criticize this approach. What's wrong with it? Play devil's advocate.</span>
         <span class="cat-num">06</span>
         <h2>ขอบเขตและข้อจำกัด · Constraints</h2>
       </div>
-      <p class="section-desc">กัน model ทำเกินขอบเขต — สำคัญมากกับ Pedpro ที่มี convention เยอะ</p>
+      <p class="section-desc">กัน model ทำเกินขอบเขต — สำคัญมากกับ xFish ที่มี convention เยอะ</p>
 
       <div class="pattern"><div class="pattern-num">25</div><div class="pattern-body">
         <div class="code-row"><code>Do NOT add dependencies. Use only what's already imported.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
@@ -842,7 +842,7 @@ Criticize this approach. What's wrong with it? Play devil's advocate.</span>
 
       <div class="pattern"><div class="pattern-num">29</div><div class="pattern-body">
         <div class="code-row"><code>Use Tailwind core utilities only — no arbitrary values.</code><button class="copy-btn" aria-label="คัดลอก">copy</button></div>
-        <div class="pattern-when">คุม Pedpro rule</div>
+        <div class="pattern-when">คุม xFish rule</div>
       </div></div>
 
       <div class="pattern"><div class="pattern-num">30</div><div class="pattern-body">
@@ -852,7 +852,7 @@ Criticize this approach. What's wrong with it? Play devil's advocate.</span>
 
       <div class="example">
         <div class="example-head">
-          <span class="label"><span class="dot"></span>ตัวอย่างรวมหลาย constraint (Pedpro-ready)</span>
+          <span class="label"><span class="dot"></span>ตัวอย่างรวมหลาย constraint (xFish-ready)</span>
           <button class="example-copy">copy</button>
         </div>
         <pre><code><span class="tok-en">Fix the type error in this component.
@@ -934,7 +934,7 @@ Constraints:
           <span class="label"><span class="dot"></span>ตัวอย่าง — Plan Review Gate (OpenClaw-style)</span>
           <button class="example-copy">copy</button>
         </div>
-        <pre><code><span class="tok-en">You are implementing a Pedpro feature. Follow this protocol strictly:
+        <pre><code><span class="tok-en">You are implementing a xFish feature. Follow this protocol strictly:
 
 1. Break the task into a numbered plan
 2. State confidence (1-10) and what could go wrong
@@ -993,7 +993,7 @@ If a step fails, stop and report — do not work around it.</span>
 
         <div class="builder-field">
           <label for="b-constraints"><span class="bk">CONSTRAINTS</span> ห้ามอะไร — ขึ้นบรรทัดใหม่ = constraint ละข้อ</label>
-          <textarea id="b-constraints" rows="3" placeholder="Only change what's needed&#10;Do NOT add dependencies&#10;Use Pedpro conventions (no semicolon, double quotes)"></textarea>
+          <textarea id="b-constraints" rows="3" placeholder="Only change what's needed&#10;Do NOT add dependencies&#10;Use xFish conventions (no semicolon, double quotes)"></textarea>
           <div class="chips" data-target="b-constraints" data-mode="append">
             <button class="chip">Only change what I asked. Don't refactor anything else.</button>
             <button class="chip">Do NOT add dependencies.</button>
@@ -1051,7 +1051,7 @@ If a step fails, stop and report — do not work around it.</span>
         </div>
         <pre><code><span class="tok-dim">[ROLE]</span>        <span class="tok-en">Act as a senior Vue engineer.</span>
 <span class="tok-dim">[TASK]</span>        <span class="tok-th">ช่วยรีวิว component นี้ โฟกัสที่ accessibility</span>
-<span class="tok-dim">[CONSTRAINTS]</span> <span class="tok-en">Only flag real issues. Use Pedpro conventions.</span>
+<span class="tok-dim">[CONSTRAINTS]</span> <span class="tok-en">Only flag real issues. Use xFish conventions.</span>
 <span class="tok-dim">[FORMAT]</span>      <span class="tok-th">ตอบเป็นตารางภาษาไทย เรียงตามความรุนแรง</span>
 
 <span class="tok-tag">&lt;component&gt;</span>
@@ -1071,14 +1071,14 @@ If a step fails, stop and report — do not work around it.</span>
           <li>โครงเป็นอังกฤษ เนื้อเป็นไทยได้ — model เข้าใจ pattern อังกฤษแม่นกว่า แต่ไม่บังคับให้คุณเขียนเนื้อหาเป็นอังกฤษ</li>
           <li>ปิดท้ายด้วย <code>ตอบเป็นภาษาไทย</code> เสมอถ้า prompt ส่วนใหญ่เป็นอังกฤษ ไม่งั้น model จะตอบอังกฤษ</li>
           <li>XML tags เช่น <code>&lt;component&gt;...&lt;/component&gt;</code> ช่วยมาก — แยก instruction ออกจาก data ชัดเจน ลดความสับสน</li>
-          <li>ยิ่งให้ constraint ชัด ยิ่งได้ผลตรง โดยเฉพาะกับ Pedpro ที่มี convention เยอะ</li>
+          <li>ยิ่งให้ constraint ชัด ยิ่งได้ผลตรง โดยเฉพาะกับ xFish ที่มี convention เยอะ</li>
           <li>few-shot (หมวด 04) คือตัวแก้ปัญหา "Sonnet ทำผิด convention" — ชี้ไปหน้าเดิมที่ถูกต้อง ดีกว่าอธิบาย rule ยาว ๆ</li>
         </ol>
       </div>
     </section>
 
     <footer>
-      // prompt-patterns reference · TH/EN · v1.0 · ใช้กับ Claude · Gemini · Hermes Agent · Pedpro
+      // prompt-patterns reference · TH/EN · v1.0 · ใช้กับ Claude · Gemini · Hermes Agent · xFish
     </footer>
   </main>
 </div>

@@ -116,7 +116,7 @@ pre{background:#050709;border:1px solid var(--border);border-radius:7px;padding:
 
 <!-- HERO -->
 <section style="padding:60px 0 44px"><div class="wrap">
-  <span class="eyebrow" style="color:#7c3aed">Addy Osmani · Boris Cherny · Pedpro Edition · 2026</span>
+  <span class="eyebrow" style="color:#7c3aed">Addy Osmani · Boris Cherny · xFish Edition · 2026</span>
   <h1>Loop<br><span style="color:#7c3aed">Engineering</span></h1>
   <p class="th-desc" style="max-width:560px;margin-top:14px;font-size:15px">
     วิศวกรรมลูป — การออกแบบระบบที่สั่ง AI agent แทนตัวคุณเอง
@@ -272,7 +272,7 @@ pre{background:#050709;border:1px solid var(--border);border-radius:7px;padding:
       <p class="th-desc tx">ทำงานตามเวลาที่กำหนดไว้ล่วงหน้า เช่น "ทุก 5 นาที" หรือ "ทุกเช้า 8 โมง"
       ไม่รอ human สั่ง ระบบตื่นเองตามตาราง</p>
       <div class="en-note mt8">Fires at fixed times regardless of what's happening. Good for polling and routine checks.</div>
-      <div class="pb"><strong>Pedpro:</strong> <span class="ic">cron */5 * * * *</span> → ดึง YouTrack sprint board ทุก 5 นาที</div>
+      <div class="pb"><strong>xFish:</strong> <span class="ic">cron */5 * * * *</span> → ดึง YouTrack sprint board ทุก 5 นาที</div>
     </div>
     <div class="card">
       <div style="font-size:20px;margin-bottom:8px">&#x26A1;</div>
@@ -281,7 +281,7 @@ pre{background:#050709;border:1px solid var(--border);border-radius:7px;padding:
       <p class="th-desc tx">ทำงานเมื่อมีเหตุการณ์เข้ามา — ตอบสนองทันทีโดยไม่ต้อง poll
       เช่น เมื่อ user กด /approve ใน Telegram ระบบทำงานต่อทันที</p>
       <div class="en-note mt8">Reactive, not polling. More efficient than schedule for infrequent events.</div>
-      <div class="pb"><strong>Pedpro:</strong> Telegram <span class="ic">/approve</span> → spec เปลี่ยน state เป็น ready_for_code ทันที</div>
+      <div class="pb"><strong>xFish:</strong> Telegram <span class="ic">/approve</span> → spec เปลี่ยน state เป็น ready_for_code ทันที</div>
     </div>
     <div class="card">
       <div style="font-size:20px;margin-bottom:8px">&#x1F500;</div>
@@ -290,7 +290,7 @@ pre{background:#050709;border:1px solid var(--border);border-radius:7px;padding:
       <p class="th-desc tx">ทำงานเมื่อ "เงื่อนไข" เป็นจริง เฝ้าดู state แล้วยิงเมื่อถึงเวลา
       เช่น "ถ้า ticket มี status = ReadyForAgent ให้ agent claim"</p>
       <div class="en-note mt8">Polls a condition and acts when it becomes true. Good for state-based triggers.</div>
-      <div class="pb"><strong>Pedpro:</strong> YouTrack status = 'ReadyForAgent' → heartbeat claim ticket อัตโนมัติ</div>
+      <div class="pb"><strong>xFish:</strong> YouTrack status = 'ReadyForAgent' → heartbeat claim ticket อัตโนมัติ</div>
     </div>
   </div>
 
@@ -343,12 +343,12 @@ await youtrack.updateIssue(task.id, {
   </div>
 
   <div class="card mb12" style="border-color:rgba(34,197,94,.2)">
-    <div style="font-family:var(--mono);font-size:9px;color:#22c55e;margin-bottom:8px;text-transform:uppercase">Convention สำหรับ Pedpro — โครงสร้าง directory</div>
-    <pre>~/pedpro/              &#x2190; main repo  (human only — agents ห้ามแตะ!)
-~/pedpro-wt/           &#x2190; worktree root
-  feat/PEDPRO-142/     &#x2190; agent A ทำ BotLine UI (branch: feat/PEDPRO-142)
-  feat/PEDPRO-143/     &#x2190; agent B ทำ BotLine API (branch: feat/PEDPRO-143)
-  fix/PEDPRO-139/      &#x2190; agent C แก้ Auth bug (branch: fix/PEDPRO-139)
+    <div style="font-family:var(--mono);font-size:9px;color:#22c55e;margin-bottom:8px;text-transform:uppercase">Convention สำหรับ xFish — โครงสร้าง directory</div>
+    <pre>~/xfish/              &#x2190; main repo  (human only — agents ห้ามแตะ!)
+~/xfish-wt/           &#x2190; worktree root
+  feat/xFish-142/     &#x2190; agent A ทำ BotLine UI (branch: feat/xFish-142)
+  feat/xFish-143/     &#x2190; agent B ทำ BotLine API (branch: feat/xFish-143)
+  fix/xFish-139/      &#x2190; agent C แก้ Auth bug (branch: fix/xFish-139)
 # แต่ละ worktree คือห้องทำงานแยกกัน — ไฟล์ไม่ปนกัน</pre>
   </div>
 
@@ -399,12 +399,12 @@ await youtrack.updateIssue(task.id, {
     </div>
   </div>
 
-  <div class="divider"><span>Pedpro Skill Inventory — รายการ skills ที่มีและควรสร้าง</span></div>
+  <div class="divider"><span>xFish Skill Inventory — รายการ skills ที่มีและควรสร้าง</span></div>
   <div class="g2 mb12">
     <div class="card" style="border-color:rgba(59,130,246,.2)">
       <div style="font-family:var(--mono);font-size:9px;color:#3b82f6;margin-bottom:8px;text-transform:uppercase">Built — สร้างแล้ว พร้อมใช้</div>
       <div class="fl fj gap6">
-        <div><span class="ic">pedpro-architect.md</span> <span style="color:var(--text4);font-size:10px">→ Opus · วางแผน architecture</span></div>
+        <div><span class="ic">xfish-architect.md</span> <span style="color:var(--text4);font-size:10px">→ Opus · วางแผน architecture</span></div>
         <div><span class="ic">typescript-reviewer.md</span> <span style="color:var(--text4);font-size:10px">→ Sonnet · review โค้ด</span></div>
         <div><span class="ic">bruno-spec-lookup.md</span> <span style="color:var(--text4);font-size:10px">→ Haiku · หา API spec</span></div>
         <div><span class="ic">build-error-resolver.md</span> <span style="color:var(--text4);font-size:10px">→ Sonnet · แก้ build error</span></div>
@@ -414,8 +414,8 @@ await youtrack.updateIssue(task.id, {
       <div style="font-family:var(--mono);font-size:9px;color:#a78bfa;margin-bottom:8px;text-transform:uppercase">TODO — ยังต้องสร้าง</div>
       <div class="fl fj gap6">
         <div><span class="ic">bruno-contract.md</span> <span style="color:var(--text4);font-size:10px">→ enforce ก่อน modify endpoint</span></div>
-        <div><span class="ic">pedpro-tdd.md</span> <span style="color:var(--text4);font-size:10px">→ Nuxt test patterns</span></div>
-        <div><span class="ic">/scrutinize</span> <span style="color:var(--text4);font-size:10px">→ 9arm-skills (ดัดแปลงสำหรับ Pedpro)</span></div>
+        <div><span class="ic">xfish-tdd.md</span> <span style="color:var(--text4);font-size:10px">→ Nuxt test patterns</span></div>
+        <div><span class="ic">/scrutinize</span> <span style="color:var(--text4);font-size:10px">→ 9arm-skills (ดัดแปลงสำหรับ xFish)</span></div>
         <div><span class="ic">/grill-with-docs</span> <span style="color:var(--text4);font-size:10px">→ mattpocock/skills</span></div>
       </div>
     </div>
@@ -451,7 +451,7 @@ await youtrack.updateIssue(task.id, {
       <p class="th-desc tx mb8">มาตรฐานกลางที่ Anthropic กำหนด — agent พูดคุยกับ service โดยตรงผ่าน tool calls
       schema-typed ทำให้ไม่ต้อง parse response เอง รองรับ bidirectional (service ส่ง event กลับได้)</p>
       <div class="en-note">Best when the service has an MCP server (YouTrack 2025.3+, GitHub, etc.)</div>
-      <div class="pb"><strong>Pedpro:</strong> YouTrack MCP — agent ดึง/อัปเดต ticket โดยตรงโดยไม่ต้อง paste ticket ID</div>
+      <div class="pb"><strong>xFish:</strong> YouTrack MCP — agent ดึง/อัปเดต ticket โดยตรงโดยไม่ต้อง paste ticket ID</div>
     </div>
     <div class="card" style="border-color:rgba(34,197,94,.3)">
       <div class="fw6 mb4" style="color:#22c55e">&#x1F310; REST / Webhook</div>
@@ -459,7 +459,7 @@ await youtrack.updateIssue(task.id, {
       <p class="th-desc tx mb8">HTTP call ธรรมดา — agent เรียก fetch() หรือ curl ไปหา API
       ใช้ได้กับ service ทุกตัวที่มี HTTP API flexible แต่ต้อง parse response เอง</p>
       <div class="en-note">Use when no MCP server exists. More work but works with any HTTP API.</div>
-      <div class="pb"><strong>Pedpro:</strong> Telegram Bot API — curl ตรงไปหา Bot API ส่ง notification</div>
+      <div class="pb"><strong>xFish:</strong> Telegram Bot API — curl ตรงไปหา Bot API ส่ง notification</div>
     </div>
     <div class="card" style="border-color:rgba(245,158,11,.3)">
       <div class="fw6 mb4" style="color:#f59e0b">&#x2699; Deterministic Layer</div>
@@ -467,11 +467,11 @@ await youtrack.updateIssue(task.id, {
       <p class="th-desc tx mb8">code ธรรมดา (if/switch) ทำ routing ระหว่าง connectors
       predictable 100% ไม่มีโอกาส hallucinate routing decision ทำงานเร็ว ไม่เสีย token</p>
       <div class="en-note">This layer MUST be deterministic code, never LLM. LLM routing = unpredictable.</div>
-      <div class="pb"><strong>Pedpro:</strong> heartbeat.mjs — if/switch routing ตาม ticket type ไม่ใช่ LLM ตัดสินใจ</div>
+      <div class="pb"><strong>xFish:</strong> heartbeat.mjs — if/switch routing ตาม ticket type ไม่ใช่ LLM ตัดสินใจ</div>
     </div>
   </div>
 
-  <div class="divider"><span>Pedpro Connector Stack — หน้าที่ของแต่ละ connector</span></div>
+  <div class="divider"><span>xFish Connector Stack — หน้าที่ของแต่ละ connector</span></div>
   <div class="fl fj gap6 mb12">
     <div class="fl fia gap10 card" style="padding:12px 14px">
       <span style="font-family:var(--mono);font-size:10px;color:#3b82f6;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);padding:3px 8px;border-radius:4px;flex-shrink:0;min-width:80px;text-align:center">YouTrack</span>
@@ -527,7 +527,7 @@ await youtrack.updateIssue(task.id, {
     </div>
   </div>
 
-  <div class="divider"><span>5 Agent Roles ใน Pedpro — บทบาทและขอบเขต</span></div>
+  <div class="divider"><span>5 Agent Roles ใน xFish — บทบาทและขอบเขต</span></div>
   <div class="fl fj gap6 mb12">
     <div class="card" style="border-color:rgba(59,130,246,.2)">
       <div class="fl fia gap10">
@@ -537,7 +537,7 @@ await youtrack.updateIssue(task.id, {
           <p class="th-desc tx mt4">implement งานตาม spec · เขียนโค้ด แก้ไข สร้างไฟล์
           <strong>ห้าม</strong> commit/push/PR โดยตรง — ต้องผ่าน reviewer ก่อนเสมอ</p>
         </div>
-        <span style="font-family:var(--mono);font-size:9px;color:var(--text4);flex-shrink:0">pedpro-worker</span>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text4);flex-shrink:0">xfish-worker</span>
       </div>
     </div>
     <div class="card" style="border-color:rgba(167,139,250,.2)">
@@ -559,7 +559,7 @@ await youtrack.updateIssue(task.id, {
           <p class="th-desc tx mt4">decompose ticket ใหญ่ · ออกแบบ Pinia store · ตัดสินใจ architecture · เขียน ADR
           <strong>escalation target</strong> — เรียกใช้เมื่อ task ซับซ้อน ไม่ใช่ default agent</p>
         </div>
-        <span style="font-family:var(--mono);font-size:9px;color:var(--text4);flex-shrink:0">pedpro-architect</span>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text4);flex-shrink:0">xfish-architect</span>
       </div>
     </div>
     <div class="card" style="border-color:rgba(34,197,94,.2)">
@@ -655,7 +655,7 @@ await youtrack.updateIssue(task.id, {
   <span class="eyebrow" style="color:#a78bfa">ส่วนที่ 3 — Addy Osmani Extended</span>
   <h2>&#x1F4D6; 7 สิ่งที่ Missing จากซีรีส์</h2>
   <p class="th-desc mb8">Addy Osmani เขียนบทความ 3 ชิ้นที่ครอบคลุมรายละเอียดที่ deeper กว่า 6 building blocks
-  มีหลายเรื่องที่ loop ส่วนใหญ่พลาด และเมื่อนำมาใช้กับ Pedpro จะทำให้ระบบแน่นขึ้นมาก</p>
+  มีหลายเรื่องที่ loop ส่วนใหญ่พลาด และเมื่อนำมาใช้กับ xFish จะทำให้ระบบแน่นขึ้นมาก</p>
   <p style="font-size:11px;color:var(--text4);margin-bottom:28px">Sources: addyo.substack.com/p/loop-engineering · addyo.substack.com/p/long-running-agents · addyosmani.com/blog/agent-harness-engineering</p>
 
   <!-- 01 /goal vs /loop -->
@@ -669,10 +669,10 @@ await youtrack.updateIssue(task.id, {
     <div class="quote mb12">"/goal keeps going until a condition you wrote is actually true, and after every turn a separate small model checks whether you are done, so the agent that wrote the code isn't the one grading it."
     <div class="th-trans">แปล: /goal ทำงานต่อจนกว่า condition ที่คุณเขียนจะเป็นจริง และหลังทุก turn มี model ตัวเล็กแยกต่างหากมาตรวจว่าเสร็จหรือยัง ทำให้ agent ที่เขียนโค้ดไม่ใช่คนตัดสินตัวเอง</div></div>
     <div class="g2 mb10">
-      <div class="card" style="border-color:rgba(59,130,246,.2)"><div class="fw6 mb4" style="color:#3b82f6;font-size:12px">/loop — รันตาม cadence (จังหวะ)</div><p class="th-desc tx">รันซ้ำตาม schedule ที่กำหนด เช่น ทุก 5 นาที Pedpro มีอยู่แล้วผ่าน heartbeat.mjs</p></div>
-      <div class="card" style="border-color:rgba(167,139,250,.2)"><div class="fw6 mb4" style="color:#a78bfa;font-size:12px">/goal — รันจนกว่า condition จะจริง</div><p class="th-desc tx">รันต่อจนกว่าจะผ่าน condition ที่กำหนด เช่น "typecheck pass + lint clean + Bruno honored" <strong>Pedpro ยังขาดอยู่</strong></p></div>
+      <div class="card" style="border-color:rgba(59,130,246,.2)"><div class="fw6 mb4" style="color:#3b82f6;font-size:12px">/loop — รันตาม cadence (จังหวะ)</div><p class="th-desc tx">รันซ้ำตาม schedule ที่กำหนด เช่น ทุก 5 นาที xFish มีอยู่แล้วผ่าน heartbeat.mjs</p></div>
+      <div class="card" style="border-color:rgba(167,139,250,.2)"><div class="fw6 mb4" style="color:#a78bfa;font-size:12px">/goal — รันจนกว่า condition จะจริง</div><p class="th-desc tx">รันต่อจนกว่าจะผ่าน condition ที่กำหนด เช่น "typecheck pass + lint clean + Bruno honored" <strong>xFish ยังขาดอยู่</strong></p></div>
     </div>
-    <div class="sw mb10">&#x26A0; <strong>Pedpro gap:</strong> task ทุกอย่างยังจบตาม human approve ผ่าน Telegram ไม่มี machine-verifiable done condition</div>
+    <div class="sw mb10">&#x26A0; <strong>xFish gap:</strong> task ทุกอย่างยังจบตาม human approve ผ่าน Telegram ไม่มี machine-verifiable done condition</div>
     <pre>## done_condition.md — เพิ่มใน .claude/agents/worker.md
 - [ ] npx vue-tsc --noEmit &#x2192; exit 0  (TypeScript ไม่มี error)
 - [ ] npm run lint &#x2192; exit 0             (lint ผ่าน)
@@ -692,7 +692,7 @@ await youtrack.updateIssue(task.id, {
     </div>
     <div class="quote mb12">"The runs that find something go to a Triage inbox, and the runs that find nothing just archive themselves which is nice. OpenAI uses them for daily issue triage, summarizing CI failures, writing commit briefings."
     <div class="th-trans">แปล: รอบที่พบงานไปที่ Triage inbox ส่วนรอบที่ไม่พบอะไรก็ archive ตัวเองซึ่งดีมาก OpenAI ใช้ internally สำหรับงานน่าเบื่อเช่น triage issue รายวัน สรุป CI failure เขียน commit briefing</div></div>
-    <div class="sw mb10">&#x26A0; <strong>Pedpro gap:</strong> heartbeat.mjs ปัจจุบัน idle เงียบๆ เมื่อไม่มี ticket ไม่มี structured output ทำให้ไม่รู้ว่า loop ทำงานหรือพัง</div>
+    <div class="sw mb10">&#x26A0; <strong>xFish gap:</strong> heartbeat.mjs ปัจจุบัน idle เงียบๆ เมื่อไม่มี ticket ไม่มี structured output ทำให้ไม่รู้ว่า loop ทำงานหรือพัง</div>
     <pre>// heartbeat.mjs — เพิ่ม triage output
 const result = await youtrack.query({ status: 'ReadyForAgent' });
 
@@ -726,7 +726,7 @@ await telegram.notify(`&#x1F4CB; ${queue.length} tickets queued: ${queue.map(t=>
       <div class="card" style="border-color:rgba(34,197,94,.2)"><div class="fw6 mb4" style="color:#22c55e;font-size:11px">&#x2713; With Skill</div><p style="font-size:11px;color:var(--text3)">อ่าน convention จาก skill file — ทำถูกตั้งแต่ turn แรก ไม่ต้อง guess ไม่เสีย token กับ re-derivation</p></div>
       <div class="card" style="border-color:rgba(167,139,250,.2)"><div class="fw6 mb4" style="color:#a78bfa;font-size:11px">&#x1F504; Compounding</div><p style="font-size:11px;color:var(--text3)">skills + Hashimoto rules = agent ฉลาดขึ้นทุก sprint โดยอัตโนมัติ debt ลดทุกรอบ</p></div>
     </div>
-    <div class="si">&#x1F4A1; <strong>Pedpro gap:</strong> ยังขาด <span class="ic">bruno-contract</span> (enforce query Bruno spec ก่อน modify endpoint) และ <span class="ic">pedpro-tdd</span> (Nuxt-specific test patterns)</div>
+    <div class="si">&#x1F4A1; <strong>xFish gap:</strong> ยังขาด <span class="ic">bruno-contract</span> (enforce query Bruno spec ก่อน modify endpoint) และ <span class="ic">xfish-tdd</span> (Nuxt-specific test patterns)</div>
   </div>
 
   <!-- 04 Skill vs Plugin -->
@@ -735,7 +735,7 @@ await telegram.notify(`&#x1F4CB; ${queue.length} tickets queued: ${queue.map(t=>
       <span style="font-size:24px">&#x1F4E6;</span>
       <div><div class="fw6" style="font-size:15px;color:#3b82f6">04 · Skill vs Plugin — รูปแบบ vs วิธีแจกจ่าย</div>
       <p class="th-desc tx mt4">Skill คือวิธีเขียน ใช้ได้ใน repo นี้ · Plugin คือวิธี ship มัน แชร์ข้าม repos
-      ออกแบบ self-contained ตั้งแต่ตอนนี้เพื่อ plugin-ready ในอนาคตเมื่อ Pedpro โตขึ้น</p></div>
+      ออกแบบ self-contained ตั้งแต่ตอนนี้เพื่อ plugin-ready ในอนาคตเมื่อ xFish โตขึ้น</p></div>
     </div>
     <div class="quote mb12">"The skill is the authoring format and a plugin is how you ship it. When you want to share a skill across repos or bundle a few together you package them as a plugin."
     <div class="th-trans">แปล: Skill คือ format ในการเขียน Plugin คือวิธี ship มัน เมื่ออยากแชร์ skill ข้าม repos หรือ bundle หลายอันรวมกัน ก็ package เป็น plugin</div></div>
@@ -746,12 +746,12 @@ await telegram.notify(`&#x1F4CB; ${queue.length} tickets queued: ${queue.map(t=>
     checklist.md    # Vue + Bruno + TypeScript checklist
   bruno-contract/
     SKILL.md
-  pedpro-tdd/
+  xfish-tdd/
     SKILL.md
     nuxt-patterns.md  # Nuxt-specific test patterns
 
 # เมื่อต้องการ share กับ project อื่นในอนาคต:
-# บัดล skills เหล่านี้เป็น plugin "pedpro-skills" ได้เลย</pre>
+# บัดล skills เหล่านี้เป็น plugin "xfish-skills" ได้เลย</pre>
   </div>
 
   <!-- 05 Three Problems -->
@@ -781,7 +781,7 @@ await telegram.notify(`&#x1F4CB; ${queue.length} tickets queued: ${queue.map(t=>
         Addy เรียกว่า "cognitive surrender" — อันตรายที่สุด</p>
       </div>
     </div>
-    <div class="sw">&#x26A0; <strong>Pedpro fix:</strong> ส่ง diff summary ใน Telegram ก่อน /approve ทุกครั้ง (+/- lines, reviewer verdict, should-fix items)
+    <div class="sw">&#x26A0; <strong>xFish fix:</strong> ส่ง diff summary ใน Telegram ก่อน /approve ทุกครั้ง (+/- lines, reviewer verdict, should-fix items)
     เพื่อ<strong>บังคับ</strong> human อ่าน changes จริงๆ ก่อนกด approve</div>
   </div>
 
@@ -800,7 +800,7 @@ await telegram.notify(`&#x1F4CB; ${queue.length} tickets queued: ${queue.map(t=>
       <div class="card" style="border-color:rgba(245,158,11,.2)"><div class="fw6 mb4" style="color:#f59e0b;font-size:12px">Test Ratchet</div><p class="th-desc tx">Anthropic rule: "it is unacceptable to remove or edit tests" ป้องกัน failure mode ที่พบบ่อยที่สุด: agent ลบ test ที่ fail เพื่อให้ CI pass</p></div>
       <div class="card" style="border-color:rgba(59,130,246,.2)"><div class="fw6 mb4" style="color:#3b82f6;font-size:12px">Progress File</div><p class="th-desc tx">claude-progress.txt เขียนก่อน session จบ บอก "ทำถึงไหนแล้ว ยังเหลืออะไร" session ถัดไปอ่านแล้วทำงานต่อได้ทันที</p></div>
     </div>
-    <div class="sw mb10">&#x26A0; <strong>Pedpro gap:</strong> task ใหญ่เช่น BotLine ยังไม่มี progress file convention session หลุดปุ๊บ agent ถัดไปเริ่มใหม่จาก scratch</div>
+    <div class="sw mb10">&#x26A0; <strong>xFish gap:</strong> task ใหญ่เช่น BotLine ยังไม่มี progress file convention session หลุดปุ๊บ agent ถัดไปเริ่มใหม่จาก scratch</div>
     <pre>## เพิ่มใน CLAUDE.md — 2 rules สำคัญ:
 
 # Test Ratchet — ป้องกัน agent ลบ test เพื่อให้ CI pass
@@ -809,7 +809,7 @@ If a test fails, fix the code — not the test.
 
 # Progress File — สำหรับ task ที่ span หลาย session
 Before ending any multi-session task, write claude-progress.txt:
-  Task: PEDPRO-XXX / Completed: [...] / Remaining: [...] / Blockers: [...]</pre>
+  Task: xFish-XXX / Completed: [...] / Remaining: [...] / Blockers: [...]</pre>
   </div>
 
   <!-- 07 Harness Gap -->
@@ -847,7 +847,7 @@ fi</pre>
   </div>
 
   <!-- Priority Table -->
-  <div class="divider"><span>Priority Order — ลำดับการทำสำหรับ Pedpro</span></div>
+  <div class="divider"><span>Priority Order — ลำดับการทำสำหรับ xFish</span></div>
   <div class="fl fj gap8">
     <div class="card" style="border-color:rgba(245,158,11,.2)">
       <div style="font-family:var(--mono);font-size:9px;color:#f59e0b;margin-bottom:10px;text-transform:uppercase">ทำได้เลย — ใช้เวลาไม่กี่ชั่วโมง</div>
@@ -880,7 +880,7 @@ fi</pre>
   <span class="eyebrow" style="color:#22c55e">ส่วนที่ 4</span>
   <h2>&#x1F4D6; Glossary — คำศัพท์ที่ใช้ในคู่มือนี้</h2>
   <p class="th-desc mb24">คำศัพท์เทคนิคทั้งหมดที่ปรากฏใน Loop Engineering — เรียงตามหมวดหมู่
-  แต่ละคำมีคำแปลไทย คำอธิบาย และตัวอย่างใน context ของ Pedpro</p>
+  แต่ละคำมีคำแปลไทย คำอธิบาย และตัวอย่างใน context ของ xFish</p>
 
   <div class="divider"><span>Core Concepts — แนวคิดหลัก</span></div>
   <div class="gloss-grid mb20">
@@ -896,7 +896,7 @@ fi</pre>
       <div class="gloss-cat" style="color:#7c3aed">Core</div>
       <div class="gloss-th">สภาพแวดล้อมของ agent</div>
       <div class="gloss-desc">ทุกสิ่งที่ wrap รอบ model — CLAUDE.md, skills, hooks, tools, sandboxes Harness ที่ดีทำให้ model ธรรมดาทำงานได้ดีกว่า model เก่งที่ไม่มี harness</div>
-      <div class="gloss-example">Pedpro: CLAUDE.md + .claude/agents/ + heartbeat.mjs รวมกัน = harness</div>
+      <div class="gloss-example">xFish: CLAUDE.md + .claude/agents/ + heartbeat.mjs รวมกัน = harness</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-term">Prompt Engineering</div>
@@ -910,21 +910,21 @@ fi</pre>
       <div class="gloss-cat" style="color:#2dd4bf">Level 2</div>
       <div class="gloss-th">วิศวกรรม Harness</div>
       <div class="gloss-desc">การออกแบบ "สภาพแวดล้อม" ที่ agent อาศัยอยู่ agent ฉลาดขึ้นมาก แต่คนยังต้อง trigger เอง ทำงานทีละ task</div>
-      <div class="gloss-example">การเขียน CLAUDE.md, skills, hooks สำหรับ Pedpro คือ harness engineering</div>
+      <div class="gloss-example">การเขียน CLAUDE.md, skills, hooks สำหรับ xFish คือ harness engineering</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-term">Agent Amnesia</div>
       <div class="gloss-cat" style="color:#f87171">Problem</div>
       <div class="gloss-th">ความจำสูญหายของ agent</div>
       <div class="gloss-desc">ปัญหาพื้นฐาน: ทุก conversation เริ่มใหม่ agent ไม่รู้ว่าเมื่อวานทำอะไรไป ต้องแก้ด้วย external state</div>
-      <div class="gloss-example">agent ถามว่า "PEDPRO-142 คืออะไร" ทั้งที่เพิ่งทำ task นั้นเสร็จในรอบก่อน</div>
+      <div class="gloss-example">agent ถามว่า "xFish-142 คืออะไร" ทั้งที่เพิ่งทำ task นั้นเสร็จในรอบก่อน</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-term">Intent Debt</div>
       <div class="gloss-cat" style="color:#22c55e">Concept</div>
       <div class="gloss-th">หนี้ของ intent ที่ไม่เขียนไว้</div>
       <div class="gloss-desc">สะสมขึ้นทุกครั้งที่ agent ต้อง "เดา" convention แทนที่จะอ่านจาก skill — ยิ่งมาก ยิ่งเสีย token และ hallucinate มากขึ้น</div>
-      <div class="gloss-example">agent เดาว่า import path คือ @/components แต่จริงๆ Pedpro ใช้ page-local explicit import</div>
+      <div class="gloss-example">agent เดาว่า import path คือ @/components แต่จริงๆ xFish ใช้ page-local explicit import</div>
     </div>
   </div>
 
@@ -935,14 +935,14 @@ fi</pre>
       <div class="gloss-cat" style="color:#f59e0b">Block 01</div>
       <div class="gloss-th">ระบบอัตโนมัติ / heartbeat</div>
       <div class="gloss-desc">กลไกที่ทำให้ loop ตื่นขึ้นมาทำงานโดยไม่ต้องรอคนสั่ง มี 3 แบบ: schedule, event, condition</div>
-      <div class="gloss-example">Pedpro: cron ทุก 5 นาที ดึง YouTrack ticket เหมือนหัวใจที่เต้นตาม rhythm</div>
+      <div class="gloss-example">xFish: cron ทุก 5 นาที ดึง YouTrack ticket เหมือนหัวใจที่เต้นตาม rhythm</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-term">Worktree</div>
       <div class="gloss-cat" style="color:#22c55e">Block 02</div>
       <div class="gloss-th">พื้นที่ทำงานแยกกัน</div>
       <div class="gloss-desc">Git feature ที่สร้าง working directory แยกบน branch ต่างกัน ทำให้ agent หลายตัวทำงานพร้อมกันโดยไม่ conflict ไฟล์</div>
-      <div class="gloss-example">agent A อยู่ใน ~/pedpro-wt/feat/PEDPRO-142 agent B อยู่ใน ~/pedpro-wt/feat/PEDPRO-143</div>
+      <div class="gloss-example">agent A อยู่ใน ~/xfish-wt/feat/xFish-142 agent B อยู่ใน ~/xfish-wt/feat/xFish-143</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-term">Skill</div>
@@ -988,7 +988,7 @@ fi</pre>
       <div class="gloss-cat" style="color:#f87171">Bug Pattern</div>
       <div class="gloss-th">การแย่งทรัพยากรพร้อมกัน</div>
       <div class="gloss-desc">เกิดเมื่อ agent 2 ตัวพยายาม claim/modify สิ่งเดียวกันพร้อมกัน ป้องกันด้วย Claim step ก่อน dispatch</div>
-      <div class="gloss-example">agent A และ B ทั้งคู่ claim PEDPRO-142 → เกิด race condition</div>
+      <div class="gloss-example">agent A และ B ทั้งคู่ claim xFish-142 → เกิด race condition</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-term">Hallucination</div>
@@ -1023,7 +1023,7 @@ fi</pre>
       <div class="gloss-cat" style="color:#a78bfa">Documentation</div>
       <div class="gloss-th">Architecture Decision Record</div>
       <div class="gloss-desc">บันทึก "ทำไมถึงตัดสินใจแบบนี้" สำหรับ architecture decisions สำคัญ ป้องกัน agent หรือคนตั้งคำถามซ้ำหรือ reverse decisions</div>
-      <div class="gloss-example">docs/adr/001-flat-directory.md อธิบายว่าทำไม Pedpro ใช้ flat directory ไม่ใช่ Nuxt default</div>
+      <div class="gloss-example">docs/adr/001-flat-directory.md อธิบายว่าทำไม xFish ใช้ flat directory ไม่ใช่ Nuxt default</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-term">Deterministic</div>
@@ -1041,14 +1041,14 @@ fi</pre>
       <div class="gloss-cat" style="color:#f59e0b">Pattern</div>
       <div class="gloss-th">กล่องข้อความ triage</div>
       <div class="gloss-desc">pattern ที่ automation runs ที่พบงานส่ง result ไปที่ inbox สำหรับ human รอ ส่วน runs ที่ไม่พบอะไรก็ archive ตัวเอง ทำให้ human เห็นแค่สิ่งที่ต้องทำ</div>
-      <div class="gloss-example">Pedpro: heartbeat พบ 3 tickets → notify Telegram "3 tickets queued" | ไม่พบ → log "no-work"</div>
+      <div class="gloss-example">xFish: heartbeat พบ 3 tickets → notify Telegram "3 tickets queued" | ไม่พบ → log "no-work"</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-term">Ralph Loop</div>
       <div class="gloss-cat" style="color:#22c55e">Pattern</div>
       <div class="gloss-th">วงจร Ralph / loop ที่ไม่ยอมให้หยุด</div>
       <div class="gloss-desc">pattern สำหรับ long-running agents: loop ที่ intercept "done" claim ของ agent แล้ว re-inject prompt ใน fresh context พร้อม state จาก disk บังคับให้ทำต่อ</div>
-      <div class="gloss-example">agent บอก "PEDPRO-142 เสร็จแล้ว" → checker พบ typecheck fail → ralph loop เตะกลับ "ยังไม่เสร็จ แก้ด้วย"</div>
+      <div class="gloss-example">agent บอก "xFish-142 เสร็จแล้ว" → checker พบ typecheck fail → ralph loop เตะกลับ "ยังไม่เสร็จ แก้ด้วย"</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-term">Test Ratchet</div>
@@ -1080,27 +1080,27 @@ fi</pre>
     </div>
   </div>
 
-  <div class="divider"><span>Pedpro-specific Terms — คำศัพท์เฉพาะ Pedpro</span></div>
+  <div class="divider"><span>xFish-specific Terms — คำศัพท์เฉพาะ xFish</span></div>
   <div class="gloss-grid">
     <div class="gloss-card">
       <div class="gloss-term">Bruno Spec</div>
-      <div class="gloss-cat" style="color:#3b82f6">Pedpro</div>
-      <div class="gloss-th">API spec ของ Pedpro</div>
+      <div class="gloss-cat" style="color:#3b82f6">xFish</div>
+      <div class="gloss-th">API spec ของ xFish</div>
       <div class="gloss-desc">ไฟล์ .bru ใน bruno-api/ directory คือ source of truth ของ API contract ทุกครั้งที่แก้ endpoint ต้อง consult Bruno spec ก่อนเสมอ</div>
       <div class="gloss-example">bruno-api/botline/create-bot.bru บอก request schema และ response schema ของ endpoint</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-term">Flat Directory Structure</div>
-      <div class="gloss-cat" style="color:#3b82f6">Pedpro</div>
+      <div class="gloss-cat" style="color:#3b82f6">xFish</div>
       <div class="gloss-th">โครงสร้าง directory แบบแบน</div>
-      <div class="gloss-desc">Pedpro ใช้ flat structure ที่ root (ไม่ใช่ Nuxt 4 default app/ layout) ~/และ @/ aliases ชี้ที่ project root page-local components ต้อง import explicit</div>
+      <div class="gloss-desc">xFish ใช้ flat structure ที่ root (ไม่ใช่ Nuxt 4 default app/ layout) ~/และ @/ aliases ชี้ที่ project root page-local components ต้อง import explicit</div>
       <div class="gloss-example">import BotCard from './components/BotCard.vue' (ไม่ใช่ @/components/BotCard)</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-term">YouTrack MCP</div>
-      <div class="gloss-cat" style="color:#3b82f6">Pedpro</div>
+      <div class="gloss-cat" style="color:#3b82f6">xFish</div>
       <div class="gloss-th">การเชื่อมต่อ YouTrack ผ่าน MCP</div>
-      <div class="gloss-desc">connector หลักของ Pedpro ทำให้ agent อ่าน/อัปเดต ticket โดยตรง เป็น state owner ของทั้ง loop</div>
+      <div class="gloss-desc">connector หลักของ xFish ทำให้ agent อ่าน/อัปเดต ticket โดยตรง เป็น state owner ของทั้ง loop</div>
       <div class="gloss-example">agent query tickets status='ReadyForAgent' → claim → implement → update status='PendingApproval'</div>
     </div>
     <div class="gloss-card">
@@ -1112,14 +1112,14 @@ fi</pre>
     </div>
     <div class="gloss-card">
       <div class="gloss-term">Hermes Agent</div>
-      <div class="gloss-cat" style="color:#3b82f6">Pedpro</div>
+      <div class="gloss-cat" style="color:#3b82f6">xFish</div>
       <div class="gloss-th">Orchestrator agent</div>
-      <div class="gloss-desc">ชื่อที่ใช้เรียก orchestration layer ใน Pedpro — รัน heartbeat, ต่อ YouTrack MCP, ส่ง Telegram notification และ route งานให้ Claude Code sub-agents</div>
+      <div class="gloss-desc">ชื่อที่ใช้เรียก orchestration layer ใน xFish — รัน heartbeat, ต่อ YouTrack MCP, ส่ง Telegram notification และ route งานให้ Claude Code sub-agents</div>
       <div class="gloss-example">heartbeat.mjs คือ simplified version ของ Hermes Agent pattern</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-term">Spec State Machine</div>
-      <div class="gloss-cat" style="color:#3b82f6">Pedpro</div>
+      <div class="gloss-cat" style="color:#3b82f6">xFish</div>
       <div class="gloss-th">เครื่องสถานะของ spec</div>
       <div class="gloss-desc">วงจรชีวิตของ feature spec ตั้งแต่ draft → revising → approved → ready_for_code หรือ rejected/stale agent จะ implement เมื่อถึง ready_for_code เท่านั้น</div>
       <div class="gloss-example">Telegram /approve → spec state เปลี่ยนจาก approved → ready_for_code → heartbeat pick up</div>
@@ -1144,7 +1144,7 @@ fi</pre>
     "Build the loop. But build it like someone who intends to stay the engineer, not just the person who presses go."
     <div class="th-trans">แปล: สร้าง loop เถอะ แต่สร้างแบบคนที่ตั้งใจจะ stay เป็น engineer ไม่ใช่แค่คนที่กดปุ่ม go</div>
   </div>
-  <p style="font-family:var(--mono);font-size:9px;color:var(--text4);margin-top:32px;letter-spacing:.05em">PEDPRO EDITION · Loop Engineering Complete Guide · Thai Translation Included</p>
+  <p style="font-family:var(--mono);font-size:9px;color:var(--text4);margin-top:32px;letter-spacing:.05em">xFish EDITION · Loop Engineering Complete Guide · Thai Translation Included</p>
 </div></div>
 
 </body></html>

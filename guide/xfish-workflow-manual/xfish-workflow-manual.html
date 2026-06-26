@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pedpro — Agentic Workflow Field Manual</title>
+<title>xFish — Agentic Workflow Field Manual</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -218,7 +218,7 @@
   <button class="toc-toggle" aria-expanded="false" onclick="document.getElementById('toc').classList.toggle('open');this.setAttribute('aria-expanded',document.getElementById('toc').classList.contains('open'))">☰ สารบัญ / Contents</button>
 
   <nav class="toc" id="toc" aria-label="สารบัญ">
-    <div class="toc-brand">PEDPRO<br>Workflow Manual</div>
+    <div class="toc-brand">xFish<br>Workflow Manual</div>
     <div class="toc-sub">agentic field guide · v2</div>
     <a href="#overview"><span class="n">00</span>ภาพรวม &amp; ปรัชญา</a>
     <a href="#patterns"><span class="n">01</span>4 Patterns</a>
@@ -236,8 +236,8 @@
     <div class="inner">
 
       <header class="hero" id="overview">
-        <div class="eyebrow">Agentic Workflow · Pedpro</div>
-        <h1>คู่มือทำงานกับ<br><span class="glow">AI agents</span> สำหรับ Pedpro</h1>
+        <div class="eyebrow">Agentic Workflow · xFish</div>
+        <h1>คู่มือทำงานกับ<br><span class="glow">AI agents</span> สำหรับ xFish</h1>
         <p class="lede">คู่มือเดียวที่เปิดทำตามได้จริง — รวม <b>4 patterns</b> จากวิศวกรชั้นนำ, <b>model routing</b>, agent files, CLAUDE.md ฉบับเต็ม, roadmap 4 สัปดาห์ และ multi-agent architecture ร้อยด้วยเส้นเดียว: <b>คุณตัดสินใจและ verify, agent execute, ทุก failure กลายเป็น harness ที่ดีขึ้น</b></p>
         <dl class="spec">
           <div><dt>Stack</dt><dd>Nuxt 4 · Vue 3.5 · TS strict</dd></div>
@@ -306,7 +306,7 @@
         <table class="tbl">
           <thead><tr><th>Pipeline step</th><th>Model</th><th>Agent</th></tr></thead>
           <tbody>
-            <tr><td>planning / grill-me / HTML plan</td><td><span class="pill opus">Opus</span></td><td><code>pedpro-architect</code></td></tr>
+            <tr><td>planning / grill-me / HTML plan</td><td><span class="pill opus">Opus</span></td><td><code>xfish-architect</code></td></tr>
             <tr><td>Bruno spec lookup</td><td><span class="pill haiku">Haiku</span></td><td><code>bruno-spec-lookup</code></td></tr>
             <tr><td>implement (tdd)</td><td><span class="pill sonnet">Sonnet</span></td><td>parent</td></tr>
             <tr><td>build / type error</td><td><span class="pill sonnet">Sonnet</span></td><td><code>build-error-resolver</code></td></tr>
@@ -319,7 +319,7 @@
 
         <h3>Agent files ทั้ง 5 (วางใน <code>.claude/agents/</code>)</h3>
 
-        <details class="acard"><summary><span style="color:var(--opus)">●</span> <span class="file">pedpro-architect.md</span> <span class="pill opus">Opus</span><span class="arrow">›</span></summary>
+        <details class="acard"><summary><span style="color:var(--opus)">●</span> <span class="file">xfish-architect.md</span> <span class="pill opus">Opus</span><span class="arrow">›</span></summary>
           <div class="body"><p>planning, grill-me, ตัดสินใจสถาปัตยกรรม, ร่าง HTML plan อ่าน CLAUDE.md + Bruno spec + design-system.html ก่อนเสมอ คืน plan ให้ parent เขียนไฟล์</p></div></details>
         <details class="acard"><summary><span style="color:var(--haiku)">●</span> <span class="file">bruno-spec-lookup.md</span> <span class="pill haiku">Haiku</span><span class="arrow">›</span></summary>
           <div class="body"><p>ดึง+สรุป Bruno spec: method/path, request/response shape, error states, nullable fields ตอบจาก spec เท่านั้น หาไม่เจอบอกตรง ๆ ห้ามเดา</p></div></details>
@@ -348,9 +348,9 @@ tools: Read, Grep, Glob   <span class="c-com"># read-only — ไม่มี Ed
 
       <section id="claudemd">
         <div class="sec-head"><span class="sec-num">04</span><h2>CLAUDE.md ฉบับเต็ม</h2></div>
-        <p class="sec-intro">วางที่ root ของ Pedpro เป็น single entry point ที่ทุก session อ่านก่อนเริ่ม กด copy แล้วปรับ seed Lessons เป็นของจริงเมื่อเจอ failure</p>
+        <p class="sec-intro">วางที่ root ของ xFish เป็น single entry point ที่ทุก session อ่านก่อนเริ่ม กด copy แล้วปรับ seed Lessons เป็นของจริงเมื่อเจอ failure</p>
         <div class="console"><div class="bar"><span class="fname">CLAUDE.md</span><button class="copy" onclick="cp(this)">copy ทั้งไฟล์</button></div>
-<pre><code><span class="c-com"># CLAUDE.md — Pedpro</span>
+<pre><code><span class="c-com"># CLAUDE.md — xFish</span>
 <span class="c-com"># Thai-language fantasy gaming portal · อ่านทั้งหมดก่อนเริ่ม</span>
 
 <span class="c-fn">## 1. Hard Rules (ห้ามฝ่าฝืน)</span>
@@ -374,7 +374,7 @@ tools: Read, Grep, Glob   <span class="c-com"># read-only — ไม่มี Ed
 
 <span class="c-fn">## 3. Model Routing (step → tier → agent)</span>
 | step                       | model  | agent               |
-| plan / grill-me / HTML     | opus   | pedpro-architect    |
+| plan / grill-me / HTML     | opus   | xfish-architect    |
 | Bruno spec lookup          | haiku  | bruno-spec-lookup   |
 | implement (tdd)            | sonnet | parent              |
 | build / type error         | sonnet | build-error-resolver|
@@ -394,7 +394,7 @@ Draft → Spec'd → In Progress → Verify Passed → Awaiting Approval → App
 <span class="c-com"># agent ได้สูงสุดถึง Awaiting Approval · Approved/Merged = มนุษย์ · state อยู่ YouTrack</span>
 
 <span class="c-fn">## 7. เริ่มหน้าใหม่ (4 เฟส)</span>
-1. เข้าใจ  — pedpro-architect /grill-me + Bruno spec → plan
+1. เข้าใจ  — xfish-architect /grill-me + Bruno spec → plan
 2. ลงมือ  — tdd ที่ parent: red → green → refactor
 3. ตรวจ   — typescript-reviewer + scrutinize (read-only) → parent apply
 4. ปิด    — verify ผ่าน → Awaiting Approval → ขอ approval → มนุษย์ merge
@@ -456,17 +456,17 @@ Draft → Spec'd → In Progress → Verify Passed → Awaiting Approval → App
         <p>แตก git worktree อิสระต่อ feature แต่ละอันมี Claude Code session ของตัวเอง context ไม่ปนกัน รันขนานได้จริง</p>
         <div class="console"><div class="bar"><span class="fname">shell</span><button class="copy" onclick="cp(this)">copy</button></div>
 <pre><code><span class="c-com"># สร้าง worktree แยกต่อ feature</span>
-git worktree add ../pedpro-gacha  feature/gacha
-git worktree add ../pedpro-notif  feature/notifications
+git worktree add ../xfish-gacha  feature/gacha
+git worktree add ../xfish-notif  feature/notifications
 
 <span class="c-com"># แต่ละ worktree install เอง (pnpm ประหยัด disk ด้วย hard link)</span>
-<span class="c-key">cd</span> ../pedpro-gacha && pnpm install
+<span class="c-key">cd</span> ../xfish-gacha && pnpm install
 npm run verify          <span class="c-com"># ทุก worktree ต้องผ่านก่อน merge</span>
 
 <span class="c-com"># เปิด Claude Code คนละ session ต่อ worktree (ขนานได้)</span>
 <span class="c-com"># เสร็จแล้วเก็บกวาด</span>
 git worktree list
-git worktree remove ../pedpro-gacha</code></pre></div>
+git worktree remove ../xfish-gacha</code></pre></div>
         <div class="note ok"><b>ทิป:</b> ใช้ได้ 2 แบบ — (ก) หลาย feature ขนานจริง (ข) feature เดียวให้ approach ต่างกันแข่งใน worktree คนละอัน แล้วเลือกอันที่ดีกว่า · Bruno sync script ที่มีอยู่จัดการ cross-OS Windows/macOS ให้แล้ว</div>
 
         <h3>2 · YouTrack เป็น state owner</h3>
@@ -493,7 +493,7 @@ git worktree remove ../pedpro-gacha</code></pre></div>
 <span class="c-key">interface</span> Route { agent: string; model: string; canApply: boolean }
 
 <span class="c-key">const</span> TABLE: Record&lt;TaskType, Route&gt; = {
-  <span class="c-str">'plan'</span>:        { agent: <span class="c-str">'pedpro-architect'</span>,     model: <span class="c-str">'opus'</span>,   canApply: <span class="c-num">false</span> },
+  <span class="c-str">'plan'</span>:        { agent: <span class="c-str">'xfish-architect'</span>,     model: <span class="c-str">'opus'</span>,   canApply: <span class="c-num">false</span> },
   <span class="c-str">'spec-lookup'</span>: { agent: <span class="c-str">'bruno-spec-lookup'</span>,    model: <span class="c-str">'haiku'</span>,  canApply: <span class="c-num">false</span> },
   <span class="c-str">'implement'</span>:   { agent: <span class="c-str">'parent'</span>,               model: <span class="c-str">'sonnet'</span>, canApply: <span class="c-num">true</span>  },
   <span class="c-str">'build-fix'</span>:   { agent: <span class="c-str">'build-error-resolver'</span>, model: <span class="c-str">'sonnet'</span>, canApply: <span class="c-num">false</span> },
@@ -535,7 +535,7 @@ git worktree remove ../pedpro-gacha</code></pre></div>
         <div class="sec-head"><span class="sec-num">08</span><h2>Quickstart — เริ่มใน 30 นาที</h2></div>
         <p class="sec-intro">ถ้าจะเริ่มวันนี้ ทำตามนี้ตามลำดับ ไม่ต้องรอครบ 4 สัปดาห์</p>
         <div class="qs">
-          <div class="q"><div class="qc"><h3>วาง CLAUDE.md ที่ root</h3><p>copy จาก section 04 → วางที่ root ของ Pedpro แก้ seed Lessons ทีหลังเมื่อเจอ failure จริง</p></div></div>
+          <div class="q"><div class="qc"><h3>วาง CLAUDE.md ที่ root</h3><p>copy จาก section 04 → วางที่ root ของ xFish แก้ seed Lessons ทีหลังเมื่อเจอ failure จริง</p></div></div>
           <div class="q"><div class="qc"><h3>วาง agent files 5 ตัว</h3><p>ก๊อปไฟล์ที่แนบในแชตลง <code>.claude/agents/</code> (project) หรือ <code>~/.claude/agents/</code> (ทุก project)</p></div></div>
           <div class="q"><div class="qc"><h3>เพิ่ม verify script</h3><p>ใน <code>package.json</code>: <code>"verify": "npm run typecheck &amp;&amp; npm run lint &amp;&amp; npm run test"</code></p></div></div>
           <div class="q"><div class="qc"><h3>ติดตั้ง skills</h3><p><code>npx skills@latest add mattpocock/skills/grill-me tdd</code> + ดึง scrutinize จาก 9arm-skills</p></div></div>
@@ -553,7 +553,7 @@ git worktree remove ../pedpro-gacha</code></pre></div>
           <a href="https://thariqs.github.io/html-effectiveness" target="_blank" rel="noopener"><div class="who">Thariq — HTML plans</div><div class="u">thariqs.github.io/html-effectiveness</div></a>
           <a href="https://github.com/simonw/files-to-prompt" target="_blank" rel="noopener"><div class="who">Simon Willison — files-to-prompt</div><div class="u">github.com/simonw/files-to-prompt</div></a>
         </div>
-        <footer>Pedpro Agentic Workflow Field Manual · v2 · ใช้คู่กับ CLAUDE.md + agent files ที่แนบ</footer>
+        <footer>xFish Agentic Workflow Field Manual · v2 · ใช้คู่กับ CLAUDE.md + agent files ที่แนบ</footer>
       </section>
 
     </div>

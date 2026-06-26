@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OpenClaw × Pedpro — Source Book</title>
+<title>OpenClaw × xFish — Source Book</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -68,7 +68,7 @@
 <div class="wrap">
   <nav class="toc">
     <div class="brand">Source Book</div>
-    <div class="bt">OpenClaw ×<br>Pedpro</div>
+    <div class="bt">OpenClaw ×<br>xFish</div>
     <div class="tg">A · root</div>
 <a href="#f-readme-md">README.md</a>
 <a href="#f-contributing-md">CONTRIBUTING.md</a>
@@ -91,7 +91,7 @@
 <a href="#f-claude-hooks-goal-check-sh">.claude/hooks/goal-check.sh</a>
 <div class="tg">B · .claude/skills</div>
 <a href="#f-claude-skills-bruno-contract-skill-md">.claude/skills/bruno-contract/SKILL.md</a>
-<a href="#f-claude-skills-pedpro-tdd-skill-md">.claude/skills/pedpro-tdd/SKILL.md</a>
+<a href="#f-claude-skills-xfish-tdd-skill-md">.claude/skills/xfish-tdd/SKILL.md</a>
 <div class="tg">C · openclaw (middleware)</div>
 <a href="#f-openclaw-integration-py">openclaw/integration.py</a>
 <a href="#f-openclaw-integration-demo-py">openclaw/integration_demo.py</a>
@@ -127,14 +127,14 @@
     <div class="hero">
       <div class="eyebrow">ทุกไฟล์ · copy ได้ทีละไฟล์</div>
       <h1>ซอร์สครบทั้ง kit ในหน้าเดียว</h1>
-      <p>ทุกไฟล์ใน <code>openclaw-pedpro-kit.zip</code> อยู่ที่นี่หมด กดปุ่ม Copy ที่หัวแต่ละบล็อกแล้วเอาไปวางในไฟล์ตาม path ที่ระบุได้เลย ไม่ต้องแตก zip. โค้ดดึงจากไฟล์จริงที่ผ่าน ruff + mypy + 18 tests แล้ว</p>
+      <p>ทุกไฟล์ใน <code>openclaw-xfish-kit.zip</code> อยู่ที่นี่หมด กดปุ่ม Copy ที่หัวแต่ละบล็อกแล้วเอาไปวางในไฟล์ตาม path ที่ระบุได้เลย ไม่ต้องแตก zip. โค้ดดึงจากไฟล์จริงที่ผ่าน ruff + mypy + 18 tests แล้ว</p>
       <div class="meta"><b>45</b> ไฟล์ · จัดกลุ่มตาม path · ปุ่ม Copy ต่อไฟล์</div>
     </div>
     <h2 class="grp" id="g-a-root">A · root</h2>
-<div class="code" id="f-readme-md"><div class="bar"><span class="fn"><span class="tag">markdown</span>README.md<span class="by">14746 B</span></span><button class="cp">Copy</button></div><pre># OpenClaw × Pedpro — Agentic Workflow Kit
+<div class="code" id="f-readme-md"><div class="bar"><span class="fn"><span class="tag">markdown</span>README.md<span class="by">14746 B</span></span><button class="cp">Copy</button></div><pre># OpenClaw × xFish — Agentic Workflow Kit
 
 ไฟล์จริงทั้งหมดจากซีรีส์ handbook 4 พาร์ท วางลง repo ได้เลย
-(`.claude/` ลงที่ root ของ Pedpro, `openclaw/` เป็น middleware แยก).
+(`.claude/` ลงที่ root ของ xFish, `openclaw/` เป็น middleware แยก).
 
 ทุกไฟล์ใน `openclaw/` เป็น **reference scaffold** — เชื่อมกับระบบจริงผ่าน
 `openclaw/integration.py` (จุดที่ raise NotImplementedError คือสิ่งที่ต้อง wire เอง).
@@ -207,10 +207,10 @@ just verify    # ตรวจ bash/json/python syntax
 
 ```
 docker build -t openclaw .
-docker run --rm --env-file .env -v /path/to/pedpro:/app/pedpro openclaw
+docker run --rm --env-file .env -v /path/to/xfish:/app/xfish openclaw
 ```
 
-mount repo Pedpro เข้าไป; worktrees จะถูกสร้างใต้ `OPENCLAW_WORKTREE_BASE`.
+mount repo xFish เข้าไป; worktrees จะถูกสร้างใต้ `OPENCLAW_WORKTREE_BASE`.
 
 ### ปิดลูปอนุมัติ (inbound)
 
@@ -251,7 +251,7 @@ YouTrack optimistic-verify claim (จำลอง race ด้วย httpx mock �
 │   │   └── goal-check.sh             # P2 §05 — Stop: ปิดลูปเมื่อ acceptance เขียวหมด
 │   └── skills/
 │       ├── bruno-contract/SKILL.md   # P2 §02 — ห้ามเดา field, อ่าน .bru ก่อน
-│       └── pedpro-tdd/SKILL.md       # P2 §03 — test-first
+│       └── xfish-tdd/SKILL.md       # P2 §03 — test-first
 └── openclaw/                         # middleware (deterministic, ไม่ใช่ LLM)
     ├── integration.py                # ★ จุดเชื่อมระบบจริง — เริ่มที่นี่
     ├── integration_demo.py           # local fakes สำหรับ OPENCLAW_MODE=demo
@@ -302,7 +302,7 @@ YouTrack optimistic-verify claim (จำลอง race ด้วย httpx mock �
    รัน `/hooks` ใน Claude Code เพื่อยืนยันว่าโหลดแล้ว.
 
 2. **วันถัดมา — ลด error**
-   วาง 2 skills (`bruno-contract`, `pedpro-tdd`). ปรับ path collection `.bru`.
+   วาง 2 skills (`bruno-contract`, `xfish-tdd`). ปรับ path collection `.bru`.
 
 3. **ทำลูปจริง**
    `/goal` + `goal.json` + `progress.txt` + `load-context.sh` + `goal-check.sh`.
@@ -355,7 +355,7 @@ hooks (events, `exit 2`, `hookSpecificOutput`) และ skills
 
 Two kinds of change live in this repo. Keep them separate.
 
-## 1. Product change (a Pedpro feature)
+## 1. Product change (a xFish feature)
 The agent loop handles these. You write the YouTrack issue + acceptance; the
 loop implements until `goal.json` acceptance is green, then routes a merge to
 the Telegram gate. You review the diff and `/approve &lt;tag&gt; &lt;reason&gt;`.
@@ -384,7 +384,7 @@ field, a skipped test, a runaway iteration count):
 2. then fix the instruction/skill/hook
 3. confirm the new task passes AND nothing else regressed
 
-That is TDD applied to the agent system — the same discipline `pedpro-tdd`
+That is TDD applied to the agent system — the same discipline `xfish-tdd`
 asks of product code.
 
 ## Local dev
@@ -400,9 +400,9 @@ easier to give without looking (auto-approve, batching, dropping the reason
 requirement) is a regression even if every test passes — watch
 `blind_approve_rate` (Part 4 §07).
 </pre></div>
-<div class="code" id="f-claude-md"><div class="bar"><span class="fn"><span class="tag">markdown</span>CLAUDE.md<span class="by">878 B</span></span><button class="cp">Copy</button></div><pre># Pedpro
+<div class="code" id="f-claude-md"><div class="bar"><span class="fn"><span class="tag">markdown</span>CLAUDE.md<span class="by">878 B</span></span><button class="cp">Copy</button></div><pre># xFish
 
-Pedpro is a Thai-language fantasy gaming portal.
+xFish is a Thai-language fantasy gaming portal.
 
 ## Stack (facts)
 - Vue 3.5+ Composition API, Nuxt 4 (flat root, not app/ layout).
@@ -421,7 +421,7 @@ Pedpro is a Thai-language fantasy gaming portal.
 ## What stays out of scope for the agent
 - git push, git reset --hard, and gcloud run deploy are human-approved actions.
 </pre></div>
-<div class="code" id="f-justfile"><div class="bar"><span class="fn"><span class="tag">just</span>justfile<span class="by">868 B</span></span><button class="cp">Copy</button></div><pre># OpenClaw x Pedpro — common commands. Run from the repo root.
+<div class="code" id="f-justfile"><div class="bar"><span class="fn"><span class="tag">just</span>justfile<span class="by">868 B</span></span><button class="cp">Copy</button></div><pre># OpenClaw x xFish — common commands. Run from the repo root.
 default:
     @just --list
 
@@ -454,7 +454,7 @@ verify:
     @echo "verify ok"
 </pre></div>
 <div class="code" id="f-dockerfile"><div class="bar"><span class="fn"><span class="tag">docker</span>Dockerfile<span class="by">962 B</span></span><button class="cp">Copy</button></div><pre># OpenClaw middleware image. Runs the deterministic supervisor + headless Claude
-# Code. Mount your Pedpro git repo as a volume; the worktrees it spawns live
+# Code. Mount your xFish git repo as a volume; the worktrees it spawns live
 # under OPENCLAW_WORKTREE_BASE relative to the working dir.
 FROM python:3.12-slim
 
@@ -518,7 +518,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 OPENCLAW_SESSION_MODEL=sonnet
 OPENCLAW_MAX_TURNS=12
 OPENCLAW_SESSION_TIMEOUT=900
-OPENCLAW_WORKTREE_BASE=../pedpro-wt
+OPENCLAW_WORKTREE_BASE=../xfish-wt
 </pre></div>
 <div class="code" id="f-pre-commit-config-yaml"><div class="bar"><span class="fn"><span class="tag">yaml</span>.pre-commit-config.yaml<span class="by">571 B</span></span><button class="cp">Copy</button></div><pre># pip install pre-commit &amp;&amp; pre-commit install
 repos:
@@ -729,7 +729,7 @@ API field names are never guessed. The Bruno collection is the single source
 of truth for every request and response shape.
 
 ## Locate the spec
-The collection lives in the sibling repo. Default path: ../pedpro-api-bruno/
+The collection lives in the sibling repo. Default path: ../xfish-api-bruno/
 (adjust if your checkout differs).
 1. Glob `**/*.bru` under the collection root.
 2. Grep the endpoint path or feature keyword to find the matching file.
@@ -754,12 +754,12 @@ Hand the parent a summary:
 - Copy casing exactly. snake_case vs camelCase is decided by the contract,
   not by Vue convention. Surface the mapping the calling code must do.
 </pre></div>
-<div class="code" id="f-claude-skills-pedpro-tdd-skill-md"><div class="bar"><span class="fn"><span class="tag">markdown</span>.claude/skills/pedpro-tdd/SKILL.md<span class="by">1711 B</span></span><button class="cp">Copy</button></div><pre>---
-name: pedpro-tdd
+<div class="code" id="f-claude-skills-xfish-tdd-skill-md"><div class="bar"><span class="fn"><span class="tag">markdown</span>.claude/skills/xfish-tdd/SKILL.md<span class="by">1711 B</span></span><button class="cp">Copy</button></div><pre>---
+name: xfish-tdd
 description: Drive feature work test-first. Use before writing implementation code for any composable, Pinia store, util, or component behavior that has a definable expected output. Write a failing test that encodes the requirement, get it approved, then implement until green.
 ---
 
-# pedpro-tdd
+# xfish-tdd
 
 Implementation follows a failing test. The test encodes the requirement;
 the code makes it pass. No implementation before a test exists and is
@@ -780,7 +780,7 @@ confirmed failing for the right reason.
 5. REFACTOR — clean up with the suite green. No behavior change without a
    test change.
 
-## Pedpro specifics
+## xFish specifics
 - API-shaped data: resolve field names via the bruno-contract skill first;
   assert against contract names, never guessed ones.
 - Composables: mount through a thin host component or a withSetup helper;
@@ -795,7 +795,7 @@ confirmed failing for the right reason.
 <div class="code" id="f-openclaw-integration-py"><div class="bar"><span class="fn"><span class="tag">python</span>openclaw/integration.py<span class="by">4767 B</span></span><button class="cp">Copy</button></div><pre>"""
 Integration points — implement these for YOUR stack.
 
-Everything in openclaw/ is a reference scaffold from the OpenClaw x Pedpro
+Everything in openclaw/ is a reference scaffold from the OpenClaw x xFish
 handbook (Parts 2-4). The functions and clients below are the seams where the
 scaffold meets your real systems: shell, git, YouTrack, Telegram, the Anthropic
 API, and the Claude Code runner. The unimplemented ones raise NotImplementedError
@@ -1093,7 +1093,7 @@ WALL_CLOCK_SECONDS = int(os.environ.get("OPENCLAW_SESSION_TIMEOUT", "900"))
 SESSION_PROMPT = (
     "Continue working toward the goal described in .claude/goal.json. "
     "Follow this repo's conventions in CLAUDE.md. Use the bruno-contract skill "
-    "before writing any API field name, and pedpro-tdd for new behavior. "
+    "before writing any API field name, and xfish-tdd for new behavior. "
     "Do not run git push or deploy — those are human-approved."
 )
 
@@ -1267,7 +1267,7 @@ def run_loop_to_completion(cwd, max_iters, cost_ceiling):
 
 
 # ---- worktree / goal helpers -----------------------------------------------
-WT_BASE = os.environ.get("OPENCLAW_WORKTREE_BASE", "../pedpro-wt")
+WT_BASE = os.environ.get("OPENCLAW_WORKTREE_BASE", "../xfish-wt")
 
 
 def write_goal_json(worktree: str, issue) -&gt; None:
@@ -1351,7 +1351,7 @@ async def supervise():
 
 
 def spawn_run(issue) -&gt; Run:
-    branch, wt = f"feat/{issue.key}", f"../pedpro-wt/{issue.key}"
+    branch, wt = f"feat/{issue.key}", f"../xfish-wt/{issue.key}"
     git(f"worktree add {wt} -b {branch}")
     sh("pnpm install --prefer-offline", cwd=wt)
     write_goal_json(wt, issue)              # acceptance built from the issue
@@ -1798,7 +1798,7 @@ if __name__ == "__main__":
 
 Freeze a small golden set of representative issues, run the WHOLE loop against
 them, and gate any change to the agent system (.claude/, openclaw/) on the
-result. This is "test before you change the instructions" — pedpro-tdd one
+result. This is "test before you change the instructions" — xfish-tdd one
 level up. NOTE: this runs real model calls and costs money/time; run on system
 changes or nightly, not every commit.
 """

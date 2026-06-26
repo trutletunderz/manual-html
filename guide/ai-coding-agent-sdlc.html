@@ -594,7 +594,7 @@
             </li>
             <li>
               <div class="pt-title"><b>2 ชั้น: global vs project</b> — project = <code>.claude/settings.json</code> ใน repo commit ได้ → ทั้งทีมใช้ permission ชุดเดียวกัน ของที่เป็นนโยบายทีมใส่ที่นี่</div>
-              <div class="eg"><span class="eg-tag">ตัวอย่าง</span>ทีม Pedpro commit <code>deny: git push origin main</code> ไว้ใน project settings → ไม่มีใคร (หรือ agent ของใคร) push เข้า main ตรง ๆ ได้ ทุกคนถูกบังคับเท่ากัน</div>
+              <div class="eg"><span class="eg-tag">ตัวอย่าง</span>ทีม xFish commit <code>deny: git push origin main</code> ไว้ใน project settings → ไม่มีใคร (หรือ agent ของใคร) push เข้า main ตรง ๆ ได้ ทุกคนถูกบังคับเท่ากัน</div>
             </li>
             <li>
               <div class="pt-title"><b>หลักทอง — auto-approve เฉพาะ idempotent + read-only</b>: <code>Read</code>, <code>Grep</code>, <code>Glob</code>, รัน test, <code>git status/diff</code> รันซ้ำกี่ครั้งก็ไม่เปลี่ยนสถานะระบบ</div>
@@ -794,7 +794,7 @@
           <ol class="points">
             <li>
               <div class="pt-title"><b>ให้ agent เป็นนักสำรวจ ไม่ใช่นักตัดสิน</b> — สำรวจ codebase, อ่าน docs, เทียบ approach, รวบรวมข้อเท็จจริง แต่ <b>อย่าเพิ่งให้มันสรุปทางเลือกสุดท้าย</b> ในขั้นนี้</div>
-              <div class="eg"><span class="eg-tag">ตัวอย่าง</span>"หาว่าตอนนี้ Pedpro fetch data ยังไงบ้าง" → ให้มันไล่ <code>useFetch</code>/<code>$fetch</code>/Pinia action ทั้งโปรเจกต์แล้วทำตารางสรุป pattern ที่เจอ — ยังไม่ต้องบอกว่าควรใช้อันไหน</div>
+              <div class="eg"><span class="eg-tag">ตัวอย่าง</span>"หาว่าตอนนี้ xFish fetch data ยังไงบ้าง" → ให้มันไล่ <code>useFetch</code>/<code>$fetch</code>/Pinia action ทั้งโปรเจกต์แล้วทำตารางสรุป pattern ที่เจอ — ยังไม่ต้องบอกว่าควรใช้อันไหน</div>
             </li>
             <li>
               <div class="pt-title"><b>ใช้ Plan Mode แยก phase วิจัยออกจาก phase ลงมือ</b> — ใน Claude Code, Plan Mode บังคับให้มัน "อ่าน + เสนอแผน" โดยห้ามแก้ไฟล์ จนกว่าคุณจะอนุมัติ</div>
@@ -836,7 +836,7 @@
           <ol class="points">
             <li>
               <div class="pt-title"><b>บังคับรูปแบบ output: "ตัวเลือก + ข้อดี/ข้อเสีย + คำแนะนำ"</b> ไม่ใช่ให้มันเลือกเสร็จสรรพแล้วลงมือเลย ขอเป็นตาราง 2–3 ทางเลือกพร้อม tradeoff</div>
-              <div class="eg"><span class="eg-tag">ตัวอย่าง</span>"data fetching ใน Pedpro ควรใช้อะไร" → ขอตาราง: <code>useFetch</code> (SSR-friendly, cache อัตโนมัติ / ยืดหยุ่นน้อย) vs <code>useAsyncData + $fetch</code> (คุมเอง / โค้ดเยอะ) vs Pinia action (state รวมศูนย์ / boilerplate) → แล้วคุณตัด</div>
+              <div class="eg"><span class="eg-tag">ตัวอย่าง</span>"data fetching ใน xFish ควรใช้อะไร" → ขอตาราง: <code>useFetch</code> (SSR-friendly, cache อัตโนมัติ / ยืดหยุ่นน้อย) vs <code>useAsyncData + $fetch</code> (คุมเอง / โค้ดเยอะ) vs Pinia action (state รวมศูนย์ / boilerplate) → แล้วคุณตัด</div>
             </li>
             <li>
               <div class="pt-title"><b>คุณคือคนตัดสิน agent คือคนเสนอ</b> — architecture decision ผูกพันยาวและแก้ทีหลังแพง มันต้องเป็นการตัดสินใจของมนุษย์ที่รับผิดชอบผลลัพธ์ ไม่ใช่ค่า default ของ model</div>
@@ -980,7 +980,7 @@
           </div>
         </div>
 
-        <div class="ws-slot"><span class="wt">Workshop</span><p>แตก feature จริงของ Pedpro เป็น ticket ที่ link Bruno spec — เพิ่มทีหลัง</p></div>
+        <div class="ws-slot"><span class="wt">Workshop</span><p>แตก feature จริงของ xFish เป็น ticket ที่ link Bruno spec — เพิ่มทีหลัง</p></div>
       </section>
 
       <!-- ===== MODULE 3 (EXPANDED) ===== -->
@@ -1010,35 +1010,35 @@
               <div class="pt-title"><b>มันคือ context ที่ถูก inject ทุก turn อัตโนมัติ</b> — agent รู้เสมอโดยไม่ต้องสั่ง แต่ก็จ่าย token เสมอ ทั้งจุดแข็งและจุดอ่อนอยู่ในข้อเดียวกัน</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>เขียน "โปรเจกต์นี้ใช้ pnpm ไม่ใช่ npm" → ทุก session agent ใช้ <code>pnpm install</code> ถูก ไม่เผลอพิมพ์ <code>npm</code></span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>เขียน "<code>~/</code> alias resolve ไป root" → ทุก session รู้ทันทีไม่ต้องบอกซ้ำ</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>เขียน "<code>~/</code> alias resolve ไป root" → ทุก session รู้ทันทีไม่ต้องบอกซ้ำ</span>
               </div>
             </li>
             <li>
               <div class="pt-title"><b>เกณฑ์คัดเข้า: เฉพาะของที่ "ต้องรู้ทุกครั้ง"</b> — (ก) คำสั่งหลัก build/test/lint/dev, (ข) conventions ที่ <b>ฝืน default</b>, (ค) gotcha เฉพาะโปรเจกต์, (ง) โครงสร้าง/alias ที่ไม่ standard</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>"รัน test ด้วย <code>make test</code> ไม่ใช่ <code>npm test</code>" / "ห้าม edit ไฟล์ใน <code>generated/</code> เพราะ auto-gen ทับ"</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>flat root-level dir + page-local components ใต้ <code>pages/&lt;feature&gt;/components/</code> ต้อง import explicit — ฝืน default ของ Nuxt</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>flat root-level dir + page-local components ใต้ <code>pages/&lt;feature&gt;/components/</code> ต้อง import explicit — ฝืน default ของ Nuxt</span>
               </div>
             </li>
             <li>
               <div class="pt-title"><b>เกณฑ์คัดออก: ของที่ใช้ "เป็นบางครั้ง" → ไปเป็น Skill</b> — ถ้ายัดลง <code>CLAUDE.md</code> = จ่าย token ฟรีเกือบตลอดเวลา</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>playbook "วิธี rotate API key ตอน production" ใช้นาน ๆ ที → เป็น Skill</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>"วิธี migrate schema" ใช้เดือนละครั้ง → Skill โหลดตอนจะ migrate จริง</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>"วิธี migrate schema" ใช้เดือนละครั้ง → Skill โหลดตอนจะ migrate จริง</span>
               </div>
             </li>
             <li>
               <div class="pt-title"><b>ต้องตรงกับโปรเจกต์จริงเป๊ะ — mismatch อันตรายกว่าไม่มี</b> agent เชื่อไฟล์แล้ววางของผิดที่อย่างมั่นใจ</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>ไฟล์บอก "test อยู่ใน <code>__tests__/</code>" แต่ทีมย้ายไป <code>tests/</code> แล้ว → agent สร้าง test ในโฟลเดอร์ผี</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>อ้าง path เก่าที่ refactor ไปแล้ว → agent สร้างไฟล์ตาม path ผี ต้องไล่แก้ทีหลัง</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>อ้าง path เก่าที่ refactor ไปแล้ว → agent สร้างไฟล์ตาม path ผี ต้องไล่แก้ทีหลัง</span>
               </div>
             </li>
             <li>
               <div class="pt-title"><b><code>AGENTS.md</code> = มาตรฐานกลางข้ามเครื่องมือ</b> — <code>CLAUDE.md</code> เป็นของ Claude Code, <code>AGENTS.md</code> tool อื่นอ่านได้ (Codex, Cursor) วางของกลางไว้ที่เดียว</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>ทีมใช้ทั้ง Cursor + Claude Code → กฎหลักไว้ <code>AGENTS.md</code> ทั้งคู่อ่าน source เดียวกัน ไม่ maintain ซ้ำ</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span><code>CLAUDE.md</code> มีบรรทัด "ดู conventions หลักใน <code>AGENTS.md</code>" → Claude Code + Codex CLI อ่านที่เดียวกัน</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span><code>CLAUDE.md</code> มีบรรทัด "ดู conventions หลักใน <code>AGENTS.md</code>" → Claude Code + Codex CLI อ่านที่เดียวกัน</span>
               </div>
             </li>
             <li>
@@ -1071,14 +1071,14 @@
               <div class="pt-title"><b>แยก 2 ชั้น: persistent vs ephemeral</b> — project memory (ถาวร commit ได้ ทั้งทีมใช้) vs session memory (หายตอน <code>/clear</code>)</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>คุยใน session ว่า "ใช้ <code>date-fns</code> ไม่ใช่ <code>moment</code>" → ไม่จดถาวร พอ session หน้า agent หยิบ <code>moment</code> กลับมา</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>ตกลง "ใช้ store ชื่อ <code>useWalletStore</code>" → ไม่จด พอ <code>/clear</code> session หน้าตั้งชื่อ <code>walletStore</code> ขัดกัน</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>ตกลง "ใช้ store ชื่อ <code>useWalletStore</code>" → ไม่จด พอ <code>/clear</code> session หน้าตั้งชื่อ <code>walletStore</code> ขัดกัน</span>
               </div>
             </li>
             <li>
               <div class="pt-title"><b>decision สำคัญต้อง "ตกตะกอน" ลง persistent เสมอ</b> — อะไรที่ใช้ข้ามวัน/ข้ามคน ย้ายจาก session → project memory</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>ตัดสินใจ "error handling ใช้ Result type ไม่ throw" → จดลง <code>CLAUDE.md</code> 1 บรรทัด ทุก session ทำตาม</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>หลัง decide ใช้ <code>useFetch</code> เป็นมาตรฐาน → จดลง <code>CLAUDE.md</code> ไม่ปล่อยลอยในแชท</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>หลัง decide ใช้ <code>useFetch</code> เป็นมาตรฐาน → จดลง <code>CLAUDE.md</code> ไม่ปล่อยลอยในแชท</span>
               </div>
             </li>
             <li>
@@ -1089,7 +1089,7 @@
               <div class="pt-title"><b>memory มีลำดับชั้น</b> — global (ทุกโปรเจกต์) → project (repo นี้) → local (เครื่องคุณ ไม่ commit)</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>"อธิบายโค้ดสั้น ๆ" = global preference · "repo นี้ใช้ TS strict" = project · token ส่วนตัว = local (<code>.gitignore</code>)</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>"ตอบเป็นภาษาไทย" = global · "Pedpro ใช้ Bruno เป็น contract" = project</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>"ตอบเป็นภาษาไทย" = global · "xFish ใช้ Bruno เป็น contract" = project</span>
               </div>
             </li>
             <li>
@@ -1121,14 +1121,14 @@
               <div class="pt-title"><b>ป้อนสิ่งที่มีอยู่ก่อนให้สร้างใหม่</b> — config (สี/spacing/breakpoint) + component ที่มี = "คำศัพท์" ที่ agent ต้องใช้พูด ไม่งั้นมันประดิษฐ์คำศัพท์ใหม่เอง</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>มี <code>&lt;Button&gt;</code> กลางแต่ไม่บอก → agent สร้าง <code>&lt;MyButton&gt;</code> ใหม่ด้วย inline style คนละโทน หน้าเว็บมีปุ่ม 3 แบบ</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>มี <code>&lt;BaseButton&gt;</code> แต่ไม่ชี้ → component ซ้ำสไตล์ใหม่</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>มี <code>&lt;BaseButton&gt;</code> แต่ไม่ชี้ → component ซ้ำสไตล์ใหม่</span>
               </div>
             </li>
             <li>
               <div class="pt-title"><b>บอกทั้ง "มีอะไร" และ "ใช้ยังไง"</b> — pattern การใช้: เมื่อไหร่ใช้ตัวไหน, prop convention, variant</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>"หัวข้อใช้ <code>&lt;Heading level={1-6}&gt;</code> ห้ามใช้ <code>&lt;h1&gt;</code> ดิบ" → agent หยิบของกลางถูก</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>"ปุ่มหลัก <code>&lt;BaseButton variant='primary'&gt;</code> · ปุ่มรอง <code>variant='ghost'</code> · อย่าสร้างเอง"</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>"ปุ่มหลัก <code>&lt;BaseButton variant='primary'&gt;</code> · ปุ่มรอง <code>variant='ghost'</code> · อย่าสร้างเอง"</span>
               </div>
             </li>
             <li>
@@ -1169,7 +1169,7 @@
               <div class="pt-title"><b>contract คือ source of truth ที่ทั้งสองฝั่งยึด</b> — FE กับ BE คุยผ่าน contract ตัวกลาง agent อ่าน spec ก่อนเขียนทั้งสองฝั่ง</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>มี OpenAPI/Swagger spec → agent generate client type ฝั่ง FE และ validate ฝั่ง BE จาก schema เดียวกัน</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span><code>bruno/wallet/balance.bru</code> ระบุ response <code>{ balance, currency }</code> → generate TS type FE + handler BE จาก type เดียว</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span><code>bruno/wallet/balance.bru</code> ระบุ response <code>{ balance, currency }</code> → generate TS type FE + handler BE จาก type เดียว</span>
               </div>
             </li>
             <li>
@@ -1213,21 +1213,21 @@
               <div class="pt-title"><b>convention ที่ "เขียนเฉย ๆ" คนลืม · ที่เป็น Skill มัน enforce ตัวเอง</b> — กฎใน wiki ที่ไม่มีใครเปิด ไม่มีผล</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>"commit ต้องเป็น conventional format" เขียน README ไม่มีใครทำ → Skill <code>commit</code> generate ให้เลย คนใช้เพราะสะดวกกว่า</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>Skill <code>commit</code> ที่คุณมี generate message ตาม format ทีม</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>Skill <code>commit</code> ที่คุณมี generate message ตาม format ทีม</span>
               </div>
             </li>
             <li>
               <div class="pt-title"><b>encode convention หลัก 3 อย่าง</b> — commit format, PR template/process, lint/code style</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>Skill ที่ generate PR description ตาม template → ทุก PR หน้าตาเหมือนกัน reviewer อ่านง่าย</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>คุณมี <code>commit</code>, <code>pr</code>, <code>review-changes</code>, <code>review</code>, <code>write-tests</code> อยู่แล้ว</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>คุณมี <code>commit</code>, <code>pr</code>, <code>review-changes</code>, <code>review</code>, <code>write-tests</code> อยู่แล้ว</span>
               </div>
             </li>
             <li>
               <div class="pt-title"><b>convention = context ที่ทำให้ output "เข้าทีม" ไม่ใช่แค่ "ทำงานได้"</b> — โค้ดที่รันได้แต่ผิด style/naming สร้างภาระ review</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>ทีมใช้ <code>camelCase</code> แต่ agent generate <code>snake_case</code> → รันได้แต่ reviewer ต้องทักทุกไฟล์</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>ทีมใช้ <code>composables/useXxx.ts</code> → agent รู้ convention ตั้งชื่อถูกแต่แรก</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>ทีมใช้ <code>composables/useXxx.ts</code> → agent รู้ convention ตั้งชื่อถูกแต่แรก</span>
               </div>
             </li>
             <li>
@@ -1273,7 +1273,7 @@
             <dt>Memory hierarchy</dt><dd>ลำดับชั้น global → project → local</dd>
             <dt>Design token</dt><dd>ค่าดีไซน์พื้นฐาน (สี/spacing/typography) ที่ใช้ซ้ำทั้งระบบ</dd>
             <dt>Contract-first</dt><dd>ออกแบบ API contract ก่อนเขียน implementation</dd>
-            <dt>Source of truth</dt><dd>แหล่งอ้างอิงเดียวที่ทุกฝั่งยึด (Pedpro = Bruno spec)</dd>
+            <dt>Source of truth</dt><dd>แหล่งอ้างอิงเดียวที่ทุกฝั่งยึด (xFish = Bruno spec)</dd>
             <dt>Drift</dt><dd>การที่สองฝั่ง (FE/BE) ค่อย ๆ ไม่ตรงกันเมื่อเวลาผ่าน</dd>
             <dt>Convention as code</dt><dd>เปลี่ยนกฎทีมให้เป็นเครื่องมือที่ enforce ตัวเอง</dd>
           </dl>
@@ -1286,7 +1286,7 @@
           </div>
         </div>
 
-        <div class="ws-slot"><span class="wt">Workshop</span><p>review <code>CLAUDE.md</code> ของ Pedpro + แยกของที่ควรเป็น Skill ออกมา — เพิ่มทีหลัง</p></div>
+        <div class="ws-slot"><span class="wt">Workshop</span><p>review <code>CLAUDE.md</code> ของ xFish + แยกของที่ควรเป็น Skill ออกมา — เพิ่มทีหลัง</p></div>
       </section>
 
       <!-- PHASE B -->
@@ -1323,7 +1323,7 @@
               <div class="pt-title"><b>ทำทีละ component ไม่ใช่ทั้งหน้ารวดเดียว</b> — สั่งให้ agent สร้าง/แก้ทีละชิ้น แล้ว verify ก่อนไปชิ้นถัดไป</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>ทำหน้า checkout → แตกเป็น cart summary → address form → payment → ทำทีละอันดูผลก่อนต่อ ไม่สั่ง "ทำหน้า checkout ทั้งหน้า" รวดเดียว</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>หน้า profile → ทำ <code>WalletBalance</code> ก่อน เห็นเลขขึ้นถูก ค่อยทำส่วน transaction history ต่อ</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>หน้า profile → ทำ <code>WalletBalance</code> ก่อน เห็นเลขขึ้นถูก ค่อยทำส่วน transaction history ต่อ</span>
               </div>
             </li>
             <li>
@@ -1334,7 +1334,7 @@
               <div class="pt-title"><b>verify ด้วยตา — ไม่ใช่แค่อ่านโค้ด</b> เปิดดูจริงในเบราว์เซอร์ / screenshot เพราะ component ที่ "ดูถูกในโค้ด" แต่ binding ผิดเกิดง่ายมาก</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>โค้ดดูถูกแต่ลืม bind <code>:value</code> → input ว่างเปล่า ถ้าไม่เปิดดูจริงจะไม่เห็น</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>balance แสดง <code>NaN</code> เพราะ format ก่อน data โหลดเสร็จ — เห็นได้ตอนเปิดหน้าจริงเท่านั้น</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>balance แสดง <code>NaN</code> เพราะ format ก่อน data โหลดเสร็จ — เห็นได้ตอนเปิดหน้าจริงเท่านั้น</span>
               </div>
             </li>
             <li>
@@ -1370,7 +1370,7 @@
               <div class="pt-title"><b>ลำดับที่ถูก: contract → implement → test → รัน → ไปต่อ</b> เริ่มจาก contract (3.4) เป็นตัวกำหนด ไม่ใช่เขียน handler ตามใจแล้วค่อยคิด interface ทีหลัง</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>เขียน endpoint <code>POST /orders</code> → ยึด schema ที่ตกลงไว้ → เขียน test ตาม schema → รันเขียวค่อยทำ endpoint ถัดไป</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span><code>GET /wallet/balance</code> ตาม Bruno spec → handler → test assert ตาม spec → รันผ่านค่อยต่อ</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span><code>GET /wallet/balance</code> ตาม Bruno spec → handler → test assert ตาม spec → รันผ่านค่อยต่อ</span>
               </div>
             </li>
             <li>
@@ -1380,7 +1380,7 @@
               <div class="pt-title"><b>ระวังความต่างของ environment: local vs production</b> — โดยเฉพาะ serverless/container ที่พฤติกรรมไม่เหมือน dev เครื่องตัวเอง</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>โค้ดเก็บ state ใน memory → local ผ่าน แต่ production มีหลาย instance state ไม่ sync กัน</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro (Cloud Run)</span>ระวัง <b>cold start</b> (instance เพิ่งตื่น ช้า) และ <b>env config</b> ที่ inject ตอน deploy ต่างจาก <code>.env</code> local</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish (Cloud Run)</span>ระวัง <b>cold start</b> (instance เพิ่งตื่น ช้า) และ <b>env config</b> ที่ inject ตอน deploy ต่างจาก <code>.env</code> local</span>
               </div>
             </li>
             <li>
@@ -1420,7 +1420,7 @@
               <div class="pt-title"><b>ระวัง fix-the-symptom loop (เชื่อม 1.1)</b> — agent แก้ให้ error หายทีละอันโดยไม่แตะ root cause สร้างบั๊กใหม่แทนของเก่า</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>ใส่ <code>try/catch</code> กลบ error ไปเรื่อย ๆ ทั้งที่ root cause คือ config ผิดตัวเดียว</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>ใส่ <code>?.</code> ไล่ทีละ field ทั้งที่ API ไม่ได้ return object นั้นตั้งแต่แรก</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>ใส่ <code>?.</code> ไล่ทีละ field ทั้งที่ API ไม่ได้ return object นั้นตั้งแต่แรก</span>
               </div>
             </li>
             <li>
@@ -1480,7 +1480,7 @@
           </div>
         </div>
 
-        <div class="ws-slot"><span class="wt">Workshop</span><p>พัฒนา 1 feature FE+BE บน Pedpro แบบ iterative จริง พร้อมจับ fix-the-symptom loop — เพิ่มทีหลัง</p></div>
+        <div class="ws-slot"><span class="wt">Workshop</span><p>พัฒนา 1 feature FE+BE บน xFish แบบ iterative จริง พร้อมจับ fix-the-symptom loop — เพิ่มทีหลัง</p></div>
       </section>
 
       <!-- ===== MODULE 5 (EXPANDED) ===== -->
@@ -1510,14 +1510,14 @@
               <div class="pt-title"><b>Skill = capability package ที่โหลด on-demand ผ่าน <code>SKILL.md</code></b> — ชุดความรู้/ขั้นตอนที่ agent ดึงเข้ามา <i>เฉพาะตอนต้องใช้</i> ไม่กิน context ตลอดเวลาเหมือน <code>CLAUDE.md</code></div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>Skill "deploy-runbook" บรรจุขั้นตอน deploy ทั้งหมด → โหลดเฉพาะตอนจะ deploy จริง วันอื่นไม่กิน context</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>Skill <code>write-tests</code> โหลดเฉพาะตอนสั่งเขียน test ไม่งั้น test convention ค้างใน context ทุก turn</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>Skill <code>write-tests</code> โหลดเฉพาะตอนสั่งเขียน test ไม่งั้น test convention ค้างใน context ทุก turn</span>
               </div>
             </li>
             <li>
               <div class="pt-title"><b>เกณฑ์ตัดสิน 3 ทาง — แยกให้ถูกที่</b> — (ก) ใช้ <b>"บางครั้งแต่ซ้ำ ๆ"</b> → <b>Skill</b>, (ข) คำสั่งสั้นพิมพ์เอง → <b>slash command</b>, (ค) ต้องรู้ <b>ทุก turn</b> → <b><code>CLAUDE.md</code></b></div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>"วิธี seed database" (บางครั้งซ้ำ) → Skill · <code>/test</code> (สั่งบ่อย พิมพ์สั้น) → command · "ใช้ pnpm" (รู้ตลอด) → <code>CLAUDE.md</code></span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span><code>commit</code>/<code>pr</code>/<code>review</code> = Skill · alias <code>~/</code>,<code>@/</code> = <code>CLAUDE.md</code></span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span><code>commit</code>/<code>pr</code>/<code>review</code> = Skill · alias <code>~/</code>,<code>@/</code> = <code>CLAUDE.md</code></span>
               </div>
             </li>
             <li>
@@ -1526,7 +1526,7 @@
             </li>
             <li>
               <div class="pt-title"><b>Skill ที่ดีลด context ของ <code>CLAUDE.md</code></b> — ของที่ไม่ต้องรู้ทุก turn ย้ายไปเป็น Skill ทำให้ <code>CLAUDE.md</code> สั้นลง ทั้งระบบประหยัด context รวม</div>
-              <div class="eg"><span class="eg-tag">ตัวอย่าง</span><span class="eg-kind proj">Pedpro</span>แทนที่จะยัด test convention ยาว ๆ ใน <code>CLAUDE.md</code> → ย้ายไป Skill <code>write-tests</code> → <code>CLAUDE.md</code> เบาลง</div>
+              <div class="eg"><span class="eg-tag">ตัวอย่าง</span><span class="eg-kind proj">xFish</span>แทนที่จะยัด test convention ยาว ๆ ใน <code>CLAUDE.md</code> → ย้ายไป Skill <code>write-tests</code> → <code>CLAUDE.md</code> เบาลง</div>
             </li>
             <li>
               <div class="pt-title"><b>Skill มีได้หลายระดับ: personal / project / built-in</b> — ของส่วนตัวใช้ทุกโปรเจกต์, ของ project commit เข้า repo แชร์ทั้งทีม</div>
@@ -1561,7 +1561,7 @@
               <div class="pt-title"><b>MCP = มาตรฐานต่อ "ระบบนอก" เข้า harness</b> — ให้ agent คุยกับ DB, browser, external API ผ่าน protocol กลาง (เชื่อม 1.3: MCP คือวิธีเพิ่ม tool เข้า harness)</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>ต่อ MCP ของ GitHub → agent อ่าน issue/PR ได้ · ต่อ MCP database → query ข้อมูลจริงได้</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>Playwright MCP → agent ขับ browser ทดสอบ UI จริงได้ (ใช้ใน Module 7)</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>Playwright MCP → agent ขับ browser ทดสอบ UI จริงได้ (ใช้ใน Module 7)</span>
               </div>
             </li>
             <li>
@@ -1570,7 +1570,7 @@
             </li>
             <li>
               <div class="pt-title"><b>อย่าเปิดทุกอย่างพร้อมกัน — เลือก lean stack</b> — tool ที่ทับ function กันและไม่ได้ใช้ = จ่าย token ฟรี + ทำให้ agent สับสนว่าจะใช้ตัวไหน</div>
-              <div class="eg"><span class="eg-tag">ตัวอย่าง</span><span class="eg-kind proj">Pedpro</span>อย่าเปิด <b>Playwright + Chrome DevTools + Perplexity + Firecrawl + Glif</b> พร้อมกัน — Playwright/Chrome DevTools ทับกัน, search tool ซ้อนกัน → เลือก lean: <b>Playwright (accessibility-tree) + search 1 ตัว + docs tooling</b> พอ</div>
+              <div class="eg"><span class="eg-tag">ตัวอย่าง</span><span class="eg-kind proj">xFish</span>อย่าเปิด <b>Playwright + Chrome DevTools + Perplexity + Firecrawl + Glif</b> พร้อมกัน — Playwright/Chrome DevTools ทับกัน, search tool ซ้อนกัน → เลือก lean: <b>Playwright (accessibility-tree) + search 1 ตัว + docs tooling</b> พอ</div>
             </li>
             <li>
               <div class="pt-title"><b>เลือก MCP จาก "งานที่ทำจริง" ไม่ใช่ "เผื่อไว้"</b> — ถามว่า workflow นี้ต้องแตะระบบนอกอะไร แล้วเปิดเท่านั้น เปิด-ปิดตามช่วงงานได้</div>
@@ -1578,7 +1578,7 @@
             </li>
             <li>
               <div class="pt-title"><b>คุณภาพ MCP ต่างกันมาก — เลือกตัวที่ออกแบบ tool ดี</b> — MCP ที่ดีมี granularity เหมาะ, description ชัด, ไม่คืน output ท่วม context ตัวห่วยจะคืน data มหาศาลกินที่</div>
-              <div class="eg"><span class="eg-tag">ตัวอย่าง</span><span class="eg-kind proj">Pedpro</span>เลือก Playwright แบบ accessibility-tree เพราะคืน structure ที่ agent อ่านเข้าใจ ทนต่อ DOM เปลี่ยน มากกว่า pixel selector</div>
+              <div class="eg"><span class="eg-tag">ตัวอย่าง</span><span class="eg-kind proj">xFish</span>เลือก Playwright แบบ accessibility-tree เพราะคืน structure ที่ agent อ่านเข้าใจ ทนต่อ DOM เปลี่ยน มากกว่า pixel selector</div>
             </li>
             <li>
               <div class="pt-title"><b>MCP เปิดช่อง action ที่มี blast radius — ผูกกลับ permission (1.2)</b> — MCP ที่เขียน DB หรือ deploy ได้ ต้อง gate เหมือน operation อันตรายอื่น ๆ</div>
@@ -1609,19 +1609,19 @@
               <div class="pt-title"><b>Plugin = แพ็ก Skills + commands + MCP รวมเป็นชุดเดียว</b> — ห่อเครื่องมือหลายอย่างเป็น package ติดตั้งทีเดียวครบ (ชั้นบนของ 5.1 + 5.2)</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>Plugin "frontend-toolkit" รวม Skill เขียน component + command lint + MCP browser → ติดตั้งทีเดียวได้ทั้งชุด</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>แพ็ก <code>commit</code>/<code>pr</code>/<code>review</code>/<code>write-tests</code> + Playwright MCP + lint command เป็น "pedpro-plugin" ชุดเดียว</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>แพ็ก <code>commit</code>/<code>pr</code>/<code>review</code>/<code>write-tests</code> + Playwright MCP + lint command เป็น "xfish-plugin" ชุดเดียว</span>
               </div>
             </li>
             <li>
               <div class="pt-title"><b>ทำให้ convention ของทีม "พกพาได้"</b> — แทนที่คนใหม่ต้อง setup ทีละอย่าง ติดตั้ง plugin เดียวได้ setup เหมือนทีมทั้งหมด</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>dev ใหม่ → ติดตั้ง team-plugin → ได้ Skill/command/MCP เหมือนทุกคน ไม่ต้องไล่ config เอง</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>คนใหม่ติดตั้ง plugin → ได้ workflow <code>commit</code>→<code>review</code>→<code>pr</code> พร้อมใช้วันแรก</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>คนใหม่ติดตั้ง plugin → ได้ workflow <code>commit</code>→<code>review</code>→<code>pr</code> พร้อมใช้วันแรก</span>
               </div>
             </li>
             <li>
               <div class="pt-title"><b>Plugin คือจุดที่ "กฎทีม" กลายเป็น "เครื่องมือทีม" จริง ๆ</b> — ปิด loop ที่เริ่มจาก 3.5 (Team Conventions → Skill → Plugin) convention ที่เคยเป็นเอกสาร กลายเป็นของที่ติดตั้งแล้วใช้ได้เลย</div>
-              <div class="eg"><span class="eg-tag">ตัวอย่าง</span><span class="eg-kind proj">Pedpro</span>convention "commit ตาม format" (3.5) → Skill <code>commit</code> (5.1) → รวมใน plugin แจกทั้งทีม (5.3) = เส้นทางเต็มของ convention-as-code</div>
+              <div class="eg"><span class="eg-tag">ตัวอย่าง</span><span class="eg-kind proj">xFish</span>convention "commit ตาม format" (3.5) → Skill <code>commit</code> (5.1) → รวมใน plugin แจกทั้งทีม (5.3) = เส้นทางเต็มของ convention-as-code</div>
             </li>
             <li>
               <div class="pt-title"><b>distribute ผ่าน marketplace / repo ได้</b> — plugin แชร์ผ่าน registry หรือ git ทีมอื่นเอาไปใช้ต่อได้ versioning ได้</div>
@@ -1679,7 +1679,7 @@
           </div>
         </div>
 
-        <div class="ws-slot"><span class="wt">Workshop</span><p>เลือก lean MCP stack สำหรับ Pedpro + สร้าง 1 Skill จาก convention เดิม — เพิ่มทีหลัง</p></div>
+        <div class="ws-slot"><span class="wt">Workshop</span><p>เลือก lean MCP stack สำหรับ xFish + สร้าง 1 Skill จาก convention เดิม — เพิ่มทีหลัง</p></div>
       </section>
 
       <!-- ===== MODULE 6 (EXPANDED) ===== -->
@@ -1709,7 +1709,7 @@
               <div class="pt-title"><b>สั่งให้เขียน test จาก behavior/spec ไม่ใช่จาก code ที่เพิ่งเขียน</b> — test ต้องสะท้อน "สิ่งที่ควรเป็น" (จาก acceptance criteria ใน 2.4 / contract ใน 3.4) ไม่ใช่ "สิ่งที่ code ทำตอนนี้"</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>"เขียน test จาก AC: ถ้า input ว่างต้องคืน 400" → test มาจาก spec · ไม่ใช่ "อ่าน code แล้วเขียน test ให้ผ่าน"</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>test assert ตาม Bruno spec ของ <code>/wallet/balance</code> → implementation หลุดจาก spec test แดงทันที</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>test assert ตาม Bruno spec ของ <code>/wallet/balance</code> → implementation หลุดจาก spec test แดงทันที</span>
               </div>
             </li>
             <li>
@@ -1752,7 +1752,7 @@
               <div class="pt-title"><b>ใช้ agent เป็น first-pass reviewer</b> — ให้มันรีวิวรอบแรกจับของง่าย ๆ ก่อน (naming, unused, obvious bug, style) ด้วย Skill <code>review-changes</code>/<code>review</code></div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>ก่อนเปิด PR ให้คน → รัน agent review จับ console.log ที่ลืม, ตัวแปรไม่ได้ใช้, typo ก่อน</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>Skill <code>review-changes</code> เช็ค diff ตาม convention (double quotes, no semicolons, explicit imports) ก่อนถึงมือ reviewer</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>Skill <code>review-changes</code> เช็ค diff ตาม convention (double quotes, no semicolons, explicit imports) ก่อนถึงมือ reviewer</span>
               </div>
             </li>
             <li>
@@ -1792,7 +1792,7 @@
               <div class="pt-title"><b>เช็คพื้นฐาน 3 อย่างก่อนเสมอ</b> — (ก) <b>secret หลุด</b> (API key/token ใน code), (ข) <b>injection</b> (SQL/command/XSS), (ค) <b>authz check</b> (ตรวจสิทธิ์ก่อนทำ action)</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>agent hardcode API key ลงไฟล์ตอน prototype → ต้องจับก่อน commit · query ต่อ string ดิบ → SQL injection</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>เช็คว่าทุก mutation มี <code>DoAdmin</code>/<code>DoIp</code> ตาม convention — authz ไม่หลุด</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>เช็คว่าทุก mutation มี <code>DoAdmin</code>/<code>DoIp</code> ตาม convention — authz ไม่หลุด</span>
               </div>
             </li>
             <li>
@@ -1831,7 +1831,7 @@
               <div class="pt-title"><b>นิยาม merge criteria ให้ชัด แล้ว automate</b> — มาตรฐานขั้นต่ำที่ต้องผ่านก่อน merge: <b>lint + typecheck + test</b> (อย่างน้อย) ทำเป็น CI ไม่ใช่ความจำคน</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>GitHub Actions: PR ต้องผ่าน <code>lint</code> + <code>test</code> + build สำเร็จ ถึง merge ได้ ไม่ผ่าน = block อัตโนมัติ</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>เพิ่ม <code>typecheck</code> (TypeScript strict mode ที่เปิดอยู่) เข้า gate → type ผิดหลุดไป prod ไม่ได้</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>เพิ่ม <code>typecheck</code> (TypeScript strict mode ที่เปิดอยู่) เข้า gate → type ผิดหลุดไป prod ไม่ได้</span>
               </div>
             </li>
             <li>
@@ -1895,7 +1895,7 @@
           </div>
         </div>
 
-        <div class="ws-slot"><span class="wt">Workshop</span><p>วาง CI quality gate (lint + typecheck + test) ของ Pedpro + เขียน behavior test จาก spec — เพิ่มทีหลัง</p></div>
+        <div class="ws-slot"><span class="wt">Workshop</span><p>วาง CI quality gate (lint + typecheck + test) ของ xFish + เขียน behavior test จาก spec — เพิ่มทีหลัง</p></div>
       </section>
       <!-- ===== MODULE 7 (EXPANDED) ===== -->
       <section class="module reveal" id="m7">
@@ -1924,14 +1924,14 @@
               <div class="pt-title"><b>E2E = ทดสอบทั้ง flow จากมุม user ไม่ใช่ทีละฟังก์ชัน</b> — เปิดหน้าจริง คลิกจริง กรอกจริง แล้ว assert ว่าผลที่ user เห็นถูกต้อง (ต่อยอดจาก unit test ใน 6.1 ขึ้นมาอีกชั้น)</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>test "login → ไป dashboard → เห็นชื่อตัวเอง" ครบทั้ง flow ไม่ใช่แค่ test <code>validatePassword()</code></span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>test "เปิด profile → balance โหลด → กดเติมเงิน → เห็นยอดอัปเดต" เป็น flow เดียวต่อกัน</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>test "เปิด profile → balance โหลด → กดเติมเงิน → เห็นยอดอัปเดต" เป็น flow เดียวต่อกัน</span>
               </div>
             </li>
             <li>
               <div class="pt-title"><b>accessibility-tree approach ทนกว่า pixel/selector</b> — Playwright MCP ให้ agent "เห็น" หน้าเป็น structure (role, label, text) แทนพิกัด/CSS selector เปราะ ๆ → ทนต่อ DOM ที่เปลี่ยน</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>locate ด้วย <code>getByRole("button",{name:"Submit"})</code> แทน <code>.btn-3 > div:nth-child(2)</code> ที่พังทันทีที่ layout เปลี่ยน</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>หาปุ่ม "เติมเงิน" ด้วย role+ชื่อ → refactor UI แล้ว test ยังทำงาน</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>หาปุ่ม "เติมเงิน" ด้วย role+ชื่อ → refactor UI แล้ว test ยังทำงาน</span>
               </div>
             </li>
             <li>
@@ -1971,7 +1971,7 @@
               <div class="pt-title"><b>จับสิ่งที่ assertion จับไม่ได้: หน้าตาเพี้ยน</b> — E2E (7.1) เช็ค "ทำงานถูกไหม" แต่ visual regression เช็ค "หน้าตาถูกไหม" — layout เลื่อน, สีเพี้ยน, element ซ้อน ที่ logic ยังผ่าน</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>ปุ่มยังกดได้ (E2E ผ่าน) แต่ขยับไปทับ text ข้าง ๆ — เห็นได้จากภาพเท่านั้น</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>card balance ยัง render เลขถูก แต่ padding เพี้ยนจนล้นกรอบ — assertion ไม่จับ ภาพจับ</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>card balance ยัง render เลขถูก แต่ padding เพี้ยนจนล้นกรอบ — assertion ไม่จับ ภาพจับ</span>
               </div>
             </li>
             <li>
@@ -2014,7 +2014,7 @@
               <div class="pt-title"><b>ให้ agent สรุปผลรันเป็น report ที่อ่านแล้วตัดสินใจได้</b> — ไม่ใช่ dump log ดิบ แต่สรุป: ผ่านกี่ / แดงกี่ / แดงเพราะอะไร / อันไหนน่าจะ flaky</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>"20 เทสต์: ผ่าน 18, แดง 2 — ทั้งคู่ที่ checkout เพราะ timeout น่าจะ flaky" อ่านปุ๊บรู้ว่าต้องดูตรงไหน</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>report flow wallet: ขั้นไหนพัง, screenshot ตอนแดง, น่าจะ env หรือ logic</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>report flow wallet: ขั้นไหนพัง, screenshot ตอนแดง, น่าจะ env หรือ logic</span>
               </div>
             </li>
             <li>
@@ -2081,7 +2081,7 @@
           </div>
         </div>
 
-        <div class="ws-slot"><span class="wt">Workshop</span><p>เขียน E2E flow หลักของ Pedpro ด้วย Playwright MCP + visual regression — เพิ่มทีหลัง</p></div>
+        <div class="ws-slot"><span class="wt">Workshop</span><p>เขียน E2E flow หลักของ xFish ด้วย Playwright MCP + visual regression — เพิ่มทีหลัง</p></div>
       </section>
 
       <!-- ===== MODULE 8 (EXPANDED) ===== -->
@@ -2111,7 +2111,7 @@
               <div class="pt-title"><b>agent ช่วยร่าง config ได้ดี — แต่ค่ากระทบ cost/stability ตรง ๆ</b> — Dockerfile, CI/CD pipeline, service config (memory, concurrency, min/max instances) agent ร่างโครงให้เร็ว แต่ตัวเลขพวกนี้คุณต้องตัด</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>agent ตั้ง <code>min instances: 5</code> ให้ "เผื่อ" → บิลพุ่งทั้งที่ traffic จริงต้องการ 1</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro (Cloud Run)</span>memory/concurrency/min instances กระทบทั้ง cold start และค่าใช้จ่าย → agent เสนอ คุณเคาะ</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish (Cloud Run)</span>memory/concurrency/min instances กระทบทั้ง cold start และค่าใช้จ่าย → agent เสนอ คุณเคาะ</span>
               </div>
             </li>
             <li>
@@ -2153,7 +2153,7 @@
               <div class="pt-title"><b>งาน recurring กฎตายตัว = สวรรค์ของ agent</b> — cleanup, sync, report ประจำ, backup เป็นงานซ้ำที่มีกฎชัด agent เขียน job + ตั้ง schedule ได้ดีมาก</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>cron job ลบ log เก่าเกิน 30 วัน ทุกเที่ยงคืน / sync ข้อมูลจาก external API ทุกชั่วโมง</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span><b>Cloud Scheduler + job</b> สำหรับ report ยอดประจำวัน / cleanup session หมดอายุ</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span><b>Cloud Scheduler + job</b> สำหรับ report ยอดประจำวัน / cleanup session หมดอายุ</span>
               </div>
             </li>
             <li>
@@ -2193,7 +2193,7 @@
               <div class="pt-title"><b>generate doc จาก source โดยตรง — ลด doc เน่า</b> — doc ที่เขียนมือมักไม่ตรง code เมื่อเวลาผ่าน แต่ doc ที่ generate จาก code + API spec จะตรงเสมอเพราะมาจากแหล่งเดียวกัน</div>
               <div class="eg dual"><span class="eg-tag">ตัวอย่าง</span>
                 <span class="eg-line"><span class="eg-kind gen">ทั่วไป</span>generate API reference จาก OpenAPI spec → เปลี่ยน endpoint แล้ว doc อัปเดตตาม ไม่ค้างของเก่า</span>
-                <span class="eg-line"><span class="eg-kind proj">Pedpro</span>generate API doc จาก <b>Bruno spec</b> (source of truth — 3.4) → doc ตรงกับ contract เสมอ</span>
+                <span class="eg-line"><span class="eg-kind proj">xFish</span>generate API doc จาก <b>Bruno spec</b> (source of truth — 3.4) → doc ตรงกับ contract เสมอ</span>
               </div>
             </li>
             <li>
@@ -2210,7 +2210,7 @@
           <div class="steps">
             <div class="steps-head">Step การลงมือจริง · 8.3</div>
             <ol>
-              <li>ชี้ source ให้ชัด: code + API spec (Pedpro = <b>Bruno spec</b>)</li>
+              <li>ชี้ source ให้ชัด: code + API spec (xFish = <b>Bruno spec</b>)</li>
               <li>ให้ agent <b>generate</b> reference doc จาก source นั้น</li>
               <li>คุณ <b>review สาระ</b> + เติมส่วน "ทำไม/บริบท" ที่ generate เองไม่ได้</li>
               <li>ตั้งเป็น <b>routine</b> (8.2): regenerate ทุก release / เมื่อ spec เปลี่ยน</li>
@@ -2254,7 +2254,7 @@
           </div>
         </div>
 
-        <div class="ws-slot"><span class="wt">Workshop</span><p>ตั้ง Cloud Run deploy pipeline + Cloud Scheduler job ของ Pedpro โดยมี permission gate — เพิ่มทีหลัง</p></div>
+        <div class="ws-slot"><span class="wt">Workshop</span><p>ตั้ง Cloud Run deploy pipeline + Cloud Scheduler job ของ xFish โดยมี permission gate — เพิ่มทีหลัง</p></div>
       </section>
       <!-- DEPENDENCY MAP -->
       <section class="map-section reveal" id="map">
@@ -2278,8 +2278,8 @@
       <section class="ws-section" id="workshop">
         <div class="ws-head">
           <div class="sec-kick">ส่วนต่อขยาย · ลงมือจริง</div>
-          <h2>Workshop — Pedpro hands-on</h2>
-          <p>map แต่ละ module ลง Pedpro (Nuxt 4 + Cloud Run + Bruno) แบบ session จริง — เปิด terminal ทำอะไรก่อนหลัง · <b style="color:var(--order)">ครบทั้ง 8 WS</b> (roadmap ด้านล่าง แล้วตามด้วยแต่ละ WS เต็ม)</p>
+          <h2>Workshop — xFish hands-on</h2>
+          <p>map แต่ละ module ลง xFish (Nuxt 4 + Cloud Run + Bruno) แบบ session จริง — เปิด terminal ทำอะไรก่อนหลัง · <b style="color:var(--order)">ครบทั้ง 8 WS</b> (roadmap ด้านล่าง แล้วตามด้วยแต่ละ WS เต็ม)</p>
         </div>
         <div class="ws-grid">
           <div class="ws-card"><div class="wn">WS · 01</div><div class="wtitle">ตั้ง Permission + วัด Token</div><p>settings.json, permission tiers, อ่าน token ของ session จริง</p><span class="ws-status" style="color:var(--order);border-color:rgba(111,217,154,.4)">พร้อม ↓</span></div>
@@ -2288,7 +2288,7 @@
           <div class="ws-card"><div class="wn">WS · 04</div><div class="wtitle">Iterative FE+BE Session</div><p>1 feature เต็ม พร้อมจับ fix-the-symptom loop</p><span class="ws-status" style="color:var(--order);border-color:rgba(111,217,154,.4)">พร้อม ↓</span></div>
           <div class="ws-card"><div class="wn">WS · 05</div><div class="wtitle">Lean MCP Stack</div><p>เลือก MCP เท่าที่จำเป็น + สร้าง 1 Skill</p><span class="ws-status" style="color:var(--order);border-color:rgba(111,217,154,.4)">พร้อม ↓</span></div>
           <div class="ws-card"><div class="wn">WS · 06</div><div class="wtitle">CI Quality Gate</div><p>lint + typecheck + test gate + behavior test</p><span class="ws-status" style="color:var(--order);border-color:rgba(111,217,154,.4)">พร้อม ↓</span></div>
-          <div class="ws-card"><div class="wn">WS · 07</div><div class="wtitle">E2E + Visual Regression</div><p>flow หลักของ Pedpro ด้วย Playwright MCP</p><span class="ws-status" style="color:var(--order);border-color:rgba(111,217,154,.4)">พร้อม ↓</span></div>
+          <div class="ws-card"><div class="wn">WS · 07</div><div class="wtitle">E2E + Visual Regression</div><p>flow หลักของ xFish ด้วย Playwright MCP</p><span class="ws-status" style="color:var(--order);border-color:rgba(111,217,154,.4)">พร้อม ↓</span></div>
           <div class="ws-card"><div class="wn">WS · 08</div><div class="wtitle">Deploy + Scheduler Pipeline</div><p>Cloud Run + Cloud Scheduler โดยมี permission gate</p><span class="ws-status" style="color:var(--order);border-color:rgba(111,217,154,.4)">พร้อม ↓</span></div>
         </div>
         <div class="ws-lab">
@@ -2298,12 +2298,12 @@
             <div class="lab-meta">
               <span class="m">ผูกกับ <b>Module 1.2 · 1.4 · 5.2</b></span>
               <span class="m">เวลา <b>~30–40 นาที</b></span>
-              <span class="m">ต้องมี <b>Claude Code ใน repo Pedpro</b></span>
+              <span class="m">ต้องมี <b>Claude Code ใน repo xFish</b></span>
             </div>
-            <p class="lab-obj">จบ WS นี้คุณจะมี <b>(1)</b> <code>.claude/settings.json</code> ที่ allow งาน read-only/test ให้ลื่น + gate ของอันตราย commit เข้า repo Pedpro และ <b>(2)</b> อ่าน <code>/context</code> เป็น รู้ว่า token หายไปไหน</p>
+            <p class="lab-obj">จบ WS นี้คุณจะมี <b>(1)</b> <code>.claude/settings.json</code> ที่ allow งาน read-only/test ให้ลื่น + gate ของอันตราย commit เข้า repo xFish และ <b>(2)</b> อ่าน <code>/context</code> เป็น รู้ว่า token หายไปไหน</p>
           </div>
 
-          <div class="lab-note"><span class="ln-tag">⚙️ ปรับตามจริง:</span>ตัวอย่างใช้ <code>pnpm</code> + dirs ของ Pedpro (<code>pages/</code>, <code>components/</code>, <code>composables/</code>, <code>stores/</code>) — เปลี่ยนตาม package manager / โครงจริงของคุณ</div>
+          <div class="lab-note"><span class="ln-tag">⚙️ ปรับตามจริง:</span>ตัวอย่างใช้ <code>pnpm</code> + dirs ของ xFish (<code>pages/</code>, <code>components/</code>, <code>composables/</code>, <code>stores/</code>) — เปลี่ยนตาม package manager / โครงจริงของคุณ</div>
 
           <!-- PART A -->
           <div class="lab-part"><div class="lab-part-title"><span class="pp">A</span>ตั้ง Permission</div></div>
@@ -2383,7 +2383,7 @@
 System tools:    17.6k  (8.8%)
 MCP tools:       ...
 Custom agents:   ...
-Memory files:    ...    ← CLAUDE.md ของ Pedpro
+Memory files:    ...    ← CLAUDE.md ของ xFish
 Skills:          ...
 Messages:        ...
 Free space:      ...
@@ -2394,7 +2394,7 @@ Autocompact:     33k    (16.5%)</span></pre></div>
           <div class="lab-step">
             <div class="ls-head"><span class="sid">B2</span>จับตา 2 แถว: Memory files + MCP tools</div>
             <ul>
-              <li><b>Memory files</b> = <code>CLAUDE.md</code> ของ Pedpro — สูงเกิน = ยัดเยอะ (ปูทาง WS 03)</li>
+              <li><b>Memory files</b> = <code>CLAUDE.md</code> ของ xFish — สูงเกิน = ยัดเยอะ (ปูทาง WS 03)</li>
               <li><b>MCP tools</b> = schema ของ MCP ที่เปิด — tool definitions โหลดทุก request, หลายตัวกินเป็นสัดส่วนมาก (ปูทาง WS 05)</li>
             </ul>
           </div>
@@ -2429,7 +2429,7 @@ Autocompact:     33k    (16.5%)</span></pre></div>
 
           <div class="lab-outcome">
             <span class="lo-tag">ผลลัพธ์ WS 01</span>
-            <p><code>.claude/settings.json</code> commit เข้า Pedpro แล้ว — ทีม/agent ใช้ permission เดียวกัน · อ่าน <code>/context</code> <code>/mcp</code> <code>/memory</code> <code>/cost</code> เป็น · เห็นกับตาว่า CLAUDE.md + MCP กิน context จริง → <b>ปูทาง WS 03 (refine CLAUDE.md) + WS 05 (lean MCP)</b></p>
+            <p><code>.claude/settings.json</code> commit เข้า xFish แล้ว — ทีม/agent ใช้ permission เดียวกัน · อ่าน <code>/context</code> <code>/mcp</code> <code>/memory</code> <code>/cost</code> เป็น · เห็นกับตาว่า CLAUDE.md + MCP กิน context จริง → <b>ปูทาง WS 03 (refine CLAUDE.md) + WS 05 (lean MCP)</b></p>
           </div>
         </div>
 
@@ -2441,7 +2441,7 @@ Autocompact:     33k    (16.5%)</span></pre></div>
             <div class="lab-meta">
               <span class="m">ผูกกับ <b>Module 2.1 · 2.2 · 2.3 · 2.4</b></span>
               <span class="m">เวลา <b>~40 นาที</b></span>
-              <span class="m">ต้องมี <b>repo Pedpro + bruno-api/</b></span>
+              <span class="m">ต้องมี <b>repo xFish + bruno-api/</b></span>
             </div>
             <p class="lab-obj">เปลี่ยน feature ใหญ่ 1 อัน → <b>task list เรียง dependency</b> + <b>ticket ที่มี acceptance criteria</b> พร้อมส่ง implement — เดิน feature เดียวครบ Research → Decide → Breakdown → Ticket</p>
           </div>
@@ -2459,7 +2459,7 @@ Autocompact:     33k    (16.5%)</span></pre></div>
 
           <div class="lab-step">
             <div class="ls-head"><span class="sid">A2</span>สั่งสำรวจ — ขอ "ตารางสรุป" ไม่ใช่ "ลงมือ"</div>
-            <div class="term"><div class="term-bar"><i></i><i></i><i></i><span>claude code</span></div><pre><span class="cmd">&gt; สำรวจว่า Pedpro มี wallet/payment อะไรอยู่แล้ว
+            <div class="term"><div class="term-bar"><i></i><i></i><i></i><span>claude code</span></div><pre><span class="cmd">&gt; สำรวจว่า xFish มี wallet/payment อะไรอยู่แล้ว
   อ่าน bruno-api/ ที่เกี่ยว แล้วทำตารางสรุป pattern ที่เจอ
   ยังไม่ต้องเสนอวิธีทำ</span></pre></div>
           </div>
@@ -2569,7 +2569,7 @@ out-of-scope: payment gateway จริง (mock ไปก่อน)</pre></div>
             <p class="lab-obj">ลด <code>CLAUDE.md</code> ให้เหลือเฉพาะของที่ "ต้องรู้ทุก turn" + ย้ายของใช้บางครั้งไปเป็น Skill — <b>วัด context ก่อน-หลัง</b>ให้เห็นด้วยตา</p>
           </div>
 
-          <div class="lab-note"><span class="ln-tag">⚙️ ปรับตามจริง:</span>ตัวอย่างอิงโครง Pedpro (flat dir, Bruno, alias <code>~/</code>,<code>@/</code>) — เทียบกับ <code>CLAUDE.md</code> จริงของคุณ</div>
+          <div class="lab-note"><span class="ln-tag">⚙️ ปรับตามจริง:</span>ตัวอย่างอิงโครง xFish (flat dir, Bruno, alias <code>~/</code>,<code>@/</code>) — เทียบกับ <code>CLAUDE.md</code> จริงของคุณ</div>
 
           <!-- PART A -->
           <div class="lab-part"><div class="lab-part-title"><span class="pp">A</span>วัด baseline ก่อน</div></div>
@@ -2601,7 +2601,7 @@ out-of-scope: payment gateway จริง (mock ไปก่อน)</pre></div>
           </div>
 
           <div class="lab-step">
-            <div class="ls-head"><span class="sid">B2</span>ตัวอย่างการตีตรา (Pedpro)</div>
+            <div class="ls-head"><span class="sid">B2</span>ตัวอย่างการตีตรา (xFish)</div>
             <div class="term"><div class="term-bar"><i></i><i></i><i></i><span>CLAUDE.md · triage</span></div><pre><span class="cmd">🟢 KEEP</span>  "~/ และ @/ resolve ไป project root (flat dir)"
 <span class="cmd">🟢 KEEP</span>  "Bruno spec ใน bruno-api/ = source of truth ห้ามเดา field"
 <span class="key">🟡 SKILL</span> "ขั้นตอน sync Bruno ด้วย scripts/sync-bruno.mjs"
@@ -3095,7 +3095,7 @@ jobs:
             <p class="lab-obj">วาง deploy pipeline ขึ้น Cloud Run ที่<b>ผ่าน gate ก่อน</b> + <b>permission เข้มสุด (คุณกดปุ่มสุดท้าย)</b> + Cloud Scheduler job ที่ idempotent + auto-doc จาก Bruno spec — ปิด lifecycle ทั้งคอร์ส</p>
           </div>
 
-          <div class="lab-note"><span class="ln-tag">⚙️ ปรับตามจริง:</span>ตัวอย่างใช้ GCP (Cloud Run + Cloud Scheduler) ตาม stack Pedpro — ปรับ region/service name/ตัวเลขตามโปรเจกต์จริง · ทุกคำสั่ง <code>gcloud ... deploy</code> ควรอยู่ใน <code>ask</code> permission (WS 01)</div>
+          <div class="lab-note"><span class="ln-tag">⚙️ ปรับตามจริง:</span>ตัวอย่างใช้ GCP (Cloud Run + Cloud Scheduler) ตาม stack xFish — ปรับ region/service name/ตัวเลขตามโปรเจกต์จริง · ทุกคำสั่ง <code>gcloud ... deploy</code> ควรอยู่ใน <code>ask</code> permission (WS 01)</div>
 
           <!-- PART A -->
           <div class="lab-part"><div class="lab-part-title"><span class="pp">A</span>Deploy ที่ผ่าน gate + permission เข้ม</div></div>
@@ -3129,7 +3129,7 @@ timeout:       300s</pre></div>
 
           <div class="lab-step">
             <div class="ls-head"><span class="sid">A4</span>deploy staging ก่อน → ทดสอบ (ต่อ WS 07) → ค่อย prod</div>
-            <div class="term"><div class="term-bar"><i></i><i></i><i></i><span>terminal · staging</span></div><pre><span class="cmd">$ gcloud run deploy pedpro-staging \
+            <div class="term"><div class="term-bar"><i></i><i></i><i></i><span>terminal · staging</span></div><pre><span class="cmd">$ gcloud run deploy xfish-staging \
     --source . --region asia-southeast1 \
     --min-instances 0 --memory 512Mi</span>
 <span class="out"># [Claude Code ถาม approve ก่อน — permission ask จาก WS 01]
@@ -3140,7 +3140,7 @@ timeout:       300s</pre></div>
           <div class="lab-step">
             <div class="ls-head"><span class="sid">A5</span>เตรียม rollback ไว้ก่อน deploy prod (ไม่ใช่หาตอนพัง)</div>
             <div class="term"><div class="term-bar"><i></i><i></i><i></i><span>terminal · rollback ready</span></div><pre><span class="cmd">$ # Cloud Run เก็บ revision เก่าไว้ — รู้คำสั่งถอยก่อนกด</span>
-<span class="cmd">$ gcloud run services update-traffic pedpro \
+<span class="cmd">$ gcloud run services update-traffic xfish \
     --to-revisions PREV_REVISION=100</span>
 <span class="out"># ถ้า deploy prod แล้วพัง → สั่งนี้ดึง traffic กลับ revision เก่าทันที</span></pre></div>
             <div class="lab-check"><span class="ck">✓ Checkpoint</span><span>ผ่าน gate · ตัวเลขคุณเคาะเอง · staging ก่อน prod · <b>คุณกดปุ่มสุดท้าย</b> (agent ไม่ auto-deploy) · มี rollback พร้อม</span></div>
@@ -3175,7 +3175,7 @@ delete where expired_at &lt; now() and status = 'active'</pre></div>
 $ # 2. ผูก scheduler (cron syntax: นาที ชม. วัน เดือน วันสัปดาห์)
 $ gcloud scheduler jobs create http cleanup-sessions \
     --schedule="0 0 * * *" \
-    --uri="https://pedpro.../jobs/cleanup" \
+    --uri="https://xfish.../jobs/cleanup" \
     --http-method=POST \
     --oidc-service-account-email=JOB_SA</span>
 <span class="out"># 0 0 * * * = ทุกเที่ยงคืน · [deploy = คุณกดเอง]</span></pre></div>
@@ -3229,7 +3229,7 @@ $ # แล้วจงใจทำให้ fail (เช่น ตัด DB) →
           <div class="cd-head">
             <div class="cd-kick">★ Workshop ครบทั้ง 8 · คอร์สสมบูรณ์</div>
             <h3>AI Coding Agent SDLC — จบครบทั้งเรียนรู้และลงมือ</h3>
-            <p>8 module (เรียนรู้) + 8 workshop (ลงมือบน Pedpro) ปิด lifecycle ตั้งแต่ Planning จนถึง Operate</p>
+            <p>8 module (เรียนรู้) + 8 workshop (ลงมือบน xFish) ปิด lifecycle ตั้งแต่ Planning จนถึง Operate</p>
           </div>
           <div class="cd-map">
             <div class="cd-row"><span class="cd-m">M1</span><span class="cd-arrow">→</span><span class="cd-w">WS 01</span><span class="cd-t">Permission + Token</span></div>

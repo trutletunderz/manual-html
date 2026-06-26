@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pedpro Agentic — Complete Reference Guide</title>
+<title>xFish Agentic — Complete Reference Guide</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -156,7 +156,7 @@
 <button class="menubtn" id="menubtn">☰ สารบัญ</button>
 <div class="wrap">
 <nav class="toc" id="toc">
-  <div class="brand"><span class="dot"></span>PEDPRO AGENTIC</div>
+  <div class="brand"><span class="dot"></span>xFish AGENTIC</div>
   <div class="sub">Complete Guide · all code</div>
   <ul>
     <li class="grp">Part 1 — แนวคิด</li>
@@ -193,7 +193,7 @@
 <main><div class="inner">
 <header class="hero" id="intro">
   <div class="eyebrow">Complete Reference Guide</div>
-  <h1>Pedpro <span class="lo">Agentic</span> Workflow<br>คู่มือฉบับสมบูรณ์ + โค้ดทั้งหมด</h1>
+  <h1>xFish <span class="lo">Agentic</span> Workflow<br>คู่มือฉบับสมบูรณ์ + โค้ดทั้งหมด</h1>
   <p class="lede">รวมทุกอย่างจากการออกแบบระบบ ไว้ในไฟล์เดียว: แนวคิด Loop Engineering,
   การเลือก framework, แผน 5 ระดับ และโค้ดทุกไฟล์ที่ copy ไปใช้ได้ทันที</p>
   <div class="herometa">
@@ -206,7 +206,7 @@
   <h3 style="margin-top:42px">แผนที่ไฟล์ — วางตรงไหนในโปรเจกต์</h3>
   <p>โค้ดทั้งหมดในคู่มือนี้วางตามโครงนี้ (รันใน container แยกสำหรับ orchestrator):</p>
   <div class="fileblock"><div class="filemeta"><span class="fname">project layout</span></div>
-  <div class="codewrap"><pre>pedpro/
+  <div class="codewrap"><pre>xfish/
 ├─ CLAUDE.md                         # ระดับ 0  รากฐานให้ AI อ่าน
 ├─ docs/
 │  └─ intake-rules.md                # ระดับ 1  กฎที่ command อ้างถึง
@@ -318,13 +318,13 @@
     <div class="fileblock"><div class="filemeta"><span class="fname">terminal</span><span class="lang">bash</span></div>
     <div class="codewrap"><pre>claude mcp add --header &quot;Authorization: Bearer &lt;token&gt;&quot; \
   --transport http youtrack &lt;instance&gt;.youtrack.cloud/mcp</pre></div></div></li>
-    <li><span class="st">ทดสอบ</span> พิมพ์ <code>/mcp</code> ดู connected แล้วลอง "ดึง issue PEDPRO-xxx มาสรุป"</li>
+    <li><span class="st">ทดสอบ</span> พิมพ์ <code>/mcp</code> ดู connected แล้วลอง "ดึง issue xFish-xxx มาสรุป"</li>
     <li><span class="st">วาง CLAUDE.md + docs/</span> (ดูไฟล์เต็มด้านล่าง)</li>
   </ol>
   <div class="note never"><span class="nt">ห้าม</span><p>ช่วงนี้ให้ MCP แค่ "อ่าน" อย่าให้เขียนกลับ YouTrack จนถึง Stage 3</p></div>
   <h3 id="claudemd">ไฟล์: CLAUDE.md</h3>
   <p>วางที่ root ของโปรเจกต์ Claude Code อ่านอัตโนมัติทุก session เติม <code>&lt;fill in&gt;</code> ให้ครบ</p>
-  <div class="fileblock"><div class="filemeta"><span class="fname">CLAUDE.md</span><span class="lang">markdown</span></div><div class="codewrap"><pre># CLAUDE.md — Pedpro
+  <div class="fileblock"><div class="filemeta"><span class="fname">CLAUDE.md</span><span class="lang">markdown</span></div><div class="codewrap"><pre># CLAUDE.md — xFish
 
 &gt; Engineering guidance for AI agents (Claude Code) working on this repository.
 &gt; Keep this file SHORT and HIGH-SIGNAL. If a rule is obvious from the code, do not repeat it here.
@@ -334,7 +334,7 @@
 
 ## 1. Project overview
 
-Pedpro is a Thai-language fantasy gaming portal.
+xFish is a Thai-language fantasy gaming portal.
 The product audience is Thai users; all user-facing copy is in Thai.
 
 - Frontend framework: Nuxt 4
@@ -458,14 +458,14 @@ YouTrack tickets — e.g. what each game section is called, internal naming, etc
   <h3 id="cmd-intake">ไฟล์: .claude/commands/intake.md</h3>
   <div class="fileblock"><div class="filemeta"><span class="fname">.claude/commands/intake.md</span><span class="lang">markdown</span></div><div class="codewrap"><pre>---
 description: รับ task จาก YouTrack แล้วแปลงเป็น spec + แผน พร้อม reference (หยุดรออนุมัติก่อนเขียนโค้ด)
-argument-hint: &lt;YouTrack-issue-id&gt; เช่น PEDPRO-1234
+argument-hint: &lt;YouTrack-issue-id&gt; เช่น xFish-1234
 allowed-tools: Read, Glob, Grep, mcp__youtrack__*
 model: claude-opus-4-8
 ---
 
-# /intake — Task Intake &amp; Planning (Pedpro)
+# /intake — Task Intake &amp; Planning (xFish)
 
-คุณกำลังทำหน้าที่ &quot;ขั้นรับงาน&quot; ของ workflow Pedpro
+คุณกำลังทำหน้าที่ &quot;ขั้นรับงาน&quot; ของ workflow xFish
 เป้าหมายของรอบนี้คือ **เข้าใจงานให้ครบ แล้วเสนอแผนที่มนุษย์อนุมัติได้** ไม่ใช่เขียนโค้ด
 
 Issue ที่ต้องทำ: **$ARGUMENTS**
@@ -565,7 +565,7 @@ allowed-tools: Read, Glob, Grep, Write
 model: claude-sonnet-4-6
 ---
 
-# /mockup — Visual Mockup ก่อน implement (Pedpro)
+# /mockup — Visual Mockup ก่อน implement (xFish)
 
 ทำ **HTML mockup ไฟล์เดียว** ของหน้า/component ตาม spec ที่เพิ่งอนุมัติ
 เป้าหมายคือให้มนุษย์ &quot;เห็นหน้าตา&quot; และยืนยันก่อน ลด rework ตอนเขียน Vue จริง
@@ -575,7 +575,7 @@ model: claude-sonnet-4-6
 
 ---
 
-## กฎการทำ mockup ให้ตรงกับ Pedpro
+## กฎการทำ mockup ให้ตรงกับ xFish
 
 อ้างอิง @docs/intake-rules.md และใช้ `design-tweak` skill ถ้ามี
 ข้อบังคับเพื่อให้ mockup แปลงเป็น Vue + Naive UI ได้ราบรื่น:
@@ -604,13 +604,13 @@ model: claude-sonnet-4-6
 </pre></div></div>
   <h3 id="cmd-implement">ไฟล์: .claude/commands/implement.md</h3>
   <div class="fileblock"><div class="filemeta"><span class="fname">.claude/commands/implement.md</span><span class="lang">markdown</span></div><div class="codewrap"><pre>---
-description: แปลง mockup ที่อนุมัติแล้วเป็น Vue 3.5 + Naive UI จริง ตามกฎ Pedpro แล้วรัน check + หยุดให้รีวิว
+description: แปลง mockup ที่อนุมัติแล้วเป็น Vue 3.5 + Naive UI จริง ตามกฎ xFish แล้วรัน check + หยุดให้รีวิว
 argument-hint: &lt;YouTrack-issue-id&gt;
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash
 model: claude-sonnet-4-6
 ---
 
-# /implement — เขียนโค้ดจริงจาก mockup ที่อนุมัติ (Pedpro)
+# /implement — เขียนโค้ดจริงจาก mockup ที่อนุมัติ (xFish)
 
 แปลง mockup ที่ยืนยันแล้วเป็น Vue component/page จริง ตาม spec และกฎโปรเจกต์
 จบด้วยการรัน check แล้ว **หยุดให้มนุษย์รีวิว** — ห้าม commit เอง
@@ -674,7 +674,7 @@ UI
 &gt; รอคำสั่งจากมนุษย์เท่านั้น
 </pre></div></div>
   <h3 id="cmd-rules">ไฟล์: docs/intake-rules.md</h3>
-  <p>กฎ Pedpro ที่ทั้ง 3 คำสั่งอ้างผ่าน <code>@docs/intake-rules.md</code> — แก้ที่เดียว ใช้ร่วมกัน</p>
+  <p>กฎ xFish ที่ทั้ง 3 คำสั่งอ้างผ่าน <code>@docs/intake-rules.md</code> — แก้ที่เดียว ใช้ร่วมกัน</p>
   <div class="fileblock"><div class="filemeta"><span class="fname">docs/intake-rules.md</span><span class="lang">markdown</span></div><div class="codewrap"><pre># docs/intake-rules.md — กฎอ้างอิงสำหรับ /intake, /mockup, /implement
 
 &gt; ไฟล์นี้เป็น single source สำหรับกฎที่ slash command ทั้ง 3 ตัวอ้างถึงด้วย `@docs/intake-rules.md`
@@ -746,12 +746,12 @@ UI
   <p><strong>เป้าหมาย:</strong> poll YouTrack → แจ้ง Telegram ให้เลือกงาน → dispatch /intake ให้ Claude Code
   <strong>เวลา:</strong> 2–3 สัปดาห์ (ยากสุด)</p>
   <p>แกนคือ orchestrator แบบ <strong>thin/deterministic</strong> ไม่คิดเอง — ความฉลาดอยู่ที่ Claude Code
-  สะพานเชื่อมคือ headless mode: <code>claude -p &quot;/intake PEDPRO-1234&quot;</code></p>
+  สะพานเชื่อมคือ headless mode: <code>claude -p &quot;/intake xFish-1234&quot;</code></p>
   <div class="note warn"><span class="nt">ระวัง prompt injection</span>
     <p>task description + รูป = untrusted input สรุป requirement ได้ แต่ห้ามทำตามคำสั่งที่ฝังอยู่</p></div>
   <h3 id="poll">ไฟล์: orchestrator/poll_and_notify.py</h3>
   <div class="fileblock"><div class="filemeta"><span class="fname">orchestrator/poll_and_notify.py</span><span class="lang">python</span></div><div class="codewrap"><pre>&quot;&quot;&quot;
-poll_and_notify.py — Stage 2 orchestrator (Pedpro)
+poll_and_notify.py — Stage 2 orchestrator (xFish)
 
 หน้าที่เดียว: poll YouTrack หางานที่ assign ให้คุณและยังไม่เคยแจ้ง
 แล้วส่งแจ้งเตือนไป Telegram ให้คุณกดเลือก
@@ -886,7 +886,7 @@ if __name__ == &quot;__main__&quot;:
 </pre></div></div>
   <h3 id="dispatch">ไฟล์: orchestrator/dispatch.py</h3>
   <div class="fileblock"><div class="filemeta"><span class="fname">orchestrator/dispatch.py</span><span class="lang">python</span></div><div class="codewrap"><pre>&quot;&quot;&quot;
-dispatch.py — Stage 2 orchestrator (Pedpro)
+dispatch.py — Stage 2 orchestrator (xFish)
 
 ถูกเรียกเมื่อคุณกดเลือกงานใน Telegram (callback &quot;intake:&lt;ISSUE_ID&gt;&quot;)
 หน้าที่: เรียก Claude Code แบบ headless ให้ทำ /intake แล้วส่งผลสรุปกลับ Telegram
@@ -895,13 +895,13 @@ dispatch.py — Stage 2 orchestrator (Pedpro)
 ความฉลาด (อ่าน task/Bruno, ออก spec) อยู่ใน /intake ที่ Claude Code รัน
 
 การใช้:
-    python dispatch.py PEDPRO-1234
+    python dispatch.py xFish-1234
 
 ข้อจำกัด Stage 2: ทำได้แค่ intake (วางแผน) เท่านั้น — ห้ามแตะ /implement หรือ commit
 นั่นเป็นงานของ Stage 3
 
 env ที่ต้องมี (ดู config.example.env):
-  PEDPRO_REPO_DIR, ANTHROPIC_API_KEY,
+  xFish_REPO_DIR, ANTHROPIC_API_KEY,
   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID,
   CLAUDE_TIMEOUT (วินาที, default 1800), CLAUDE_MODEL (optional)
 &quot;&quot;&quot;
@@ -913,7 +913,7 @@ import subprocess
 import sys
 import urllib.request
 
-PEDPRO_REPO_DIR = os.environ[&quot;PEDPRO_REPO_DIR&quot;]
+xFish_REPO_DIR = os.environ[&quot;xFish_REPO_DIR&quot;]
 TELEGRAM_BOT_TOKEN = os.environ[&quot;TELEGRAM_BOT_TOKEN&quot;]
 TELEGRAM_CHAT_ID = os.environ[&quot;TELEGRAM_CHAT_ID&quot;]
 CLAUDE_TIMEOUT = int(os.environ.get(&quot;CLAUDE_TIMEOUT&quot;, &quot;1800&quot;))  # 30 นาที
@@ -950,7 +950,7 @@ def run_intake(issue_id: str) -&gt; dict:
     try:
         proc = subprocess.run(
             cmd,
-            cwd=PEDPRO_REPO_DIR,
+            cwd=xFish_REPO_DIR,
             capture_output=True,
             text=True,
             timeout=CLAUDE_TIMEOUT,
@@ -977,7 +977,7 @@ def run_intake(issue_id: str) -&gt; dict:
 
 def main() -&gt; int:
     if len(sys.argv) != 2 or not ISSUE_RE.match(sys.argv[1]):
-        print(&quot;usage: python dispatch.py &lt;ISSUE-ID&gt;  (เช่น PEDPRO-1234)&quot;, file=sys.stderr)
+        print(&quot;usage: python dispatch.py &lt;ISSUE-ID&gt;  (เช่น xFish-1234)&quot;, file=sys.stderr)
         return 2
 
     issue_id = sys.argv[1]
@@ -1002,7 +1002,7 @@ if __name__ == &quot;__main__&quot;:
     sys.exit(main())
 </pre></div></div>
   <h3 id="cfg2">ไฟล์: orchestrator/config.example.env</h3>
-  <div class="fileblock"><div class="filemeta"><span class="fname">orchestrator/config.example.env</span><span class="lang">env</span></div><div class="codewrap"><pre># config.example.env — Stage 2 orchestrator (Pedpro)
+  <div class="fileblock"><div class="filemeta"><span class="fname">orchestrator/config.example.env</span><span class="lang">env</span></div><div class="codewrap"><pre># config.example.env — Stage 2 orchestrator (xFish)
 # คัดลอกเป็น .env แล้วเติมค่าจริง  ห้าม commit .env ลง repo (ใส่ใน .gitignore)
 # โหลดเข้า environment ก่อนรัน script เช่น:  set -a &amp;&amp; source .env &amp;&amp; set +a
 
@@ -1022,8 +1022,8 @@ TELEGRAM_BOT_TOKEN=&quot;123456:ABC-xxxxxxxx&quot;
 TELEGRAM_CHAT_ID=&quot;123456789&quot;
 
 # ---- Claude Code (สำหรับ dispatch.py) ----
-# path ไปยัง repo Pedpro ใน container — ต้องมี CLAUDE.md, bruno-api/, docs/, .claude/commands/
-PEDPRO_REPO_DIR=&quot;/workspace/pedpro&quot;
+# path ไปยัง repo xFish ใน container — ต้องมี CLAUDE.md, bruno-api/, docs/, .claude/commands/
+xFish_REPO_DIR=&quot;/workspace/xfish&quot;
 # auth สำหรับ headless: ใช้ API key แยกสำหรับ fleet (แยกโควตาจาก Max ที่ใช้ interactive)
 ANTHROPIC_API_KEY=&quot;sk-ant-xxxxxxxx&quot;
 # เพดานเวลา headless ต่อรอบ (วินาที) กัน agent ค้าง
@@ -1049,20 +1049,20 @@ SEEN_STATE_FILE=&quot;/workspace/.orchestrator-seen.json&quot;
   <h3 id="buildpy">ไฟล์: orchestrator/build.py</h3>
   <p>สร้าง worktree → /implement → test → รายงาน diff (rework = resume session เดิม, เพดาน 3 รอบ) ไม่ commit</p>
   <div class="fileblock"><div class="filemeta"><span class="fname">orchestrator/build.py</span><span class="lang">python</span></div><div class="codewrap"><pre>&quot;&quot;&quot;
-build.py — Stage 3 orchestrator (Pedpro)
+build.py — Stage 3 orchestrator (xFish)
 
 ปิด loop ส่วนเขียนโค้ด: สร้าง worktree แยก → ให้ Claude Code ทำ /implement →
 รัน test ในตัว → สรุป diff + ผลกลับ Telegram
 
 โหมดการใช้:
-  สร้างครั้งแรก:  python build.py PEDPRO-1234
-  สั่งแก้ (rework): python build.py PEDPRO-1234 &quot;ปรับ validation ของ field เบอร์โทร&quot;
+  สร้างครั้งแรก:  python build.py xFish-1234
+  สั่งแก้ (rework): python build.py xFish-1234 &quot;ปรับ validation ของ field เบอร์โทร&quot;
 
 กฎเหล็ก: script นี้ &quot;ไม่ commit&quot; เด็ดขาด — commit/PR เป็นงานของ approve.py ที่คุณสั่งเอง
 ความฉลาดอยู่ใน /implement (Stage 1) orchestrator แค่จัด worktree + เรียก + รายงาน
 
 env เพิ่มจาก Stage 2 (ดู config):
-  PEDPRO_REPO_DIR, WORKTREE_ROOT, BRANCH_PREFIX, BASE_REF,
+  xFish_REPO_DIR, WORKTREE_ROOT, BRANCH_PREFIX, BASE_REF,
   BUILD_STATE_FILE, MAX_REWORK, CLAUDE_TIMEOUT, CLAUDE_MODEL
 &quot;&quot;&quot;
 
@@ -1073,7 +1073,7 @@ import subprocess
 import sys
 import urllib.request
 
-PEDPRO_REPO_DIR = os.environ[&quot;PEDPRO_REPO_DIR&quot;]
+xFish_REPO_DIR = os.environ[&quot;xFish_REPO_DIR&quot;]
 WORKTREE_ROOT = os.environ.get(&quot;WORKTREE_ROOT&quot;, &quot;../worktrees&quot;)
 BRANCH_PREFIX = os.environ.get(&quot;BRANCH_PREFIX&quot;, &quot;agent/&quot;)
 BASE_REF = os.environ.get(&quot;BASE_REF&quot;, &quot;origin/main&quot;)
@@ -1122,13 +1122,13 @@ def run_git(args: list, cwd: str) -&gt; subprocess.CompletedProcess:
 def ensure_worktree(issue_id: str) -&gt; str:
     &quot;&quot;&quot;สร้าง worktree + branch ถ้ายังไม่มี คืน path ของ worktree&quot;&quot;&quot;
     branch = f&quot;{BRANCH_PREFIX}{issue_id}&quot;
-    wt_path = os.path.abspath(os.path.join(PEDPRO_REPO_DIR, WORKTREE_ROOT, issue_id))
+    wt_path = os.path.abspath(os.path.join(xFish_REPO_DIR, WORKTREE_ROOT, issue_id))
     if os.path.isdir(wt_path):
         return wt_path  # มีอยู่แล้ว (กรณี rework)
     # sync ref ฐานก่อน แล้วสร้าง worktree ใหม่จาก base
-    run_git([&quot;fetch&quot;, &quot;origin&quot;], cwd=PEDPRO_REPO_DIR)
+    run_git([&quot;fetch&quot;, &quot;origin&quot;], cwd=xFish_REPO_DIR)
     res = run_git(
-        [&quot;worktree&quot;, &quot;add&quot;, &quot;-b&quot;, branch, wt_path, BASE_REF], cwd=PEDPRO_REPO_DIR
+        [&quot;worktree&quot;, &quot;add&quot;, &quot;-b&quot;, branch, wt_path, BASE_REF], cwd=xFish_REPO_DIR
     )
     if res.returncode != 0:
         raise RuntimeError(f&quot;สร้าง worktree ไม่สำเร็จ: {res.stderr[:300]}&quot;)
@@ -1227,12 +1227,12 @@ if __name__ == &quot;__main__&quot;:
   <h3 id="approvepy">ไฟล์: orchestrator/approve.py</h3>
   <p>ด่านอนุมัติ — จุดเดียวในระบบที่ทำ git commit/push/PR + อัปเดต YouTrack</p>
   <div class="fileblock"><div class="filemeta"><span class="fname">orchestrator/approve.py</span><span class="lang">python</span></div><div class="codewrap"><pre>&quot;&quot;&quot;
-approve.py — Stage 3 orchestrator (Pedpro)
+approve.py — Stage 3 orchestrator (xFish)
 
 ด่านตัดสินใจที่ 2: commit + เปิด PR + อัปเดต YouTrack
 รันเมื่อ &quot;คุณสั่งเท่านั้น&quot; หลังรีวิว diff จาก build.py แล้ว
 
-    python approve.py PEDPRO-1234
+    python approve.py xFish-1234
 
 นี่คือจุดเดียวในทั้งระบบที่ทำ git commit/push/PR — โดยตั้งใจ
 agent อื่นๆ ไม่มีสิทธิ์แตะ git เพื่อให้ &quot;มนุษย์กด commit เสมอ&quot; เป็นจริงในเชิงโครงสร้าง
@@ -1364,7 +1364,7 @@ if __name__ == &quot;__main__&quot;:
 # ห้าม commit .env ลง repo
 
 # ---- worktree / build ----
-# โฟลเดอร์เก็บ worktree (relative กับ PEDPRO_REPO_DIR หรือ absolute ก็ได้)
+# โฟลเดอร์เก็บ worktree (relative กับ xFish_REPO_DIR หรือ absolute ก็ได้)
 WORKTREE_ROOT=&quot;../worktrees&quot;
 # prefix ของ branch ที่ agent สร้าง
 BRANCH_PREFIX=&quot;agent/&quot;
@@ -1409,7 +1409,7 @@ YOUTRACK_WRITE_TOKEN=&quot;perm:xxxxxxxx&quot;
   <h3 id="riskpy">ไฟล์: orchestrator/risk_policy.py</h3>
   <p>จัด tier อัตโนมัติจากไฟล์ที่ task แตะ → บอกว่าต้องบังคับ mockup gate ไหม (HIGH ชนะ MEDIUM ชนะ LOW)</p>
   <div class="fileblock"><div class="filemeta"><span class="fname">orchestrator/risk_policy.py</span><span class="lang">python</span></div><div class="codewrap"><pre>&quot;&quot;&quot;
-risk_policy.py — Stage 4 orchestrator (Pedpro)
+risk_policy.py — Stage 4 orchestrator (xFish)
 
 จัด risk tier ของงานอัตโนมัติจาก &quot;ไฟล์ที่ task แตะ&quot; แล้วบอกว่าต้องคุมเข้มแค่ไหน
 เป็น logic แบบ deterministic ล้วน อ่านนิยาม tier จาก risk-tiers.json (แก้ที่เดียว ใช้ร่วมกัน)
@@ -1417,7 +1417,7 @@ risk_policy.py — Stage 4 orchestrator (Pedpro)
 ใช้ใน build.py: classify_from_diff(wt_path, base_ref) → ตัดสินว่าต้องบังคับ mockup gate ไหม
 ใช้ทดสอบ standalone:
     python risk_policy.py --path bruno-api/x.bru pages/foo/index.vue
-    python risk_policy.py --issue PEDPRO-1234     (อ่าน worktree จาก build state)
+    python risk_policy.py --issue xFish-1234     (อ่าน worktree จาก build state)
 
 กฎเหล็ก: ไม่ว่าผลออกมา tier ไหน ด่าน commit ที่มนุษย์กด คงไว้เสมอ
 risk tier ปรับแค่ &quot;ความเข้มของการรีวิว&quot; และ &quot;mockup บังคับหรือไม่&quot; เท่านั้น
@@ -1506,7 +1506,7 @@ if __name__ == &quot;__main__&quot;:
 </pre></div></div>
   <h3 id="tierjson">ไฟล์: orchestrator/risk-tiers.json</h3>
   <div class="fileblock"><div class="filemeta"><span class="fname">orchestrator/risk-tiers.json</span><span class="lang">json</span></div><div class="codewrap"><pre>{
-  &quot;_comment&quot;: &quot;นิยาม risk tier ของ Pedpro — ไฟล์ที่ match pattern จะถูกจัดเข้า tier นั้น (HIGH ชนะ MEDIUM, ที่ไม่ match = LOW). ปรับ pattern ตามโครงสร้างจริงของโปรเจกต์&quot;,
+  &quot;_comment&quot;: &quot;นิยาม risk tier ของ xFish — ไฟล์ที่ match pattern จะถูกจัดเข้า tier นั้น (HIGH ชนะ MEDIUM, ที่ไม่ match = LOW). ปรับ pattern ตามโครงสร้างจริงของโปรเจกต์&quot;,
 
   &quot;HIGH&quot;: [
     &quot;bruno-api/**&quot;,
@@ -1539,7 +1539,7 @@ if __name__ == &quot;__main__&quot;:
   <h3 id="metricspy">ไฟล์: orchestrator/trust_metrics.py</h3>
   <p>อ่าน decisions.jsonl → คำนวณ blind_approve_rate, rework ต่อ tier, เวลาเฉลี่ยก่อนอนุมัติ</p>
   <div class="fileblock"><div class="filemeta"><span class="fname">orchestrator/trust_metrics.py</span><span class="lang">python</span></div><div class="codewrap"><pre>&quot;&quot;&quot;
-trust_metrics.py — Stage 4 orchestrator (Pedpro)
+trust_metrics.py — Stage 4 orchestrator (xFish)
 
 อ่าน log การตัดสินใจ (decisions.jsonl) แล้วสรุป &quot;trust metrics&quot; ที่ต้องเฝ้า
 เพื่อตอบคำถามเดียว: คุณกำลัง &quot;ตัดสินใจ&quot; หรือ &quot;rubber-stamp&quot;?
@@ -1549,8 +1549,8 @@ trust_metrics.py — Stage 4 orchestrator (Pedpro)
     python trust_metrics.py --days 7         (เฉพาะ 7 วันล่าสุด)
 
 รูปแบบ event ใน decisions.jsonl (หนึ่ง JSON ต่อบรรทัด) เช่น:
-  {&quot;ts&quot;: 1718900000, &quot;issue&quot;: &quot;PEDPRO-1&quot;, &quot;tier&quot;: &quot;LOW&quot;, &quot;stage&quot;: &quot;build&quot;, &quot;rework_count&quot;: 0}
-  {&quot;ts&quot;: 1718900500, &quot;issue&quot;: &quot;PEDPRO-1&quot;, &quot;stage&quot;: &quot;approve&quot;, &quot;viewed_diff&quot;: true, &quot;seconds_since_build&quot;: 420}
+  {&quot;ts&quot;: 1718900000, &quot;issue&quot;: &quot;xFish-1&quot;, &quot;tier&quot;: &quot;LOW&quot;, &quot;stage&quot;: &quot;build&quot;, &quot;rework_count&quot;: 0}
+  {&quot;ts&quot;: 1718900500, &quot;issue&quot;: &quot;xFish-1&quot;, &quot;stage&quot;: &quot;approve&quot;, &quot;viewed_diff&quot;: true, &quot;seconds_since_build&quot;: 420}
 
 metric สำคัญที่สุด: blind_approve_rate = สัดส่วน approve ที่ไม่ได้ดู diff หรือกดเร็วผิดปกติ
 &quot;&quot;&quot;
@@ -1627,7 +1627,7 @@ def summarize(events: list) -&gt; dict:
 
 def render(s: dict) -&gt; str:
     lines = [
-        &quot;=== Trust Metrics (Pedpro) ===&quot;,
+        &quot;=== Trust Metrics (xFish) ===&quot;,
         f&quot;events: {s[&#x27;window_events&#x27;]}  |  builds: {s[&#x27;builds&#x27;]}  |  approves: {s[&#x27;approves&#x27;]}&quot;,
         &quot;&quot;,
         f&quot;\U0001F6A8 blind_approve_rate: {s[&#x27;blind_approve_rate&#x27;]}  &quot;
@@ -1708,7 +1708,7 @@ if __name__ == &quot;__main__&quot;:
     <p>1) ทำ Stage 0 ให้จบก่อน · 2) อย่าแตะ OpenClaw/Hermes จนถึง Stage 2 ·
     3) เลือก repo เดียว task type เดียวมาทดลอง · 4) อยู่แต่ละ Stage 1–2 สัปดาห์ อย่าข้าม</p></div>
   <div class="foot">
-    Pedpro Agentic — Complete Reference Guide<br>
+    xFish Agentic — Complete Reference Guide<br>
     core principle: parallelize agents, serialize human judgment<br>
     โค้ดทุกไฟล์ verify แล้ว แต่ราคา/CLI syntax/API เปลี่ยนเร็ว — ทดสอบทีละชิ้นก่อนต่อจริง
   </div>

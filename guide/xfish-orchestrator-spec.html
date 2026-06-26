@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pedpro Orchestrator — Build Spec</title>
+<title>xFish Orchestrator — Build Spec</title>
 <style>
   :root{
     --bg:#16130e; --bg2:#1e1a13; --bg3:#262017; --border:#3a3225; --border2:#4a4030;
@@ -80,7 +80,7 @@
 <a href="../index.html" id="back-home-fab" aria-label="กลับคลังคู่มือ" style="position:fixed;right:18px;bottom:18px;z-index:99999;display:inline-flex;align-items:center;gap:7px;padding:10px 16px;font:600 14px/1 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#fff;background:#0284c7;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px rgba(2,132,199,.35)">🏠 หน้าแรก</a>
 <div class="layout">
 <nav>
-  <div class="brand">PEDPRO ⟡ ORCHESTRATOR</div>
+  <div class="brand">xFish ⟡ ORCHESTRATOR</div>
   <div class="brandsub">build spec · v1</div>
   <a href="#overview"><span class="n">00</span>ภาพรวม</a>
   <a href="#principle"><span class="n">01</span>หลักการ + litmus test</a>
@@ -103,7 +103,7 @@
 <main>
 <header class="hero">
   <div class="tag">human-gated agentic pipeline · solo dev · local mac</div>
-  <h1>Pedpro Orchestrator — Build Spec</h1>
+  <h1>xFish Orchestrator — Build Spec</h1>
   <p>สเปกไฟล์เดียวสำหรับสร้าง "ตัวร้อย" บางๆ ที่ขับ pipeline 7 ขั้นแบบ human-gated, อ่าน/เขียน state ลง SQLite, แสดงผลผ่าน Kanban, และเปิดช่องให้ Hermes เรียนสไตล์โดยไม่แตะ judgment ของมนุษย์</p>
   <p class="en">A spec for Claude Code to build a thin orchestrator that drives a 7-stage human-gated pipeline on a local Mac. No inbound server — outbound-only, runs 24/7. State in SQLite. Hermes plugs in as a style layer that never touches the gates.</p>
 </header>
@@ -149,7 +149,7 @@
   <div class="code">
     <div class="head"><span class="ttl">schema.sql</span><button class="copy">copy</button></div>
 <pre><span class="k">CREATE TABLE</span> tasks (
-  id            <span class="k">TEXT PRIMARY KEY</span>,        <span class="c">-- youtrack id เช่น PEDPRO-1320</span>
+  id            <span class="k">TEXT PRIMARY KEY</span>,        <span class="c">-- youtrack id เช่น xFish-1320</span>
   title         <span class="k">TEXT NOT NULL</span>,
   stage         <span class="k">TEXT NOT NULL</span>,           <span class="c">-- ดู state machine ขั้น 03</span>
   risk_tier     <span class="k">TEXT NOT NULL DEFAULT</span> <span class="s">'medium'</span>, <span class="c">-- low | medium | high</span>
@@ -236,12 +236,12 @@
   </div>
   <div class="code">
     <div class="head"><span class="ttl">dispatch ผ่าน headless bridge</span><button class="copy">copy</button></div>
-<pre>claude -p <span class="s">"/intake PEDPRO-1320"</span> \
+<pre>claude -p <span class="s">"/intake xFish-1320"</span> \
   --output-format json \
   --permission-mode plan \      <span class="c"># intake = read-only</span>
   --model opus
 
-claude -p <span class="s">"/implement PEDPRO-1320"</span> \
+claude -p <span class="s">"/implement xFish-1320"</span> \
   --output-format json \
   --allowedTools <span class="s">"Edit,Bash(npm test),Bash(npm run lint)"</span> \  <span class="c"># scope แคบ</span>
   --model sonnet</pre>
@@ -438,7 +438,7 @@ on_callback(edit_text, task_id, gate=<span class="s">"gate2"</span>):
   <p class="lead">ไฟล์นี้คือ spec — โยนเข้า Claude Code แล้วให้มันสร้างตามนี้ทีละ phase</p>
   <div class="code">
     <div class="head"><span class="ttl">prompt เริ่มต้น (phase 0)</span><button class="copy">copy</button></div>
-<pre>อ่าน spec ใน pedpro-orchestrator-spec.html
+<pre>อ่าน spec ใน xfish-orchestrator-spec.html
 
 สร้าง phase 0 ก่อน:
 1. schema.sql ตามขั้น 02
@@ -458,7 +458,7 @@ on_callback(edit_text, task_id, gate=<span class="s">"gate2"</span>):
   <p class="lead">setup environment + รัน phase 0 + ขยับเป็น 24/7 · code ของระบบ (runner.py ฯลฯ) ให้ Claude Code สร้างจากส่วน 14 ลงใน scaffold นี้</p>
   <div class="box">
     <div class="lbl" style="color:var(--muted)">ก่อนเริ่ม</div>
-    <p style="margin:4px 0">ของส่วนใหญ่นายมีแล้ว (Claude Code Max, Codex, repo Pedpro, Playwright) — step ด้านล่างคือ "verify ของเดิม + สร้าง scaffold ของตัวร้อยรอบๆ มัน" แทนที่ <code>YOU</code> / <code>YOURORG</code> ด้วยค่าจริงของนาย</p>
+    <p style="margin:4px 0">ของส่วนใหญ่นายมีแล้ว (Claude Code Max, Codex, repo xFish, Playwright) — step ด้านล่างคือ "verify ของเดิม + สร้าง scaffold ของตัวร้อยรอบๆ มัน" แทนที่ <code>YOU</code> / <code>YOURORG</code> ด้วยค่าจริงของนาย</p>
   </div>
 
   <h3>step 1 — เช็ก prerequisites</h3>
@@ -477,10 +477,10 @@ codex --version          <span class="c"># Codex CLI (ChatGPT Plus)</span></pre>
   <h3>step 2 — scaffold โปรเจกต์ตัวร้อย</h3>
   <div class="code">
     <div class="head"><span class="ttl">terminal</span><button class="copy">copy</button></div>
-<pre>mkdir -p ~/pedpro-orchestrator/{db,logs}
-cd ~/pedpro-orchestrator
+<pre>mkdir -p ~/xfish-orchestrator/{db,logs}
+cd ~/xfish-orchestrator
 <span class="c"># ไฟล์ที่จะมี: runner.py · telegram.py · db.py · schema.sql · .env</span>
-<span class="c"># slash command อยู่ใน repo Pedpro (.claude/commands) ไม่ใช่ที่นี่</span></pre>
+<span class="c"># slash command อยู่ใน repo xFish (.claude/commands) ไม่ใช่ที่นี่</span></pre>
   </div>
 
   <h3>step 3 — Python venv + deps</h3>
@@ -503,7 +503,7 @@ sqlite3 db/state.sqlite <span class="s">".tables"</span>   <span class="c"># เ
   <div class="code">
     <div class="head"><span class="ttl">ทดสอบ token</span><button class="copy">copy</button></div>
 <pre>curl -H <span class="s">"Authorization: Bearer perm:xxxx"</span> \
-  <span class="s">"https://YOURORG.youtrack.cloud/api/issues?query=project:PEDPRO%20State:Open&amp;fields=idReadable,summary&amp;\$top=5"</span></pre>
+  <span class="s">"https://YOURORG.youtrack.cloud/api/issues?query=project:xFish%20State:Open&amp;fields=idReadable,summary&amp;\$top=5"</span></pre>
   </div>
 
   <h3>step 6 — Telegram bot + chat id</h3>
@@ -528,7 +528,7 @@ curl <span class="s">"https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates"</spa
 YOUTRACK_TOKEN=perm:xxxx
 TELEGRAM_TOKEN=123456:ABC-xyz
 TELEGRAM_CHAT_ID=987654321
-PEDPRO_REPO=/Users/YOU/code/pedpro
+xFish_REPO=/Users/YOU/code/xfish
 MAX_ATTEMPTS=3
 POLL_INTERVAL=3600          <span class="c"># วินาที = 1 ชม.</span>
 HERMES_LEARN=true           <span class="c"># เรียนตั้งแต่ loop นิ่ง (เก็บ gate_feedback)</span>
@@ -541,13 +541,13 @@ HERMES_SUGGEST=false        <span class="c"># ป้อน plan ทีหลั�
 
   <h3>step 8 — verify Claude Code headless</h3>
   <div class="code">
-    <div class="head"><span class="ttl">terminal — ใน repo Pedpro</span><button class="copy">copy</button></div>
+    <div class="head"><span class="ttl">terminal — ใน repo xFish</span><button class="copy">copy</button></div>
 <pre><span class="c"># ล็อกอินครั้งเดียว (browser) ถ้ายังไม่เคย — token เก็บใน ~/.claude</span>
 claude
 
 <span class="c"># ทดสอบ headless ด้วย command จริง</span>
-cd $PEDPRO_REPO
-claude -p <span class="s">"/intake PEDPRO-1320"</span> --output-format json \
+cd $xFish_REPO
+claude -p <span class="s">"/intake xFish-1320"</span> --output-format json \
   --permission-mode plan --model opus</pre>
   </div>
   <div class="box amber">
@@ -557,7 +557,7 @@ claude -p <span class="s">"/intake PEDPRO-1320"</span> --output-format json \
 
   <h3>step 9 — Playwright baseline</h3>
   <div class="code">
-    <div class="head"><span class="ttl">terminal — ใน repo Pedpro</span><button class="copy">copy</button></div>
+    <div class="head"><span class="ttl">terminal — ใน repo xFish</span><button class="copy">copy</button></div>
 <pre>npx playwright install            <span class="c"># ถ้ายังไม่มี browser</span>
 npx playwright test               <span class="c"># functional E2E</span>
 npx playwright test --update-snapshots   <span class="c"># สร้าง visual baseline</span></pre>
@@ -570,7 +570,7 @@ npx playwright test --update-snapshots   <span class="c"># สร้าง visua
   <h3>step 10 — รัน phase 0 แบบมือ (ดู log ก่อน)</h3>
   <div class="code">
     <div class="head"><span class="ttl">terminal</span><button class="copy">copy</button></div>
-<pre>cd ~/pedpro-orchestrator
+<pre>cd ~/xfish-orchestrator
 source .venv/bin/activate
 python runner.py --once     <span class="c"># tick เดียว ดูว่า poll + แจ้ง Telegram ทำงาน</span>
 <span class="c"># ลองอนุมัติ plan จาก Telegram → เช็กว่า stage ขยับใน SQLite</span>
@@ -594,43 +594,43 @@ sudo pmset -c sleep 0 disablesleep 1</pre>
 
   <h3>step 12 — launchd LaunchAgent (24/7)</h3>
   <div class="code">
-    <div class="head"><span class="ttl">~/Library/LaunchAgents/com.pedpro.orchestrator.plist</span><button class="copy">copy</button></div>
+    <div class="head"><span class="ttl">~/Library/LaunchAgents/com.xfish.orchestrator.plist</span><button class="copy">copy</button></div>
 <pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
   "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
 &lt;plist version="1.0"&gt;
 &lt;dict&gt;
-  &lt;key&gt;Label&lt;/key&gt;&lt;string&gt;com.pedpro.orchestrator&lt;/string&gt;
+  &lt;key&gt;Label&lt;/key&gt;&lt;string&gt;com.xfish.orchestrator&lt;/string&gt;
   &lt;key&gt;ProgramArguments&lt;/key&gt;
   &lt;array&gt;
     &lt;string&gt;/usr/bin/caffeinate&lt;/string&gt;
     &lt;string&gt;-is&lt;/string&gt;
-    &lt;string&gt;/Users/YOU/pedpro-orchestrator/.venv/bin/python&lt;/string&gt;
-    &lt;string&gt;/Users/YOU/pedpro-orchestrator/runner.py&lt;/string&gt;
+    &lt;string&gt;/Users/YOU/xfish-orchestrator/.venv/bin/python&lt;/string&gt;
+    &lt;string&gt;/Users/YOU/xfish-orchestrator/runner.py&lt;/string&gt;
   &lt;/array&gt;
-  &lt;key&gt;WorkingDirectory&lt;/key&gt;&lt;string&gt;/Users/YOU/pedpro-orchestrator&lt;/string&gt;
+  &lt;key&gt;WorkingDirectory&lt;/key&gt;&lt;string&gt;/Users/YOU/xfish-orchestrator&lt;/string&gt;
   &lt;key&gt;RunAtLoad&lt;/key&gt;&lt;true/&gt;
   &lt;key&gt;KeepAlive&lt;/key&gt;&lt;true/&gt;
-  &lt;key&gt;StandardOutPath&lt;/key&gt;&lt;string&gt;/Users/YOU/pedpro-orchestrator/logs/out.log&lt;/string&gt;
-  &lt;key&gt;StandardErrorPath&lt;/key&gt;&lt;string&gt;/Users/YOU/pedpro-orchestrator/logs/err.log&lt;/string&gt;
+  &lt;key&gt;StandardOutPath&lt;/key&gt;&lt;string&gt;/Users/YOU/xfish-orchestrator/logs/out.log&lt;/string&gt;
+  &lt;key&gt;StandardErrorPath&lt;/key&gt;&lt;string&gt;/Users/YOU/xfish-orchestrator/logs/err.log&lt;/string&gt;
 &lt;/dict&gt;
 &lt;/plist&gt;</pre>
   </div>
   <div class="code">
     <div class="head"><span class="ttl">โหลดให้รัน 24/7</span><button class="copy">copy</button></div>
-<pre>launchctl load -w ~/Library/LaunchAgents/com.pedpro.orchestrator.plist
-launchctl list | grep pedpro     <span class="c"># เช็กว่ารันอยู่</span></pre>
+<pre>launchctl load -w ~/Library/LaunchAgents/com.xfish.orchestrator.plist
+launchctl list | grep xfish     <span class="c"># เช็กว่ารันอยู่</span></pre>
   </div>
 
   <h3>step 13 — ดูแล / ดู log / restart</h3>
   <div class="code">
     <div class="head"><span class="ttl">terminal</span><button class="copy">copy</button></div>
-<pre>tail -f ~/pedpro-orchestrator/logs/out.log    <span class="c"># ดู log สด</span>
+<pre>tail -f ~/xfish-orchestrator/logs/out.log    <span class="c"># ดู log สด</span>
 
 <span class="c"># หยุด</span>
-launchctl unload ~/Library/LaunchAgents/com.pedpro.orchestrator.plist
+launchctl unload ~/Library/LaunchAgents/com.xfish.orchestrator.plist
 <span class="c"># แก้โค้ดแล้วเริ่มใหม่</span>
-launchctl load -w ~/Library/LaunchAgents/com.pedpro.orchestrator.plist</pre>
+launchctl load -w ~/Library/LaunchAgents/com.xfish.orchestrator.plist</pre>
   </div>
   <div class="box teal">
     <div class="lbl">คง outbound-only</div>
@@ -638,7 +638,7 @@ launchctl load -w ~/Library/LaunchAgents/com.pedpro.orchestrator.plist</pre>
   </div>
 
   <hr>
-  <p class="en" style="text-align:center;color:var(--faint)">Pedpro Orchestrator Build Spec · parallelize agents, serialize human judgment</p>
+  <p class="en" style="text-align:center;color:var(--faint)">xFish Orchestrator Build Spec · parallelize agents, serialize human judgment</p>
 </section>
 
 </main>

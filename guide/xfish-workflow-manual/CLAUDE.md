@@ -1,7 +1,7 @@
-# CLAUDE.md — Pedpro
+# CLAUDE.md — xFish
 
 > Single entry point ที่ทุก Claude Code session ต้องอ่านก่อนเริ่มงาน
-> Pedpro = Thai-language fantasy gaming portal
+> xFish = Thai-language fantasy gaming portal
 > อ่านไฟล์นี้ทั้งหมดก่อน แล้วจึงเริ่ม
 
 ---
@@ -57,7 +57,7 @@
 
 | Pipeline step | Model | Agent | หมายเหตุ |
 |---|---|---|---|
-| planning / grill-me / HTML plan | Opus | `pedpro-architect` | judgment สูง |
+| planning / grill-me / HTML plan | Opus | `xfish-architect` | judgment สูง |
 | Bruno spec lookup | Haiku | `bruno-spec-lookup` | retrieval ล้วน |
 | implement (tdd) | Sonnet | parent | ต้อง approval |
 | build / type error | Sonnet | `build-error-resolver` | diagnose, parent apply |
@@ -102,7 +102,7 @@ Draft → Spec'd → In Progress → Verify Passed → Awaiting Approval → App
 
 ## 7. Workflow ต่อ feature ("เริ่มหน้าใหม่" 4 เฟส)
 
-1. **เข้าใจ (Align)** — `pedpro-architect` /grill-me + ดึง Bruno spec จนแนวตรงกัน → ได้ plan
+1. **เข้าใจ (Align)** — `xfish-architect` /grill-me + ดึง Bruno spec จนแนวตรงกัน → ได้ plan
 2. **ลงมือ (Build)** — tdd ที่ parent: red → green → refactor ทีละ vertical slice
 3. **ตรวจ (Review)** — `typescript-reviewer` + `scrutinize` (read-only) → parent apply การแก้
 4. **ปิด (Ship)** — `npm run verify` ผ่าน → เลื่อน Awaiting Approval → ขอ approval → มนุษย์ merge

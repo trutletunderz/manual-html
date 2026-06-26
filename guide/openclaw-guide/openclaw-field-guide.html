@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OpenClaw × Pedpro — Field Guide</title>
+<title>OpenClaw × xFish — Field Guide</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -197,7 +197,7 @@
   <section>
     <div class="kicker">The Kit</div>
     <h2>ไฟล์จริงที่ทุกแนวคิดกลายเป็นโค้ด</h2>
-    <p class="sub">ทุกอย่างใน handbook ถูกแปลงเป็นไฟล์รันได้ใน <code>openclaw-pedpro-kit.zip</code></p>
+    <p class="sub">ทุกอย่างใน handbook ถูกแปลงเป็นไฟล์รันได้ใน <code>openclaw-xfish-kit.zip</code></p>
     <div class="manifest">
       <div class="stats">
         <div class="stat"><div class="v">45</div><div class="k">ไฟล์</div></div>
@@ -255,14 +255,14 @@
     <p class="sub">ไม่ต้องมี YouTrack/Telegram/API key — demo mode รันลูปทั้งวงด้วย local fakes</p>
     <div class="code">
       <div class="bar"><span class="fn">terminal</span><button class="cp">Copy</button></div>
-      <pre>unzip openclaw-pedpro-kit.zip &amp;&amp; cd kit
+      <pre>unzip openclaw-xfish-kit.zip &amp;&amp; cd kit
 
 just demo      # spawn 2 runs ขนาน → goal_met → เข้าคิว merge gate → metrics
 just test      # 18 tests (gate routing / YouTrack race / Telegram dispatch)
 just lint      # ruff
 
 # ใช้จริง: เปิด .env.example → .env, implement seam ใน integration.py
-docker build -t openclaw . &amp;&amp; docker run --env-file .env -v $(pwd):/app/pedpro openclaw</pre>
+docker build -t openclaw . &amp;&amp; docker run --env-file .env -v $(pwd):/app/xfish openclaw</pre>
     </div>
     <p style="margin-top:16px; font-size:14px; color:var(--muted)">จุดเริ่มแก้: <code>openclaw/integration.py</code> (seam ที่ต้อง wire) และ <code>CONTRIBUTING.md</code> (วินัยการแก้ระบบ: แก้ instruction → รัน eval → merge)</p>
     <p style="margin-top:10px; font-size:14px; color:var(--muted)">ไม่อยากแตก zip? เปิด <code>openclaw-source-book.html</code> — มีซอร์สครบทั้ง 45 ไฟล์ กดปุ่ม Copy ทีละไฟล์แล้ววางตาม path ได้เลย</p>
@@ -282,7 +282,7 @@ docker build -t openclaw . &amp;&amp; docker run --env-file .env -v $(pwd):/app/
 
   <footer>
     <div class="gt">⟳</div>
-    <div>OPENCLAW × PEDPRO · FIELD GUIDE</div>
+    <div>OPENCLAW × xFish · FIELD GUIDE</div>
     <div>4 handbooks + runnable kit (45 files · 18 tests · CI) · ซีรีส์สมบูรณ์</div>
     <div style="margin-top:10px; color:var(--muted-2)">ขนาน agent ให้สุด · serialize วิจารณญาณเสมอ</div>
   </footer>

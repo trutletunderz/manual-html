@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pedpro Claude Code Toolkit — คู่มือติดตั้ง</title>
+<title>xFish Claude Code Toolkit — คู่มือติดตั้ง</title>
 <style>
   :root{
     --ink:#09080f; --panel:#14111f; --panel-2:#1b1730;
@@ -162,14 +162,14 @@
 <div class="wrap">
 
 <header>
-  <p class="eyebrow">Claude Code · Pedpro · Install Runbook</p>
-  <h1>Pedpro <span class="accent">Toolkit</span><br>คู่มือติดตั้งทีละขั้นตอน</h1>
+  <p class="eyebrow">Claude Code · xFish · Install Runbook</p>
+  <h1>xFish <span class="accent">Toolkit</span><br>คู่มือติดตั้งทีละขั้นตอน</h1>
   <p class="lede">ชุดเครื่องมือ 3 ส่วนที่ลด token ของ HTML mockup, ย่อการ tweak ดีไซน์ให้สั้น และ resolve color token จาก source จริง — ติดตั้งลง <code>.claude/</code> แล้วใช้ได้ทันที</p>
 
   <div class="term">
     <div class="term-bar">
       <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-      <span class="term-title">~/pedpro — claude code</span>
+      <span class="term-title">~/xfish — claude code</span>
     </div>
     <div class="term-body">
 <span class="cm"># เดิม: อ่าน mockup เต็มๆ + พิมพ์กฎยาว + พิมพ์ตำแหน่งเป็นภาษาพูดทุกครั้ง</span>
@@ -211,7 +211,7 @@
   <table class="tbl">
     <thead><tr><th>ไฟล์</th><th>หน้าที่</th><th>ปลายทาง</th></tr></thead>
     <tbody>
-      <tr><td><code>SKILL.md</code></td><td>design-tweak skill — กฎ Pedpro + class-diff + token resolve + output diff</td><td><code>.claude/skills/design-tweak/</code></td></tr>
+      <tr><td><code>SKILL.md</code></td><td>design-tweak skill — กฎ xFish + class-diff + token resolve + output diff</td><td><code>.claude/skills/design-tweak/</code></td></tr>
       <tr><td><code>tweak.md</code></td><td>slash command <code>/tweak</code> เรียกใช้ skill</td><td><code>.claude/commands/</code></td></tr>
       <tr><td><code>posttooluse-strip-html.mjs</code></td><td>hook — strip mockup ใหญ่อัตโนมัติก่อนเข้า context</td><td><code>.claude/hooks/</code></td></tr>
       <tr><td><code>settings (snippet)</code></td><td>ลงทะเบียน hook</td><td><code>.claude/settings.json</code></td></tr>
@@ -269,7 +269,7 @@ claude --version <span style="color:var(--muted-2)"># ต้อง &gt;= 2.1.121
     <div class="step" id="s1">
       <div class="step-num">01</div>
       <h3>สร้างโครงโฟลเดอร์</h3>
-      <p>รันที่ <strong>root ของ project Pedpro</strong> (โฟลเดอร์เดียวกับ <code>nuxt.config</code>) สร้าง 3 โฟลเดอร์ย่อยใน <code>.claude/</code> รวดเดียว</p>
+      <p>รันที่ <strong>root ของ project xFish</strong> (โฟลเดอร์เดียวกับ <code>nuxt.config</code>) สร้าง 3 โฟลเดอร์ย่อยใน <code>.claude/</code> รวดเดียว</p>
       <div class="codecard">
         <div class="codecard-head">
           <span class="fname"><span class="ic">$</span> bash</span>
@@ -285,7 +285,7 @@ claude --version <span style="color:var(--muted-2)"># ต้อง &gt;= 2.1.121
     <div class="step" id="s2">
       <div class="step-num">02</div>
       <h3>ติดตั้ง design-tweak skill</h3>
-      <p>วางเนื้อหานี้เป็นไฟล์ <strong>SKILL.md</strong> ฝังกฎ Pedpro (Tailwind core only / ห้าม arbitrary / Naive UI mapping), syntax class-diff <code>+/-</code>, การ resolve token จาก source, และบังคับ output เป็น unified diff ไม่ต้อง enable เอง Claude Code จะค้นเจอจากโฟลเดอร์ <code>skills/</code> อัตโนมัติ</p>
+      <p>วางเนื้อหานี้เป็นไฟล์ <strong>SKILL.md</strong> ฝังกฎ xFish (Tailwind core only / ห้าม arbitrary / Naive UI mapping), syntax class-diff <code>+/-</code>, การ resolve token จาก source, และบังคับ output เป็น unified diff ไม่ต้อง enable เอง Claude Code จะค้นเจอจากโฟลเดอร์ <code>skills/</code> อัตโนมัติ</p>
       <div class="codecard">
         <div class="codecard-head">
           <span class="fname"><span class="ic">▣</span> SKILL.md <span class="path">→ .claude/skills/design-tweak/</span></span>
@@ -293,10 +293,10 @@ claude --version <span style="color:var(--muted-2)"># ต้อง &gt;= 2.1.121
         </div>
         <pre><code>---
 name: design-tweak
-description: Apply small surgical position, color, spacing, or layout adjustments to existing Pedpro HTML mockups or Vue components using Tailwind class-diff syntax. Use when the user wants to MOVE, RECOLOR, RESIZE, or REPOSITION existing UI elements rather than build new ones — especially when they give a selector plus +/- class changes, or short prose like "ย้ายการ์ดไปขวา" / "เปลี่ยนพื้นหลังเป็นสีหลัก". Do NOT use for building new components from scratch or full-page generation.
+description: Apply small surgical position, color, spacing, or layout adjustments to existing xFish HTML mockups or Vue components using Tailwind class-diff syntax. Use when the user wants to MOVE, RECOLOR, RESIZE, or REPOSITION existing UI elements rather than build new ones — especially when they give a selector plus +/- class changes, or short prose like "ย้ายการ์ดไปขวา" / "เปลี่ยนพื้นหลังเป็นสีหลัก". Do NOT use for building new components from scratch or full-page generation.
 ---
 
-# Design Tweak (Pedpro)
+# Design Tweak (xFish)
 
 เป้าหมาย: แก้ดีไซน์เล็กๆ (ตำแหน่ง / สี / spacing / layout) แบบ **surgical, deterministic, token-cheap**
 อย่าแก้เกินกว่าที่สั่ง อย่า reformat อย่าจัดระเบียบ class ที่ไม่เกี่ยว
@@ -329,7 +329,7 @@ description: Apply small surgical position, color, spacing, or layout adjustment
 
 ---
 
-## 2. กฎ Pedpro (บังคับ — ห้ามฝ่าฝืน)
+## 2. กฎ xFish (บังคับ — ห้ามฝ่าฝืน)
 
 1. **Tailwind core utility เท่านั้น** — ห้าม arbitrary value เด็ดขาด
    - ❌ `w-[437px]` `text-[#1a2b3c]` `mt-[13px]`
@@ -420,7 +420,7 @@ model: claude-sonnet-4-6
 1. หา element จาก selector ตัวแรกใน `$ARGUMENTS` (เป็น CSS selector / class / id / data-attr)
 2. อ่านไฟล์เป้าหมายเฉพาะส่วนที่เกี่ยว — อย่าอ่านทั้งไฟล์ถ้าไม่จำเป็น
 3. apply class-diff ตามกฎใน skill (`+` เพิ่ม class, `-` ลบ class)
-4. บังคับกฎ Pedpro: Tailwind core only / ห้าม arbitrary value / ห้าม custom CSS / ห้าม raw HTML form
+4. บังคับกฎ xFish: Tailwind core only / ห้าม arbitrary value / ห้าม custom CSS / ห้าม raw HTML form
 5. ถ้า element นี้ map กับ Naive UI component ได้ ให้เตือนสั้นๆ ก่อน (ดูตาราง mapping ใน skill)
 6. **output เป็น unified diff เท่านั้น** ไม่ต้อง print ทั้งไฟล์ ไม่ต้องอธิบายยาว
 
@@ -579,7 +579,7 @@ main().catch(() =&gt; passThrough());</code></pre>
       </div>
       <div class="note warn">
         <span class="tag">scope</span>
-        ใช้ <code>.claude/settings.json</code> (ระดับ project) เพื่อให้ hook ทำงานเฉพาะ Pedpro และ commit แชร์ทีมได้ · ถ้าต้องการเฉพาะเครื่องตัวเองไม่ commit ใช้ <code>.claude/settings.local.json</code> แทน
+        ใช้ <code>.claude/settings.json</code> (ระดับ project) เพื่อให้ hook ทำงานเฉพาะ xFish และ commit แชร์ทีมได้ · ถ้าต้องการเฉพาะเครื่องตัวเองไม่ commit ใช้ <code>.claude/settings.local.json</code> แทน
       </div>
       <label class="check"><input type="checkbox" data-step> ลงทะเบียน hook แล้ว</label>
     </div>
@@ -719,7 +719,7 @@ cat mockup.html | node scripts/strip-mockup.mjs                   <span style="c
 <!-- WORKSHOP -->
 <section id="workshop">
   <h2>4 · Workshop — ลงมือจริงตั้งแต่ต้นจนจบ</h2>
-  <p class="sub">สถานการณ์: mockup หน้า <strong>Game Lobby</strong> ของ Pedpro ส่งเข้ามา ไล่ตั้งแต่ Claude อ่าน → strip → สร้าง Vue component → tweak → จบที่ใช้งานได้จริง · ทุกตัวเลขในแล็บนี้มาจากการรันจริง</p>
+  <p class="sub">สถานการณ์: mockup หน้า <strong>Game Lobby</strong> ของ xFish ส่งเข้ามา ไล่ตั้งแต่ Claude อ่าน → strip → สร้าง Vue component → tweak → จบที่ใช้งานได้จริง · ทุกตัวเลขในแล็บนี้มาจากการรันจริง</p>
 
   <div class="steps">
 
@@ -750,7 +750,7 @@ cat mockup.html | node scripts/strip-mockup.mjs                   <span style="c
         <pre><code>&lt;!DOCTYPE html&gt;
 &lt;html lang="th"&gt;
 &lt;head&gt;
-&lt;title&gt;Pedpro — เกมแนะนำ&lt;/title&gt;
+&lt;title&gt;xFish — เกมแนะนำ&lt;/title&gt;
 &lt;/head&gt;
 &lt;body class="text-white"&gt;
 &lt;section class="px-6 py-8"&gt;
@@ -817,13 +817,13 @@ cat mockup.html | node scripts/strip-mockup.mjs                   <span style="c
     <div class="step" id="l2">
       <div class="step-num">L2</div>
       <h3>mockup → Vue component</h3>
-      <p>ต่อยอดจากตัว strip สั่งให้สร้าง component ตาม stack Pedpro — skill/กฎจะคุม Naive UI mapping (raw <code>&lt;button&gt;</code> → <code>NButton</code>) และใช้ token แทนค่าดิบ</p>
+      <p>ต่อยอดจากตัว strip สั่งให้สร้าง component ตาม stack xFish — skill/กฎจะคุม Naive UI mapping (raw <code>&lt;button&gt;</code> → <code>NButton</code>) และใช้ token แทนค่าดิบ</p>
       <div class="codecard">
         <div class="codecard-head">
           <span class="fname"><span class="ic">&gt;</span> prompt</span>
-          <button class="copy-btn" onclick="copyText(this,'สร้าง GameCard.vue จาก mockup นี้ ตาม stack Pedpro: Vue 3.5 script setup + TS, Naive UI, Tailwind token, page-local component ที่ pages/lobby/components/')"><span>Copy</span></button>
+          <button class="copy-btn" onclick="copyText(this,'สร้าง GameCard.vue จาก mockup นี้ ตาม stack xFish: Vue 3.5 script setup + TS, Naive UI, Tailwind token, page-local component ที่ pages/lobby/components/')"><span>Copy</span></button>
         </div>
-        <pre class="sh"><code>สร้าง GameCard.vue จาก mockup นี้ ตาม stack Pedpro: Vue 3.5 script setup + TS,
+        <pre class="sh"><code>สร้าง GameCard.vue จาก mockup นี้ ตาม stack xFish: Vue 3.5 script setup + TS,
 Naive UI, Tailwind token, page-local component ที่ pages/lobby/components/</code></pre>
       </div>
       <div class="codecard">
@@ -870,7 +870,7 @@ const emit = defineEmits&lt;{ play: [id: string] }&gt;()
   &lt;/article&gt;
 &lt;/template&gt;</code></pre>
       </div>
-      <div class="note"><span class="tag">สังเกต</span> <code>&lt;button&gt;</code> ดิบกลายเป็น <code>NButton type="primary"</code> · ใช้ <code>bg-surface-2</code> / <code>text-primary</code> / <code>text-muted</code> (token) ไม่มี hex ดิบ ไม่มี arbitrary value · component เป็น page-local ตาม convention Pedpro (ต้อง import เอง)</div>
+      <div class="note"><span class="tag">สังเกต</span> <code>&lt;button&gt;</code> ดิบกลายเป็น <code>NButton type="primary"</code> · ใช้ <code>bg-surface-2</code> / <code>text-primary</code> / <code>text-muted</code> (token) ไม่มี hex ดิบ ไม่มี arbitrary value · component เป็น page-local ตาม convention xFish (ต้อง import เอง)</div>
       <label class="check"><input type="checkbox" data-step> เข้าใจ Lab 2</label>
     </div>
 
@@ -914,12 +914,12 @@ const emit = defineEmits&lt;{ play: [id: string] }&gt;()
 <span class="dim">อ่าน tailwind.config.ts → theme.extend.colors พบ primary = #6d28d9</span>
 <span class="add">เสนอใช้ +bg-primary แทน (สีเดียวกัน เป็น token)</span></div>
       </div>
-      <p>ไฟล์ token ที่ skill อ่าน (ตัวอย่างของ Pedpro):</p>
+      <p>ไฟล์ token ที่ skill อ่าน (ตัวอย่างของ xFish):</p>
       <div class="codecard">
         <div class="codecard-head"><span class="fname"><span class="ic">⚙</span> tailwind.config.ts <span class="path">theme.extend.colors</span></span>
           <button class="copy-btn" onclick="copyCode(this)"><span>Copy</span></button>
         </div>
-        <pre class="sh"><code>// tailwind.config.ts — Pedpro (ตัวอย่างที่ skill จะอ่านตอน resolve token)
+        <pre class="sh"><code>// tailwind.config.ts — xFish (ตัวอย่างที่ skill จะอ่านตอน resolve token)
 export default {
   theme: {
     extend: {
@@ -1029,7 +1029,7 @@ done
       <tr><td><code>/hooks</code> ไม่เห็น hook</td><td>JSON ใน settings.json พัง หรือ merge ผิดที่ — เช็ควงเล็บปีกกาให้ครบ แล้วเปิด session ใหม่</td></tr>
       <tr><td><code>/tweak</code> ไม่ขึ้น</td><td>ไฟล์ต้องชื่อ <code>.claude/commands/tweak.md</code> เป๊ะ แล้วเริ่ม session ใหม่</td></tr>
       <tr><td>strip บางไฟล์ไม่เกิด</td><td>เป็น partial read (มี offset/limit) — hook ตั้งใจข้าม เพื่อไม่คืนเกินที่ขอ</td></tr>
-      <tr><td>token ถูก flag ผิด</td><td>skill หา <code>tailwind.config</code> ไม่เจอ/ผิด path — ปรับลำดับ resolve ในส่วน Token resolution ของ SKILL.md ให้ตรงโครง Pedpro</td></tr>
+      <tr><td>token ถูก flag ผิด</td><td>skill หา <code>tailwind.config</code> ไม่เจอ/ผิด path — ปรับลำดับ resolve ในส่วน Token resolution ของ SKILL.md ให้ตรงโครง xFish</td></tr>
     </tbody>
   </table>
 </section>
@@ -1055,7 +1055,7 @@ done
 </div>
 
 <footer>
-  Pedpro Claude Code Toolkit · input strip · /tweak · token resolve<br>
+  xFish Claude Code Toolkit · input strip · /tweak · token resolve<br>
   สร้างเพื่อใช้กับ Nuxt 4 · Vue 3.5 · Tailwind · Naive UI
 </footer>
 
