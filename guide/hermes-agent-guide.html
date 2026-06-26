@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes Agent — คู่มือติดตั้ง &amp; ใช้งาน (Ubuntu + Windows)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b0d12;
+    --ink-2:#11141c;
+    --panel:#151a24;
+    --panel-2:#1b2230;
+    --line:#252d3d;
+    --line-soft:#1d2433;
+    --text:#e6e9f0;
+    --text-dim:#9aa3b5;
+    --text-faint:#6b7488;
+    --gold:#e8b04b;          /* Hermes / caduceus gold */
+    --gold-soft:#f0c878;
+    --teal:#4fd6c4;          /* code accent */
+    --violet:#9b8cff;
+    --rose:#ff7a93;
+    --green:#5fd28a;
+    --code-bg:#0e1117;
+    --radius:14px;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --thai:'Noto Sans Thai','Space Grotesk',system-ui,sans-serif;
+    --disp:'Space Grotesk','Noto Sans Thai',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--ink);color:var(--text);
+    font-family:var(--thai);font-weight:400;line-height:1.72;
+    font-size:16px;-webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(900px 500px at 85% -10%, rgba(232,176,75,.10), transparent 60%),
+      radial-gradient(700px 600px at -10% 20%, rgba(79,214,196,.06), transparent 55%);
+  }
+  .wrap{position:relative;z-index:1;display:grid;grid-template-columns:288px 1fr;gap:0;max-width:1320px;margin:0 auto}
+
+  /* ---------- Sidebar ---------- */
+  aside{
+    position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 18px 60px;
+    border-right:1px solid var(--line-soft);
+  }
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:6px;padding:0 8px}
+  .brand .glyph{
+    width:42px;height:42px;border-radius:11px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(150deg,var(--gold),#b9842b);color:#1a1304;
+    font-family:var(--disp);font-weight:700;font-size:22px;
+    box-shadow:0 6px 22px rgba(232,176,75,.28);
+  }
+  .brand h1{font-family:var(--disp);font-size:18px;margin:0;line-height:1.1;letter-spacing:-.2px}
+  .brand span{font-size:11.5px;color:var(--text-faint);letter-spacing:.5px;text-transform:uppercase}
+  .nav-note{font-size:11px;color:var(--text-faint);padding:14px 8px 8px;letter-spacing:.4px;text-transform:uppercase}
+  nav a{
+    display:flex;gap:10px;align-items:baseline;text-decoration:none;color:var(--text-dim);
+    font-size:14px;padding:8px 12px;border-radius:9px;transition:.16s;line-height:1.3;
+  }
+  nav a .num{font-family:var(--mono);font-size:11px;color:var(--text-faint);min-width:20px}
+  nav a:hover{background:var(--panel);color:var(--text)}
+  nav a.active{background:var(--panel-2);color:var(--gold-soft)}
+  nav a.active .num{color:var(--gold)}
+
+  /* ---------- Main ---------- */
+  main{padding:48px 56px 120px;min-width:0}
+  .hero{margin-bottom:44px}
+  .kicker{
+    display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;
+    color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;
+    border:1px solid var(--line);background:var(--panel);padding:6px 13px;border-radius:999px;margin-bottom:20px;
+  }
+  .kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold)}
+  .hero h2{
+    font-family:var(--disp);font-size:clamp(30px,4.4vw,46px);line-height:1.08;margin:0 0 16px;
+    letter-spacing:-1px;font-weight:700;
+  }
+  .hero h2 em{color:var(--gold);font-style:normal}
+  .hero p{font-size:17px;color:var(--text-dim);max-width:66ch;margin:0 0 8px}
+  .hero .sub{font-size:14.5px;color:var(--text-faint)}
+
+  section{margin-bottom:60px;scroll-margin-top:24px}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin:0 0 6px;border-bottom:1px solid var(--line-soft);padding-bottom:14px}
+  .sec-head .idx{font-family:var(--mono);font-size:14px;color:var(--gold);font-weight:600}
+  .sec-head h3{font-family:var(--disp);font-size:26px;margin:0;letter-spacing:-.5px;font-weight:600}
+  .sec-head .en{font-size:13px;color:var(--text-faint);margin-left:auto;font-family:var(--mono);letter-spacing:.3px}
+  .lede{color:var(--text-dim);font-size:15.5px;margin:18px 0 22px;max-width:72ch}
+
+  h4{font-family:var(--disp);font-size:18px;margin:34px 0 8px;font-weight:600;letter-spacing:-.2px}
+  h4 .en{font-size:12.5px;color:var(--text-faint);font-family:var(--mono);font-weight:400;margin-left:8px}
+  p{margin:12px 0;max-width:74ch}
+  strong{color:#fff;font-weight:600}
+  a.inline{color:var(--teal);text-decoration:none;border-bottom:1px dashed rgba(79,214,196,.4)}
+  a.inline:hover{border-bottom-style:solid}
+  code:not(pre code){
+    font-family:var(--mono);font-size:.86em;background:var(--panel-2);color:var(--gold-soft);
+    padding:2px 7px;border-radius:6px;border:1px solid var(--line-soft);white-space:nowrap;
+  }
+  ul,ol{max-width:74ch;padding-left:22px}
+  li{margin:7px 0;color:var(--text-dim)}
+  li strong{color:var(--text)}
+
+  /* ---------- Code blocks ---------- */
+  .code{margin:18px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--code-bg)}
+  .code-bar{
+    display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--ink-2);
+    border-bottom:1px solid var(--line);
+  }
+  .code-bar .lang{font-family:var(--mono);font-size:11.5px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase}
+  .code-bar .tag{font-family:var(--mono);font-size:10.5px;color:var(--gold);border:1px solid var(--line);padding:2px 8px;border-radius:5px}
+  .code-bar .tag.win{color:var(--violet)}
+  .code-bar .tag.lnx{color:var(--teal)}
+  .copy{
+    margin-left:auto;display:flex;align-items:center;gap:6px;cursor:pointer;
+    font-family:var(--mono);font-size:11.5px;color:var(--text-dim);background:var(--panel-2);
+    border:1px solid var(--line);border-radius:7px;padding:5px 11px;transition:.15s;
+  }
+  .copy:hover{color:var(--text);border-color:var(--gold);background:var(--panel)}
+  .copy.done{color:var(--green);border-color:var(--green)}
+  .copy svg{width:13px;height:13px}
+  pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.7;color:#cdd6e6}
+  pre .c{color:var(--text-faint);font-style:italic}      /* comment */
+  pre .k{color:var(--gold-soft)}                          /* command / keyword */
+  pre .s{color:var(--teal)}                               /* string / path */
+  pre .f{color:var(--violet)}                             /* flag */
+  pre .y{color:var(--rose)}                               /* yaml key */
+
+  /* ---------- Callouts ---------- */
+  .note{
+    margin:20px 0;padding:14px 18px 14px 16px;border-radius:10px;border:1px solid var(--line);
+    background:var(--panel);border-left:3px solid var(--teal);font-size:14.5px;color:var(--text-dim);
+  }
+  .note.gold{border-left-color:var(--gold)}
+  .note.rose{border-left-color:var(--rose)}
+  .note.violet{border-left-color:var(--violet)}
+  .note b{color:#fff}
+  .note .lbl{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--teal);display:block;margin-bottom:4px}
+  .note.gold .lbl{color:var(--gold)}
+  .note.rose .lbl{color:var(--rose)}
+  .note.violet .lbl{color:var(--violet)}
+
+  /* ---------- Tables ---------- */
+  .tbl{margin:20px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+  th{background:var(--ink-2);color:var(--gold-soft);font-family:var(--disp);font-weight:600;text-align:left;padding:11px 16px;font-size:13px;letter-spacing:.2px}
+  td{padding:11px 16px;border-top:1px solid var(--line-soft);color:var(--text-dim);vertical-align:top}
+  td code{white-space:nowrap}
+  tr:hover td{background:rgba(255,255,255,.015)}
+
+  /* ---------- Step pills ---------- */
+  .steps{counter-reset:step;margin:22px 0;display:grid;gap:0}
+  .step{display:flex;gap:16px;padding-bottom:6px}
+  .step .bullet{position:relative;flex:none;width:30px;display:flex;flex-direction:column;align-items:center}
+  .step .bullet b{
+    width:28px;height:28px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);
+    color:var(--gold);font-family:var(--mono);font-size:13px;display:grid;place-items:center;font-weight:600;
+  }
+  .step .bullet .ln{flex:1;width:1px;background:var(--line);margin:4px 0}
+  .step:last-child .bullet .ln{display:none}
+  .step .body{padding-bottom:22px;min-width:0;flex:1}
+  .step .body .t{font-family:var(--disp);font-size:16px;color:var(--text);margin-bottom:2px;font-weight:600}
+
+  /* ---------- Tabs (OS switch) ---------- */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}
+  .card{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:var(--panel)}
+  .card h5{font-family:var(--disp);font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:9px}
+  .card .os{width:9px;height:9px;border-radius:50%}
+  .card .os.u{background:var(--teal)}
+  .card .os.w{background:var(--violet)}
+
+  footer{border-top:1px solid var(--line-soft);padding:28px 56px 60px;color:var(--text-faint);font-size:13px;max-width:1320px;margin:0 auto}
+  footer a{color:var(--teal);text-decoration:none}
+
+  @media(max-width:980px){
+    .wrap{grid-template-columns:1fr}
+    aside{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line-soft)}
+    aside nav{display:grid;grid-template-columns:1fr 1fr}
+    main{padding:34px 22px 90px}
+    .grid2{grid-template-columns:1fr}
+    footer{padding:24px 22px 50px}
+  }
+  ::-webkit-scrollbar{width:11px;height:11px}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px;border:3px solid var(--ink)}
+  ::-webkit-scrollbar-thumb:hover{background:#33405a}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="brand">
+      <div class="glyph">H</div>
+      <div>
+        <h1>Hermes Agent</h1>
+        <span>Install &amp; Operate Guide</span>
+      </div>
+    </div>
+    <div class="nav-note">เนื้อหา · Contents</div>
+    <nav id="nav">
+      <a href="#intro"><span class="num">00</span><span>Hermes คืออะไร</span></a>
+      <a href="#prep"><span class="num">01</span><span>เตรียมเครื่อง</span></a>
+      <a href="#ubuntu"><span class="num">02</span><span>ติดตั้งบน Ubuntu</span></a>
+      <a href="#windows"><span class="num">03</span><span>ติดตั้งบน Windows</span></a>
+      <a href="#setup"><span class="num">04</span><span>ตั้งค่า &amp; เลือก Provider</span></a>
+      <a href="#firstchat"><span class="num">05</span><span>แชทครั้งแรก + Sessions</span></a>
+      <a href="#cli"><span class="num">06</span><span>คำสั่ง CLI สำคัญ</span></a>
+      <a href="#config"><span class="num">07</span><span>config.yaml &amp; .env</span></a>
+      <a href="#terminal"><span class="num">08</span><span>Terminal Backend / Sandbox</span></a>
+      <a href="#gateway"><span class="num">09</span><span>Gateway (Telegram ฯลฯ)</span></a>
+      <a href="#skills"><span class="num">10</span><span>Skills &amp; MCP</span></a>
+      <a href="#cron"><span class="num">11</span><span>Cron / Automations</span></a>
+      <a href="#maintain"><span class="num">12</span><span>Update / Backup / ถอน</span></a>
+      <a href="#trouble"><span class="num">13</span><span>แก้ปัญหา (Doctor)</span></a>
+      <a href="#cheat"><span class="num">14</span><span>Cheat Sheet</span></a>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+    <div class="hero">
+      <div class="kicker"><span class="dot"></span> Nous Research · MIT License · 2026</div>
+      <h2>ติดตั้งและสั่งงาน <em>Hermes Agent</em><br>บน Ubuntu และ Windows แบบละเอียดยิบ</h2>
+      <p>คู่มืออ้างอิงสองภาษา ไทย/English สำหรับลง Hermes Agent — autonomous agent ที่มี learning loop ในตัว (สร้าง skill จากประสบการณ์, จำข้ามเซสชัน) รันได้ทั้ง VPS $5, GPU cluster, หรือ serverless แล้วคุยผ่าน Telegram/Discord ได้โดยไม่ต้อง SSH เข้าเครื่องเอง</p>
+      <p class="sub">อ้างอิงจาก <a class="inline" href="https://hermes-agent.nousresearch.com/docs/" target="_blank" rel="noopener">hermes-agent.nousresearch.com/docs</a> — เวอร์ชันเอกสาร ณ มิ.ย. 2026 · ทุก code block กดปุ่ม Copy ได้</p>
+    </div>
+
+    <!-- 00 INTRO -->
+    <section id="intro">
+      <div class="sec-head"><span class="idx">00</span><h3>Hermes Agent คืออะไร</h3><span class="en">what it is</span></div>
+      <p class="lede">ไม่ใช่ coding copilot ที่ผูกกับ IDE และไม่ใช่ chatbot ครอบ API ตัวเดียว — แต่เป็น <strong>autonomous agent</strong> ที่ยิ่งรันนานยิ่งเก่งขึ้น เพราะมี closed learning loop ในตัว</p>
+
+      <h4>แกนหลัก 4 อย่าง <span class="en">core pillars</span></h4>
+      <div class="tbl">
+      <table>
+        <tr><th style="width:30%">ส่วนประกอบ</th><th>ทำอะไร</th></tr>
+        <tr><td><b>Learning loop</b></td><td>สร้าง skill จากงานจริง, ปรับปรุง skill ระหว่างใช้, curate memory เป็นระยะ, ค้นข้ามเซสชันด้วย FTS5 + LLM summarization</td></tr>
+        <tr><td><b>Runs anywhere</b></td><td>6 terminal backend: <code>local</code>, <code>docker</code>, <code>ssh</code>, <code>daytona</code>, <code>singularity</code>, <code>modal</code> — Daytona/Modal เป็น serverless ที่ hibernate ตอน idle ค่าใช้จ่ายเกือบ 0</td></tr>
+        <tr><td><b>Lives where you do</b></td><td>คุยได้ 20+ แพลตฟอร์ม: CLI, Telegram, Discord, Slack, WhatsApp, Signal, Matrix, Email, SMS, Teams ฯลฯ จาก gateway เดียว</td></tr>
+        <tr><td><b>Provider-agnostic</b></td><td>ใช้ได้กับ Nous Portal, OpenRouter, Anthropic, OpenAI, Qwen, DeepSeek, Kimi หรือ endpoint อะไรก็ได้ที่ OpenAI-compatible</td></tr>
+      </table>
+      </div>
+
+      <div class="note gold">
+        <span class="lbl">บริบทของนาย · context</span>
+        <b>นายเคยวางท่อ agentic pipeline ด้วย Hermes มาแล้ว</b> รอบนี้ผมเรียง flow ให้เน้นจุดที่ต่อกับงาน Pedpro ได้ทันที: <b>YouTrack-style task board → Kanban dispatcher</b>, <b>Telegram async gate approval</b>, และ <b>Docker/SSH sandbox</b> สำหรับ serialize human judgment ตามหลัก "parallelize agents, serialize human judgment" ที่นายใช้อยู่
+      </div>
+    </section>
+
+    <!-- 01 PREP -->
+    <section id="prep">
+      <div class="sec-head"><span class="idx">01</span><h3>เตรียมเครื่อง</h3><span class="en">prerequisites</span></div>
+      <p class="lede">installer จัดการ dependency หลักให้เองทั้งหมด (Python 3.11 ผ่าน uv, Node.js v22, ripgrep, ffmpeg, Playwright/Chromium) — นายไม่ต้องลงเองทีละตัว สิ่งที่ต้องมีก่อนมีแค่ไม่กี่อย่าง</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h5><span class="os u"></span>Linux / Ubuntu / WSL2</h5>
+          <p style="margin:8px 0 0;font-size:14px;color:var(--text-dim)">ต้องมี <code>git</code> + <code>curl</code> + <code>xz-utils</code> (installer ดาวน์โหลด Node.js เป็น <code>.tar.xz</code>) ถ้าจะใช้ Desktop app เพิ่ม <code>build-essential</code></p>
+        </div>
+        <div class="card">
+          <h5><span class="os w"></span>Windows (native)</h5>
+          <p style="margin:8px 0 0;font-size:14px;color:var(--text-dim)">ใช้ PowerShell ลงสคริปต์ได้เลย หรือใช้ <b>Hermes Desktop installer</b> ที่จัดการ dependency ให้ครบ (แนะนำสำหรับมือใหม่บน Windows)</p>
+        </div>
+      </div>
+
+      <h4>ติดตั้ง prerequisite บน Ubuntu/Debian <span class="en">apt</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag lnx">Ubuntu</span><button class="copy">copy</button></div>
+<pre><span class="c"># git + เครื่องมือที่ installer ต้องใช้</span>
+<span class="k">sudo</span> apt update
+<span class="k">sudo</span> apt install <span class="f">-y</span> git curl xz-utils
+<span class="c"># เพิ่ม build-essential ถ้าจะใช้ Hermes Desktop (คอมไพล์ native module)</span>
+<span class="k">sudo</span> apt install <span class="f">-y</span> build-essential
+<span class="c"># ตรวจว่ามี git แล้ว</span>
+git <span class="f">--version</span></pre>
+      </div>
+
+      <div class="note">
+        <span class="lbl">ข้อกำหนดโมเดล · model requirement</span>
+        Hermes ต้องการโมเดลที่มี context อย่างน้อย <b>64,000 tokens</b> โมเดล cloud ส่วนใหญ่ (Claude, GPT, Gemini, Qwen, DeepSeek) ผ่านสบาย ถ้ารัน local ต้องตั้ง ctx ≥ 64K เช่น <code>--ctx-size 65536</code> (llama.cpp) หรือ <code>-c 65536</code> (Ollama)
+      </div>
+    </section>
+
+    <!-- 02 UBUNTU -->
+    <section id="ubuntu">
+      <div class="sec-head"><span class="idx">02</span><h3>ติดตั้งบน Ubuntu</h3><span class="en">install · linux / wsl2</span></div>
+      <p class="lede">วิธีเร็วสุด — สคริปต์เดียวจบ installer จะ clone repo, สร้าง venv, ตั้งคำสั่ง <code>hermes</code> ให้เป็น global แล้วลง dependency ทั้งหมด</p>
+
+      <h4>ติดตั้งแบบ command-line <span class="en">curl one-liner</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag lnx">Linux / macOS / WSL2 / Termux</span><button class="copy">copy</button></div>
+<pre><span class="k">curl</span> <span class="f">-fsSL</span> <span class="s">https://hermes-agent.nousresearch.com/install.sh</span> | <span class="k">bash</span></pre>
+      </div>
+
+      <p>เสร็จแล้ว reload shell แล้วเริ่มแชทได้เลย:</p>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag lnx">Ubuntu</span><button class="copy">copy</button></div>
+<pre><span class="k">source</span> <span class="s">~/.bashrc</span>   <span class="c"># หรือ source ~/.zshrc</span>
+<span class="k">hermes</span>             <span class="c"># เริ่มแชท!</span></pre>
+      </div>
+
+      <div class="note gold">
+        <span class="lbl">ทางลัดที่เร็วที่สุด · fastest path</span>
+        หลังลงเสร็จ สั่ง <code>hermes setup --portal</code> — OAuth ครั้งเดียวได้ทั้งโมเดล + Tool Gateway 4 ตัว (web search, image gen, TTS, cloud browser) ไม่ต้องไล่ใส่ API key ทีละตัว
+      </div>
+
+      <h4>ที่เก็บไฟล์หลังติดตั้ง <span class="en">install layout</span></h4>
+      <div class="tbl">
+      <table>
+        <tr><th>วิธีลง</th><th>โค้ดอยู่ที่</th><th>binary</th><th>data dir</th></tr>
+        <tr><td>git installer (per-user)</td><td><code>~/.hermes/hermes-agent/</code></td><td><code>~/.local/bin/hermes</code></td><td><code>~/.hermes/</code></td></tr>
+        <tr><td>pip install</td><td>site-packages</td><td><code>~/.local/bin/hermes</code></td><td><code>~/.hermes/</code></td></tr>
+        <tr><td>root mode (<code>sudo</code>)</td><td><code>/usr/local/lib/hermes-agent/</code></td><td><code>/usr/local/bin/hermes</code></td><td><code>/root/.hermes/</code></td></tr>
+      </table>
+      </div>
+
+      <h4>ลงบน server แบบ non-sudo / service user <span class="en">systemd account</span></h4>
+      <p>กรณีรันเป็น user เฉพาะ (เช่น account <code>hermes</code> สำหรับ systemd) สิ่งเดียวที่ต้อง root คือ Playwright <code>--with-deps</code> ที่ apt-install shared lib ของ Chromium — แยกขั้นได้ตามนี้:</p>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag lnx">admin (มี sudo) ทำครั้งเดียว</span><button class="copy">copy</button></div>
+<pre><span class="c"># 1) admin ลง system lib ที่ Chromium ต้องใช้</span>
+<span class="k">sudo</span> npx playwright install-deps chromium</pre>
+      </div>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag lnx">service user (ไม่มี sudo)</span><button class="copy">copy</button></div>
+<pre><span class="c"># 2) รัน installer ปกติ — มันจะข้าม --with-deps ให้เอง</span>
+<span class="k">curl</span> <span class="f">-fsSL</span> <span class="s">https://hermes-agent.nousresearch.com/install.sh</span> | <span class="k">bash</span>
+
+<span class="c"># ถ้าไม่ต้องใช้ browser automation เลย ข้าม Playwright ทั้งก้อน</span>
+<span class="k">curl</span> <span class="f">-fsSL</span> <span class="s">https://hermes-agent.nousresearch.com/install.sh</span> | <span class="k">bash</span> <span class="f">-s</span> <span class="f">--</span> <span class="f">--skip-browser</span>
+
+<span class="c"># 3) ทำให้ shell ของ service user เห็นคำสั่ง hermes</span>
+<span class="k">echo</span> <span class="s">'export PATH="$HOME/.local/bin:$PATH"'</span> &gt;&gt; <span class="s">~/.bashrc</span>
+
+<span class="c"># 4) ตรวจสอบ</span>
+<span class="k">hermes</span> doctor</pre>
+      </div>
+
+      <div class="note rose">
+        <span class="lbl">WSL2 · ข้อควรระวัง</span>
+        บน WSL ให้ใช้ <code>hermes gateway run</code> (foreground) แทน <code>gateway start</code> เพราะ systemd บน WSL ไม่เสถียร — ห่อด้วย tmux เพื่อให้รันค้างไว้: <code>tmux new -s hermes 'hermes gateway run'</code>
+      </div>
+    </section>
+
+    <!-- 03 WINDOWS -->
+    <section id="windows">
+      <div class="sec-head"><span class="idx">03</span><h3>ติดตั้งบน Windows</h3><span class="en">install · native / desktop</span></div>
+      <p class="lede">บน Windows มี 3 ทาง: (A) Desktop installer ครบจบในตัว, (B) PowerShell one-liner สำหรับ CLI ล้วน, (C) WSL2 แล้วใช้วิธี Ubuntu ด้านบน (เหมาะกับ dev ที่คุ้น Linux อยู่แล้ว)</p>
+
+      <h4>A · Hermes Desktop installer <span class="en">แนะนำสำหรับมือใหม่</span></h4>
+      <p>โหลด installer จาก <a class="inline" href="https://hermes-agent.nousresearch.com/" target="_blank" rel="noopener">hermes-agent.nousresearch.com</a> แล้วรัน — ได้ทั้ง command-line + desktop app และจัดการ dependency ให้ครบ</p>
+
+      <h4>B · PowerShell (CLI ล้วน) <span class="en">native</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">powershell</span><span class="tag win">Windows native</span><button class="copy">copy</button></div>
+<pre><span class="k">iex</span> (<span class="k">irm</span> <span class="s">https://hermes-agent.nousresearch.com/install.ps1</span>)</pre>
+      </div>
+      <p>ถ้าลง CLI ไปแล้วอยากเปิด Desktop app ทีหลัง สั่ง:</p>
+      <div class="code">
+        <div class="code-bar"><span class="lang">powershell</span><span class="tag win">Windows</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> desktop</pre>
+      </div>
+
+      <div class="note violet">
+        <span class="lbl">โค้ดอยู่ที่ไหนบน Windows · install path</span>
+        curl/PowerShell installer วาง repo ไว้ที่ <code>%LOCALAPPDATA%\hermes\hermes-agent</code> (ต่างจาก Linux ที่อยู่ <code>~/.hermes/hermes-agent</code>) — เก็บไว้ใช้ตอนต้อง <code>cd</code> เข้าไปลง extras เช่น voice
+      </div>
+
+      <h4>C · ผ่าน WSL2 <span class="en">สาย Linux</span></h4>
+      <p>เปิด Ubuntu บน WSL2 แล้วทำตามหัวข้อ <a class="inline" href="#ubuntu">02 · ติดตั้งบน Ubuntu</a> ได้เลย จุดเดียวที่ต่างคือเรื่อง gateway (ใช้ <code>gateway run</code> + tmux ตามที่เตือนไว้ข้างบน) — วิธีนี้นายจะได้สภาพแวดล้อม Linux เต็มซึ่งเข้ากับ pipeline ที่นายมีอยู่มากกว่า</p>
+
+      <h4>เริ่มแชทหลังลงเสร็จ (ทุกแพลตฟอร์ม) <span class="en">first run</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">shell</span><span class="tag">any OS</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span>            <span class="c"># classic CLI</span>
+<span class="k">hermes</span> <span class="f">--tui</span>      <span class="c"># TUI โหมดใหม่ (แนะนำ — mouse select, modal overlay)</span></pre>
+      </div>
+    </section>
+
+    <!-- 04 SETUP -->
+    <section id="setup">
+      <div class="sec-head"><span class="idx">04</span><h3>ตั้งค่า &amp; เลือก Provider</h3><span class="en">setup · provider · model</span></div>
+      <p class="lede">ขั้นที่สำคัญที่สุดของการตั้งค่า — เลือก provider ให้ใช้งานได้จริงก่อน ค่อยต่อ feature อื่น กฎเหล็ก: ถ้ายังแชทธรรมดาไม่ผ่าน อย่าเพิ่งเติม gateway/cron/skill</p>
+
+      <h4>โหมดของ hermes setup <span class="en">3 modes</span></h4>
+      <div class="tbl">
+      <table>
+        <tr><th>โหมด</th><th>เหมาะกับ</th></tr>
+        <tr><td><b>Quick Setup (Nous Portal)</b></td><td>OAuth ฟรี ไม่ต้องใส่ API key — ได้โมเดล + Tool Gateway ครบ ทางที่เร็วที่สุด</td></tr>
+        <tr><td><b>Full Setup</b></td><td>ไล่ตั้งเองทุก provider/tool (เอา API key ตัวเองมาใส่)</td></tr>
+        <tr><td><b>Blank Slate</b></td><td>เปิดเฉพาะขั้นต่ำ: provider+model, File Operations, Terminal เท่านั้น ที่เหลือปิดหมด — เหมาะตอนต้องการ agent ที่คุมทุกอย่างเอง แล้วค่อยเปิดเฉพาะที่ใช้</td></tr>
+      </table>
+      </div>
+
+      <h4>คำสั่งตั้งค่า <span class="en">setup commands</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">setup</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> setup <span class="f">--portal</span>   <span class="c"># ทางลัด: OAuth Nous Portal + Tool Gateway จบในคำสั่งเดียว</span>
+<span class="k">hermes</span> setup           <span class="c"># wizard เต็ม (ลงครั้งแรก) / reconfigure (ลงแล้ว)</span>
+<span class="k">hermes</span> model           <span class="c"># เลือก provider + model (เพิ่ม provider ใหม่, OAuth, ใส่ key)</span>
+<span class="k">hermes</span> tools           <span class="c"># เปิด/ปิด tool ต่อแพลตฟอร์ม</span>
+<span class="k">hermes</span> gateway setup   <span class="c"># ตั้งค่าแพลตฟอร์ม messaging</span></pre>
+      </div>
+
+      <div class="note rose">
+        <span class="lbl">hermes model ≠ /model</span>
+        <b><code>hermes model</code></b> (รันจาก terminal นอกเซสชัน) = wizard เต็ม เพิ่ม provider ใหม่/OAuth/ใส่ key ได้ ส่วน <b><code>/model</code></b> (พิมพ์ในเซสชัน) = สลับได้เฉพาะ provider/model ที่ตั้งไว้แล้วเท่านั้น ถ้าจะเพิ่ม provider ใหม่ต้องออกจากเซสชันก่อน
+      </div>
+
+      <h4>Provider ยอดนิยม (สำหรับงานนาย) <span class="en">good defaults</span></h4>
+      <div class="tbl">
+      <table>
+        <tr><th>Provider</th><th>คือ</th><th>ตั้งค่ายังไง</th></tr>
+        <tr><td><b>Nous Portal</b></td><td>subscription zero-config, 300+ โมเดล + Tool Gateway</td><td>OAuth ผ่าน <code>hermes model</code></td></tr>
+        <tr><td><b>Anthropic</b></td><td>Claude ตรงๆ (Max plan OAuth หรือ API key)</td><td><code>hermes model</code> → OAuth / ใส่ key</td></tr>
+        <tr><td><b>OpenRouter</b></td><td>routing ข้ามหลายโมเดล</td><td>ใส่ <code>OPENROUTER_API_KEY</code></td></tr>
+        <tr><td><b>Qwen / DeepSeek / Kimi</b></td><td>โมเดลจีน (นายเคยประเมินไว้)</td><td><code>DASHSCOPE_API_KEY</code> / <code>DEEPSEEK_API_KEY</code> / <code>KIMI_API_KEY</code></td></tr>
+        <tr><td><b>Custom Endpoint</b></td><td>vLLM, SGLang, Ollama, OpenAI-compatible</td><td>ตั้ง base URL + API key</td></tr>
+      </table>
+      </div>
+
+      <h4>secrets แยกจาก config ยังไง <span class="en">.env vs config.yaml</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">config set</span><button class="copy">copy</button></div>
+<pre><span class="c"># คำสั่งเดียว มันแยกไฟล์ให้เอง: key → .env, ที่เหลือ → config.yaml</span>
+<span class="k">hermes</span> config set model <span class="s">anthropic/claude-opus-4.6</span>
+<span class="k">hermes</span> config set terminal.backend <span class="s">docker</span>
+<span class="k">hermes</span> config set <span class="y">OPENROUTER_API_KEY</span> <span class="s">sk-or-...</span></pre>
+      </div>
+    </section>
+
+    <!-- 05 FIRST CHAT -->
+    <section id="firstchat">
+      <div class="sec-head"><span class="idx">05</span><h3>แชทครั้งแรก + Sessions</h3><span class="en">first chat · resume</span></div>
+      <p class="lede">เริ่มด้วย prompt ที่เฉพาะเจาะจงและตรวจผลง่าย เพื่อยืนยันว่า provider + tool ทำงานครบ</p>
+
+      <div class="steps">
+        <div class="step"><div class="bullet"><b>1</b><span class="ln"></span></div><div class="body"><div class="t">เปิดเซสชัน</div>สั่ง <code>hermes</code> หรือ <code>hermes --tui</code> — banner ต้องโชว์ model/provider ที่เลือก</div></div>
+        <div class="step"><div class="bullet"><b>2</b><span class="ln"></span></div><div class="body"><div class="t">ทดสอบ tool</div>ลองสั่งงานที่ต้องใช้ terminal เช่น "What's my disk usage? Show top 5 largest dirs." — agent จะรันคำสั่งจริงให้</div></div>
+        <div class="step"><div class="bullet"><b>3</b><span class="ln"></span></div><div class="body"><div class="t">ยืนยัน multi-turn</div>คุยต่อมากกว่า 1 รอบโดยไม่ error = ผ่านจุดที่ยากที่สุดแล้ว</div></div>
+        <div class="step"><div class="bullet"><b>4</b></div><div class="body"><div class="t">เช็ก resume</div>ออกแล้วสั่ง <code>hermes -c</code> ต้องกลับเข้าเซสชันเดิมได้</div></div>
+      </div>
+
+      <h4>resume / slash commands <span class="en">sessions</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">sessions</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> <span class="f">--continue</span>    <span class="c"># ต่อเซสชันล่าสุด</span>
+<span class="k">hermes</span> <span class="f">-c</span>            <span class="c"># รูปแบบสั้น</span>
+<span class="k">hermes</span> <span class="f">--resume</span> <span class="s">&lt;id&gt;</span> <span class="c"># ต่อเซสชันตาม id หรือ title</span></pre>
+      </div>
+      <div class="tbl">
+      <table>
+        <tr><th>Slash command (ในเซสชัน)</th><th>ทำอะไร</th></tr>
+        <tr><td><code>/help</code></td><td>โชว์คำสั่งทั้งหมด</td></tr>
+        <tr><td><code>/tools</code></td><td>ดู tool ที่ใช้ได้</td></tr>
+        <tr><td><code>/model claude-sonnet-4</code></td><td>สลับโมเดล (ตรวจ provider อัตโนมัติ) เติม <code>--global</code> เพื่อ save ถาวร</td></tr>
+        <tr><td><code>/reasoning high</code></td><td>ปรับระดับ thinking: none / minimal / low / medium / high / xhigh</td></tr>
+        <tr><td><code>/save</code></td><td>เซฟบทสนทนา</td></tr>
+      </table>
+      </div>
+      <div class="note">
+        <span class="lbl">tip</span>
+        multi-line input: กด <code>Alt+Enter</code> / <code>Ctrl+J</code> / <code>Shift+Enter</code> · ขัดจังหวะ agent: พิมพ์ข้อความใหม่แล้ว Enter หรือ <code>Ctrl+C</code>
+      </div>
+    </section>
+
+    <!-- 06 CLI -->
+    <section id="cli">
+      <div class="sec-head"><span class="idx">06</span><h3>คำสั่ง CLI สำคัญ</h3><span class="en">essential cli</span></div>
+      <p class="lede">คำสั่งที่ใช้บ่อยที่สุด แยกเป็นกลุ่ม — ตัวเต็มดูที่ <a class="inline" href="https://hermes-agent.nousresearch.com/docs/reference/cli-commands" target="_blank" rel="noopener">CLI Commands Reference</a></p>
+
+      <h4>one-shot &amp; scripting <span class="en">สำหรับ cron / CI / orchestrator</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">scripted</span><button class="copy">copy</button></div>
+<pre><span class="c"># -z = one-shot บริสุทธิ์ที่สุด: prompt เข้า, คำตอบสุดท้ายออก ไม่มีอย่างอื่น</span>
+<span class="k">hermes</span> <span class="f">-z</span> <span class="s">"What's the capital of France?"</span>
+answer=$(<span class="k">hermes</span> <span class="f">-z</span> <span class="s">"summarize this"</span> &lt; <span class="s">/path/to/file.txt</span>)
+
+<span class="c"># chat -q = one-shot แต่ยังเห็น tool output ใน transcript</span>
+<span class="k">hermes</span> chat <span class="f">-q</span> <span class="s">"Summarize the latest PRs"</span>
+<span class="k">hermes</span> chat <span class="f">--provider</span> <span class="s">openrouter</span> <span class="f">--model</span> <span class="s">anthropic/claude-sonnet-4.6</span>
+
+<span class="c"># worktree isolation สำหรับ parallel agent (เข้ากับ pattern ของนาย)</span>
+<span class="k">hermes</span> chat <span class="f">--worktree</span> <span class="f">-q</span> <span class="s">"Review this repo and open a PR"</span>
+
+<span class="c"># safe-mode: ปิด customization ทั้งหมด เพื่อ isolate ว่าบั๊กมาจาก setup เราหรือ Hermes</span>
+<span class="k">hermes</span> chat <span class="f">--safe-mode</span> <span class="f">-q</span> <span class="s">"Is this bug mine or Hermes'?"</span></pre>
+      </div>
+
+      <h4>global flags ที่ควรรู้ <span class="en">global options</span></h4>
+      <div class="tbl">
+      <table>
+        <tr><th>Flag</th><th>ทำอะไร</th></tr>
+        <tr><td><code>-p &lt;name&gt;</code></td><td>เลือก profile (หลาย agent แยกขาดกัน)</td></tr>
+        <tr><td><code>-w</code> / <code>--worktree</code></td><td>เริ่มใน git worktree แยก สำหรับ parallel-agent workflow</td></tr>
+        <tr><td><code>--yolo</code></td><td>ข้าม approval prompt ของคำสั่งอันตราย (ใช้ระวัง!)</td></tr>
+        <tr><td><code>--max-turns &lt;N&gt;</code></td><td>จำนวน tool-calling สูงสุดต่อ turn (default 90)</td></tr>
+        <tr><td><code>--ignore-rules</code></td><td>ไม่ inject <code>AGENTS.md</code>, <code>SOUL.md</code>, memory, preloaded skill</td></tr>
+      </table>
+      </div>
+
+      <h4>top-level commands ที่ใช้บ่อย <span class="en">cheat</span></h4>
+      <div class="tbl">
+      <table>
+        <tr><th>คำสั่ง</th><th>หน้าที่</th></tr>
+        <tr><td><code>hermes status</code></td><td>สถานะ agent / auth / platform</td></tr>
+        <tr><td><code>hermes doctor</code></td><td>วินิจฉัยปัญหา config &amp; dependency (<code>--fix</code> ซ่อมอัตโนมัติ)</td></tr>
+        <tr><td><code>hermes dump</code></td><td>สรุป setup แบบ copy-paste ไปถาม support ได้</td></tr>
+        <tr><td><code>hermes insights</code></td><td>analytics token/cost/activity</td></tr>
+        <tr><td><code>hermes kanban</code></td><td>collaboration board (task, dispatcher) — ดูหัวข้อ Cron/Automations</td></tr>
+        <tr><td><code>hermes send --to telegram "..."</code></td><td>ส่งข้อความ one-shot ไป platform โดยไม่ปลุก agent loop (เหมาะกับ ops script)</td></tr>
+        <tr><td><code>hermes claw migrate</code></td><td>ย้าย config จาก OpenClaw มา Hermes</td></tr>
+      </table>
+      </div>
+
+      <div class="note gold">
+        <span class="lbl">เชื่อมกับงานนาย · OpenClaw → Hermes</span>
+        เนื่องจากบริษัทนายใช้ทั้ง OpenClaw และ Hermes — <code>hermes claw migrate --dry-run</code> จะ preview ว่าจะย้ายอะไรบ้าง (SOUL.md, MEMORY.md, skills, provider, messaging token, MCP servers) โดย <b>ไม่ย้าย secret</b> เว้นแต่สั่ง <code>--migrate-secrets</code> เอง — ลอง dry-run ก่อนเสมอ
+      </div>
+    </section>
+
+    <!-- 07 CONFIG -->
+    <section id="config">
+      <div class="sec-head"><span class="idx">07</span><h3>config.yaml &amp; .env</h3><span class="en">configuration</span></div>
+      <p class="lede">ทุกอย่างเก็บใน <code>~/.hermes/</code> — secret ไป <code>.env</code>, ที่เหลือไป <code>config.yaml</code> ลำดับความสำคัญ: CLI args → config.yaml → .env → built-in default</p>
+
+      <h4>โครงสร้างไดเรกทอรี <span class="en">~/.hermes/</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">text</span><span class="tag">layout</span><button class="copy">copy</button></div>
+<pre><span class="s">~/.hermes/</span>
+├── config.yaml     <span class="c"># settings: model, terminal, TTS, compression ฯลฯ</span>
+├── .env            <span class="c"># API keys + secrets</span>
+├── auth.json       <span class="c"># OAuth credentials (Nous Portal ฯลฯ)</span>
+├── SOUL.md         <span class="c"># identity ของ agent (slot #1 ใน system prompt)</span>
+├── memories/       <span class="c"># MEMORY.md, USER.md (จำข้ามเซสชัน)</span>
+├── skills/         <span class="c"># skill ที่ agent สร้างเอง</span>
+├── cron/           <span class="c"># scheduled jobs</span>
+├── sessions/       <span class="c"># gateway sessions</span>
+└── logs/           <span class="c"># errors.log, gateway.log (redact secret อัตโนมัติ)</span></pre>
+      </div>
+
+      <h4>จัดการ config <span class="en">manage</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">config</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> config              <span class="c"># ดู config ปัจจุบัน</span>
+<span class="k">hermes</span> config edit         <span class="c"># เปิด config.yaml ใน editor</span>
+<span class="k">hermes</span> config set <span class="s">KEY VAL</span>  <span class="c"># ตั้งค่าทีละตัว (แยกไฟล์ให้เอง)</span>
+<span class="k">hermes</span> config check        <span class="c"># เช็ก option ที่หาย (หลัง update)</span>
+<span class="k">hermes</span> config migrate      <span class="c"># เติม option ใหม่แบบ interactive</span></pre>
+      </div>
+
+      <h4>ตัวอย่าง config.yaml ที่ใช้บ่อย <span class="en">common knobs</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">yaml</span><span class="tag">config.yaml</span><button class="copy">copy</button></div>
+<pre><span class="y">timezone:</span> <span class="s">"Asia/Bangkok"</span>          <span class="c"># IANA timezone (ของนาย)</span>
+
+<span class="y">agent:</span>
+  <span class="y">max_turns:</span> <span class="s">90</span>                   <span class="c"># tool-calling สูงสุดต่อ turn</span>
+  <span class="y">reasoning_effort:</span> <span class="s">""</span>            <span class="c"># none|minimal|low|medium|high|xhigh</span>
+
+<span class="y">compression:</span>
+  <span class="y">enabled:</span> <span class="s">true</span>
+  <span class="y">threshold:</span> <span class="s">0.50</span>               <span class="c"># compress ที่ % ของ context limit</span>
+
+<span class="y">memory:</span>
+  <span class="y">memory_enabled:</span> <span class="s">true</span>
+  <span class="y">write_approval:</span> <span class="s">false</span>          <span class="c"># true = ขออนุมัติก่อนเขียน memory ทุกครั้ง</span>
+
+<span class="y">env substitution:</span> <span class="c"># อ้าง env var ด้วย ${VAR} ได้</span>
+<span class="c"># auxiliary.vision.api_key: ${GOOGLE_API_KEY}</span></pre>
+      </div>
+
+      <div class="note violet">
+        <span class="lbl">หลักการที่ตรงกับสไตล์นาย · factual context files</span>
+        Hermes inject context file พวก <code>SOUL.md</code>, <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>.cursorrules</code> เข้า system prompt อัตโนมัติ (truncate ที่ <code>context_file_max_chars</code>, default 20000) — ตรงกับ pattern ที่นายเขียน <code>CLAUDE.md</code> เป็น factual statement เพื่อเลี่ยง prompt-injection guard ได้พอดี
+      </div>
+    </section>
+
+    <!-- 08 TERMINAL -->
+    <section id="terminal">
+      <div class="sec-head"><span class="idx">08</span><h3>Terminal Backend / Sandbox</h3><span class="en">isolation</span></div>
+      <p class="lede">agent มีสิทธิ์ filesystem เท่า user ที่รัน — ถ้าต้องการความปลอดภัย ใช้ Docker หรือ SSH backend นี่คือจุด "serialize human judgment" ที่นายเน้น เพราะ sandbox จำกัด blast radius ของ agent ได้</p>
+
+      <div class="tbl">
+      <table>
+        <tr><th>Backend</th><th>คำสั่งรันที่ไหน</th><th>เหมาะกับ</th></tr>
+        <tr><td><b>local</b></td><td>เครื่องนายตรงๆ (ไม่มี isolation)</td><td>dev ส่วนตัว</td></tr>
+        <tr><td><b>docker</b></td><td>container เดียวที่ persist ข้ามเซสชัน (cap-drop, no-new-privileges, pids-limit)</td><td>sandbox ปลอดภัย, CI/CD</td></tr>
+        <tr><td><b>ssh</b></td><td>remote server ผ่าน SSH (ControlMaster reuse)</td><td>remote dev, ฮาร์ดแวร์แรง</td></tr>
+        <tr><td><b>modal / daytona</b></td><td>cloud sandbox (serverless, hibernate ตอน idle)</td><td>ephemeral compute, eval</td></tr>
+        <tr><td><b>singularity</b></td><td>Apptainer container (--containall)</td><td>HPC cluster, เครื่องที่ใช้ร่วม</td></tr>
+      </table>
+      </div>
+
+      <h4>สลับเป็น Docker sandbox <span class="en">recommended</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">switch backend</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> config set terminal.backend <span class="s">docker</span>
+<span class="k">docker</span> version   <span class="c"># ยืนยันว่า Docker ทำงาน</span></pre>
+      </div>
+      <div class="code">
+        <div class="code-bar"><span class="lang">yaml</span><span class="tag">config.yaml — docker</span><button class="copy">copy</button></div>
+<pre><span class="y">terminal:</span>
+  <span class="y">backend:</span> <span class="s">docker</span>
+  <span class="y">docker_image:</span> <span class="s">"nikolaik/python-nodejs:python3.11-nodejs20"</span>
+  <span class="y">docker_run_as_host_user:</span> <span class="s">true</span>     <span class="c"># ไฟล์ที่สร้างเป็นของ host user ไม่ใช่ root</span>
+  <span class="y">docker_mount_cwd_to_workspace:</span> <span class="s">true</span> <span class="c"># mount โฟลเดอร์ที่เปิด Hermes เข้า /workspace</span>
+  <span class="y">docker_forward_env:</span>                  <span class="c"># forward secret จาก host เข้า container</span>
+    - <span class="s">"GITHUB_TOKEN"</span>
+  <span class="y">container_cpu:</span> <span class="s">1</span>
+  <span class="y">container_memory:</span> <span class="s">5120</span>             <span class="c"># MB</span></pre>
+      </div>
+
+      <h4>SSH backend (remote server) <span class="en">ตรงกับ Pedpro VPS</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">.env</span><button class="copy">copy</button></div>
+<pre><span class="c"># ตั้งใน ~/.hermes/.env</span>
+<span class="y">TERMINAL_SSH_HOST</span>=<span class="s">my-server.example.com</span>
+<span class="y">TERMINAL_SSH_USER</span>=<span class="s">ubuntu</span>
+<span class="y">TERMINAL_SSH_PORT</span>=<span class="s">22</span>          <span class="c"># optional (default 22)</span>
+<span class="y">TERMINAL_SSH_KEY</span>=<span class="s">~/.ssh/id_ed25519</span>  <span class="c"># optional</span></pre>
+      </div>
+      <div class="note rose">
+        <span class="lbl">คำเตือนความปลอดภัย · security</span>
+        บน <b>local backend</b> agent เข้าถึง filesystem ได้เท่า account นาย ถ้างานมีความเสี่ยง ใช้ <code>hermes tools</code> ปิด tool ที่ไม่ต้องการ หรือสลับไป Docker เพื่อ sandbox — และอย่าลืม <code>--yolo</code> คือการ <b>ปิด</b> approval prompt ใช้เฉพาะตอนที่รู้แน่ว่าปลอดภัย
+      </div>
+    </section>
+
+    <!-- 09 GATEWAY -->
+    <section id="gateway">
+      <div class="sec-head"><span class="idx">09</span><h3>Gateway (Telegram ฯลฯ)</h3><span class="en">messaging gateway</span></div>
+      <p class="lede">ต่อ agent เข้า 20+ แพลตฟอร์มจาก gateway เดียว — นี่คือชั้นที่ทำให้ "คุยกับ agent บน cloud VM ผ่าน Telegram โดยไม่ต้อง SSH" เป็นจริง และเป็นที่ที่นายจะวาง async gate approval ได้</p>
+
+      <h4>ตั้งค่า + รัน gateway <span class="en">setup &amp; run</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">gateway</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> gateway setup    <span class="c"># wizard ตั้งค่าแพลตฟอร์ม (Telegram, Discord, Slack ฯลฯ)</span>
+<span class="k">hermes</span> gateway run      <span class="c"># รัน foreground (แนะนำสำหรับ WSL, Docker, Termux)</span>
+<span class="k">hermes</span> gateway install  <span class="c"># ลงเป็น systemd (Linux) / launchd (macOS) service</span>
+<span class="k">hermes</span> gateway start    <span class="c"># สตาร์ท background service</span>
+<span class="k">hermes</span> gateway status   <span class="c"># ดูสถานะ</span></pre>
+      </div>
+
+      <h4>รันค้างบน VPS ด้วย systemd <span class="en">always-on</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag lnx">Ubuntu server</span><button class="copy">copy</button></div>
+<pre><span class="c"># ลงเป็น service แล้ว enable ให้ start ตอน boot</span>
+<span class="k">hermes</span> gateway install
+<span class="k">hermes</span> gateway start
+<span class="k">hermes</span> gateway status
+<span class="c"># บน WSL ใช้ tmux แทน เพราะ systemd ไม่เสถียร:</span>
+<span class="k">tmux</span> new <span class="f">-s</span> hermes <span class="s">'hermes gateway run'</span></pre>
+      </div>
+
+      <h4>ส่งข้อความ/ไฟล์แบบ one-shot (ops script) <span class="en">hermes send</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">send</span><button class="copy">copy</button></div>
+<pre><span class="c"># ส่งข้อความ — ไม่ต้องปลุก agent loop, ไม่กิน token</span>
+<span class="k">hermes</span> send <span class="f">--to</span> <span class="s">telegram</span> <span class="s">"deploy finished"</span>
+<span class="k">echo</span> <span class="s">"RAM 92%"</span> | <span class="k">hermes</span> send <span class="f">--to</span> <span class="s">telegram:-1001234567890</span>
+
+<span class="c"># ส่งไฟล์/ภาพเป็น attachment ด้วย MEDIA: directive</span>
+<span class="k">hermes</span> send <span class="f">--to</span> <span class="s">telegram</span> <span class="s">"Build chart MEDIA:/tmp/chart.png"</span>
+<span class="k">hermes</span> send <span class="f">--to</span> <span class="s">discord:#ops</span> <span class="f">--file</span> <span class="s">/tmp/report.md</span></pre>
+      </div>
+
+      <div class="note gold">
+        <span class="lbl">เชื่อมกับ two-gate architecture ของนาย</span>
+        <code>hermes send</code> + <code>hermes webhook subscribe --deliver telegram</code> คือชิ้นส่วนที่ใช้ทำ <b>async gate approval ผ่าน Telegram</b> ได้เลย — agent ทำงานไป, ส่งสรุปมา Telegram, นายกดอนุมัติ/ปฏิเสธจากมือถือ ตรงกับหลัก "serialize human judgment" ที่นายออกแบบ pipeline ไว้
+      </div>
+    </section>
+
+    <!-- 10 SKILLS -->
+    <section id="skills">
+      <div class="sec-head"><span class="idx">10</span><h3>Skills &amp; MCP</h3><span class="en">procedural memory · tools</span></div>
+      <p class="lede">Skill = เอกสารสอน agent ทำงานเฉพาะอย่าง (ไฟล์ <code>SKILL.md</code> มี name, description, ขั้นตอน) — agent อ่าน description ฟรี แล้วโหลดเนื้อหาเต็มเฉพาะตอนมีงานตรง compatible กับ <a class="inline" href="https://agentskills.io" target="_blank" rel="noopener">agentskills.io</a></p>
+
+      <h4>browse / install / ใช้ skill <span class="en">skills hub</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">skills</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> skills browse                    <span class="c"># ดูทั้งหมด</span>
+<span class="k">hermes</span> skills search <span class="s">react</span>            <span class="c"># ค้นตาม keyword</span>
+<span class="k">hermes</span> skills inspect <span class="s">official/security/1password</span>  <span class="c"># preview ก่อนลง</span>
+<span class="k">hermes</span> skills install <span class="s">openai/skills/k8s</span>  <span class="c"># ลง (สแกน security ก่อนเสมอ)</span>
+<span class="k">hermes</span> skills install <span class="s">https://example.com/SKILL.md</span> <span class="f">--name</span> <span class="s">my-skill</span></pre>
+      </div>
+      <p>ทุก skill ที่ลงจะกลายเป็น slash command อัตโนมัติ:</p>
+      <div class="code">
+        <div class="code-bar"><span class="lang">text</span><span class="tag">in-session</span><button class="copy">copy</button></div>
+<pre>/k8s deploy the staging manifest    <span class="c"># รัน skill พร้อม request</span>
+/k8s                                <span class="c"># โหลด skill แล้วให้ Hermes ถามว่าจะเอาอะไร</span></pre>
+      </div>
+
+      <h4>MCP servers <span class="en">model context protocol</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">mcp</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> mcp                          <span class="c"># picker เลือก MCP ที่ Nous อนุมัติ</span>
+<span class="k">hermes</span> mcp add <span class="s">github</span> <span class="f">--command</span> <span class="s">npx</span> <span class="f">--args</span> <span class="s">-y @modelcontextprotocol/server-github</span>
+<span class="k">hermes</span> mcp list                     <span class="c"># ดู MCP ที่ตั้งไว้</span>
+<span class="k">hermes</span> mcp test <span class="s">github</span>              <span class="c"># ทดสอบการเชื่อมต่อ</span></pre>
+      </div>
+      <p>หรือใส่ใน <code>config.yaml</code> ตรงๆ:</p>
+      <div class="code">
+        <div class="code-bar"><span class="lang">yaml</span><span class="tag">config.yaml — mcp</span><button class="copy">copy</button></div>
+<pre><span class="y">mcp_servers:</span>
+  <span class="y">github:</span>
+    <span class="y">command:</span> <span class="s">npx</span>
+    <span class="y">args:</span> [<span class="s">"-y"</span>, <span class="s">"@modelcontextprotocol/server-github"</span>]
+    <span class="y">env:</span>
+      <span class="y">GITHUB_PERSONAL_ACCESS_TOKEN:</span> <span class="s">"ghp_xxx"</span></pre>
+      </div>
+
+      <div class="note">
+        <span class="lbl">curator · self-maintenance</span>
+        Hermes มี curator ที่ทบทวน skill ที่ agent สร้างเอง, prune ตัวที่ stale, archive ตัวที่ล้าสมัย (skill bundled/hub ไม่แตะ) — <code>hermes curator status</code> / <code>hermes curator run --dry-run</code> เพื่อ preview ก่อน
+      </div>
+    </section>
+
+    <!-- 11 CRON -->
+    <section id="cron">
+      <div class="sec-head"><span class="idx">11</span><h3>Cron / Automations / Kanban</h3><span class="en">scheduled · orchestration</span></div>
+      <p class="lede">cron ในตัวส่งผลไปแพลตฟอร์มไหนก็ได้ ส่วน Kanban เป็น board หลาย-profile ที่ dispatcher กวาดงานให้ agent worker ทำ — ใกล้เคียง YouTrack-as-canonical-state ที่นายออกแบบไว้</p>
+
+      <h4>cron jobs <span class="en">built-in scheduler</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">cron</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> cron list                    <span class="c"># ดู job ที่ตั้งไว้</span>
+<span class="k">hermes</span> cron create                  <span class="c"># สร้าง job จาก prompt (แนบ skill ด้วย --skill ได้)</span>
+<span class="k">hermes</span> cron run <span class="s">&lt;id&gt;</span>               <span class="c"># trigger job รอบ tick ถัดไป</span>
+<span class="k">hermes</span> cron status                  <span class="c"># scheduler ทำงานอยู่ไหม</span></pre>
+      </div>
+
+      <h4>Kanban board <span class="en">multi-agent task queue</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">kanban</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> kanban init                         <span class="c"># สร้าง board (SQLite — durable state ที่นายชอบ)</span>
+<span class="k">hermes</span> kanban create <span class="s">"Fix login bug"</span> <span class="f">--assignee</span> <span class="s">dev</span>
+<span class="k">hermes</span> kanban list                         <span class="c"># ดู task</span>
+<span class="k">hermes</span> kanban specify <span class="s">&lt;id&gt;</span>                 <span class="c"># ขยาย one-liner เป็น spec แล้วเลื่อนไป todo</span>
+<span class="k">hermes</span> kanban decompose <span class="s">&lt;id&gt;</span>               <span class="c"># แตก task เป็น sub-task ส่งให้ specialist profile</span>
+<span class="k">hermes</span> kanban dispatch                     <span class="c"># dispatcher กวาด 1 รอบ</span></pre>
+      </div>
+
+      <div class="note violet">
+        <span class="lbl">map กับ pipeline ของนาย · architecture fit</span>
+        Kanban + SQLite durable state + dispatcher + <code>kanban specify/decompose</code> ผ่าน auxiliary model = โครงสร้างเดียวกับ <b>"parallelize agents, serialize human judgment"</b> ที่นายวางไว้ — task เป็น canonical state, worker claim แบบ atomic (race guard), <code>kanban block</code> = human gate, <code>kanban complete</code> = ปิดงาน นายเอา YouTrack เป็น source of truth แล้ว mirror สถานะมา Kanban หรือใช้ Kanban ตรงๆ ก็ได้
+      </div>
+    </section>
+
+    <!-- 12 MAINTAIN -->
+    <section id="maintain">
+      <div class="sec-head"><span class="idx">12</span><h3>Update / Backup / ถอน</h3><span class="en">maintenance</span></div>
+
+      <h4>อัปเดต <span class="en">update</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">update</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> update           <span class="c"># pull โค้ดล่าสุด + reinstall deps (auto-detect git/pip)</span>
+<span class="k">hermes</span> update <span class="f">--check</span>   <span class="c"># เช็กว่ามี version ใหม่ไหม โดยไม่ลง</span>
+<span class="k">hermes</span> update <span class="f">--backup</span>  <span class="c"># snapshot HERMES_HOME ก่อน pull</span></pre>
+      </div>
+
+      <h4>backup / restore <span class="en">zip</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">backup</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> backup                        <span class="c"># full backup → ~/hermes-backup-*.zip (WAL-safe)</span>
+<span class="k">hermes</span> backup <span class="f">--quick</span> <span class="f">--label</span> <span class="s">"pre-upgrade"</span>  <span class="c"># snapshot เฉพาะ state สำคัญ</span>
+<span class="k">hermes</span> import <span class="s">~/hermes-backup-20260423.zip</span>     <span class="c"># restore (หยุด gateway ก่อน!)</span></pre>
+      </div>
+
+      <h4>ถอนการติดตั้ง <span class="en">uninstall</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">uninstall</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> uninstall          <span class="c"># ถอน Hermes (เก็บ config/data)</span>
+<span class="k">hermes</span> uninstall <span class="f">--full</span>   <span class="c"># ถอนพร้อมลบ config/data ทั้งหมด</span>
+<span class="k">hermes</span> uninstall <span class="f">--gui</span>    <span class="c"># ถอนเฉพาะ desktop GUI เก็บ agent ไว้</span></pre>
+      </div>
+    </section>
+
+    <!-- 13 TROUBLE -->
+    <section id="trouble">
+      <div class="sec-head"><span class="idx">13</span><h3>แก้ปัญหา (Doctor)</h3><span class="en">troubleshooting</span></div>
+      <p class="lede">ลำดับการกู้สถานะเมื่อรู้สึก "พังๆ": <code>doctor</code> → <code>model</code> → <code>setup</code> → <code>sessions list</code> → <code>--continue</code> → <code>gateway status</code></p>
+
+      <div class="tbl">
+      <table>
+        <tr><th>อาการ</th><th>สาเหตุที่น่าจะเป็น</th><th>วิธีแก้</th></tr>
+        <tr><td><code>hermes: command not found</code></td><td>shell ยังไม่ reload / PATH ไม่ครบ</td><td><code>source ~/.bashrc</code> หรือเพิ่ม <code>~/.local/bin</code> ใน PATH</td></tr>
+        <tr><td><code>API key not set</code></td><td>ยังไม่ตั้ง provider</td><td><code>hermes model</code> หรือ <code>hermes config set OPENROUTER_API_KEY ...</code></td></tr>
+        <tr><td>ตอบว่างเปล่า/พัง</td><td>provider auth หรือเลือก model ผิด</td><td><code>hermes model</code> ยืนยัน provider/model/auth</td></tr>
+        <tr><td>gateway สตาร์ทแต่ไม่มีใครคุยได้</td><td>bot token / allowlist ยังไม่ครบ</td><td><code>hermes gateway setup</code> แล้วเช็ก <code>gateway status</code></td></tr>
+        <tr><td><code>--continue</code> หา session เดิมไม่เจอ</td><td>สลับ profile / session ไม่ได้เซฟ</td><td><code>hermes sessions list</code> ยืนยันว่าอยู่ profile เดิม</td></tr>
+        <tr><td>config มีปัญหาหลัง update</td><td>option หาย/เก่า</td><td><code>hermes config check</code> แล้ว <code>hermes config migrate</code></td></tr>
+      </table>
+      </div>
+
+      <h4>เครื่องมือวินิจฉัย <span class="en">diagnostics</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">doctor</span><button class="copy">copy</button></div>
+<pre><span class="k">hermes</span> doctor          <span class="c"># บอกว่าอะไรหาย + วิธีแก้</span>
+<span class="k">hermes</span> doctor <span class="f">--fix</span>    <span class="c"># พยายามซ่อมอัตโนมัติ</span>
+<span class="k">hermes</span> dump            <span class="c"># สรุป setup copy-paste ไปถาม Discord/GitHub</span>
+<span class="k">hermes</span> logs <span class="f">-f</span>          <span class="c"># tail agent.log แบบ real-time</span>
+<span class="k">hermes</span> logs gateway <span class="f">-n</span> <span class="s">100</span>           <span class="c"># 100 บรรทัดล่าสุดของ gateway.log</span>
+<span class="k">hermes</span> logs <span class="f">--level</span> <span class="s">WARNING</span> <span class="f">--since</span> <span class="s">1h</span>  <span class="c"># เฉพาะ warning+ ใน 1 ชม.ที่ผ่านมา</span></pre>
+      </div>
+
+      <h4>ความปลอดภัย supply-chain <span class="en">security audit</span></h4>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">security</span><button class="copy">copy</button></div>
+<pre><span class="c"># สแกน vulnerability ผ่าน OSV.dev — venv, plugin deps, pinned MCP servers</span>
+<span class="k">hermes</span> security audit
+<span class="k">hermes</span> security audit <span class="f">--fail-on</span> <span class="s">high</span>   <span class="c"># exit non-zero ถ้าเจอ severity ≥ high</span></pre>
+      </div>
+      <div class="note rose">
+        <span class="lbl">หมายเหตุสำหรับนาย · ongoing CVE awareness</span>
+        นายติดตามเรื่อง CVE/supply-chain ของ OpenClaw อยู่แล้ว — <code>hermes security audit</code> ทำหน้าที่เดียวกันฝั่ง Hermes ควรใส่ใน CI/cron เป็นประจำ และระวังว่า <code>hermes skills install</code> จาก third-party แม้สแกนแล้ว ก็ยังควรรีวิว <code>SKILL.md</code> เองก่อนเปิดใช้บน server บริษัท
+      </div>
+    </section>
+
+    <!-- 14 CHEAT -->
+    <section id="cheat">
+      <div class="sec-head"><span class="idx">14</span><h3>Cheat Sheet</h3><span class="en">quick reference</span></div>
+      <p class="lede">คำสั่งที่ใช้บ่อยสุด รวมไว้ที่เดียว</p>
+      <div class="code">
+        <div class="code-bar"><span class="lang">bash</span><span class="tag">all-in-one</span><button class="copy">copy</button></div>
+<pre><span class="c"># ── ติดตั้ง ──────────────────────────────────────────</span>
+<span class="k">curl</span> <span class="f">-fsSL</span> <span class="s">https://hermes-agent.nousresearch.com/install.sh</span> | <span class="k">bash</span>   <span class="c"># Linux/WSL</span>
+<span class="k">iex</span> (<span class="k">irm</span> <span class="s">https://hermes-agent.nousresearch.com/install.ps1</span>)               <span class="c"># Windows</span>
+<span class="k">source</span> <span class="s">~/.bashrc</span>
+
+<span class="c"># ── ตั้งค่า ──────────────────────────────────────────</span>
+<span class="k">hermes</span> setup <span class="f">--portal</span>   <span class="c"># OAuth Nous Portal + Tool Gateway จบในคำสั่งเดียว</span>
+<span class="k">hermes</span> model           <span class="c"># เพิ่ม provider / เลือก model</span>
+<span class="k">hermes</span> tools           <span class="c"># เปิด/ปิด tool</span>
+
+<span class="c"># ── ใช้งาน ──────────────────────────────────────────</span>
+<span class="k">hermes</span>                  <span class="c"># แชท (classic CLI)</span>
+<span class="k">hermes</span> <span class="f">--tui</span>            <span class="c"># แชท (TUI)</span>
+<span class="k">hermes</span> <span class="f">-c</span>                <span class="c"># ต่อเซสชันล่าสุด</span>
+<span class="k">hermes</span> <span class="f">-z</span> <span class="s">"prompt"</span>      <span class="c"># one-shot สำหรับ script</span>
+
+<span class="c"># ── gateway / automation ────────────────────────────</span>
+<span class="k">hermes</span> gateway setup    <span class="c"># ตั้งค่า Telegram/Discord/Slack</span>
+<span class="k">hermes</span> gateway run      <span class="c"># รัน foreground (WSL/Docker)</span>
+<span class="k">hermes</span> send <span class="f">--to</span> <span class="s">telegram</span> <span class="s">"msg"</span>   <span class="c"># ส่ง one-shot</span>
+<span class="k">hermes</span> cron list / kanban list      <span class="c"># scheduled + task board</span>
+
+<span class="c"># ── ดูแลรักษา ────────────────────────────────────────</span>
+<span class="k">hermes</span> doctor           <span class="c"># วินิจฉัย</span>
+<span class="k">hermes</span> update           <span class="c"># อัปเดต</span>
+<span class="k">hermes</span> backup           <span class="c"># สำรองข้อมูล</span>
+<span class="k">hermes</span> security audit    <span class="c"># สแกน supply-chain</span></pre>
+      </div>
+
+      <div class="note gold">
+        <span class="lbl">ก้าวต่อไป · next</span>
+        ลองวาง flow จริงของ Pedpro: (1) Kanban เป็น task queue, (2) Docker/SSH backend เป็น sandbox, (3) Telegram gateway + webhook เป็น async gate, (4) cron audit ความปลอดภัยทุกวัน แล้วต่อ Claude Code (Sonnet) เป็น builder ผ่าน custom endpoint / ACP — แล้วบอกผมได้ถ้าอยากให้ทำคู่มือเจาะลึกเฉพาะส่วน gateway↔gate approval สำหรับ pipeline สองประตูของนาย 55
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  สร้างจากเอกสารทางการ <a href="https://hermes-agent.nousresearch.com/docs/" target="_blank" rel="noopener">hermes-agent.nousresearch.com/docs</a> · Hermes Agent by Nous Research · MIT License · เนื้อหา ณ มิ.ย. 2026 — feature อาจเปลี่ยน ตรวจกับเอกสารทางการเสมอ
+</footer>
+
+<script>
+  // Copy buttons
+  const ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  document.querySelectorAll('.copy').forEach(btn=>{
+    btn.innerHTML = ICON + '<span>copy</span>';
+    btn.addEventListener('click',()=>{
+      const pre = btn.closest('.code').querySelector('pre');
+      const text = pre.innerText.replace(/\u00a0/g,' ');
+      navigator.clipboard.writeText(text).then(()=>{
+        btn.classList.add('done');
+        btn.querySelector('span').textContent='copied!';
+        setTimeout(()=>{btn.classList.remove('done');btn.querySelector('span').textContent='copy';},1600);
+      });
+    });
+  });
+
+  // Scrollspy
+  const links = [...document.querySelectorAll('#nav a')];
+  const map = new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a = map.get(e.target.id);
+        if(a){a.classList.add('active');}
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  document.querySelectorAll('section').forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>

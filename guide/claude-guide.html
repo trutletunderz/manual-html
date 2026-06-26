@@ -1,0 +1,2200 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>คู่มือเมนู Claude ฉบับสมบูรณ์ · Use Style & Skills</title>
+<meta name="description" content="คู่มือเมนูทั้งหมดของ Claude — เมนู +, Use Style ทั้ง 5 แบบ และการย้าย Styles → Skills อัปเดตล่าสุด มิถุนายน 2026" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#FAF9F5;
+    --paper-2:#F4F1EA;
+    --ink:#211F1A;
+    --ink-soft:#56524A;
+    --muted:#8C877B;
+    --clay:#CC785C;
+    --clay-deep:#A8512F;
+    --clay-soft:#F3E0D6;
+    --clay-line:#E7C9BA;
+    --line:#E7E2D6;
+    --line-2:#EFEBE0;
+    --surface:#FFFFFF;
+    --info:#3F7488;
+    --info-soft:#E4EEF1;
+    --info-line:#C9DCE2;
+    --ok:#4F8460;
+    --ok-soft:#E4EFE6;
+    --warn:#B5781F;
+    --warn-soft:#F6EBD6;
+    --shadow:0 1px 2px rgba(33,31,26,.04), 0 8px 24px rgba(33,31,26,.06);
+    --shadow-lg:0 4px 12px rgba(33,31,26,.08), 0 20px 48px rgba(33,31,26,.10);
+    --radius:16px;
+    --radius-sm:10px;
+    --maxw:1180px;
+  }
+  html[data-theme="dark"]{
+    --paper:#1A1916;
+    --paper-2:#221F1B;
+    --ink:#F1EDE4;
+    --ink-soft:#BAB4A8;
+    --muted:#8C877C;
+    --clay:#D98A6A;
+    --clay-deep:#E6A985;
+    --clay-soft:#3A2A22;
+    --clay-line:#5C3F30;
+    --line:#34322B;
+    --line-2:#2B2925;
+    --surface:#23211E;
+    --info:#7FB0C4;
+    --info-soft:#1D2A30;
+    --info-line:#33505C;
+    --ok:#7FB58E;
+    --ok-soft:#1E2A22;
+    --warn:#D6A24C;
+    --warn-soft:#2C2417;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    --shadow-lg:0 4px 12px rgba(0,0,0,.4), 0 20px 48px rgba(0,0,0,.5);
+  }
+  html[data-theme="dark"] .stat .n,
+  html[data-theme="dark"] .cell-style,
+  html[data-theme="dark"] .fw-row .k{color:var(--clay-deep)}
+  html[data-theme="dark"] h1.title em::after{opacity:.4}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;scroll-padding-top:88px}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans Thai","Anuphan",system-ui,sans-serif;
+    font-weight:400;
+    line-height:1.72;
+    font-size:16.5px;
+    -webkit-font-smoothing:antialiased;
+    letter-spacing:.005em;
+  }
+  ::selection{background:var(--clay-soft);color:var(--clay-deep)}
+  code,kbd,.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(250,249,245,.82);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-inner{
+    max-width:var(--maxw);margin:0 auto;padding:14px 24px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+  }
+  .brand{display:flex;align-items:center;gap:11px;font-family:"Anuphan",sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em}
+  .brand .spark{
+    width:30px;height:30px;border-radius:8px;flex:none;
+    background:linear-gradient(135deg,var(--clay) 0%,var(--clay-deep) 100%);
+    display:grid;place-items:center;color:#fff;
+    box-shadow:0 4px 12px rgba(204,120,92,.35);
+  }
+  .brand .spark svg{width:17px;height:17px}
+  .topbar-meta{font-size:13px;color:var(--muted);font-weight:400}
+  .topbar-meta b{color:var(--clay-deep);font-weight:600}
+
+  /* ---------- hero ---------- */
+  .hero{max-width:var(--maxw);margin:0 auto;padding:64px 24px 40px}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:500;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--clay-deep);
+    background:var(--clay-soft);border:1px solid var(--clay-line);
+    padding:6px 13px;border-radius:100px;margin-bottom:22px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--clay);box-shadow:0 0 0 3px rgba(204,120,92,.2)}
+  h1.title{
+    font-family:"Anuphan",sans-serif;font-weight:700;
+    font-size:clamp(34px,5.4vw,62px);line-height:1.04;letter-spacing:-.022em;
+    max-width:16ch;margin-bottom:20px;
+  }
+  h1.title em{font-style:normal;color:var(--clay-deep);position:relative;white-space:nowrap}
+  h1.title em::after{content:"";position:absolute;left:0;right:0;bottom:.04em;height:.32em;background:var(--clay-soft);z-index:-1;border-radius:3px}
+  .lede{font-size:19px;color:var(--ink-soft);max-width:60ch;font-weight:400}
+  .lede b{color:var(--ink);font-weight:600}
+
+  .hero-stats{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
+  .stat{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:14px 20px;min-width:128px;box-shadow:var(--shadow);
+  }
+  .stat .n{font-family:"Anuphan",sans-serif;font-weight:700;font-size:28px;line-height:1;color:var(--clay-deep);letter-spacing:-.02em}
+  .stat .l{font-size:12.5px;color:var(--muted);margin-top:7px;letter-spacing:.01em}
+
+  /* ---------- layout ---------- */
+  .shell{max-width:var(--maxw);margin:0 auto;padding:24px 24px 96px;display:grid;grid-template-columns:228px 1fr;gap:48px;align-items:start}
+  nav.toc{position:sticky;top:88px;font-size:14px}
+  nav.toc .toc-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;padding-left:14px}
+  nav.toc a{
+    display:flex;align-items:center;gap:9px;
+    color:var(--ink-soft);text-decoration:none;padding:8px 14px;border-radius:9px;
+    border-left:2px solid transparent;transition:.18s;line-height:1.35;font-weight:400;
+  }
+  nav.toc a .ix{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);min-width:18px}
+  nav.toc a:hover{background:var(--paper-2);color:var(--ink)}
+  nav.toc a.active{background:var(--clay-soft);color:var(--clay-deep);font-weight:500;border-left-color:var(--clay)}
+  nav.toc a.active .ix{color:var(--clay)}
+
+  main{min-width:0}
+  section{margin-bottom:64px;scroll-margin-top:88px}
+  .sec-head{margin-bottom:26px}
+  .sec-kicker{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.1em;color:var(--clay);font-weight:500;margin-bottom:8px}
+  h2{font-family:"Anuphan",sans-serif;font-weight:700;font-size:clamp(25px,3.4vw,33px);letter-spacing:-.02em;line-height:1.14}
+  h2 + .sec-sub{color:var(--ink-soft);margin-top:11px;max-width:64ch;font-size:16px}
+  h3{font-family:"Anuphan",sans-serif;font-weight:600;font-size:20px;letter-spacing:-.01em;margin:30px 0 12px}
+
+  p{margin-bottom:14px}
+  p:last-child{margin-bottom:0}
+  strong{font-weight:600;color:var(--ink)}
+  a.inline{color:var(--clay-deep);text-decoration:underline;text-decoration-color:var(--clay-line);text-underline-offset:3px}
+  a.inline:hover{text-decoration-color:var(--clay)}
+
+  /* ---------- menu replica (signature) ---------- */
+  .replica{
+    background:#26241F;border:1px solid #34322B;border-radius:20px;
+    padding:14px;box-shadow:var(--shadow-lg);
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;
+  }
+  .replica-pane{background:#2E2C26;border:1px solid #3A372F;border-radius:14px;padding:8px;overflow:hidden}
+  .rp-row{
+    display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:9px;
+    color:#D8D3C7;font-size:14.5px;cursor:default;transition:.15s;
+  }
+  .rp-row .ico{width:19px;height:19px;flex:none;color:#9C978A;display:grid;place-items:center}
+  .rp-row .ico svg{width:18px;height:18px}
+  .rp-row .chev{margin-left:auto;color:#75716A}
+  .rp-row .chk{margin-left:auto;color:#7FA8D8}
+  .rp-row.jump{cursor:pointer}
+  .rp-row.jump:hover{background:#3A372F;color:#fff}
+  .rp-row.jump:hover .ico{color:var(--clay)}
+  .rp-row.active{background:#3A372F;color:#fff}
+  .rp-row.accent{color:#86B0E0}
+  .rp-row.accent .ico{color:#86B0E0}
+  .rp-div{height:1px;background:#3A372F;margin:6px 10px}
+  .rp-note{padding:11px 12px}
+  .rp-note .t{color:#fff;font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:9px}
+  .rp-note .t .i{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--clay);color:var(--clay);display:grid;place-items:center;font-size:11px;flex:none;font-family:"JetBrains Mono",monospace}
+  .rp-note .s{color:#9C978A;font-size:13px;margin-top:3px;padding-left:27px}
+  .replica-cap{text-align:center;color:var(--muted);font-size:12.5px;margin-top:14px;font-family:"JetBrains Mono",monospace;letter-spacing:.03em}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px 24px;box-shadow:var(--shadow);margin-bottom:14px;
+  }
+  .menu-card{display:grid;grid-template-columns:46px 1fr;gap:18px;align-items:start}
+  .menu-card .mc-ico{
+    width:46px;height:46px;border-radius:12px;flex:none;display:grid;place-items:center;
+    background:var(--clay-soft);color:var(--clay-deep);border:1px solid var(--clay-line);
+  }
+  .menu-card .mc-ico svg{width:23px;height:23px}
+  .menu-card h3{margin:0 0 4px;font-size:19px}
+  .menu-card .en{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);font-weight:500}
+  .menu-card p{margin:9px 0 0;color:var(--ink-soft);font-size:15.5px}
+  .mc-eg{
+    margin-top:13px;background:var(--paper-2);border-left:3px solid var(--clay);
+    border-radius:0 8px 8px 0;padding:9px 14px;font-size:14px;color:var(--ink-soft);
+  }
+  .mc-eg b{color:var(--clay-deep);font-weight:600}
+
+  /* ---------- tables ---------- */
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);background:var(--surface);-webkit-overflow-scrolling:touch}
+  table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:560px}
+  th,td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--line-2);vertical-align:top}
+  thead th{
+    background:var(--paper-2);font-family:"Anuphan",sans-serif;font-weight:600;font-size:13.5px;
+    color:var(--ink);position:sticky;top:0;white-space:nowrap;letter-spacing:-.01em;
+  }
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#FCFBF7}
+  td b,th b{font-weight:600}
+  .cell-style{font-weight:600;color:var(--clay-deep);white-space:nowrap}
+  td .mono{font-size:13px}
+  .tag{display:inline-block;font-size:11.5px;font-weight:500;padding:2px 9px;border-radius:100px;line-height:1.5;white-space:nowrap}
+  .tag.ok{background:var(--ok-soft);color:var(--ok)}
+  .tag.no{background:var(--warn-soft);color:var(--warn)}
+  .tag.mid{background:var(--paper-2);color:var(--muted)}
+
+  /* ---------- style explorer (interactive) ---------- */
+  .explorer{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);overflow:hidden}
+  .exp-q{padding:18px 22px;border-bottom:1px solid var(--line-2);background:var(--paper-2);font-size:15px}
+  .exp-q .qlabel{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .exp-q .qtext{font-weight:600;margin-top:4px;color:var(--ink)}
+  .exp-tabs{display:flex;gap:8px;flex-wrap:wrap;padding:16px 22px 0}
+  .exp-tab{
+    font-family:"IBM Plex Sans Thai",sans-serif;font-size:14px;font-weight:500;cursor:pointer;
+    padding:8px 16px;border-radius:100px;border:1px solid var(--line);background:var(--paper);
+    color:var(--ink-soft);transition:.16s;
+  }
+  .exp-tab:hover{border-color:var(--clay-line);color:var(--clay-deep)}
+  .exp-tab.on{background:var(--clay);border-color:var(--clay);color:#fff;box-shadow:0 4px 12px rgba(204,120,92,.3)}
+  .exp-body{padding:8px 22px 24px}
+  .exp-panel{display:none;animation:fade .35s ease}
+  .exp-panel.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .exp-meta{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 16px}
+  .chip{font-size:12.5px;background:var(--paper-2);border:1px solid var(--line);border-radius:8px;padding:5px 11px;color:var(--ink-soft)}
+  .chip b{color:var(--clay-deep)}
+  .exp-answer{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;
+    font-size:14.5px;color:var(--ink);line-height:1.7;
+  }
+  .exp-answer .who{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--clay);letter-spacing:.06em;display:block;margin-bottom:8px}
+  .exp-answer p{margin-bottom:9px}
+  .exp-answer ol,.exp-answer ul{margin:0 0 9px 20px}
+  .exp-answer .mono-sm{font-family:"JetBrains Mono",monospace;font-size:13px;background:#EDE8DC;padding:1px 6px;border-radius:5px}
+
+  /* ---------- callouts ---------- */
+  .callout{border-radius:var(--radius);padding:20px 22px;margin:18px 0;border:1px solid;display:grid;grid-template-columns:24px 1fr;gap:14px;align-items:start}
+  .callout .ci{margin-top:1px}
+  .callout.warn{background:var(--warn-soft);border-color:#E8CFA0}
+  .callout.warn .ci{color:var(--warn)}
+  .callout.info{background:var(--info-soft);border-color:var(--info-line)}
+  .callout.info .ci{color:var(--info)}
+  .callout.ok{background:var(--ok-soft);border-color:#BFD9C6}
+  .callout.ok .ci{color:var(--ok)}
+  .callout h4{font-family:"Anuphan",sans-serif;font-weight:600;font-size:16px;margin-bottom:5px}
+  .callout p{font-size:14.5px;margin-bottom:8px;color:var(--ink-soft)}
+  .callout p:last-child{margin-bottom:0}
+  .callout code{font-size:13px;background:rgba(0,0,0,.06);padding:1px 6px;border-radius:5px}
+
+  /* ---------- timeline ---------- */
+  .timeline{position:relative;margin:24px 0 8px;padding-left:30px}
+  .timeline::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .tl-item{position:relative;padding-bottom:24px}
+  .tl-item:last-child{padding-bottom:0}
+  .tl-item::before{content:"";position:absolute;left:-30px;top:4px;width:16px;height:16px;border-radius:50%;background:var(--surface);border:3px solid var(--clay)}
+  .tl-item.done::before{background:var(--clay)}
+  .tl-when{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--clay-deep);font-weight:500;letter-spacing:.02em}
+  .tl-what{font-weight:600;margin-top:2px}
+  .tl-desc{font-size:14.5px;color:var(--ink-soft);margin-top:3px}
+
+  /* ---------- code block ---------- */
+  .code-block{position:relative;background:#26241F;border-radius:var(--radius);overflow:hidden;margin:16px 0;border:1px solid #34322B}
+  .cb-head{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #34322B;background:#2C2A24}
+  .cb-title{font-family:"JetBrains Mono",monospace;font-size:12px;color:#9C978A;letter-spacing:.03em}
+  .cb-copy{
+    font-family:"IBM Plex Sans Thai",sans-serif;font-size:12.5px;color:#C9C3B5;cursor:pointer;
+    background:#3A372F;border:1px solid #46423A;border-radius:7px;padding:5px 11px;transition:.16s;display:flex;align-items:center;gap:6px;
+  }
+  .cb-copy:hover{background:#46423A;color:#fff}
+  .cb-copy.copied{background:var(--clay);border-color:var(--clay);color:#fff}
+  .code-block pre{margin:0;padding:18px 18px;overflow-x:auto}
+  .code-block code{font-size:13.5px;line-height:1.7;color:#E4DECF;white-space:pre}
+  .code-block .c-key{color:#E0A07E}
+  .code-block .c-cm{color:#7E7A6E}
+  .code-block .c-str{color:#9DC08B}
+
+  /* ---------- decision grid ---------- */
+  .dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+  .dcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 17px;box-shadow:var(--shadow);transition:.18s}
+  .dcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:var(--clay-line)}
+  .dcard .task{font-size:14px;color:var(--ink-soft);min-height:42px}
+  .dcard .pick{margin-top:11px;display:flex;align-items:center;gap:8px;font-weight:600;color:var(--clay-deep);font-size:15px}
+  .dcard .pick::before{content:"→";color:var(--clay);font-family:"JetBrains Mono",monospace}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);background:var(--paper-2)}
+  .foot-inner{max-width:var(--maxw);margin:0 auto;padding:40px 24px 56px;display:grid;grid-template-columns:1.4fr 1fr;gap:32px}
+  footer h4{font-family:"Anuphan",sans-serif;font-weight:600;font-size:15px;margin-bottom:12px}
+  footer p,footer li{font-size:14px;color:var(--ink-soft)}
+  footer ul{list-style:none}
+  footer li{margin-bottom:8px}
+  footer a{color:var(--clay-deep);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  .foot-meta{font-size:12.5px;color:var(--muted);margin-top:18px;font-family:"JetBrains Mono",monospace}
+
+  /* ---------- workshop ---------- */
+  .ws-intro{background:linear-gradient(135deg,#2E2C26 0%,#26241F 100%);border:1px solid #3A372F;border-radius:var(--radius);padding:24px 26px;margin-bottom:22px;color:#E4DECF}
+  .ws-intro h3{color:#fff;margin:0 0 8px;font-size:19px}
+  .ws-intro p{color:#B6B0A2;font-size:14.5px;margin-bottom:18px}
+  .ws-bar{height:12px;background:#1C1B17;border-radius:100px;overflow:hidden;border:1px solid #3A372F}
+  .ws-fill{height:100%;width:0;background:linear-gradient(90deg,var(--clay),#E0A07E);border-radius:100px;transition:width .4s ease}
+  .ws-meter{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-family:"JetBrains Mono",monospace;font-size:12.5px;color:#9C978A}
+  .ws-meter b{color:var(--clay);font-size:14px}
+  .ws-reset{font-family:"IBM Plex Sans Thai",sans-serif;font-size:12px;color:#B6B0A2;background:#3A372F;border:1px solid #46423A;border-radius:7px;padding:5px 12px;cursor:pointer;transition:.16s}
+  .ws-reset:hover{background:#46423A;color:#fff}
+
+  .ws-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+  .ws-head{display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid var(--line-2);background:var(--paper-2)}
+  .ws-num{width:34px;height:34px;border-radius:9px;flex:none;display:grid;place-items:center;background:var(--clay);color:#fff;font-family:"Anuphan",sans-serif;font-weight:700;font-size:15px;box-shadow:0 3px 8px rgba(204,120,92,.3)}
+  .ws-head h3{margin:0;font-size:17.5px}
+  .ws-head .ws-ref{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:3px 9px;border-radius:6px;white-space:nowrap}
+  .ws-body{padding:18px 22px}
+  .ws-goal{display:flex;gap:9px;align-items:flex-start;font-size:14.5px;color:var(--ink-soft);margin-bottom:15px}
+  .ws-goal .gi{color:var(--clay-deep);flex:none;margin-top:2px}
+  .ws-goal b{color:var(--ink)}
+  .ws-steps{list-style:none;margin:0 0 6px}
+  .ws-step{display:flex;gap:11px;align-items:flex-start;padding:7px 0;font-size:14.5px;line-height:1.6;cursor:pointer;user-select:none}
+  .ws-box{width:21px;height:21px;flex:none;border-radius:6px;border:2px solid var(--clay-line);background:var(--surface);display:grid;place-items:center;margin-top:1px;transition:.16s;color:#fff}
+  .ws-box svg{width:13px;height:13px;opacity:0;transform:scale(.5);transition:.16s}
+  .ws-step.done .ws-box{background:var(--clay);border-color:var(--clay)}
+  .ws-step.done .ws-box svg{opacity:1;transform:scale(1)}
+  .ws-step.done .ws-txt{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--clay-line)}
+  .ws-txt code{font-family:"JetBrains Mono",monospace;font-size:12.5px;background:var(--paper-2);padding:1px 6px;border-radius:5px;text-decoration:none;display:inline-block}
+  .ws-eg{margin-top:13px;background:#26241F;border-radius:10px;overflow:hidden}
+  .ws-eg-head{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid #34322B}
+  .ws-eg-head span{font-family:"JetBrains Mono",monospace;font-size:11px;color:#9C978A;letter-spacing:.04em}
+  .ws-eg pre{margin:0;padding:13px 14px;overflow-x:auto}
+  .ws-eg code{font-family:"JetBrains Mono",monospace;font-size:13px;color:#E4DECF;line-height:1.6;white-space:pre-wrap}
+  .ws-expect{margin-top:13px;display:flex;gap:9px;align-items:flex-start;background:var(--ok-soft);border:1px solid #BFD9C6;border-radius:10px;padding:11px 14px;font-size:14px;color:var(--ink-soft)}
+  .ws-expect .ei{color:var(--ok);flex:none;margin-top:1px}
+  .ws-expect b{color:var(--ok)}
+  .ws-capstone{border:2px solid var(--clay);background:linear-gradient(135deg,#FFF 0%,var(--clay-soft) 140%)}
+  .ws-capstone .ws-head{background:transparent;border-bottom-color:var(--clay-line)}
+  .ws-capstone .ws-num{background:var(--clay-deep)}
+
+  /* ---------- techniques / pitfalls ---------- */
+  .pitfall{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:var(--radius-sm);padding:16px 18px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr;gap:6px}
+  .pitfall h4{font-family:"Anuphan",sans-serif;font-weight:600;font-size:16px;display:flex;align-items:center;gap:9px;color:var(--ink)}
+  .pitfall h4 .pf-i{color:var(--warn);flex:none}
+  .pitfall p{font-size:14px;color:var(--ink-soft);margin:0}
+  .pitfall .fix{margin-top:4px;font-size:13.5px;background:var(--ok-soft);border-radius:8px;padding:8px 12px;color:var(--ink-soft)}
+  .pitfall .fix b{color:var(--ok)}
+  .pf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:13px}
+
+  .vcheck{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:8px 4px;list-style:none}
+  .vc-item{display:flex;gap:12px;align-items:flex-start;padding:11px 18px;border-bottom:1px solid var(--line-2);font-size:14.5px;line-height:1.6}
+  .vcheck .vc-item:last-child{border-bottom:none}
+  .vc-box{width:22px;height:22px;flex:none;border-radius:6px;background:var(--ok-soft);border:1.5px solid #BFD9C6;display:grid;place-items:center;color:var(--ok);margin-top:1px}
+  .vc-box svg{width:13px;height:13px}
+  .vc-item b{color:var(--ink)}
+  .vc-item code{font-family:"JetBrains Mono",monospace;font-size:12.5px;background:var(--paper-2);padding:1px 6px;border-radius:5px}
+  .tech-src{font-size:12.5px;color:var(--muted);margin-top:10px;font-family:"JetBrains Mono",monospace}
+  .tech-src a{color:var(--clay-deep)}
+
+  /* ---------- mastery map ---------- */
+  .stage-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;-webkit-overflow-scrolling:touch}
+  .stage-pill{flex:none;display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:100px;padding:7px 14px 7px 8px;box-shadow:var(--shadow);white-space:nowrap}
+  .stage-pill .sp-n{width:24px;height:24px;border-radius:50%;background:var(--clay);color:#fff;display:grid;place-items:center;font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:600;flex:none}
+  .stage-pill .sp-t{font-family:"Anuphan",sans-serif;font-weight:600;font-size:13px;letter-spacing:-.01em}
+  .stage-pill .sp-r{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted)}
+
+  .stage-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-top:6px}
+  .stage-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;transition:.18s}
+  .stage-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:var(--clay-line)}
+  .stage-card .sc-head{display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+  .stage-card .sc-num{width:38px;height:38px;border-radius:11px;flex:none;display:grid;place-items:center;background:linear-gradient(135deg,var(--clay),var(--clay-deep));color:#fff;font-family:"Anuphan",sans-serif;font-weight:700;font-size:17px;box-shadow:0 3px 8px rgba(204,120,92,.3)}
+  .stage-card .sc-t{font-family:"Anuphan",sans-serif;font-weight:700;font-size:16px;letter-spacing:-.01em;line-height:1.15}
+  .stage-card .sc-r{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);margin-top:2px}
+  .stage-card .sc-topics{list-style:none;padding:13px 18px;margin:0;flex:1;columns:1}
+  .stage-card .sc-topics li{font-size:13.3px;color:var(--ink-soft);padding:2.5px 0;display:flex;gap:8px;line-height:1.45}
+  .stage-card .sc-topics li::before{content:attr(data-n);font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--clay);min-width:20px;padding-top:2px}
+  .stage-card .sc-goal{margin-top:auto;background:var(--clay-soft);border-top:1px solid var(--clay-line);padding:11px 18px;font-size:13.5px;color:var(--clay-deep)}
+  .stage-card .sc-goal b{font-family:"Anuphan",sans-serif;font-weight:700;display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--clay);margin-bottom:1px}
+
+  .framework-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;height:100%}
+  .framework-card h4{font-family:"Anuphan",sans-serif;font-weight:700;font-size:16px;margin-bottom:13px;display:flex;align-items:center;gap:9px}
+  .framework-card h4 .fc-i{width:30px;height:30px;border-radius:8px;background:var(--clay-soft);border:1px solid var(--clay-line);color:var(--clay-deep);display:grid;place-items:center;flex:none}
+  .framework-card h4 .fc-i svg{width:16px;height:16px}
+  .fw-row{display:flex;gap:11px;padding:7px 0;border-bottom:1px dashed var(--line-2);font-size:14px}
+  .fw-row:last-child{border-bottom:none}
+  .fw-row .k{font-family:"JetBrains Mono",monospace;font-size:11.5px;font-weight:600;color:var(--clay-deep);min-width:92px;flex:none;padding-top:2px;letter-spacing:.02em}
+  .fw-row .v{color:var(--ink-soft)}
+  .fw-tags{display:flex;flex-wrap:wrap;gap:7px}
+  .fw-tags span{font-size:13px;background:var(--paper-2);border:1px solid var(--line);border-radius:8px;padding:5px 11px;color:var(--ink-soft)}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+  .ladder{display:flex;flex-direction:column;gap:0;margin:8px 0}
+  .ladder-step{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 18px;box-shadow:var(--shadow);position:relative;margin-bottom:30px}
+  .ladder-step:last-child{margin-bottom:0}
+  .ladder-step::after{content:"";position:absolute;left:30px;bottom:-26px;width:2px;height:22px;background:var(--clay-line)}
+  .ladder-step:last-child::after{display:none}
+  .ladder-step .ls-n{width:30px;height:30px;border-radius:8px;flex:none;display:grid;place-items:center;background:var(--clay);color:#fff;font-family:"JetBrains Mono",monospace;font-weight:600;font-size:13px}
+  .ladder-step .ls-t{font-family:"Anuphan",sans-serif;font-weight:600;font-size:15.5px}
+  .ladder-step .ls-d{font-size:13px;color:var(--muted);margin-left:auto;text-align:right}
+  .ladder-step.peak{border-color:var(--clay);background:linear-gradient(135deg,#fff,var(--clay-soft) 150%)}
+  .ladder-step.peak .ls-n{background:var(--clay-deep)}
+
+  /* ---------- theme toggle + back to top ---------- */
+  .theme-btn{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);cursor:pointer;transition:.16s;flex:none}
+  .theme-btn:hover{color:var(--clay-deep);border-color:var(--clay-line)}
+  .theme-btn svg{width:19px;height:19px}
+  .theme-btn .moon{display:none}
+  html[data-theme="dark"] .theme-btn .sun{display:none}
+  html[data-theme="dark"] .theme-btn .moon{display:block}
+  .to-top{position:fixed;right:22px;bottom:22px;width:46px;height:46px;border-radius:50%;background:var(--clay);color:#fff;border:none;cursor:pointer;box-shadow:var(--shadow-lg);display:grid;place-items:center;opacity:0;pointer-events:none;transform:translateY(10px);transition:.25s;z-index:60}
+  .to-top.show{opacity:1;pointer-events:auto;transform:none}
+  .to-top:hover{background:var(--clay-deep)}
+  .to-top svg{width:21px;height:21px}
+
+  /* ---------- print ---------- */
+  @media print{
+    .topbar,nav.toc,.to-top,.theme-btn,.ws-intro .ws-reset{display:none!important}
+    .shell{grid-template-columns:1fr;padding:0}
+    body{font-size:11pt}
+    section{break-inside:avoid;margin-bottom:24px}
+    .card,.stage-card,.ws-card,.framework-card,.table-wrap,.explorer,.callout{break-inside:avoid;box-shadow:none}
+    .code-block,.replica{background:#f3f0e8!important;border:1px solid #ccc!important}
+    .code-block code,.replica *{color:#222!important}
+    a{text-decoration:none;color:inherit}
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:920px){
+    .shell{grid-template-columns:1fr;gap:0}
+    nav.toc{display:none}
+  }
+  @media (max-width:680px){
+    body{font-size:16px}
+    .hero{padding:40px 18px 28px}
+    .shell{padding:18px 18px 72px}
+    .replica{grid-template-columns:1fr}
+    .foot-inner{grid-template-columns:1fr}
+    .topbar-meta{display:none}
+    .menu-card{grid-template-columns:1fr;gap:12px}
+    .card{padding:18px}
+    .two-col{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="spark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 6.8L21 11l-6.6 2.2L12 20l-2.4-6.8L3 11l6.6-2.2L12 2z" fill="currentColor"/></svg></span>
+      คู่มือเมนู Claude
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="topbar-meta">อัปเดต <b>มิถุนายน 2026</b> · Use Style &amp; Skills</div>
+      <button class="theme-btn" id="themeBtn" aria-label="สลับธีมสว่าง/มืด" title="สลับธีม">
+        <svg class="sun" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.7"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8L6 18M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8 8 0 119.5 4a6.5 6.5 0 1010.5 10.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="eyebrow"><span class="dot"></span>คู่มือฉบับสมบูรณ์ · ไม่ข้ามขั้นตอน</span>
+  <h1 class="title">เมนูทั้งหมดของ Claude และ <em>Use Style</em> แบบเข้าใจครบ</h1>
+  <p class="lede">รวมทุกอย่างตั้งแต่ <b>หน้าแรก</b> การเลือก <b>โมเดล &amp; Effort</b> เมนูในปุ่ม <b>+</b> สไตล์การตอบทั้ง 5 แบบพร้อมตัวอย่างจริง และการเปลี่ยนแปลงล่าสุด <b>Styles กำลังย้ายไปเป็น Skills</b> — อธิบายละเอียด ครบถ้วน พร้อม template สำหรับงานพัฒนาจริง</p>
+  <div class="hero-stats">
+    <div class="stat"><div class="n">20</div><div class="l">หัวข้อครบทุกส่วน</div></div>
+    <div class="stat"><div class="n">4</div><div class="l">โมเดล + 4 ระดับ Effort</div></div>
+    <div class="stat"><div class="n">5</div><div class="l">สไตล์การตอบ</div></div>
+    <div class="stat"><div class="n">→ Skills</div><div class="l">ทิศทางล่าสุด</div></div>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- TOC -->
+  <nav class="toc" aria-label="สารบัญ">
+    <div class="toc-label">สารบัญ</div>
+    <a href="#home" data-t><span class="ix">01</span>หน้าแรก &amp; Quick actions</a>
+    <a href="#models" data-t><span class="ix">02</span>เลือกโมเดล</a>
+    <a href="#effort" data-t><span class="ix">03</span>Effort &amp; Thinking</a>
+    <a href="#overview" data-t><span class="ix">04</span>ภาพรวมเมนู +</a>
+    <a href="#mainmenu" data-t><span class="ix">05</span>เมนูหลักทีละรายการ</a>
+    <a href="#styles" data-t><span class="ix">06</span>Use Style ทั้ง 5 แบบ</a>
+    <a href="#explorer" data-t><span class="ix">07</span>ลองเทียบสไตล์</a>
+    <a href="#compare" data-t><span class="ix">08</span>ตารางเปรียบเทียบ</a>
+    <a href="#migration" data-t><span class="ix">09</span>Styles → Skills</a>
+    <a href="#skills" data-t><span class="ix">10</span>Skills คืออะไร</a>
+    <a href="#decision" data-t><span class="ix">11</span>เลือกตามงาน</a>
+    <a href="#templates" data-t><span class="ix">12</span>Template มืออาชีพ</a>
+    <a href="#cheat" data-t><span class="ix">13</span>สรุปย่อ</a>
+    <a href="#workshop" data-t><span class="ix">14</span>Workshop ภาคปฏิบัติ</a>
+    <a href="#techniques" data-t><span class="ix">15</span>เทคนิค &amp; ข้อควรระวัง</a>
+    <a href="#masterymap" data-t><span class="ix">16</span>Mastery Map 100 หัวข้อ</a>
+    <a href="#deepfeatures" data-t><span class="ix">17</span>Projects · Memory · Artifacts</a>
+    <a href="#settings" data-t><span class="ix">18</span>Settings · แพลน · ความเป็นส่วนตัว</a>
+    <a href="#faq" data-t><span class="ix">19</span>FAQ &amp; แก้ปัญหา</a>
+    <a href="#glossary" data-t><span class="ix">20</span>Glossary คำศัพท์</a>
+  </nav>
+
+  <main>
+
+    <!-- 01 HOME -->
+    <section id="home">
+      <div class="sec-head">
+        <div class="sec-kicker">01 · หน้าแรก</div>
+        <h2>หน้าแรก &amp; Quick actions</h2>
+        <p class="sec-sub">หน้าจอที่เห็นทันทีเมื่อเปิด Claude — มีคำทักทาย ช่องพิมพ์ ตัวเลือกโมเดล/effort และปุ่มลัด 5 ปุ่มด้านล่าง</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">ส่วนประกอบของช่องพิมพ์</h3>
+        <div class="table-wrap" style="box-shadow:none;border:1px solid var(--line)">
+          <table>
+            <thead><tr><th>ส่วน</th><th>คือ</th></tr></thead>
+            <tbody>
+              <tr><td><b>+</b> (มุมซ้ายล่าง)</td><td>เปิดเมนูหลัก — แนบไฟล์, Skills, Connectors, Research, Web search, Use style (ดูหัวข้อ 04–05)</td></tr>
+              <tr><td><b>Sonnet 4.6 ⌄</b></td><td>ตัวเลือกโมเดล กดเพื่อสลับโมเดลและตั้งค่า Effort/Thinking (หัวข้อ 02–03)</td></tr>
+              <tr><td><b>Medium ⌄</b></td><td>ระดับ Effort ปัจจุบัน — ควบคุมว่า Claude "คิดหนัก" แค่ไหนก่อนตอบ (หัวข้อ 03)</td></tr>
+              <tr><td><b>🎙️ ไมโครโฟน</b></td><td>พิมพ์ด้วยเสียง — พูดแล้วถอดเป็นข้อความในช่องพิมพ์</td></tr>
+              <tr><td><b>〜 คลื่นเสียง</b></td><td>โหมดสนทนาด้วยเสียง (voice mode) คุยโต้ตอบแบบเรียลไทม์</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <h3>ปุ่มลัด 5 ปุ่ม (Quick actions)</h3>
+      <p class="sec-sub" style="margin-bottom:18px">ปุ่มใต้ช่องพิมพ์ช่วยตั้งบริบทงานให้ Claude ตั้งแต่ต้น โดยไม่ต้องพิมพ์อธิบายเอง</p>
+      <div class="dgrid">
+        <div class="dcard"><div class="pick" style="margin-top:0">Write</div><div class="task" style="min-height:auto;margin-top:8px">ช่วยเขียน — บทความ อีเมล โพสต์ สรุป เนื้อหาทั่วไป</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">Learn</div><div class="task" style="min-height:auto;margin-top:8px">อธิบาย/สอนแบบเข้าใจง่าย เหมาะกับการเรียนรู้เรื่องใหม่</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">Code</div><div class="task" style="min-height:auto;margin-top:8px">งานเขียนโค้ด debug review สถาปัตยกรรม — ปุ่มหลักของงานคุณ</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">Life stuff</div><div class="task" style="min-height:auto;margin-top:8px">เรื่องทั่วไปในชีวิต วางแผน คำแนะนำ งานส่วนตัว</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">Claude's choice</div><div class="task" style="min-height:auto;margin-top:8px">ให้ Claude เลือกแนวทางจัดการเองตามเนื้อคำถาม</div></div>
+      </div>
+      <div class="callout info">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <div>
+          <h4>ปุ่มลัดเป็นแค่จุดเริ่ม ไม่ใช่ข้อบังคับ</h4>
+          <p>กดปุ่มแล้วยังพิมพ์อะไรต่อก็ได้ตามปกติ — มันแค่ช่วยปรับโหมดเริ่มต้นให้เหมาะกับงาน เช่นกด <strong>Code</strong> แล้ว Claude จะเอนเอียงไปทางช่วยงานพัฒนามากกว่าตอบเชิงทั่วไป</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 MODELS -->
+    <section id="models">
+      <div class="sec-head">
+        <div class="sec-kicker">02 · โมเดล</div>
+        <h2>เลือกโมเดล</h2>
+        <p class="sec-sub">กดที่ชื่อโมเดล (เช่น "Sonnet 4.6 ⌄") จะเห็นรายการโมเดลให้เลือก แต่ละตัวเหมาะกับงานคนละแบบ และคิด rate limit ไม่เท่ากัน</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>โมเดล</th><th>คำอธิบายในแอป</th><th>เหมาะกับ</th><th>หมายเหตุ</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="cell-style">Fable 5</td>
+              <td>For your toughest challenges</td>
+              <td>โจทย์ยากที่สุด งานที่ต้องการความสามารถสูงสุด</td>
+              <td><span class="tag mid">Included until June 22</span> — โมเดลตระกูล Claude 5 ระดับสูงสุด เปิดให้ใช้ช่วงโปรโมชัน</td>
+            </tr>
+            <tr>
+              <td class="cell-style">Opus 4.8</td>
+              <td>For complex tasks</td>
+              <td>งานซับซ้อน วางแผน/ออกแบบสถาปัตยกรรม การวิเคราะห์เชิงลึก</td>
+              <td>โมเดลทรงพลังสำหรับงานหนัก</td>
+            </tr>
+            <tr>
+              <td class="cell-style">Sonnet 4.6</td>
+              <td>Most efficient for everyday tasks</td>
+              <td>งานประจำวัน เขียนโค้ด implement งาน tool-heavy</td>
+              <td><span class="tag ok">เลือกอยู่ในรูป ✓</span> สมดุลคุณภาพ/ความเร็วดีที่สุดสำหรับงานทั่วไป</td>
+            </tr>
+            <tr>
+              <td class="cell-style">Haiku 4.5</td>
+              <td>Fastest for quick answers</td>
+              <td>งานเร็วๆ ปริมาณมาก ตอบสั้น lookup</td>
+              <td>เร็วที่สุด ประหยัด limit</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:14px">ด้านล่างของเมนูยังมี <strong>Effort</strong> (เข้าเมนูย่อยตั้งระดับการคิด — หัวข้อ 03) และ <strong>More models</strong> สำหรับเข้าถึงโมเดลอื่นๆ เพิ่มเติม</p>
+
+      <div class="callout ok">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div>
+          <h4>กลยุทธ์เลือกโมเดลแบบประหยัดสำหรับงานพัฒนา</h4>
+          <p><strong>Opus 4.8</strong> สำหรับวางแผน/ออกแบบ architecture · <strong>Sonnet 4.6</strong> สำหรับ implement งานทั่วไป (default ที่ดี) · <strong>Haiku 4.5</strong> สำหรับงานซ้ำๆ ปริมาณมากเช่น lookup spec หรือจัด format · เก็บ <strong>Fable 5 / Opus</strong> ไว้ใช้กับโจทย์ที่ยากจริงเพื่อไม่ให้เปลือง limit เร็ว</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 EFFORT -->
+    <section id="effort">
+      <div class="sec-head">
+        <div class="sec-kicker">03 · Effort</div>
+        <h2>Effort &amp; Thinking</h2>
+        <p class="sec-sub">Effort คุมว่า Claude "คิดหนัก" แค่ไหนก่อนตอบ — ยิ่งสูง ยิ่งละเอียด แต่ช้าลงและใช้ limit เร็วขึ้น ส่วน Thinking เป็นสวิตช์แยกต่างหาก</p>
+      </div>
+
+      <div class="callout info">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <div>
+          <h4>หลักการ (ตามคำอธิบายในแอป)</h4>
+          <p>"Effort ที่สูงขึ้น = คำตอบที่ละเอียดรอบคอบกว่า แต่ใช้เวลานานกว่าและกิน limit เร็วขึ้น" — เป็นการแลกระหว่าง คุณภาพ ↔ ความเร็ว/ค่าใช้จ่าย</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ระดับ</th><th>คิดมากแค่ไหน</th><th>เหมาะกับ</th></tr></thead>
+          <tbody>
+            <tr><td class="cell-style">Low</td><td>คิดน้อยที่สุด ตอบเร็ว อิงความรู้/pattern เป็นหลัก</td><td>งานง่าย ปริมาณมาก เน้นประหยัด limit · <span class="tag mid">มีป้าย Default</span></td></tr>
+            <tr><td class="cell-style">Medium</td><td>คิดพอประมาณ สมดุล (เลือกอยู่ในรูป ✓)</td><td>งานประจำวันส่วนใหญ่ เขียนโค้ดทั่วไป ยืดการใช้ limit</td></tr>
+            <tr><td class="cell-style">High</td><td>คิดเยอะ จัดสรร budget การคิดมากขึ้น</td><td>สมดุลคุณภาพ/ความเร็วโดยรวมดีที่สุด · งาน multi-step reasoning</td></tr>
+            <tr><td class="cell-style">Max</td><td>คิดลึกที่สุด ใช้เวลานานสุด กิน limit เร็วสุด</td><td>โจทย์ยากจริง งานยาวที่รันต่อเนื่อง · <span class="tag no">อาจต้องแพลนสูงกว่า</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Thinking (สวิตช์แยก)</h3>
+      <p><strong>Thinking</strong> ในเมนูเป็นสวิตช์เปิด/ปิดแยกจาก Effort เมื่อเปิด Claude จะใช้เวลาแตกปัญหา วางแผน และสำรวจหลายแนวทางก่อนตอบ และ <strong>แสดงกระบวนการคิดให้เห็น</strong> เข้ากันดีกับ Effort ระดับ High/Max สำหรับงานที่อยากเห็นว่า Claude คิดมายังไง — ใช้ร่วมกับ Effort ระดับใดก็ได้ ทั้งสองเป็นการตั้งค่าอิสระต่อกัน</p>
+
+      <div class="callout ok">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div>
+          <h4>จับคู่ Effort กับงานพัฒนา</h4>
+          <p>สรุป action items / lookup → <strong>Low–Medium</strong> · เขียน/แก้โค้ดทั่วไป → <strong>Medium–High</strong> · refactor module ใหญ่, แก้บั๊กที่ต้องไล่หลายชั้น, ออกแบบ architecture → <strong>High–Max</strong> + เปิด <strong>Thinking</strong> เพื่อเห็น reasoning</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 OVERVIEW -->
+    <section id="overview">
+      <div class="sec-head">
+        <div class="sec-kicker">04 · ภาพรวม</div>
+        <h2>เมนู + มีอะไรบ้าง</h2>
+        <p class="sec-sub">กดปุ่ม <strong>+</strong> ข้างช่องพิมพ์ จะเปิดเมนูหลัก 8 รายการ ฝั่งซ้าย และเมื่อชี้ที่ <strong>Use style</strong> จะมีเมนูย่อยสไตล์การตอบโผล่ทางขวา คลิกที่รายการด้านล่างเพื่อกระโดดไปอ่านรายละเอียด</p>
+      </div>
+
+      <div class="replica" role="img" aria-label="แผนผังเมนู Claude จำลอง">
+        <!-- left pane -->
+        <div class="replica-pane">
+          <div class="rp-row jump" data-go="m-files"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5l-8.5 8.5a5 5 0 01-7-7l8.5-8.5a3.5 3.5 0 015 5l-8 8a2 2 0 01-3-3l7.5-7.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Add files or photos</div>
+          <div class="rp-row jump" data-go="m-shot"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6.5" width="18" height="13" rx="2.5" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="13" r="3.3" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 6.5l1.2-2h4.6l1.2 2" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>Take a screenshot</div>
+          <div class="rp-row jump" data-go="m-project"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><path d="M3 8h18M3 8l1.5-3h15L21 8M3 8v10a1.5 1.5 0 001.5 1.5h15A1.5 1.5 0 0021 18V8" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>Add to project<span class="chev">›</span></div>
+          <div class="rp-div"></div>
+          <div class="rp-row jump" data-go="m-skills"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>Skills<span class="chev">›</span></div>
+          <div class="rp-row jump" data-go="m-conn"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="6.5" height="6.5" rx="1.4" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" stroke="currentColor" stroke-width="1.7"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4" stroke="currentColor" stroke-width="1.7"/></svg></span>Add connectors</div>
+          <div class="rp-div"></div>
+          <div class="rp-row jump" data-go="m-research"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>Research</div>
+          <div class="rp-row jump accent" data-go="m-web"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 12h17M12 3.5c2.5 2.2 2.5 14.8 0 17M12 3.5c-2.5 2.2-2.5 14.8 0 17" stroke="currentColor" stroke-width="1.7"/></svg></span>Web search<span class="chk">✓</span></div>
+          <div class="rp-row jump active" data-go="m-style"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><path d="M4 18l9-9 3 3-9 9H4v-3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 7l2-2a1.5 1.5 0 012 0l1 1a1.5 1.5 0 010 2l-2 2" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>Use style<span class="chev">›</span></div>
+        </div>
+        <!-- right pane -->
+        <div class="replica-pane">
+          <div class="rp-note">
+            <div class="t"><span class="i">i</span>Styles are migrating to Skills</div>
+            <div class="s">Starting May 20 — Learn more</div>
+          </div>
+          <div class="rp-div"></div>
+          <div class="rp-row jump" data-go="s-normal"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><path d="M4 18l9-9 3 3-9 9H4v-3z" stroke="currentColor" stroke-width="1.6"/></svg></span>Normal</div>
+          <div class="rp-row jump" data-go="s-learning"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><path d="M4 18l9-9 3 3-9 9H4v-3z" stroke="currentColor" stroke-width="1.6"/></svg></span>Learning</div>
+          <div class="rp-row jump" data-go="s-concise"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><path d="M4 18l9-9 3 3-9 9H4v-3z" stroke="currentColor" stroke-width="1.6"/></svg></span>Concise</div>
+          <div class="rp-row jump accent" data-go="s-explanatory"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><path d="M4 18l9-9 3 3-9 9H4v-3z" stroke="currentColor" stroke-width="1.6"/></svg></span>Explanatory<span class="chk">✓</span></div>
+          <div class="rp-row jump" data-go="s-formal"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><path d="M4 18l9-9 3 3-9 9H4v-3z" stroke="currentColor" stroke-width="1.6"/></svg></span>Formal</div>
+          <div class="rp-div"></div>
+          <div class="rp-row jump" data-go="s-custom"><span class="ico"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>Create &amp; edit styles</div>
+        </div>
+      </div>
+      <div class="replica-cap">▲ จำลองจากหน้าจอจริง — คลิกแต่ละรายการเพื่อข้ามไปอ่าน</div>
+    </section>
+
+    <!-- 02 MAIN MENU -->
+    <section id="mainmenu">
+      <div class="sec-head">
+        <div class="sec-kicker">05 · เมนูหลัก</div>
+        <h2>เมนูฝั่งซ้ายทีละรายการ</h2>
+        <p class="sec-sub">แต่ละเมนูทำอะไร ใช้ตอนไหน พร้อมตัวอย่างใกล้ตัวสำหรับงานพัฒนา</p>
+      </div>
+
+      <div class="card menu-card" id="m-files">
+        <div class="mc-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5l-8.5 8.5a5 5 0 01-7-7l8.5-8.5a3.5 3.5 0 015 5l-8 8a2 2 0 01-3-3l7.5-7.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div>
+          <h3>Add files or photos</h3>
+          <span class="en">แนบไฟล์หรือรูป</span>
+          <p>แนบไฟล์ให้ Claude อ่านและวิเคราะห์ รองรับ PDF, รูปภาพ, โค้ด, Word (.docx), Excel (.xlsx), CSV, JSON และอื่นๆ เหมาะกับการให้ Claude อ่าน log, สเปก, หรือไฟล์ดีไซน์</p>
+          <div class="mc-eg"><b>ตัวอย่าง:</b> อัปโหลด error log จาก Cloud Run แล้วถามว่า "build พังเพราะอะไร" หรือแนบ Bruno API spec เพื่อให้สร้างโค้ดตาม contract</div>
+        </div>
+      </div>
+
+      <div class="card menu-card" id="m-shot">
+        <div class="mc-ico"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6.5" width="18" height="13" rx="2.5" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="13" r="3.3" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 6.5l1.2-2h4.6l1.2 2" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+        <div>
+          <h3>Take a screenshot</h3>
+          <span class="en">จับภาพหน้าจอ</span>
+          <p>จับภาพหน้าจอแล้วส่งให้ Claude ทันที โดยไม่ต้องเซฟไฟล์เอง สะดวกเวลาเจอ error บนหน้าจอ หรืออยากถามเรื่อง UI/layout ที่กำลังเห็นอยู่</p>
+          <div class="mc-eg"><b>ตัวอย่าง:</b> ถ่ายหน้า component ที่ layout เพี้ยน แล้วถาม "ทำไม Naive UI table ตัวนี้ความกว้างไม่เต็ม"</div>
+        </div>
+      </div>
+
+      <div class="card menu-card" id="m-project">
+        <div class="mc-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M3 8h18M3 8l1.5-3h15L21 8M3 8v10a1.5 1.5 0 001.5 1.5h15A1.5 1.5 0 0021 18V8" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+        <div>
+          <h3>Add to project</h3>
+          <span class="en">เพิ่มเข้าโปรเจกต์</span>
+          <p>เพิ่มแชทนี้เข้า <strong>Project</strong> — พื้นที่ที่รวมไฟล์ คำสั่ง และ context ที่ใช้ร่วมกันได้หลายแชท ทุกแชทใน Project จะเห็น knowledge เดียวกันเสมอ เหมาะกับงานที่ต่อเนื่องระยะยาว</p>
+          <div class="mc-eg"><b>ตัวอย่าง:</b> สร้าง Project "Pedpro" ใส่ CLAUDE.md, coding convention, Bruno specs แล้วทุกแชทจะรู้บริบทโปรเจกต์โดยไม่ต้องอธิบายซ้ำ</div>
+        </div>
+      </div>
+
+      <div class="card menu-card" id="m-skills">
+        <div class="mc-ico"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+        <div>
+          <h3>Skills</h3>
+          <span class="en">ความสามารถพิเศษ</span>
+          <p>โฟลเดอร์ของคำสั่ง/สคริปต์/ทรัพยากร ที่ Claude โหลดมาใช้อัตโนมัติเมื่อเจองานที่ตรง เช่น การสร้างไฟล์ Excel, Word, PowerPoint, PDF หรือ skill ที่คุณสร้างเอง <strong>นี่คือที่ที่ Styles กำลังย้ายมาอยู่</strong> (ดูหัวข้อ 06–07)</p>
+          <div class="mc-eg"><b>ตัวอย่าง:</b> สั่ง "ทำสไลด์สรุปฟีเจอร์" → Claude เรียก skill pptx มาสร้างไฟล์ .pptx ให้เองโดยไม่ต้องบอก</div>
+        </div>
+      </div>
+
+      <div class="card menu-card" id="m-conn">
+        <div class="mc-ico"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="6.5" height="6.5" rx="1.4" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" stroke="currentColor" stroke-width="1.7"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4" stroke="currentColor" stroke-width="1.7"/></svg></div>
+        <div>
+          <h3>Add connectors</h3>
+          <span class="en">เชื่อมต่อบริการภายนอก</span>
+          <p>ต่อ Claude เข้ากับบริการอื่นผ่าน MCP เช่น Google Drive, GitHub, Notion, Slack, Atlassian เพื่อให้ Claude อ่าน/เขียนข้อมูลข้ามแอปได้ <strong>Connector ให้ "เครื่องมือ" ส่วน Skill สอน "วิธีใช้เครื่องมือ"</strong> — ใช้คู่กันได้</p>
+          <div class="mc-eg"><b>ตัวอย่าง:</b> ต่อ GitHub แล้วให้ Claude อ่าน repo จริง หรือต่อ YouTrack/Jira เพื่อสร้าง task ตาม convention ของทีม</div>
+        </div>
+      </div>
+
+      <div class="card menu-card" id="m-research">
+        <div class="mc-ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+        <div>
+          <h3>Research</h3>
+          <span class="en">โหมดวิจัยเชิงลึก</span>
+          <p>โหมดที่ Claude ค้นหาจากหลายแหล่งบนเว็บ ไล่อ่านทีละหัวข้อ แล้วสังเคราะห์เป็นรายงานพร้อมอ้างอิง ใช้เวลานานกว่าปกติแต่ได้คำตอบที่ครอบคลุมและตรวจสอบได้ เหมาะกับคำถามที่กว้างและต้องการความลึก</p>
+          <div class="mc-eg"><b>ตัวอย่าง:</b> "เปรียบเทียบ state management ของ Vue, React, Svelte ปี 2026 ข้อดีข้อเสียและแนวโน้ม"</div>
+        </div>
+      </div>
+
+      <div class="card menu-card" id="m-web">
+        <div class="mc-ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 12h17M12 3.5c2.5 2.2 2.5 14.8 0 17M12 3.5c-2.5 2.2-2.5 14.8 0 17" stroke="currentColor" stroke-width="1.7"/></svg></div>
+        <div>
+          <h3>Web search <span class="tag ok" style="vertical-align:middle">เปิดอยู่ในรูป</span></h3>
+          <span class="en">ค้นเว็บแบบเรียลไทม์</span>
+          <p>อนุญาตให้ Claude ค้นเว็บสดๆ ระหว่างตอบ จำเป็นมากเมื่อต้องการข้อมูลปัจจุบันที่เกินความรู้ในตัวโมเดล เช่น เวอร์ชันล่าสุดของ framework, ราคา, ข่าว, หรือ release notes</p>
+          <div class="mc-eg"><b>ตัวอย่าง:</b> "Nuxt 4 เวอร์ชันล่าสุดมี breaking change อะไร" — Claude จะค้นแล้วตอบจากแหล่งจริง (ต่างจาก Research ตรงที่เร็วและเบากว่า เหมาะกับคำถามเดี่ยวๆ)</div>
+        </div>
+      </div>
+
+      <div class="card menu-card" id="m-style">
+        <div class="mc-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M4 18l9-9 3 3-9 9H4v-3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 7l2-2a1.5 1.5 0 012 0l1 1a1.5 1.5 0 010 2l-2 2" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+        <div>
+          <h3>Use style</h3>
+          <span class="en">เปลี่ยนสไตล์การตอบ</span>
+          <p>เปิดเมนูย่อยให้เลือกบุคลิกการตอบของ Claude — เลือกครั้งเดียวใช้ได้ทั้งแชท ไม่ต้องพิมพ์สั่ง tone ซ้ำ รายละเอียดทั้ง 5 แบบอยู่หัวข้อถัดไป</p>
+          <div class="mc-eg"><b>หมายเหตุ:</b> เมนูนี้กำลังถูกแทนที่ด้วย Skills — ดูหัวข้อ 06 ก่อนตั้งค่าระยะยาว</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 STYLES -->
+    <section id="styles">
+      <div class="sec-head">
+        <div class="sec-kicker">06 · Use Style</div>
+        <h2>สไตล์การตอบทั้ง 5 แบบ</h2>
+        <p class="sec-sub">แต่ละแบบ "เน้น" คนละอย่าง เลือกให้ตรงกับงานจะได้คำตอบที่ใช้ได้จริง</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>สไตล์</th><th>เน้นอะไร</th><th>โทน &amp; ความยาว</th><th>เหมาะกับ</th><th>ไม่เหมาะกับ</th></tr>
+          </thead>
+          <tbody>
+            <tr id="s-normal">
+              <td class="cell-style">Normal</td>
+              <td>สมดุลทุกด้าน ค่าเริ่มต้น</td>
+              <td>เป็นกันเอง · ปานกลาง</td>
+              <td>งานทั่วไป ถามตอบหลากหลาย</td>
+              <td>งานที่ต้องการ output เฉพาะทาง</td>
+            </tr>
+            <tr id="s-learning">
+              <td class="cell-style">Learning</td>
+              <td>สอนแบบ Socratic ถามกลับให้คิดเอง</td>
+              <td>เหมือนติวเตอร์ · ยาว</td>
+              <td>เรียนเทคโนโลยีใหม่ อยากเข้าใจลึก</td>
+              <td>งานเร่ง debug เฉพาะหน้า</td>
+            </tr>
+            <tr id="s-concise">
+              <td class="cell-style">Concise</td>
+              <td>สั้น ตรงประเด็น ไม่มีน้ำ</td>
+              <td>ตรงไปตรงมา · สั้นมาก</td>
+              <td>รีบ รู้พื้นฐานแล้ว ขอ snippet</td>
+              <td>งานที่ต้อง context หรือสอนคนใหม่</td>
+            </tr>
+            <tr id="s-explanatory">
+              <td class="cell-style">Explanatory</td>
+              <td>ลึก มีเหตุผล context และ trade-off</td>
+              <td>เหมือน senior review · ยาว</td>
+              <td>ตัดสินใจ architecture เลือก library</td>
+              <td>งานเล็กๆ ถามไวตอบไว</td>
+            </tr>
+            <tr id="s-formal">
+              <td class="cell-style">Formal</td>
+              <td>ภาษาทางการ ศัพท์เฉพาะครบ</td>
+              <td>สุภาพเป็นมืออาชีพ · กลาง-ยาว</td>
+              <td>รายงาน อีเมล PR description</td>
+              <td>brainstorm คุยเล่น prototype</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info" id="s-custom">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+        <div>
+          <h4>Create &amp; edit styles — สร้างสไตล์ของตัวเอง</h4>
+          <p>5 สไตล์มาตรฐานเป็นของกลาง มักไม่ตรงงานเฉพาะทาง 100% ปุ่ม "Create &amp; edit styles" ให้คุณเขียนคำสั่งกำหนด tone, ความยาว, ภาษา และกฎเฉพาะของตัวเองได้ — สำหรับงานพัฒนาจริงนี่คือทางเลือกที่คุ้มที่สุด (ดู template พร้อมใช้ในหัวข้อ 09)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 EXPLORER -->
+    <section id="explorer">
+      <div class="sec-head">
+        <div class="sec-kicker">07 · ลองเทียบ</div>
+        <h2>คำถามเดียวกัน 5 สไตล์</h2>
+        <p class="sec-sub">เห็นภาพชัดที่สุดคือดูคำตอบของคำถามเดียวกันในแต่ละสไตล์ — กดปุ่มเพื่อสลับดู</p>
+      </div>
+
+      <div class="explorer">
+        <div class="exp-q">
+          <div class="qlabel">คำถามตัวอย่าง</div>
+          <div class="qtext">"ใน Vue 3 — <span class="mono" style="font-size:14px">ref</span> กับ <span class="mono" style="font-size:14px">reactive</span> ต่างกันยังไง?"</div>
+        </div>
+        <div class="exp-tabs" id="expTabs">
+          <button class="exp-tab on" data-p="p-normal">Normal</button>
+          <button class="exp-tab" data-p="p-learning">Learning</button>
+          <button class="exp-tab" data-p="p-concise">Concise</button>
+          <button class="exp-tab" data-p="p-explanatory">Explanatory</button>
+          <button class="exp-tab" data-p="p-formal">Formal</button>
+        </div>
+        <div class="exp-body">
+
+          <div class="exp-panel on" id="p-normal">
+            <div class="exp-meta"><span class="chip"><b>เน้น:</b> สมดุล</span><span class="chip"><b>ยาว:</b> ปานกลาง</span><span class="chip"><b>โค้ด:</b> 1–2 ชุด</span></div>
+            <div class="exp-answer"><span class="who">Claude · Normal</span>
+              <p><span class="mono-sm">ref</span> และ <span class="mono-sm">reactive</span> ต่างกันที่ชนิดข้อมูลที่รองรับและวิธีเข้าถึง</p>
+              <p><span class="mono-sm">ref</span> ใช้ได้ทุก type ทั้ง primitive และ object แต่ต้องใช้ <span class="mono-sm">.value</span> ใน script ส่วน <span class="mono-sm">reactive</span> ใช้ได้เฉพาะ object และไม่ต้อง <span class="mono-sm">.value</span> แต่ถ้า destructure จะเสีย reactivity</p>
+              <p>ส่วนใหญ่แนะนำใช้ <span class="mono-sm">ref</span> เพราะ consistent กว่า</p>
+            </div>
+          </div>
+
+          <div class="exp-panel" id="p-learning">
+            <div class="exp-meta"><span class="chip"><b>เน้น:</b> ถามกลับให้คิด</span><span class="chip"><b>ยาว:</b> ยาว</span><span class="chip"><b>โทน:</b> ติวเตอร์</span></div>
+            <div class="exp-answer"><span class="who">Claude · Learning</span>
+              <p>ก่อนตอบ ลองคิดดูก่อนนะ: ถ้าคุณมีตัวแปร <span class="mono-sm">let count = 0</span> แล้วเปลี่ยนเป็น <span class="mono-sm">count = 1</span> คุณคิดว่า Vue จะ "รู้" ได้ยังไงว่าค่ามันเปลี่ยน?</p>
+              <p>JavaScript ปกติไม่มีกลไกบอกว่า "ค่าฉันเปลี่ยนแล้ว" Vue เลยต้อง wrap ค่าไว้ใน object/proxy เพื่อดักจับ — นี่คือเหตุผลที่ <span class="mono-sm">ref</span> ต้องมี <span class="mono-sm">.value</span></p>
+              <p>ทีนี้ลองตอบดู: ถ้า <span class="mono-sm">reactive</span> ต้องครอบ object ทั้งก้อน คุณคิดว่าทำไมมันถึงใช้กับ <span class="mono-sm">number</span> เดี่ยวๆ ไม่ได้?</p>
+            </div>
+          </div>
+
+          <div class="exp-panel" id="p-concise">
+            <div class="exp-meta"><span class="chip"><b>เน้น:</b> สั้นที่สุด</span><span class="chip"><b>ยาว:</b> 1–2 ประโยค</span><span class="chip"><b>emoji:</b> ไม่มี</span></div>
+            <div class="exp-answer"><span class="who">Claude · Concise</span>
+              <p><span class="mono-sm">ref</span>: ทุก type, ต้อง <span class="mono-sm">.value</span> · <span class="mono-sm">reactive</span>: เฉพาะ object, ไม่ต้อง <span class="mono-sm">.value</span> แต่ destructure แล้วเสีย reactivity (แก้ด้วย <span class="mono-sm">toRefs()</span>) แนะนำใช้ <span class="mono-sm">ref</span></p>
+            </div>
+          </div>
+
+          <div class="exp-panel" id="p-explanatory">
+            <div class="exp-meta"><span class="chip"><b>เน้น:</b> trade-off ครบ</span><span class="chip"><b>ยาว:</b> ยาวมาก</span><span class="chip"><b>โทน:</b> senior</span></div>
+            <div class="exp-answer"><span class="who">Claude · Explanatory</span>
+              <p><b>กลไกเบื้องหลัง</b> — <span class="mono-sm">ref</span> คือ object wrapper รูปแบบ <span class="mono-sm">{ value: T }</span> ส่วน <span class="mono-sm">reactive</span> ใช้ Proxy ครอบ object ต้นทางโดยตรง</p>
+              <p><b>ผลที่ตามมา</b></p>
+              <ol>
+                <li>Type coverage: <span class="mono-sm">ref</span> รองรับทุก type, <span class="mono-sm">reactive</span> ต้องเป็น object</li>
+                <li>Access: <span class="mono-sm">ref</span> ต้อง <span class="mono-sm">.value</span> ใน script (template auto-unwrap), <span class="mono-sm">reactive</span> เข้าตรง</li>
+                <li>Destructure: <span class="mono-sm">reactive</span> เสีย reactivity ต้องใช้ <span class="mono-sm">toRefs()</span></li>
+              </ol>
+              <p><b>คำแนะนำ</b> — ใช้ <span class="mono-sm">ref</span> เป็นหลักเพื่อความ consistent โดยเฉพาะใน composables ที่ต้อง return ค่าออกไป ส่วน Pinia store ใช้ reactive ภายในอยู่แล้ว ไม่ต้องกังวล</p>
+            </div>
+          </div>
+
+          <div class="exp-panel" id="p-formal">
+            <div class="exp-meta"><span class="chip"><b>เน้น:</b> ภาษาเอกสาร</span><span class="chip"><b>ยาว:</b> กลาง-ยาว</span><span class="chip"><b>emoji:</b> ไม่มี</span></div>
+            <div class="exp-answer"><span class="who">Claude · Formal</span>
+              <p>Vue 3 Composition API จัดเตรียมกลไก reactivity สองรูปแบบหลัก ได้แก่ <span class="mono-sm">ref</span> และ <span class="mono-sm">reactive</span></p>
+              <p><span class="mono-sm">ref</span> คือ reactive reference ที่ห่อหุ้มค่าด้วย object wrapper รองรับข้อมูลทุกประเภท การเข้าถึงค่าภายใน script context จำเป็นต้องอ้างอิงผ่าน property <span class="mono-sm">.value</span></p>
+              <p><span class="mono-sm">reactive</span> คือ reactive proxy ที่สร้างบน object ต้นทาง รองรับเฉพาะข้อมูลประเภท object การ destructure จะส่งผลให้สูญเสียคุณสมบัติ reactivity ซึ่งแก้ไขได้ด้วยฟังก์ชัน <span class="mono-sm">toRefs()</span></p>
+              <p>ตามแนวปฏิบัติที่แนะนำ ควรเลือกใช้ <span class="mono-sm">ref</span> เป็นหลักเพื่อความสม่ำเสมอของโค้ดเบส</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 COMPARE -->
+    <section id="compare">
+      <div class="sec-head">
+        <div class="sec-kicker">08 · เปรียบเทียบ</div>
+        <h2>ตารางเทียบทั้ง 5 แบบ</h2>
+        <p class="sec-sub">มองครบทุกมิติในตารางเดียว</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>มิติ</th><th>Normal</th><th>Learning</th><th>Concise</th><th>Explanatory</th><th>Formal</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b>ความยาว</b></td><td>กลาง</td><td>ยาว</td><td>สั้นมาก</td><td>ยาวมาก</td><td>กลาง-ยาว</td></tr>
+            <tr><td><b>ถามกลับ</b></td><td><span class="tag mid">บางครั้ง</span></td><td><span class="tag ok">บ่อย</span></td><td><span class="tag no">ไม่</span></td><td><span class="tag mid">บางครั้ง</span></td><td><span class="tag no">ไม่</span></td></tr>
+            <tr><td><b>มี trade-off</b></td><td><span class="tag mid">บางครั้ง</span></td><td><span class="tag ok">มี</span></td><td><span class="tag no">ไม่มี</span></td><td><span class="tag ok">ครบ</span></td><td><span class="tag ok">มี</span></td></tr>
+            <tr><td><b>โทนภาษา</b></td><td>กันเอง</td><td>สอน</td><td>ตรง</td><td>วิเคราะห์</td><td>ทางการ</td></tr>
+            <tr><td><b>emoji</b></td><td><span class="tag mid">บางครั้ง</span></td><td><span class="tag mid">บางครั้ง</span></td><td><span class="tag no">ไม่มี</span></td><td><span class="tag no">น้อยมาก</span></td><td><span class="tag no">ไม่มี</span></td></tr>
+            <tr><td><b>โค้ดตัวอย่าง</b></td><td>1–2 ชุด</td><td>หลายชุดทีละขั้น</td><td>สั้นที่สุด</td><td>ครบทุกกรณี</td><td>ครบตามต้อง</td></tr>
+            <tr><td><b>ความเร็วตอบ</b></td><td>เร็ว</td><td>กลาง</td><td>เร็วที่สุด</td><td>ช้าที่สุด</td><td>กลาง</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 06 MIGRATION -->
+    <section id="migration">
+      <div class="sec-head">
+        <div class="sec-kicker">09 · อัปเดตล่าสุด</div>
+        <h2>Styles กำลังย้ายไปเป็น Skills</h2>
+        <p class="sec-sub">นี่คือการเปลี่ยนแปลงสำคัญที่เห็นในแบนเนอร์ "Styles are migrating to Skills" — อ้างอิงจาก Help Center ทางการของ Claude</p>
+      </div>
+
+      <div class="callout warn">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3l9.5 16.5H2.5L12 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.5v4.5M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <div>
+          <h4>สรุปสั้นๆ ก่อน</h4>
+          <p>แบนเนอร์ในแอประบุว่าเริ่ม <strong>20 พฤษภาคม</strong> และทยอยปรับใช้เรื่อยมา ณ ตอนนี้ (มิถุนายน 2026) สิ่งสำคัญที่ต้องรู้คือ: สไตล์มาตรฐาน <strong>Concise, Explanatory, Formal กำลังถูกเอาออก</strong> ส่วน <strong>Learning ถูกเก็บไว้ในรูปแบบ Skill</strong> และ <strong>custom style ของคุณจะถูกแปลงเป็น Skill อัตโนมัติ</strong></p>
+        </div>
+      </div>
+
+      <h3>เกิดอะไรขึ้นบ้าง</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>หัวข้อ</th><th>รายละเอียด</th><th>สถานะ</th></tr></thead>
+          <tbody>
+            <tr><td><b>Custom styles</b></td><td>ที่คุณสร้างเองจะถูกแปลงเป็น Skill อัตโนมัติ แต่ <b>ปิดไว้เป็นค่าเริ่มต้น</b> ต้องไปเปิดเองที่ <span class="mono">Customize › Skills</span></td><td><span class="tag ok">ย้ายให้</span></td></tr>
+            <tr><td><b>Concise</b></td><td>สไตล์มาตรฐาน จะไม่มีให้ใช้หลัง migration</td><td><span class="tag no">เอาออก</span></td></tr>
+            <tr><td><b>Explanatory</b></td><td>สไตล์มาตรฐาน จะไม่มีให้ใช้หลัง migration</td><td><span class="tag no">เอาออก</span></td></tr>
+            <tr><td><b>Formal</b></td><td>สไตล์มาตรฐาน จะไม่มีให้ใช้หลัง migration</td><td><span class="tag no">เอาออก</span></td></tr>
+            <tr><td><b>Learning</b></td><td>ถูกเก็บไว้ แต่ย้ายไปเป็น Skill ต้องไปเพิ่มเองจาก marketplace</td><td><span class="tag ok">เก็บไว้</span></td></tr>
+            <tr><td><b>เมนู Styles</b></td><td>จะหายไปเมื่อ migration เสร็จสมบูรณ์ ระหว่างทางยังใช้ของเดิมควบคู่ได้</td><td><span class="tag no">จะถูกลบ</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>ไทม์ไลน์การเปลี่ยนผ่าน</h3>
+      <div class="timeline">
+        <div class="tl-item done">
+          <div class="tl-when">20 พ.ค. 2026</div>
+          <div class="tl-what">เริ่ม migration</div>
+          <div class="tl-desc">แบนเนอร์แจ้งเตือนปรากฏในแอป custom styles เริ่มทยอยถูกแปลงเป็น skills</div>
+        </div>
+        <div class="tl-item done">
+          <div class="tl-when">ระหว่างเปลี่ยนผ่าน</div>
+          <div class="tl-what">ของเก่าและใหม่อยู่ด้วยกัน</div>
+          <div class="tl-desc">เมนู Styles เดิมยังใช้ได้ควบคู่กับ Skills ใหม่ — คุณเปลี่ยนมาใช้ได้ตามจังหวะของตัวเอง</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-when">เมื่อ migration เสร็จ</div>
+          <div class="tl-what">เมนู Styles หายไป</div>
+          <div class="tl-desc">Concise / Explanatory / Formal ถูกเอาออกถาวร เหลือ Learning ในรูป Skill และ custom skills ของคุณ</div>
+        </div>
+      </div>
+
+      <h3>วิธีใช้สไตล์ที่ถูกย้ายแล้ว</h3>
+      <p>หลังจาก custom style ถูกแปลงเป็น skill แล้ว เรียกใช้ในแชทด้วย <strong>slash command</strong> รูปแบบ:</p>
+      <div class="code-block">
+        <div class="cb-head"><span class="cb-title">slash command format</span><button class="cb-copy" data-copy="/{style-name}-style">คัดลอก</button></div>
+        <pre><code><span class="c-key">/</span>{style-name}<span class="c-key">-style</span>
+
+<span class="c-cm"># ตัวอย่าง: custom style ชื่อ "concise pirate"</span>
+<span class="c-key">/</span>concise-pirate<span class="c-key">-style</span></code></pre>
+      </div>
+      <p>ชื่อ command จะถูกแปลงจากชื่อสไตล์โดยอัตโนมัติ ด้วยกฎเหล่านี้:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>กฎการแปลงชื่อ</th><th>ผลลัพธ์</th></tr></thead>
+          <tbody>
+            <tr><td>เปลี่ยนตัวอักษรเป็นพิมพ์เล็กทั้งหมด</td><td><span class="mono">Concise Pirate → concise pirate</span></td></tr>
+            <tr><td>แทนช่องว่างด้วยขีดกลาง (-)</td><td><span class="mono">concise pirate → concise-pirate</span></td></tr>
+            <tr><td>ลบเครื่องหมายวรรคตอน / emoji / accent</td><td><span class="mono">café! → cafe</span></td></tr>
+            <tr><td>เติม <span class="mono">-style</span> ต่อท้าย</td><td><span class="mono">→ /concise-pirate-style</span></td></tr>
+            <tr><td>ถ้ายาวเกินลิมิต จะถูกตัด · ถ้าชื่อซ้ำ จะเติมเลข</td><td><span class="mono">-style-2</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout ok">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div>
+          <h4>วิธีเปิดสไตล์ที่ย้ายมาแล้ว / เพิ่ม Learning skill</h4>
+          <p>1. ไปที่ <strong>Customize › Skills</strong> (claude.ai/customize/skills)<br>
+          2. กดปุ่ม <strong>+</strong> แล้วเลือก <strong>Browse skills</strong> เพื่อเปิด directory<br>
+          3. ค้นหา skill ที่ต้องการ (เช่น "Learning" หรือชื่อ custom style เดิมของคุณ)<br>
+          4. กด <strong>+ / Install</strong> เพื่อเพิ่ม แล้วเปิดใช้งานในแชทได้เลย</p>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <div>
+          <h4>ไม่อยากใช้ Skill? ใช้ Custom Instructions แทนได้</h4>
+          <p>ถ้าคุณไม่อยากยุ่งกับ skill สามารถอธิบายพฤติกรรมการตอบแบบเดิม (tone, รูปแบบ, แนวทาง) ลงใน <strong>instructions for Claude</strong> ได้เลย — มันจะมีผลกับทุกแชทของคุณโดยอัตโนมัติ เหมาะกับคนที่อยากได้ "บุคลิกเดียวตลอด" มากกว่าสลับไปมา</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 SKILLS -->
+    <section id="skills">
+      <div class="sec-head">
+        <div class="sec-kicker">10 · Skills</div>
+        <h2>Skills คืออะไร</h2>
+        <p class="sec-sub">เข้าใจ Skills เพื่อใช้แทน Styles ได้อย่างเต็มประสิทธิภาพ</p>
+      </div>
+
+      <p><strong>Skill</strong> คือโฟลเดอร์ของคำสั่ง สคริปต์ และทรัพยากร ที่ Claude โหลดมาใช้แบบ dynamic เพื่อทำงานเฉพาะทางได้ดีขึ้นและสม่ำเสมอ ทำงานด้วยหลัก <strong>progressive disclosure</strong> — Claude อ่านแค่คำอธิบายสั้นๆ (~100 tokens) ตอนเริ่ม แล้วโหลดเนื้อหาเต็มเฉพาะเมื่อตัดสินใจว่า skill นั้นเกี่ยวข้องกับงาน จึงใส่ skill ได้เป็นร้อยตัวโดยไม่ทำให้ context ล้น</p>
+
+      <div class="callout info">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <div>
+          <h4>ข้อกำหนด</h4>
+          <p>Skills ใช้ได้ทุกแพลน (Free, Pro, Max, Team, Enterprise) แต่ต้อง <strong>เปิด code execution</strong> ก่อน · เป็น open standard เผยแพร่ที่ <span class="mono">agentskills.io</span> ดังนั้น skill ที่สร้างไม่ผูกกับ Claude อย่างเดียว ใช้ข้ามแพลตฟอร์มที่รองรับมาตรฐานเดียวกันได้</p>
+        </div>
+      </div>
+
+      <h3>ประเภทของ Skills</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ประเภท</th><th>คือ</th><th>ตัวอย่าง</th></tr></thead>
+          <tbody>
+            <tr><td><b>Anthropic skills</b></td><td>สร้างและดูแลโดย Anthropic เรียกใช้อัตโนมัติเมื่อเกี่ยวข้อง</td><td>สร้างไฟล์ Excel, Word, PowerPoint, PDF</td></tr>
+            <tr><td><b>Custom skills</b></td><td>คุณหรือองค์กรสร้างเองสำหรับ workflow เฉพาะ เขียนเป็น Markdown ได้เลย (ไม่ต้องเขียนโค้ดก็ได้)</td><td>brand guideline, email template, การวิเคราะห์ข้อมูลแบบทีม</td></tr>
+            <tr><td><b>Organization skills</b></td><td>Owner ของ Team/Enterprise แจกให้ทุกคนในองค์กรใช้ร่วมกัน</td><td>workflow มาตรฐานของบริษัท</td></tr>
+            <tr><td><b>Partner skills</b></td><td>สร้างโดยพาร์ตเนอร์ใน directory ทำงานคู่กับ MCP connector ของแต่ละเจ้า</td><td>Notion, Figma, Atlassian</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Skills ต่างจากฟีเจอร์อื่นยังไง</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>เทียบกับ</th><th>ต่างกันตรงไหน</th></tr></thead>
+          <tbody>
+            <tr><td><b>Projects</b></td><td>Project = ความรู้พื้นหลังแบบ static ที่โหลดทุกครั้งที่เปิดแชทใน project นั้น · Skill = ขั้นตอนเฉพาะทางที่ "เด้งมาเอง" เมื่อจำเป็น และใช้ได้ทุกที่ทั่ว Claude</td></tr>
+            <tr><td><b>MCP / Connectors</b></td><td>MCP ให้ "การเชื่อมต่อกับเครื่องมือ/ข้อมูลภายนอก" · Skill ให้ "วิธีใช้เครื่องมือเหล่านั้นให้ถูกต้อง" — ใช้คู่กันได้</td></tr>
+            <tr><td><b>Custom instructions</b></td><td>instructions มีผลกว้างกับทุกแชท · Skill เจาะจงงานและโหลดเฉพาะเมื่อเกี่ยวข้อง เหมาะกับ workflow เฉพาะทางมากกว่า</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 08 DECISION -->
+    <section id="decision">
+      <div class="sec-head">
+        <div class="sec-kicker">11 · เลือกตามงาน</div>
+        <h2>งานแบบนี้ ใช้สไตล์ไหน</h2>
+        <p class="sec-sub">map งานพัฒนาจริงเข้ากับสไตล์ (หรือ skill หลัง migration)</p>
+      </div>
+      <div class="dgrid">
+        <div class="dcard"><div class="task">แก้บั๊ก TypeScript type error ด่วน</div><div class="pick">Concise</div></div>
+        <div class="dcard"><div class="task">ขอ snippet สั้นๆ ไม่ต้องอธิบาย</div><div class="pick">Concise</div></div>
+        <div class="dcard"><div class="task">ตัดสินใจ Pinia หรือ provide/inject</div><div class="pick">Explanatory</div></div>
+        <div class="dcard"><div class="task">เลือก library / ออกแบบ architecture</div><div class="pick">Explanatory</div></div>
+        <div class="dcard"><div class="task">เขียน CLAUDE.md / README / PR</div><div class="pick">Formal</div></div>
+        <div class="dcard"><div class="task">อีเมลหาลูกค้า / รายงาน</div><div class="pick">Formal</div></div>
+        <div class="dcard"><div class="task">เรียน Nuxt 4 ให้เข้าใจลึก</div><div class="pick">Learning</div></div>
+        <div class="dcard"><div class="task">สำรวจเทคโนโลยีใหม่ที่ไม่รู้จัก</div><div class="pick">Learning</div></div>
+        <div class="dcard"><div class="task">งานทั่วไปประจำวัน mixed</div><div class="pick">Custom skill</div></div>
+      </div>
+    </section>
+
+    <!-- 09 TEMPLATES -->
+    <section id="templates">
+      <div class="sec-head">
+        <div class="sec-kicker">12 · มืออาชีพ</div>
+        <h2>Template สำหรับงานพัฒนา</h2>
+        <p class="sec-sub">5 สไตล์มาตรฐานเป็นของกลาง สำหรับงานจริงแนะนำสร้าง custom style / skill เอง — คัดลอกไปปรับใช้ได้เลย</p>
+      </div>
+
+      <h3>Template: Senior Engineer Style</h3>
+      <p>เหมาะที่สุดสำหรับงานเขียนโค้ดประจำวัน — กำหนดบุคลิกเป็น senior ที่คุยกับ peer ตรงประเด็น เน้นโค้ดที่รันได้จริง</p>
+      <div class="code-block">
+        <div class="cb-head"><span class="cb-title">senior-engineer.style</span><button class="cb-copy" data-copy="บทบาท: Senior Vue/Nuxt engineer คุยกับ peer
+
+หลักการตอบ:
+- TypeScript strict mode เสมอ ห้าม any
+- โค้ดต้องรันได้จริง พร้อม imports ครบ
+- ใช้ existing components ก่อน ไม่เขียน custom CSS / ไม่ใช้ arbitrary Tailwind values
+- Bruno API specs คือ source of truth ของทุก endpoint
+- ถ้ามี trade-off ให้บอกทั้งสองด้าน
+- ถ้าไม่แน่ใจ บอกตรงๆ ว่าไม่แน่ใจ ไม่เดา
+
+รูปแบบ:
+- ไม่ต้องเกริ่นนำหรือสรุปท้าย เข้าเนื้อหาเลย
+- ภาษาไทยปนอังกฤษได้ ศัพท์เทคนิคและ config key คงเป็นอังกฤษ
+- โค้ดอยู่ใน code block พร้อมระบุไฟล์/path
+
+ห้าม:
+- เพิ่ม dependency ใหม่โดยไม่ถามก่อน
+- ใช้ emoji ในโค้ดหรือ commit message">คัดลอก</button></div>
+        <pre><code><span class="c-cm">บทบาท:</span> Senior Vue/Nuxt engineer คุยกับ peer
+
+<span class="c-cm">หลักการตอบ:</span>
+- TypeScript strict mode เสมอ ห้าม any
+- โค้ดต้องรันได้จริง พร้อม imports ครบ
+- ใช้ existing components ก่อน ไม่เขียน custom CSS
+- Bruno API specs คือ source of truth ของทุก endpoint
+- ถ้ามี trade-off ให้บอกทั้งสองด้าน
+- ถ้าไม่แน่ใจ บอกตรงๆ ไม่เดา
+
+<span class="c-cm">รูปแบบ:</span>
+- ไม่ต้องเกริ่นนำหรือสรุปท้าย เข้าเนื้อหาเลย
+- ภาษาไทยปนอังกฤษได้ ศัพท์เทคนิคคงเป็นอังกฤษ
+- โค้ดอยู่ใน code block พร้อมระบุไฟล์/path
+
+<span class="c-cm">ห้าม:</span>
+- เพิ่ม dependency ใหม่โดยไม่ถามก่อน
+- ใช้ emoji ในโค้ดหรือ commit message</code></pre>
+      </div>
+
+      <h3>Template: Doc / PR Writer Style</h3>
+      <p>สำหรับงานเขียนเอกสารทางการ เช่น PR description, README, CLAUDE.md</p>
+      <div class="code-block">
+        <div class="cb-head"><span class="cb-title">doc-writer.style</span><button class="cb-copy" data-copy="บทบาท: Technical writer เขียนเอกสารทางการสำหรับทีมพัฒนา
+
+รูปแบบ:
+- ภาษาทางการ กระชับ ชัดเจน
+- โครงสร้างชัด: หัวข้อ + bullet เมื่อเหมาะ
+- ขึ้นต้น PR ด้วย: สรุปการเปลี่ยนแปลง / เหตุผล / ผลกระทบ / วิธีทดสอบ
+- ศัพท์เทคนิคคงเป็นอังกฤษ คำอธิบายเป็นไทย
+- ไม่มี emoji ไม่มีคำสแลง
+
+หลักการ:
+- เขียนจากมุมผู้อ่าน บอกว่า 'ทำอะไร' และ 'ทำไม' มากกว่ารายละเอียดภายใน
+- ถ้ามี breaking change ต้องระบุชัดเจนเป็นหัวข้อแยก">คัดลอก</button></div>
+        <pre><code><span class="c-cm">บทบาท:</span> Technical writer เขียนเอกสารทางการ
+
+<span class="c-cm">รูปแบบ:</span>
+- ภาษาทางการ กระชับ ชัดเจน
+- โครงสร้างชัด: หัวข้อ + bullet เมื่อเหมาะ
+- PR: สรุปการเปลี่ยนแปลง / เหตุผล / ผลกระทบ / วิธีทดสอบ
+- ศัพท์เทคนิคคงเป็นอังกฤษ คำอธิบายเป็นไทย
+- ไม่มี emoji ไม่มีคำสแลง
+
+<span class="c-cm">หลักการ:</span>
+- เขียนจากมุมผู้อ่าน บอก 'ทำอะไร' และ 'ทำไม'
+- ถ้ามี breaking change ระบุเป็นหัวข้อแยก</code></pre>
+      </div>
+
+      <div class="callout ok">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div>
+          <h4>ทำเป็น Skill เลยดีกว่า (รองรับอนาคต)</h4>
+          <p>เพราะ Styles กำลังถูกแทนด้วย Skills การลงทุนเขียน template เหล่านี้เป็น <strong>custom skill</strong> ตั้งแต่แรกจะคุ้มกว่า — สร้างที่ <span class="mono">Customize › Skills › + › Create</span> วาง content เป็น Markdown ที่มี YAML frontmatter (<span class="mono">name</span>, <span class="mono">description</span>) แล้วเรียกใช้ด้วย slash command ได้ทุกแชท</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 CHEAT -->
+    <section id="cheat">
+      <div class="sec-head">
+        <div class="sec-kicker">13 · สรุปย่อ</div>
+        <h2>Cheat Sheet</h2>
+        <p class="sec-sub">จำไว้ใช้เร็ว</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>อยากได้</th><th>ทำ</th></tr></thead>
+          <tbody>
+            <tr><td>คำตอบสั้น เร็ว</td><td>สไตล์ <b>Concise</b></td></tr>
+            <tr><td>เหตุผล + trade-off ครบ</td><td>สไตล์ <b>Explanatory</b></td></tr>
+            <tr><td>เอกสาร / PR ทางการ</td><td>สไตล์ <b>Formal</b></td></tr>
+            <tr><td>เรียนรู้แบบเข้าใจลึก</td><td><b>Learning</b> (ตอนนี้เป็น Skill — เพิ่มจาก marketplace)</td></tr>
+            <tr><td>บุคลิกเฉพาะของตัวเอง</td><td><b>Custom skill</b> + slash command <span class="mono">/{ชื่อ}-style</span></td></tr>
+            <tr><td>บุคลิกเดียวตลอดทุกแชท</td><td>เขียนใน <b>Custom instructions</b></td></tr>
+            <tr><td>context โปรเจกต์ที่ใช้ซ้ำ</td><td><b>Project</b> (Add to project)</td></tr>
+            <tr><td>ต่อแอปภายนอก</td><td><b>Connectors</b> (MCP)</td></tr>
+            <tr><td>ข้อมูลปัจจุบัน</td><td>เปิด <b>Web search</b> / ใช้ <b>Research</b> ถ้าต้องการเชิงลึก</td></tr>
+            <tr><td>งานง่าย/เร็ว ประหยัด limit</td><td>โมเดล <b>Haiku 4.5</b> + Effort <b>Low/Medium</b></td></tr>
+            <tr><td>เขียน/implement งานทั่วไป</td><td>โมเดล <b>Sonnet 4.6</b> + Effort <b>Medium/High</b></td></tr>
+            <tr><td>วางแผน/architecture/โจทย์ยาก</td><td>โมเดล <b>Opus 4.8</b> (หรือ Fable 5) + Effort <b>High/Max</b> + เปิด Thinking</td></tr>
+            <tr><td>สร้างไฟล์ Word/Excel/PPT/PDF</td><td><b>Anthropic skills</b> (เรียกอัตโนมัติ ต้องเปิด code execution)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 14 WORKSHOP -->
+    <section id="workshop">
+      <div class="sec-head">
+        <div class="sec-kicker">14 · ภาคปฏิบัติ</div>
+        <h2>Workshop — ลองใช้จริงทีละขั้น</h2>
+        <p class="sec-sub">แบบฝึกหัด 13 ข้อครบทุกหัวข้อด้านบน ทำตามทีละขั้นแล้วติ๊กความคืบหน้าได้ ตัวอย่างทั้งหมดอิงงาน Vue/Nuxt จริง — ปิดท้ายด้วยโจทย์รวบยอด</p>
+      </div>
+
+      <div class="ws-intro">
+        <h3>วิธีใช้ Workshop นี้</h3>
+        <p>คลิกที่แต่ละขั้นตอนเพื่อติ๊กว่าทำแล้ว · ตัวอย่าง prompt กดปุ่มคัดลอกไปวางในแชทได้เลย · ความคืบหน้าจะถูกจำไว้ในเครื่องเมื่อนำขึ้นเว็บ</p>
+        <div class="ws-bar"><div class="ws-fill" id="wsFill"></div></div>
+        <div class="ws-meter">
+          <span>ความคืบหน้า <b id="wsPct">0%</b> · <span id="wsCount">0 / 0</span> ขั้นตอน</span>
+          <button class="ws-reset" id="wsReset">รีเซ็ต</button>
+        </div>
+      </div>
+
+      <!-- W1 -->
+      <div class="ws-card">
+        <div class="ws-head"><div class="ws-num">1</div><h3>หน้าแรก &amp; Quick actions</h3><span class="ws-ref">§01</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7"/></svg></span><div><b>เป้าหมาย:</b> คุ้นเคยกับช่องพิมพ์และเข้าใจว่าปุ่มลัดเปลี่ยนพฤติกรรมเริ่มต้นอย่างไร</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">เปิด Claude สังเกตคำทักทายและช่องพิมพ์ "How can I help you today?"</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">มองหาแถวล่างของช่อง: ปุ่ม <code>+</code> · ชื่อโมเดล · <code>Effort</code> · ไมโครโฟน · voice mode</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">กดปุ่มลัด <code>Code</code> แล้วพิมพ์คำถามด้านล่าง</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ลองกด <code>Learn</code> แล้วถามคำถามเดิม สังเกตว่าโทนต่างกัน</span></li>
+          </ul>
+          <div class="ws-eg"><div class="ws-eg-head"><span>ลองวาง prompt นี้</span><button class="cb-copy" data-copy="อธิบายว่า composable ใน Vue 3 ต่างจาก mixin อย่างไร และควรใช้ตอนไหน">คัดลอก</button></div><pre><code>อธิบายว่า composable ใน Vue 3 ต่างจาก mixin
+อย่างไร และควรใช้ตอนไหน</code></pre></div>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> ปุ่ม Code ทำให้คำตอบเอนไปทางเทคนิค/โค้ด ส่วน Learn จะอธิบายแบบค่อยๆ สอน เข้าใจง่ายกว่า</div></div>
+        </div>
+      </div>
+
+      <!-- W2 -->
+      <div class="ws-card">
+        <div class="ws-head"><div class="ws-num">2</div><h3>เลือกโมเดลให้เหมาะงาน</h3><span class="ws-ref">§02</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7"/></svg></span><div><b>เป้าหมาย:</b> รู้สึกถึงความต่างของความเร็ว/ความลึกระหว่างโมเดล เพื่อเลือกได้อย่างประหยัด limit</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">กดที่ชื่อโมเดล (เช่น <code>Sonnet 4.6 ⌄</code>) อ่านคำอธิบายใต้แต่ละตัว</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ตั้งเป็น <code>Haiku 4.5</code> แล้วถามคำถามสั้นๆ — สังเกตความเร็ว</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">เปลี่ยนเป็น <code>Opus 4.8</code> แล้วถามโจทย์ออกแบบ — สังเกตความลึก</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ตั้งกฎส่วนตัว: Haiku=งานซ้ำ · Sonnet=ทำงานทั่วไป · Opus=วางแผน</span></li>
+          </ul>
+          <div class="ws-eg"><div class="ws-eg-head"><span>โจทย์เทียบ (ใช้กับ Opus)</span><button class="cb-copy" data-copy="ออกแบบโครงสร้าง Pinia store สำหรับฟีเจอร์ตั้งค่าบอท Line ที่มี 12 endpoint พร้อมแยก state/getters/actions และอธิบายเหตุผลการแบ่ง">คัดลอก</button></div><pre><code>ออกแบบโครงสร้าง Pinia store สำหรับฟีเจอร์
+ตั้งค่าบอท Line ที่มี 12 endpoint พร้อมแยก
+state/getters/actions และอธิบายเหตุผล</code></pre></div>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> Haiku ตอบไวกระชับ · Opus ให้โครงสร้างและเหตุผลที่ลึกกว่าชัดเจน เหมาะกับงานออกแบบ</div></div>
+        </div>
+      </div>
+
+      <!-- W3 -->
+      <div class="ws-card">
+        <div class="ws-head"><div class="ws-num">3</div><h3>ปรับ Effort &amp; เปิด Thinking</h3><span class="ws-ref">§03</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7"/></svg></span><div><b>เป้าหมาย:</b> เห็นผลของ effort ต่อความละเอียด และรู้ว่าเมื่อไรควรเปิด Thinking</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">เปิดเมนูโมเดล เข้า <code>Effort</code> ตั้งเป็น <code>Low</code> ถามโจทย์ refactor</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">เปลี่ยนเป็น <code>High</code> + เปิดสวิตช์ <code>Thinking</code> แล้วถามซ้ำ</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">เทียบ 2 คำตอบ: ความครบของ edge case และเหตุผล</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">จำกฎ: งานง่าย=Low/Medium ประหยัด limit · งานยาก=High/Max+Thinking</span></li>
+          </ul>
+          <div class="ws-eg"><div class="ws-eg-head"><span>โจทย์ทดสอบ effort</span><button class="cb-copy" data-copy="Refactor ฟังก์ชันนี้ให้แยก concern ชัดเจน รองรับ error handling และเขียน TypeScript strict ไม่ใช้ any พร้อมอธิบายทุกการเปลี่ยนแปลง">คัดลอก</button></div><pre><code>Refactor ฟังก์ชันนี้ให้แยก concern ชัดเจน
+รองรับ error handling เขียน TS strict ไม่ใช้ any
+พร้อมอธิบายทุกการเปลี่ยนแปลง</code></pre></div>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> High+Thinking ครอบคลุม edge case มากกว่าและโชว์กระบวนการคิด แต่ใช้เวลานานกว่าและกิน limit เร็วกว่า</div></div>
+        </div>
+      </div>
+
+      <!-- W4 -->
+      <div class="ws-card">
+        <div class="ws-head"><div class="ws-num">4</div><h3>เปิดเมนู + และสำรวจ</h3><span class="ws-ref">§04</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7"/></svg></span><div><b>เป้าหมาย:</b> รู้ว่าเครื่องมือทั้งหมดอยู่ตรงไหน เพื่อหยิบใช้ได้เร็ว</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">กดปุ่ม <code>+</code> ไล่อ่านทั้ง 8 รายการฝั่งซ้าย</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ชี้ที่ <code>Use style</code> ดูเมนูย่อยฝั่งขวาโผล่ออกมา</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">เช็คว่า <code>Web search</code> เปิดอยู่ (มี ✓) สำหรับข้อมูลปัจจุบัน</span></li>
+          </ul>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> เมนูสองฝั่งเหมือนแผนผังจำลองในหัวข้อ 04 — รู้ตำแหน่งทุกเครื่องมือ</div></div>
+        </div>
+      </div>
+
+      <!-- W5 -->
+      <div class="ws-card">
+        <div class="ws-head"><div class="ws-num">5</div><h3>แนบไฟล์ให้ Claude วิเคราะห์</h3><span class="ws-ref">§05</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7"/></svg></span><div><b>เป้าหมาย:</b> ให้ Claude ทำงานจากไฟล์จริง เช่น สเปกหรือ log แทนการอธิบายด้วยมือ</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">กด <code>+</code> › <code>Add files or photos</code> อัปโหลด Bruno spec หรือ error log</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">พิมพ์คำสั่งให้ Claude อ้างอิงไฟล์นั้นเป็นหลัก</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ลองใช้ <code>Take a screenshot</code> ถ่าย UI ที่ layout เพี้ยนแล้วถาม</span></li>
+          </ul>
+          <div class="ws-eg"><div class="ws-eg-head"><span>prompt หลังแนบ Bruno spec</span><button class="cb-copy" data-copy="จากไฟล์ Bruno spec ที่แนบ สร้าง TypeScript interface และ composable สำหรับเรียก endpoint ทั้งหมด ยึด contract ในไฟล์เป็น source of truth ห้ามเดา field">คัดลอก</button></div><pre><code>จากไฟล์ Bruno spec ที่แนบ สร้าง TypeScript
+interface และ composable สำหรับเรียก endpoint
+ทั้งหมด ยึด contract ในไฟล์เป็น source of truth
+ห้ามเดา field</code></pre></div>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> Claude อ่าน field จากไฟล์จริง ไม่เดาเอง — โค้ดตรงกับ contract</div></div>
+        </div>
+      </div>
+
+      <!-- W6 -->
+      <div class="ws-card">
+        <div class="ws-head"><div class="ws-num">6</div><h3>เปลี่ยนสไตล์การตอบ</h3><span class="ws-ref">§06</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7"/></svg></span><div><b>เป้าหมาย:</b> สัมผัสความต่างของสไตล์ด้วยคำถามเดียวกัน</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">กด <code>+</code> › <code>Use style</code> › <code>Concise</code> แล้วถามคำถามด้านล่าง</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">เปลี่ยนเป็น <code>Explanatory</code> ถามคำถามเดิมซ้ำ</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ตัดสินใจว่าสไตล์ไหนคือ default ที่ชอบสำหรับงานคุณ</span></li>
+          </ul>
+          <div class="ws-eg"><div class="ws-eg-head"><span>คำถามทดสอบสไตล์</span><button class="cb-copy" data-copy="เมื่อไรควรใช้ provide/inject แทน Pinia ใน Vue 3">คัดลอก</button></div><pre><code>เมื่อไรควรใช้ provide/inject แทน Pinia ใน Vue 3</code></pre></div>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> Concise ตอบสั้นตัดสินใจได้เร็ว · Explanatory ให้ trade-off ครบเหมาะตอนต้องชั่งน้ำหนัก</div></div>
+        </div>
+      </div>
+
+      <!-- W7 -->
+      <div class="ws-card">
+        <div class="ws-head"><div class="ws-num">7</div><h3>ใช้ตัวเทียบสไตล์ในหน้านี้</h3><span class="ws-ref">§07</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7"/></svg></span><div><b>เป้าหมาย:</b> เห็นภาพคำตอบทั้ง 5 สไตล์เคียงกันโดยไม่ต้องสลับในแอปจริง</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">เลื่อนกลับไปหัวข้อ <a class="inline" href="#explorer">07 · ลองเทียบสไตล์</a></span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">กดสลับ tab ทั้ง 5 สไตล์ อ่านคำตอบเดียวกันในแต่ละแบบ</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">จดสไตล์ที่จะใช้กับ debug / ออกแบบ / เขียนเอกสาร</span></li>
+          </ul>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> Concise สั้นสุด · Explanatory ยาวสุดมี trade-off · เลือกแมตช์กับงานได้ทันที</div></div>
+        </div>
+      </div>
+
+      <!-- W8 -->
+      <div class="ws-card">
+        <div class="ws-head"><div class="ws-num">8</div><h3>สร้าง mental model จากตารางเทียบ</h3><span class="ws-ref">§08</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7"/></svg></span><div><b>เป้าหมาย:</b> จำได้โดยไม่ต้องเปิดคู่มือทุกครั้ง</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">อ่านตารางเทียบ 7 มิติในหัวข้อ <a class="inline" href="#compare">08</a></span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">สรุปเป็นกฎสั้นของตัวเอง เช่น "รีบ=Concise, คิดใหญ่=Explanatory"</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">เลือก "สไตล์ + โมเดล + effort" ประจำวันของตัวเอง 1 ชุด</span></li>
+          </ul>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> มีชุดค่าเริ่มต้นที่ใช้ได้ทันทีโดยไม่ต้องคิดใหม่ทุกครั้ง</div></div>
+        </div>
+      </div>
+
+      <!-- W9 -->
+      <div class="ws-card">
+        <div class="ws-head"><div class="ws-num">9</div><h3>ย้าย Style เดิมไปเป็น Skill</h3><span class="ws-ref">§09</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7"/></svg></span><div><b>เป้าหมาย:</b> เตรียมรับการเปลี่ยนแปลง — เปิด custom style ที่ migrate แล้วเรียกใช้ด้วย slash command</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ไปที่ <code>Customize › Skills</code></span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">หา custom style เดิมที่ถูกแปลงเป็น skill (ปิดอยู่) แล้วเปิดใช้</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ในแชทพิมพ์ slash command ตามรูปแบบ <code>/{ชื่อ}-style</code></span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ถ้าไม่อยากใช้ skill ให้ย้ายกฎไปไว้ใน Custom instructions แทน</span></li>
+          </ul>
+          <div class="ws-eg"><div class="ws-eg-head"><span>เรียกสไตล์ที่ย้ายแล้ว</span><button class="cb-copy" data-copy="/senior-engineer-style">คัดลอก</button></div><pre><code>/senior-engineer-style</code></pre></div>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> สไตล์ทำงานในแชทผ่าน command — พร้อมก่อนที่ Concise/Explanatory/Formal จะถูกเอาออก</div></div>
+        </div>
+      </div>
+
+      <!-- W10 -->
+      <div class="ws-card">
+        <div class="ws-head"><div class="ws-num">10</div><h3>เพิ่มและใช้ Skill</h3><span class="ws-ref">§10</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7"/></svg></span><div><b>เป้าหมาย:</b> ติดตั้ง skill จาก marketplace และทดสอบ Anthropic skill</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">เช็คว่าเปิด <code>code execution</code> แล้ว (จำเป็นต่อ Skills)</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt"><code>Customize › Skills › + › Browse skills</code> ติดตั้ง Learning</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ทดสอบ Anthropic skill โดยสั่งสร้างไฟล์ Excel</span></li>
+          </ul>
+          <div class="ws-eg"><div class="ws-eg-head"><span>ทดสอบ skill สร้างไฟล์</span><button class="cb-copy" data-copy="สร้างไฟล์ Excel สรุป 12 endpoint ของฟีเจอร์ตั้งค่าบอท Line: คอลัมน์ method, path, คำอธิบาย, request fields, response fields">คัดลอก</button></div><pre><code>สร้างไฟล์ Excel สรุป 12 endpoint ของฟีเจอร์
+ตั้งค่าบอท Line: คอลัมน์ method, path, คำอธิบาย,
+request fields, response fields</code></pre></div>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> Claude เรียก skill xlsx อัตโนมัติและส่งไฟล์ .xlsx ให้ดาวน์โหลด</div></div>
+        </div>
+      </div>
+
+      <!-- W11 -->
+      <div class="ws-card">
+        <div class="ws-head"><div class="ws-num">11</div><h3>ฝึกแมตช์งานจริง → ตั้งค่า</h3><span class="ws-ref">§11</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7"/></svg></span><div><b>เป้าหมาย:</b> เปลี่ยนความรู้เป็นนิสัย — เลือกตั้งค่าได้อัตโนมัติตามชนิดงาน</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">เขียนงานจริงของคุณวันนี้มา 3 งาน</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">จับคู่แต่ละงานกับ โมเดล + effort + สไตล์ โดยดูการ์ดในหัวข้อ <a class="inline" href="#decision">11</a></span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ลองทำจริง 1 งานตามที่จับคู่ไว้</span></li>
+          </ul>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> เริ่มเลือกตั้งค่าได้เร็วโดยไม่ลังเล เพราะมี mapping ในหัว</div></div>
+        </div>
+      </div>
+
+      <!-- W12 -->
+      <div class="ws-card">
+        <div class="ws-head"><div class="ws-num">12</div><h3>สร้าง Custom Skill จาก template</h3><span class="ws-ref">§12</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7"/></svg></span><div><b>เป้าหมาย:</b> มี skill ส่วนตัวที่บังคับกฎ Pedpro ทุกครั้งโดยไม่ต้องพิมพ์ซ้ำ</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">คัดลอก template "Senior Engineer Style" จากหัวข้อ <a class="inline" href="#templates">12</a></span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt"><code>Customize › Skills › + › Create</code> วางเป็น Markdown + YAML frontmatter</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">เปิดใช้ แล้วเรียกในแชทด้วย slash command ทดสอบกับงานจริง</span></li>
+          </ul>
+          <div class="ws-eg"><div class="ws-eg-head"><span>YAML frontmatter ตัวอย่าง</span><button class="cb-copy" data-copy="---
+name: senior-engineer
+description: ตอบแบบ senior Vue/Nuxt engineer ยึดกฎ Pedpro — TS strict, ไม่ custom CSS, Bruno เป็น source of truth, เข้าเนื้อหาเลย
+---">คัดลอก</button></div><pre><code><span class="c-cm">---</span>
+<span class="c-key">name:</span> senior-engineer
+<span class="c-key">description:</span> ตอบแบบ senior Vue/Nuxt engineer
+  ยึดกฎ Pedpro — TS strict, ไม่ custom CSS,
+  Bruno เป็น source of truth, เข้าเนื้อหาเลย
+<span class="c-cm">---</span></code></pre></div>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> ทุกคำตอบยึดกฎ Pedpro โดยอัตโนมัติ — ไม่ต้องย้ำ convention ทุกแชท</div></div>
+        </div>
+      </div>
+
+      <!-- W13 -->
+      <div class="ws-card">
+        <div class="ws-head"><div class="ws-num">13</div><h3>ตั้งค่า Default ส่วนตัว</h3><span class="ws-ref">§13</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.7"/></svg></span><div><b>เป้าหมาย:</b> รวมทุกอย่างเป็นการตั้งค่าเริ่มต้นที่ใช้ได้ทันที</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">เลือกโมเดล + effort ประจำ (เช่น Sonnet 4.6 + Medium)</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ใส่กฎการตอบหลักลงใน Custom instructions</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">สร้าง Project "Pedpro" ใส่ CLAUDE.md + convention ไว้</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">บุ๊กมาร์กคู่มือนี้ไว้เปิดดู cheat sheet เร็วๆ</span></li>
+          </ul>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> เปิดแชทใหม่แล้วพร้อมทำงานทันทีในโหมดที่เหมาะกับคุณ</div></div>
+        </div>
+      </div>
+
+      <!-- CAPSTONE -->
+      <div class="ws-card ws-capstone">
+        <div class="ws-head"><div class="ws-num">★</div><h3>โจทย์รวบยอด: สร้าง CRUD page จริง</h3><span class="ws-ref">Capstone</span></div>
+        <div class="ws-body">
+          <div class="ws-goal"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 6.8L21 11l-6.6 2.2L12 20l-2.4-6.8L3 11l6.6-2.2L12 2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><div><b>เป้าหมาย:</b> ใช้ทักษะทั้งหมดพร้อมกันในงานเดียว — เลือกโมเดล, effort, แนบสเปก, ใช้ custom skill, จัด workflow</div></div>
+          <ul class="ws-steps">
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ตั้ง <code>Opus 4.8 + High + Thinking</code> เพื่อ "วางแผน" ก่อน</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">แนบ Bruno spec + เปิด custom skill <code>senior-engineer</code></span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ขอ plan ก่อน แล้วค่อยสลับเป็น <code>Sonnet 4.6 + Medium</code> เพื่อ "implement"</span></li>
+            <li class="ws-step"><span class="ws-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ws-txt">ขอ PR description ด้วยสไตล์ Formal ปิดงาน</span></li>
+          </ul>
+          <div class="ws-eg"><div class="ws-eg-head"><span>prompt เปิดงาน (ขั้นวางแผน)</span><button class="cb-copy" data-copy="ก่อน implement: วางแผนหน้า CRUD สำหรับจัดการ keyword ตอบกลับของบอท Line จาก Bruno spec ที่แนบ ไล่ตาม layer order ของ Pedpro (types → composable → store → component → page) ยังไม่ต้องเขียนโค้ด ขอ plan ให้ผมรีวิวก่อน">คัดลอก</button></div><pre><code>ก่อน implement: วางแผนหน้า CRUD สำหรับจัดการ
+keyword ตอบกลับของบอท Line จาก Bruno spec ที่แนบ
+ไล่ตาม layer order ของ Pedpro (types → composable
+→ store → component → page) ยังไม่ต้องเขียนโค้ด
+ขอ plan ให้ผมรีวิวก่อน</code></pre></div>
+          <div class="ws-expect"><span class="ei"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควรเห็น:</b> ได้ workflow แบบ "วางแผนด้วยโมเดลแรง → รีวิว → implement ด้วยโมเดลประหยัด → ปิดด้วยเอกสาร" ครบวงจร ตรงกับบทบาท manager/decision-maker ที่ต้องการ</div></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 15 TECHNIQUES -->
+    <section id="techniques">
+      <div class="sec-head">
+        <div class="sec-kicker">15 · ใช้ให้ได้ผล</div>
+        <h2>เทคนิค ข้อควรระวัง ขีดจำกัด &amp; การตรวจทาน</h2>
+        <p class="sec-sub">รวมเทคนิคทางการจาก Anthropic + ที่ชุมชนนักพัฒนานิยม พร้อมจุดที่ต้องระวัง ขีดจำกัดของโมเดล และวิธีตรวจทานให้ได้ผลลัพธ์ที่ถูกต้องและตรวจสอบได้</p>
+      </div>
+
+      <!-- A. official techniques -->
+      <h3>A · เทคนิคทางการจาก Anthropic</h3>
+      <p class="sec-sub" style="margin-bottom:16px">หลักการหัวใจคือ "มองClaude เหมือนพนักงานใหม่ที่เก่งมากแต่ไม่รู้บริบทงานคุณ" — ยิ่งบอกชัด ยิ่งได้ผลดี</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>เทคนิค</th><th>หลักการ</th><th>นำไปใช้</th></tr></thead>
+          <tbody>
+            <tr><td class="cell-style">ชัดเจน &amp; ตรง</td><td>บอกสิ่งที่ต้องการตรงๆ ถ้าอยากได้ "เกินมาตรฐาน" ต้องสั่งชัด ไม่ปล่อยให้เดา</td><td>Golden rule: ถ้าเพื่อนร่วมงานอ่าน prompt แล้วงง Claude ก็งงเหมือนกัน</td></tr>
+            <tr><td class="cell-style">ให้บริบท/เหตุผล</td><td>อธิบายว่า "ทำไม" ถึงต้องการแบบนั้น Claude จะ generalize ได้ตรงเป้ามากขึ้น</td><td>"เขียนแบบนี้เพราะจะเอาไปแปะใน PR ให้ทีมรีวิว"</td></tr>
+            <tr><td class="cell-style">ใช้ตัวอย่าง (few-shot)</td><td>3–5 ตัวอย่างที่ตรงงาน หลากหลาย ครอบ edge case ใส่ใน <code>&lt;example&gt;</code> tags</td><td>วิธีที่เชื่อถือได้ที่สุดในการคุม format/โทน/โครงสร้าง</td></tr>
+            <tr><td class="cell-style">โครงสร้างด้วย XML</td><td>ห่อแต่ละส่วนด้วย tag เช่น <code>&lt;instructions&gt;</code> <code>&lt;context&gt;</code> <code>&lt;input&gt;</code></td><td>ลดการตีความผิดเมื่อ prompt มีหลายส่วนปนกัน</td></tr>
+            <tr><td class="cell-style">กำหนด role</td><td>ตั้งบทบาทในต้น prompt แม้แค่ประโยคเดียวก็เปลี่ยนโทน/พฤติกรรมได้</td><td>"คุณคือ senior Vue/Nuxt engineer ที่ยึด TS strict"</td></tr>
+            <tr><td class="cell-style">Long context</td><td>วางเอกสารยาวไว้ "บนสุด" วางคำถาม/คำสั่งไว้ล่าง</td><td>คุณภาพดีขึ้นได้ถึง ~30% ในงานหลายเอกสาร + ขอให้ quote ส่วนเกี่ยวข้องก่อน</td></tr>
+            <tr><td class="cell-style">บอกสิ่งที่ให้ทำ</td><td>สั่งเชิงบวกแทนเชิงห้าม</td><td>แทน "อย่าใช้ markdown" → "เขียนเป็น prose ย่อหน้าต่อเนื่อง"</td></tr>
+            <tr><td class="cell-style">สั่งให้ลงมือ</td><td>โมเดลใหม่ทำตามตรงตัว ถ้าอยากให้แก้จริงต้องสั่งชัด</td><td>"แก้ไฟล์ให้เลย" แทน "ช่วยเสนอการแก้หน่อย"</td></tr>
+            <tr><td class="cell-style">ขอให้ตรวจตัวเอง</td><td>ให้ Claude self-check กับเกณฑ์ก่อนจบ — จับ error ได้ดีโดยเฉพาะโค้ด/คณิต</td><td>"ก่อนจบ ตรวจคำตอบกับ test เหล่านี้อีกครั้ง"</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="code-block">
+        <div class="cb-head"><span class="cb-title">prompt โครงสร้างมาตรฐาน (วางแล้วเติมเนื้อหา)</span><button class="cb-copy" data-copy="<context>
+[วางสเปก / โค้ด / Bruno spec ที่ยาวไว้บนสุดตรงนี้]
+</context>
+
+<role>คุณคือ senior Vue/Nuxt engineer ยึด TypeScript strict</role>
+
+<instructions>
+1. ...
+2. ...
+</instructions>
+
+<example>
+[ตัวอย่าง input → output ที่ต้องการ]
+</example>
+
+คำถาม/คำสั่งจริงของผม: ...
+ก่อนจบ ให้ตรวจคำตอบกับ instructions ทุกข้อ ถ้าไม่แน่ใจให้บอก ไม่เดา">คัดลอก</button></div>
+<pre><code><span class="c-key">&lt;context&gt;</span>
+[วางสเปก / โค้ด / Bruno spec ที่ยาวไว้บนสุด]
+<span class="c-key">&lt;/context&gt;</span>
+
+<span class="c-key">&lt;role&gt;</span>คุณคือ senior Vue/Nuxt engineer ยึด TS strict<span class="c-key">&lt;/role&gt;</span>
+
+<span class="c-key">&lt;instructions&gt;</span>
+1. ...
+2. ...
+<span class="c-key">&lt;/instructions&gt;</span>
+
+<span class="c-key">&lt;example&gt;</span>
+[ตัวอย่าง input → output ที่ต้องการ]
+<span class="c-key">&lt;/example&gt;</span>
+
+คำสั่งจริงของผม: ...
+ก่อนจบ ตรวจคำตอบกับ instructions ทุกข้อ
+ถ้าไม่แน่ใจให้บอก ไม่เดา</code></pre>
+      </div>
+      <div class="tech-src">ที่มา: Anthropic · <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices" target="_blank" rel="noopener">Prompting best practices</a></div>
+
+      <!-- B. popular techniques -->
+      <h3>B · เทคนิคยอดนิยมจากนักพัฒนา</h3>
+      <div class="dgrid">
+        <div class="dcard"><div class="pick" style="margin-top:0">Plan → Review → Execute</div><div class="task" style="min-height:auto;margin-top:8px">ขอ plan ก่อน อนุมัติ แล้วค่อยให้ลงมือ — pattern self-correction ที่ลด error มากที่สุด</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">อ่านก่อนตอบ</div><div class="task" style="min-height:auto;margin-top:8px">"อ่านไฟล์/สเปกก่อน ห้ามเดาโค้ดที่ยังไม่เปิด" — กัน hallucination ได้ตรงจุด</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">ไม่แน่ใจให้บอก</div><div class="task" style="min-height:auto;margin-top:8px">สั่งชัดว่า "ถ้าไม่แน่ใจให้บอก ไม่เดา" ลดการมั่นใจผิด</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">แตกงานเป็นขั้น</div><div class="task" style="min-height:auto;margin-top:8px">งานใหญ่ chain เป็นขั้นย่อย ตรวจ output แต่ละขั้นได้</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">TDD + git เป็น state</div><div class="task" style="min-height:auto;margin-top:8px">ให้เขียน test ก่อน, ใช้ git log/commit เป็น checkpoint ข้าม session</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">คุม thinking</div><div class="task" style="min-height:auto;margin-top:8px">งานง่ายลด effort / "คิดเมื่อจำเป็นเท่านั้น" กัน overthinking เปลือง token</div></div>
+      </div>
+
+      <!-- C. pitfalls -->
+      <h3>C · ข้อควรระวัง</h3>
+      <div class="pf-grid">
+        <div class="pitfall">
+          <h4><span class="pf-i"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l9.5 16.5H2.5L12 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.5v4.5M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>Hallucination</h4>
+          <p>อาจ "เดา" field, API, ฟังก์ชัน หรือ citation ที่ไม่มีจริง โดยเฉพาะเมื่อไม่มีข้อมูลอ้างอิง</p>
+          <div class="fix"><b>แก้:</b> แนบ source of truth (Bruno spec), สั่ง "อ่านก่อนตอบ ห้ามเดา", ขอ citation/quote</div>
+        </div>
+        <div class="pitfall">
+          <h4><span class="pf-i"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l9.5 16.5H2.5L12 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.5v4.5M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>Knowledge cutoff</h4>
+          <p>ความรู้มีวันตัดรอบ ข้อมูลเวอร์ชันใหม่/ราคา/ข่าวอาจล้าสมัย</p>
+          <div class="fix"><b>แก้:</b> เปิด Web search สำหรับข้อมูลปัจจุบัน อย่าเชื่อเวอร์ชัน library จากความจำ</div>
+        </div>
+        <div class="pitfall">
+          <h4><span class="pf-i"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l9.5 16.5H2.5L12 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.5v4.5M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>มั่นใจแต่ผิด</h4>
+          <p>น้ำเสียงมั่นใจไม่ได้แปลว่าถูก — โค้ดที่ดู "เป๊ะ" อาจมีบั๊กซ่อน</p>
+          <div class="fix"><b>แก้:</b> ตรวจทานทุกครั้ง, ขอให้ flag จุดที่ไม่แน่ใจ, ขอ counterargument</div>
+        </div>
+        <div class="pitfall">
+          <h4><span class="pf-i"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l9.5 16.5H2.5L12 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.5v4.5M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>API เก่า / รันไม่ได้</h4>
+          <p>อาจใช้ syntax หรือ API ที่ deprecated แล้ว โดยเฉพาะ framework ที่เปลี่ยนเร็ว</p>
+          <div class="fix"><b>แก้:</b> ลองรันจริง/type-check, ระบุเวอร์ชันที่ใช้ (Vue 3.5, Nuxt 4) ใน prompt</div>
+        </div>
+        <div class="pitfall">
+          <h4><span class="pf-i"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l9.5 16.5H2.5L12 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.5v4.5M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>Overengineering</h4>
+          <p>โมเดลใหม่บางครั้งเพิ่มไฟล์/abstraction/ความยืดหยุ่นที่ไม่ได้ขอ</p>
+          <div class="fix"><b>แก้:</b> สั่ง "แก้เฉพาะที่ขอ ไม่เพิ่ม feature/refactor เกิน keep minimal"</div>
+        </div>
+        <div class="pitfall">
+          <h4><span class="pf-i"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l9.5 16.5H2.5L12 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.5v4.5M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>เออออตามง่าย</h4>
+          <p>อาจเห็นด้วยกับคุณเร็วเกินไปแม้คุณจะเข้าใจผิด</p>
+          <div class="fix"><b>แก้:</b> ถามแบบเปิด "วิธีนี้มีข้อเสียอะไร" แทน "วิธีนี้ดีไหม", ขอให้เถียงกลับ</div>
+        </div>
+        <div class="pitfall">
+          <h4><span class="pf-i"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l9.5 16.5H2.5L12 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.5v4.5M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>Context ยาวเกิน</h4>
+          <p>แชทยาวมากๆ คุณภาพอาจตก / มองข้ามข้อมูลกลางบทสนทนา</p>
+          <div class="fix"><b>แก้:</b> เริ่มแชทใหม่/<code>/clear</code> เมื่อเปลี่ยนเรื่อง, วางข้อมูลสำคัญไว้บนสุด</div>
+        </div>
+        <div class="pitfall">
+          <h4><span class="pf-i"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l9.5 16.5H2.5L12 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.5v4.5M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>เทคนิคเก่าใช้ไม่ได้</h4>
+          <p>Prefill (เติมคำตอบฝั่ง assistant) ถูกยกเลิกบนโมเดล 4.6+ แล้ว และคำสั่งกดดันแบบ "CRITICAL: MUST" อาจทำให้ overtrigger</p>
+          <div class="fix"><b>แก้:</b> ใช้ instruction ปกติ "Use this tool when…" แทนคำสั่งดุๆ</div>
+        </div>
+      </div>
+
+      <!-- D. limitations -->
+      <h3>D · ขีดจำกัดที่ต้องรู้</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ขีดจำกัด</th><th>ผลกระทบ</th><th>รับมือ</th></tr></thead>
+          <tbody>
+            <tr><td><b>Context window</b></td><td>ใส่ข้อมูลได้จำกัด แชทยาวจะเริ่มลืมต้นบทสนทนา</td><td>/clear, แยกแชทตามงาน, ใช้ Project/ไฟล์เก็บ state</td></tr>
+            <tr><td><b>Rate / usage limit</b></td><td>Effort สูงและโมเดลแรงกิน limit เร็วกว่ามาก</td><td>ใช้ Haiku/Sonnet + Low/Medium กับงานทั่วไป สงวน Opus/Max ไว้งานยาก</td></tr>
+            <tr><td><b>ไม่มี real-time</b></td><td>ไม่รู้ข้อมูลปัจจุบันถ้าไม่เปิด search</td><td>เปิด Web search / Research เมื่อต้องการข้อมูลสด</td></tr>
+            <tr><td><b>คณิต/นับตัวอักษร</b></td><td>การคำนวณละเอียดหรือการนับเป๊ะๆ อาจพลาด</td><td>ใช้ code execution ให้รันคำนวณจริงแทนการเดา</td></tr>
+            <tr><td><b>รันโค้ดในแชท</b></td><td>แชทปกติไม่ได้รันโค้ดให้จริง</td><td>เปิด code execution หรือรันเองในเครื่อง/CI</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- E. optimization -->
+      <h3>E · เพิ่มประสิทธิภาพ</h3>
+      <div class="dgrid">
+        <div class="dcard"><div class="task" style="min-height:auto">จับคู่ model + effort กับงาน ไม่ใช้ของแรงกับงานง่าย</div></div>
+        <div class="dcard"><div class="task" style="min-height:auto">เก็บ context ให้สะอาด /clear ระหว่างงานที่ไม่เกี่ยวกัน</div></div>
+        <div class="dcard"><div class="task" style="min-height:auto">วางเอกสารยาวไว้บน คำถามไว้ล่าง (+30% ในงานหลายเอกสาร)</div></div>
+        <div class="dcard"><div class="task" style="min-height:auto">ให้ source of truth เสมอ (Bruno spec) ลดการเดา</div></div>
+        <div class="dcard"><div class="task" style="min-height:auto">ใช้ few-shot + XML คุม format ให้คงที่</div></div>
+        <div class="dcard"><div class="task" style="min-height:auto">ระบุ output format ที่ต้องการชัดเจน + ขอ plan ก่อนลงมือ</div></div>
+      </div>
+
+      <!-- F. verification -->
+      <h3>F · ตรวจทานให้ถูกต้อง (ตรวจสอบได้)</h3>
+      <p class="sec-sub" style="margin-bottom:14px">ผลลัพธ์จาก AI ต้องตรวจทานเสมอก่อนใช้จริง — เช็คตามรายการนี้</p>
+      <ul class="vcheck">
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>โค้ดรันได้จริง</b> — มี import ครบ ผ่าน type-check/lint ลองรันก่อน merge</div></li>
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ตรงกับ source of truth</b> — field/endpoint ตรง Bruno spec ไม่มีอะไรที่ Claude เดาขึ้นเอง</div></li>
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ไม่ใช้ API deprecated</b> — เช็คว่าตรงกับเวอร์ชันที่โปรเจกต์ใช้จริง</div></li>
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ให้ Claude self-check แล้ว</b> — สั่งตรวจคำตอบกับเกณฑ์/test ก่อนปิดงาน</div></li>
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ข้อมูล factual ตรวจสอบได้</b> — ผ่าน web search หรือมี citation ที่เปิดดูได้จริง</div></li>
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ผ่าน test / CI</b> — มี test ครอบ logic สำคัญ ไม่ใช่แค่ผ่าน case เดียว</div></li>
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>review diff ก่อน commit</b> — อ่านทุกบรรทัดที่เปลี่ยน อย่า commit แบบไม่ดู (บทบาท decision-maker)</div></li>
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ถามจุดที่ไม่แน่ใจ</b> — "มีตรงไหนที่ไม่มั่นใจหรือ assume ไว้บ้าง" ก่อนนำไปใช้</div></li>
+      </ul>
+
+      <div class="code-block">
+        <div class="cb-head"><span class="cb-title">prompt ตรวจทาน (วางท้ายงานสำคัญ)</span><button class="cb-copy" data-copy="ก่อนสรุป ให้ทำสิ่งต่อไปนี้:
+1. ตรวจโค้ดว่ามี import ครบและรันได้จริง พร้อมระบุวิธีรัน/test
+2. ชี้จุดที่คุณ assume หรือไม่แน่ใจ และจุดที่อาจ break
+3. ยืนยันว่า field/endpoint ทุกตัวตรงกับสเปกที่ผมให้ ไม่มีตัวที่เดาเอง
+4. ถ้ามีส่วนที่ใช้ API ซึ่งอาจ deprecated ให้บอก
+ห้ามรับรองว่า 'ถูกต้องแน่นอน' ถ้ายังไม่ได้ตรวจ">คัดลอก</button></div>
+<pre><code>ก่อนสรุป ให้ทำสิ่งต่อไปนี้:
+1. ตรวจโค้ดว่ามี import ครบและรันได้จริง
+   พร้อมระบุวิธีรัน/test
+2. ชี้จุดที่คุณ assume หรือไม่แน่ใจ และจุดที่อาจ break
+3. ยืนยันว่า field/endpoint ทุกตัวตรงกับสเปกที่ผมให้
+   ไม่มีตัวที่เดาเอง
+4. ถ้าส่วนใดใช้ API ที่อาจ deprecated ให้บอก
+ห้ามรับรองว่า 'ถูกต้องแน่นอน' ถ้ายังไม่ได้ตรวจ</code></pre>
+      </div>
+
+      <div class="callout info">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <div>
+          <h4>หลักคิดสุดท้าย</h4>
+          <p>AI ช่วยให้คุณทำงานเร็วขึ้น แต่ <strong>ความรับผิดชอบต่อความถูกต้องยังเป็นของคุณ</strong> ในบทบาท manager/decision-maker — ใช้ Claude สร้าง draft และ explore ทางเลือก แล้วคุณตรวจทาน อนุมัติ และตัดสินใจ นี่คือ workflow ที่ปลอดภัยและได้ผลที่สุด</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 16 MASTERY MAP -->
+    <section id="masterymap">
+      <div class="sec-head">
+        <div class="sec-kicker">16 · โร้ดแมป</div>
+        <h2>Mastery Map — มือใหม่สู่ Power User</h2>
+        <p class="sec-sub">เส้นทาง 10 ขั้น 100 หัวข้อ เรียงจากพื้นฐานไปจนเชี่ยวชาญ พร้อมเป้าหมายของแต่ละขั้นและเฟรมเวิร์กสำคัญ ใช้เป็นแผนเรียนรู้ระยะยาวได้</p>
+      </div>
+
+      <div class="callout info">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <div>
+          <h4>หมายเหตุก่อนเริ่ม</h4>
+          <p>โร้ดแมปนี้เรียบเรียงจาก infographic ของชุมชน — เป็นกรอบเรียนรู้ที่ดี แต่บางจุดต้องเข้าใจให้ตรง: "Coworker" หมายถึง <strong>Claude Cowork</strong> (แอปทำงานเชิง agent), slash commands อย่าง <code>/explain</code> เป็น<strong>รูปแบบคำสั่งเชิงตัวอย่าง</strong>ที่พิมพ์เป็นคำขอได้หรือสร้างเป็น custom skill เอง ไม่ใช่คำสั่ง built-in ทั้งหมด, ส่วน Zapier/Make เป็นเครื่องมือ automation ภายนอกที่ต่อผ่าน integration/MCP</p>
+        </div>
+      </div>
+
+      <h3>ภาพรวม 10 ขั้น</h3>
+      <div class="stage-strip">
+        <div class="stage-pill"><span class="sp-n">1</span><span><span class="sp-t">Basics</span> <span class="sp-r">1–10</span></span></div>
+        <div class="stage-pill"><span class="sp-n">2</span><span><span class="sp-t">Prompting</span> <span class="sp-r">11–20</span></span></div>
+        <div class="stage-pill"><span class="sp-n">3</span><span><span class="sp-t">Artifacts</span> <span class="sp-r">21–30</span></span></div>
+        <div class="stage-pill"><span class="sp-n">4</span><span><span class="sp-t">Skills</span> <span class="sp-r">31–40</span></span></div>
+        <div class="stage-pill"><span class="sp-n">5</span><span><span class="sp-t">Coworker</span> <span class="sp-r">41–50</span></span></div>
+        <div class="stage-pill"><span class="sp-n">6</span><span><span class="sp-t">Connectors</span> <span class="sp-r">51–60</span></span></div>
+        <div class="stage-pill"><span class="sp-n">7</span><span><span class="sp-t">Automation</span> <span class="sp-r">61–70</span></span></div>
+        <div class="stage-pill"><span class="sp-n">8</span><span><span class="sp-t">Claude Code</span> <span class="sp-r">71–80</span></span></div>
+        <div class="stage-pill"><span class="sp-n">9</span><span><span class="sp-t">Use Cases</span> <span class="sp-r">81–90</span></span></div>
+        <div class="stage-pill"><span class="sp-n">10</span><span><span class="sp-t">Power User</span> <span class="sp-r">91–100</span></span></div>
+      </div>
+
+      <h3>รายละเอียดแต่ละขั้น</h3>
+      <div class="stage-grid">
+
+        <div class="stage-card">
+          <div class="sc-head"><div class="sc-num">1</div><div><div class="sc-t">Basics</div><div class="sc-r">หัวข้อ 1–10</div></div></div>
+          <ul class="sc-topics">
+            <li data-n="1">What is Claude</li><li data-n="2">Claude Models</li><li data-n="3">How Chats Work</li><li data-n="4">Context Window</li><li data-n="5">Best Use Cases</li><li data-n="6">Pricing &amp; Plans</li><li data-n="7">Interface Overview</li><li data-n="8">Settings ที่ควรรู้</li><li data-n="9">Keyboard Shortcuts</li><li data-n="10">Mobile &amp; Apps</li>
+          </ul>
+          <div class="sc-goal"><b>เป้าหมาย</b>ใช้ Claude ได้อย่างมีประสิทธิภาพ</div>
+        </div>
+
+        <div class="stage-card">
+          <div class="sc-head"><div class="sc-num">2</div><div><div class="sc-t">Prompting</div><div class="sc-r">หัวข้อ 11–20</div></div></div>
+          <ul class="sc-topics">
+            <li data-n="11">Role Prompting</li><li data-n="12">Context Stacking</li><li data-n="13">Chain-of-Thought</li><li data-n="14">Add Constraints</li><li data-n="15">Prompt Chaining</li><li data-n="16">Critique Outputs</li><li data-n="17">Rewrite Workflows</li><li data-n="18">System Prompts</li><li data-n="19">Reusable Templates</li>
+          </ul>
+          <div class="sc-goal"><b>เป้าหมาย</b>ทำให้ Claude คาดเดาได้</div>
+        </div>
+
+        <div class="stage-card">
+          <div class="sc-head"><div class="sc-num">3</div><div><div class="sc-t">Artifacts</div><div class="sc-r">หัวข้อ 21–30</div></div></div>
+          <ul class="sc-topics">
+            <li data-n="21">What are Artifacts</li><li data-n="22">When They Trigger</li><li data-n="23">Artifact Prompting</li><li data-n="24">Simple Projects</li><li data-n="25">Responsive Design</li><li data-n="26">Live Editing</li><li data-n="27">Debugging</li><li data-n="28">Frontend Basics</li><li data-n="29">React Prompting</li><li data-n="30">Build Mini Products</li>
+          </ul>
+          <div class="sc-goal"><b>เป้าหมาย</b>สร้าง output แบบโต้ตอบได้</div>
+        </div>
+
+        <div class="stage-card">
+          <div class="sc-head"><div class="sc-num">4</div><div><div class="sc-t">Skills</div><div class="sc-r">หัวข้อ 31–40</div></div></div>
+          <ul class="sc-topics">
+            <li data-n="31">What are Skills</li><li data-n="32">Skill Structure</li><li data-n="33">Writing Skills</li><li data-n="34">Research Skills</li><li data-n="35">Strategy Skills</li><li data-n="36">Skill Libraries</li><li data-n="37">Consistency</li><li data-n="38">Reduce Hallucination</li><li data-n="39">Workflow Specialization</li><li data-n="40">Start from Scratch</li>
+          </ul>
+          <div class="sc-goal"><b>เป้าหมาย</b>สร้าง AI workflow ที่ใช้ซ้ำได้</div>
+        </div>
+
+        <div class="stage-card">
+          <div class="sc-head"><div class="sc-num">5</div><div><div class="sc-t">Coworker</div><div class="sc-r">หัวข้อ 41–50</div></div></div>
+          <ul class="sc-topics">
+            <li data-n="41">What is Coworker</li><li data-n="42">Collaborate</li><li data-n="43">Reviewer</li><li data-n="44">Strategist</li><li data-n="45">Researcher</li><li data-n="46">Editor</li><li data-n="47">Teacher</li><li data-n="48">Planner</li><li data-n="49">Multi-role</li><li data-n="50">Operational Support</li>
+          </ul>
+          <div class="sc-goal"><b>เป้าหมาย</b>ใช้ Claude เป็นเพื่อนร่วมทีม</div>
+        </div>
+
+        <div class="stage-card">
+          <div class="sc-head"><div class="sc-num">6</div><div><div class="sc-t">Connectors</div><div class="sc-r">หัวข้อ 51–60</div></div></div>
+          <ul class="sc-topics">
+            <li data-n="51">What are Connectors</li><li data-n="52">Google Drive</li><li data-n="53">GitHub</li><li data-n="54">Notion</li><li data-n="55">Slack</li><li data-n="56">File Analysis</li><li data-n="57">Spreadsheet Analysis</li><li data-n="58">Connected Workflows</li><li data-n="59">Permissions Setup</li><li data-n="60">Access Your Data</li>
+          </ul>
+          <div class="sc-goal"><b>เป้าหมาย</b>เชื่อม Claude เข้ากับโลกของคุณ</div>
+        </div>
+
+        <div class="stage-card">
+          <div class="sc-head"><div class="sc-num">7</div><div><div class="sc-t">Automation</div><div class="sc-r">หัวข้อ 61–70</div></div></div>
+          <ul class="sc-topics">
+            <li data-n="61">What is MCP</li><li data-n="62">Why MCP Matters</li><li data-n="63">AI Agents</li><li data-n="64">Automation Chaining</li><li data-n="65">API Basics</li><li data-n="66">Zapier</li><li data-n="67">Make</li><li data-n="68">Memory Systems</li><li data-n="69">Guardrails</li><li data-n="70">Autonomous AI</li>
+          </ul>
+          <div class="sc-goal"><b>เป้าหมาย</b>ทำงานอัตโนมัติด้วย Claude</div>
+        </div>
+
+        <div class="stage-card">
+          <div class="sc-head"><div class="sc-num">8</div><div><div class="sc-t">Claude Code</div><div class="sc-r">หัวข้อ 71–80</div></div></div>
+          <ul class="sc-topics">
+            <li data-n="71">Claude Code Overview</li><li data-n="72">Explain Code Simply</li><li data-n="73">Debug Errors &amp; Fixes</li><li data-n="74">Refactor Code</li><li data-n="75">Full Stack Projects</li><li data-n="76">Unit Tests &amp; Analysis</li><li data-n="77">Best Practices</li><li data-n="78">Memory Systems</li><li data-n="79">Dev Workflow Tips</li><li data-n="80">Ship Better Code</li>
+          </ul>
+          <div class="sc-goal"><b>เป้าหมาย</b>ใช้ Claude กับงานพัฒนาจริง</div>
+        </div>
+
+        <div class="stage-card">
+          <div class="sc-head"><div class="sc-num">9</div><div><div class="sc-t">Use Cases</div><div class="sc-r">หัวข้อ 81–90</div></div></div>
+          <ul class="sc-topics">
+            <li data-n="✦">ครอบคลุมการประยุกต์ใช้จริงหลายด้าน</li><li data-n="✦">งานเขียน &amp; การตลาด</li><li data-n="✦">งานพัฒนา &amp; เทคนิค</li><li data-n="✦">งานวิจัย &amp; วิเคราะห์ข้อมูล</li><li data-n="✦">งานธุรกิจ &amp; ปฏิบัติการ</li><li data-n="✦">การเรียนรู้ &amp; การสอน</li>
+          </ul>
+          <div class="sc-goal"><b>เป้าหมาย</b>นำ Claude ไปใช้กับงานจริงทุกด้าน</div>
+        </div>
+
+        <div class="stage-card">
+          <div class="sc-head"><div class="sc-num">10</div><div><div class="sc-t">Power User</div><div class="sc-r">หัวข้อ 91–100</div></div></div>
+          <ul class="sc-topics">
+            <li data-n="91">Advanced Prompting</li><li data-n="92">Custom Workflows</li><li data-n="93">Multi-Agent Systems</li><li data-n="94">Advanced Integrations</li><li data-n="95">Scalable Systems</li><li data-n="96">Performance Tuning</li><li data-n="97">Deep Research Ops</li><li data-n="98">Business Automation</li><li data-n="99">Build Your Systems</li><li data-n="100">Master Claude</li>
+          </ul>
+          <div class="sc-goal"><b>เป้าหมาย</b>เป็น Power User ตัวจริง</div>
+        </div>
+
+      </div>
+
+      <!-- frameworks -->
+      <h3>เฟรมเวิร์กสำคัญจากแผนที่</h3>
+      <div class="two-col">
+        <div class="framework-card">
+          <h4><span class="fc-i"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>Perfect Prompt Formula</h4>
+          <div class="fw-row"><span class="k">ROLE</span><span class="v">ให้ Claude สวมบทบาทเป็นใคร</span></div>
+          <div class="fw-row"><span class="k">CONTEXT</span><span class="v">ภูมิหลัง กลุ่มเป้าหมาย สถานการณ์</span></div>
+          <div class="fw-row"><span class="k">TASK</span><span class="v">สิ่งที่ต้องการให้ทำ</span></div>
+          <div class="fw-row"><span class="k">CONSTRAINTS</span><span class="v">กฎ โทน ความยาว สไตล์</span></div>
+          <div class="fw-row"><span class="k">FORMAT</span><span class="v">รูปแบบ output ที่ต้องการ</span></div>
+        </div>
+        <div class="framework-card">
+          <h4><span class="fc-i"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>Skills Structure</h4>
+          <div class="fw-row"><span class="k">ROLE</span><span class="v">นิยามผู้เชี่ยวชาญที่ Claude สวมบท</span></div>
+          <div class="fw-row"><span class="k">RULES</span><span class="v">กฎที่ Claude ต้องทำตาม</span></div>
+          <div class="fw-row"><span class="k">WORKFLOW</span><span class="v">ขั้นตอนการทำงานทีละสเต็ป</span></div>
+          <div class="fw-row"><span class="k">EXAMPLES</span><span class="v">ตัวอย่างเพื่อความชัดเจน</span></div>
+          <div class="fw-row"><span class="k">OUTPUT</span><span class="v">หน้าตาผลลัพธ์ที่ต้องการ</span></div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="cb-head"><span class="cb-title">ตัวอย่าง Perfect Prompt (ปรับได้)</span><button class="cb-copy" data-copy="ROLE: ทำตัวเป็น senior frontend engineer สาย Vue/Nuxt
+CONTEXT: โปรเจกต์ Pedpro พอร์ทัลเกม ใช้ Vue 3 + TS strict + Naive UI + Tailwind v4
+TASK: เขียน composable สำหรับเรียก API ตั้งค่าบอท Line
+CONSTRAINTS: ไม่ใช้ any, ใช้ existing components, ยึด Bruno spec เป็น source of truth
+FORMAT: โค้ด TypeScript พร้อม import ครบ + อธิบายสั้นๆ ใต้โค้ด">คัดลอก</button></div>
+<pre><code><span class="c-key">ROLE:</span> senior frontend engineer สาย Vue/Nuxt
+<span class="c-key">CONTEXT:</span> Pedpro · Vue 3 + TS strict + Naive UI + Tailwind v4
+<span class="c-key">TASK:</span> เขียน composable เรียก API ตั้งค่าบอท Line
+<span class="c-key">CONSTRAINTS:</span> ไม่ใช้ any, ใช้ existing components,
+  ยึด Bruno spec เป็น source of truth
+<span class="c-key">FORMAT:</span> โค้ด TS พร้อม import ครบ + อธิบายสั้นใต้โค้ด</code></pre>
+      </div>
+
+      <div class="two-col">
+        <div class="framework-card">
+          <h4><span class="fc-i"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M4 19c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M16 6.5a3 3 0 010 5.5M18 19c0-2-.8-3.6-2-4.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>Coworker Modes</h4>
+          <div class="fw-tags"><span>Brainstormer</span><span>Strategist</span><span>Reviewer</span><span>Researcher</span><span>Editor</span><span>Teacher</span><span>Planner</span><span>Problem Solver</span></div>
+        </div>
+        <div class="framework-card">
+          <h4><span class="fc-i"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M3 9h18" stroke="currentColor" stroke-width="1.7"/></svg></span>Artifact Types</h4>
+          <div class="fw-tags"><span>Landing Page</span><span>Dashboard</span><span>Mini Apps</span><span>Calculators</span><span>Forms</span><span>Docs / PDFs</span><span>Code / Frontend</span><span>Diagrams</span></div>
+        </div>
+      </div>
+
+      <!-- beginner mistakes + ladder -->
+      <h3>กับดักมือใหม่ที่ควรเลี่ยง</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>กับดัก</th><th>ทำแทนด้วย</th></tr></thead>
+          <tbody>
+            <tr><td>ใช้ prompt กว้างคลุมเครือ</td><td>ระบุ ROLE/CONTEXT/TASK ให้ชัด</td></tr>
+            <tr><td>ไม่ให้ context</td><td>แนบสเปก/ตัวอย่าง/พื้นหลังเสมอ</td></tr>
+            <tr><td>ถามทุกอย่างทีเดียว</td><td>แตกเป็นขั้นย่อย chain ทีละสเต็ป</td></tr>
+            <tr><td>ไม่ทำซ้ำ/ปรับ (iterate)</td><td>ขอรอบสอง "ปรับให้ดีขึ้นโดย..."</td></tr>
+            <tr><td>ไม่กำหนด format</td><td>บอกรูปแบบ output ที่ต้องการ</td></tr>
+            <tr><td>เปิดแชทใหม่บ่อยเกินจำเป็น</td><td>อยู่แชทเดิมถ้ายัง context เดียวกัน</td></tr>
+            <tr><td>ไม่ใช้ตัวอย่าง</td><td>ใส่ few-shot 3–5 ตัวอย่าง</td></tr>
+            <tr><td>ไม่เซฟ prompt ที่ดี</td><td>เก็บเป็น template / custom skill</td></tr>
+            <tr><td>ใช้ artifacts/skills น้อยไป</td><td>ให้ Claude สร้างไฟล์/เครื่องมือจริง</td></tr>
+            <tr><td>เชื่อทุกอย่างโดยไม่ตรวจ</td><td>ตรวจทานตาม checklist หัวข้อ 15-F</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>เส้นทางเลเวลอัป</h3>
+      <div class="ladder">
+        <div class="ladder-step"><div class="ls-n">1</div><div class="ls-t">Learn Basics</div><div class="ls-d">ขั้น 1–3 · เข้าใจพื้นฐาน + prompting</div></div>
+        <div class="ladder-step"><div class="ls-n">2</div><div class="ls-t">Build Systems</div><div class="ls-d">ขั้น 4–5 · skills + coworker</div></div>
+        <div class="ladder-step"><div class="ls-n">3</div><div class="ls-t">Automate</div><div class="ls-d">ขั้น 6–7 · connectors + automation</div></div>
+        <div class="ladder-step"><div class="ls-n">4</div><div class="ls-t">Scale Systems</div><div class="ls-d">ขั้น 8–9 · Claude Code + use cases</div></div>
+        <div class="ladder-step peak"><div class="ls-n">★</div><div class="ls-t">Become Power User</div><div class="ls-d">ขั้น 10 · multi-agent + ระบบของคุณเอง</div></div>
+      </div>
+
+      <div class="callout ok">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div>
+          <h4>คุณอยู่ตรงไหนของแผนที่</h4>
+          <p>จากงาน Pedpro ที่ทำอยู่ — multi-agent orchestration, custom skills, CLAUDE.md, model routing — คุณอยู่ในโซน <strong>ขั้น 8–10 (Claude Code → Power User)</strong> แล้ว ขั้นที่เหลือคือการ scale ระบบและ build systems ของตัวเองให้ครบวงจร ซึ่งตรงกับทิศทาง OpenClaw ที่กำลังออกแบบอยู่พอดี</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17 DEEP FEATURES -->
+    <section id="deepfeatures">
+      <div class="sec-head">
+        <div class="sec-kicker">17 · ฟีเจอร์เชิงลึก</div>
+        <h2>Projects · Memory · Artifacts</h2>
+        <p class="sec-sub">สามฟีเจอร์ที่ยกระดับการใช้งานจริง แต่มักถูกมองข้าม — ทำความเข้าใจให้ใช้ได้เต็มที่</p>
+      </div>
+
+      <h3>Projects — พื้นที่งานที่มี context ร่วมกัน</h3>
+      <p>Project คือพื้นที่รวมหลายแชทที่แชร์ <strong>knowledge</strong> (ไฟล์/เอกสารที่อัปโหลด) และ <strong>custom instructions</strong> เดียวกัน ทุกแชทใน project จะเห็นข้อมูลพื้นหลังนั้นทันทีโดยไม่ต้องอธิบายซ้ำ</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ส่วนของ Project</th><th>ใช้ทำอะไร</th></tr></thead>
+          <tbody>
+            <tr><td><b>Project knowledge</b></td><td>อัปโหลดไฟล์อ้างอิงถาวร เช่น CLAUDE.md, coding convention, Bruno spec, design system</td></tr>
+            <tr><td><b>Project instructions</b></td><td>กำหนดพฤติกรรม/บทบาท/กฎที่ใช้กับทุกแชทใน project นี้</td></tr>
+            <tr><td><b>Chats ภายใน</b></td><td>แต่ละแชทแยกเรื่องกันได้ แต่ดึง knowledge ชุดเดียวกัน</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout ok">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div>
+          <h4>สำหรับ Pedpro</h4>
+          <p>สร้าง Project "Pedpro" ใส่ CLAUDE.md + convention + Bruno spec ไว้ใน knowledge แล้วทุกแชทเรื่อง Pedpro จะรู้บริบทโปรเจกต์ทันที — เหมาะกับงานที่ต่อเนื่องและต้องยึด context เดียวกัน</p>
+        </div>
+      </div>
+
+      <h3>Memory — Claude จำข้ามแชทได้</h3>
+      <p>เมื่อเปิด memory ไว้ Claude จะดึงข้อมูลที่เกี่ยวข้องจากแชทก่อนๆ มาทำให้บทสนทนาต่อเนื่องและเป็นส่วนตัวขึ้น โดยไม่ต้องเล่าซ้ำ จุดที่ควรรู้:</p>
+      <ul class="vcheck" style="margin-bottom:14px">
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ควบคุมได้</b> — สั่งให้ "จำว่า..." หรือ "ลืมเรื่อง..." และแก้ไขสิ่งที่จำได้ในตั้งค่า</div></li>
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>อัปเดตเป็นช่วง</b> — แชทล่าสุดมากๆ อาจยังไม่ถูกบันทึก และจะอัปเดตเป็นรอบ</div></li>
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ปิดได้ใน Incognito</b> — แชทแบบ Incognito จะไม่ใช้และไม่สร้าง memory</div></li>
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ค้นแชทเก่าได้</b> — ขอให้ Claude อ้างอิงสิ่งที่คุยไว้ก่อนหน้า ("ที่เราคุยเรื่อง... เมื่อวาน")</div></li>
+      </ul>
+
+      <h3>Artifacts — output ที่แก้และใช้ต่อได้</h3>
+      <p>Artifact คือผลงานที่แยกออกมาเป็นหน้าต่างของตัวเอง (เช่นโค้ด เอกสาร เว็บ React) ที่ดู แก้ และนำไปใช้ต่อได้ ต่างจากข้อความตอบทั่วไป — คู่มือที่คุณอ่านอยู่นี้ก็คือ artifact หนึ่ง</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>เรื่อง</th><th>รายละเอียด</th></tr></thead>
+          <tbody>
+            <tr><td><b>เด้งมาเมื่อไร</b></td><td>เมื่อ output เป็นชิ้นงานยาว/นำไปใช้ต่อ เช่น โค้ด เอกสาร รายงาน เว็บเพจ</td></tr>
+            <tr><td><b>แก้สดได้</b></td><td>สั่งแก้เป็นรอบ "เปลี่ยนสีปุ่มเป็น teal" Claude อัปเดต artifact ให้</td></tr>
+            <tr><td><b>React/HTML</b></td><td>สร้าง component หรือ mini app โต้ตอบได้จริงในหน้าต่าง artifact</td></tr>
+            <tr><td><b>เก็บ/แชร์</b></td><td>ดาวน์โหลดหรือเอาโค้ดไปใช้ต่อในโปรเจกต์จริงได้</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 18 SETTINGS / PLANS / PRIVACY -->
+    <section id="settings">
+      <div class="sec-head">
+        <div class="sec-kicker">18 · ตั้งค่า &amp; แพลน</div>
+        <h2>Settings · แพลน · ความเป็นส่วนตัว · Shortcuts</h2>
+        <p class="sec-sub">เรื่องรอบตัวที่ควรรู้เพื่อใช้งานได้คล่องและปลอดภัย</p>
+      </div>
+
+      <h3>ตั้งค่าที่ควรรู้จัก</h3>
+      <div class="dgrid">
+        <div class="dcard"><div class="pick" style="margin-top:0">Custom instructions</div><div class="task" style="min-height:auto;margin-top:8px">กำหนดบุคลิก/กฎการตอบที่ใช้กับทุกแชท (เช่นกฎ Pedpro)</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">Skills</div><div class="task" style="min-height:auto;margin-top:8px">เปิด/ปิด/สร้าง skill — ต้องเปิด code execution ก่อน</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">Connectors</div><div class="task" style="min-height:auto;margin-top:8px">จัดการการเชื่อมต่อ Google Drive, GitHub ฯลฯ</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">Data controls</div><div class="task" style="min-height:auto;margin-top:8px">ตั้งค่าการเก็บข้อมูล/การนำไปฝึกโมเดล และลบประวัติ</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">Memory</div><div class="task" style="min-height:auto;margin-top:8px">เปิด/ปิดความจำ และแก้ไขสิ่งที่ Claude จำ</div></div>
+        <div class="dcard"><div class="pick" style="margin-top:0">Incognito chat</div><div class="task" style="min-height:auto;margin-top:8px">แชทที่ไม่บันทึกประวัติและไม่ใช้ memory</div></div>
+      </div>
+
+      <h3>แพลน &amp; ขีดจำกัดการใช้งาน</h3>
+      <p>Claude มีหลายแพลน (Free, Pro, Max, Team, Enterprise) ต่างกันที่ปริมาณการใช้ การเข้าถึงโมเดลแรง และฟีเจอร์ทีม สิ่งที่ต้องเข้าใจเรื่อง limit:</p>
+      <div class="callout warn">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3l9.5 16.5H2.5L12 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.5v4.5M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <div>
+          <h4>limit ขึ้นกับอะไรบ้าง</h4>
+          <p>โมเดลแรง (Opus/Fable) + effort สูง (High/Max) + เปิด Thinking = กิน limit เร็วกว่ามาก · บทสนทนายาวและไฟล์แนบใหญ่ก็ใช้ token มากขึ้น · ตัวเลขแพลน/ราคาเปลี่ยนได้ ควรเช็คหน้าราคาทางการเสมอ (อย่าเชื่อตัวเลขจากความจำของ AI)</p>
+        </div>
+      </div>
+
+      <h3>ความเป็นส่วนตัว &amp; ความปลอดภัย</h3>
+      <ul class="vcheck" style="margin-bottom:14px">
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div>อย่าวางข้อมูลลับ เช่น API key, รหัสผ่าน, secret ลงในแชท (ใช้ตัวแปร/ตัวอย่างปลอมแทน)</div></li>
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div>ใช้ Incognito chat สำหรับเรื่องที่ไม่อยากให้บันทึกหรือเข้า memory</div></li>
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div>ตรวจการตั้งค่า data controls ว่าข้อมูลถูกใช้ฝึกโมเดลหรือไม่ ตามที่คุณต้องการ</div></li>
+        <li class="vc-item"><span class="vc-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div>ระวังให้สิทธิ์ connector เท่าที่จำเป็น (least privilege) โดยเฉพาะ repo/ไฟล์งาน</div></li>
+      </ul>
+
+      <h3>Keyboard shortcuts ที่ใช้บ่อย</h3>
+      <p class="sec-sub" style="margin-bottom:12px">Anthropic ไม่ได้รวม shortcut ไว้หน้าเดียวอย่างเป็นทางการ และบางปุ่มต่างกันตามแพลตฟอร์ม — ที่ใช้บ่อยและยืนยันได้:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>การทำงาน</th><th>Mac</th><th>Windows / Linux</th></tr></thead>
+          <tbody>
+            <tr><td>เปิด/ค้นหา (command palette)</td><td><code>⌘ K</code></td><td><code>Ctrl K</code></td></tr>
+            <tr><td>โฟกัสช่องพิมพ์</td><td><code>⌘ ⇧ ;</code></td><td><code>Ctrl ⇧ ;</code></td></tr>
+            <tr><td>แชทใหม่</td><td><code>⌘ ⇧ O</code></td><td><code>Ctrl ⇧ O</code></td></tr>
+            <tr><td>สลับ sidebar</td><td><code>⌘ .</code></td><td><code>Ctrl .</code></td></tr>
+            <tr><td>ส่งข้อความ / ขึ้นบรรทัดใหม่</td><td><code>Enter</code> / <code>⇧ Enter</code></td><td><code>Enter</code> / <code>⇧ Enter</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tech-src">เคล็ดลับ: shortcut หลายตัวทำงานเมื่อ cursor อยู่นอกช่องพิมพ์ · ตรวจ shortcut จริงในแอป (อาจต่างตามเวอร์ชัน)</div>
+    </section>
+
+    <!-- 19 FAQ -->
+    <section id="faq">
+      <div class="sec-head">
+        <div class="sec-kicker">19 · FAQ</div>
+        <h2>คำถามพบบ่อย &amp; แก้ปัญหา</h2>
+        <p class="sec-sub">รวมปัญหายอดฮิตและทางออก</p>
+      </div>
+      <div class="pf-grid">
+        <div class="pitfall" style="border-left-color:var(--info)">
+          <h4><span class="pf-i" style="color:var(--info)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-1 .7-1.5 1.2-1.5 2.5M12 17.5h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>คำตอบยาว/สั้นเกินไป?</h4>
+          <p>ปรับสไตล์ (Concise/Explanatory) หรือใส่ใน custom instructions เช่น "ตอบกระชับ เข้าเนื้อหาเลย"</p>
+        </div>
+        <div class="pitfall" style="border-left-color:var(--info)">
+          <h4><span class="pf-i" style="color:var(--info)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-1 .7-1.5 1.2-1.5 2.5M12 17.5h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>Claude เดาข้อมูลผิด?</h4>
+          <p>แนบ source of truth, สั่ง "อ่านก่อนตอบ ห้ามเดา", เปิด web search สำหรับข้อมูลปัจจุบัน (ดูหัวข้อ 15-C)</p>
+        </div>
+        <div class="pitfall" style="border-left-color:var(--info)">
+          <h4><span class="pf-i" style="color:var(--info)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-1 .7-1.5 1.2-1.5 2.5M12 17.5h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>ใช้ limit หมดเร็ว?</h4>
+          <p>ลดโมเดล (Sonnet/Haiku) + ลด effort, /clear แชทที่ไม่เกี่ยว, อย่าแนบไฟล์ใหญ่เกินจำเป็น</p>
+        </div>
+        <div class="pitfall" style="border-left-color:var(--info)">
+          <h4><span class="pf-i" style="color:var(--info)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-1 .7-1.5 1.2-1.5 2.5M12 17.5h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>ลืม context กลางทาง?</h4>
+          <p>บทสนทนายาวเกินไป — เริ่มแชทใหม่, ย้าย context สำคัญไป Project knowledge, วางข้อมูลหลักไว้ต้น prompt</p>
+        </div>
+        <div class="pitfall" style="border-left-color:var(--info)">
+          <h4><span class="pf-i" style="color:var(--info)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-1 .7-1.5 1.2-1.5 2.5M12 17.5h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>Skill ไม่ทำงาน?</h4>
+          <p>เช็คว่าเปิด code execution แล้ว และ skill ถูกเปิดใช้ใน Customize › Skills</p>
+        </div>
+        <div class="pitfall" style="border-left-color:var(--info)">
+          <h4><span class="pf-i" style="color:var(--info)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-1 .7-1.5 1.2-1.5 2.5M12 17.5h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>สไตล์เดิมหายไป?</h4>
+          <p>Concise/Explanatory/Formal กำลังถูกย้ายไป Skills — ใช้ custom skill + slash command แทน (ดูหัวข้อ 09)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 20 GLOSSARY -->
+    <section id="glossary">
+      <div class="sec-head">
+        <div class="sec-kicker">20 · คำศัพท์</div>
+        <h2>Glossary</h2>
+        <p class="sec-sub">คำศัพท์สำคัญที่ใช้ตลอดคู่มือนี้ รวมไว้ที่เดียว</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>คำ</th><th>ความหมาย</th></tr></thead>
+          <tbody>
+            <tr><td><b>Token</b></td><td>หน่วยย่อยของข้อความที่โมเดลประมวลผล (ประมาณ 1 คำ = 1–2 tokens) ใช้วัดปริมาณ input/output</td></tr>
+            <tr><td><b>Context window</b></td><td>ปริมาณข้อมูล (tokens) ที่ Claude "เห็น" ได้ในคราวเดียว ถ้าเกินจะเริ่มลืมส่วนต้น</td></tr>
+            <tr><td><b>Effort</b></td><td>ระดับความพยายามคิดก่อนตอบ (Low–Max) ยิ่งสูงยิ่งละเอียดแต่ช้า/กิน limit</td></tr>
+            <tr><td><b>Thinking</b></td><td>โหมดให้ Claude คิด/วางแผนก่อนตอบและแสดงกระบวนการคิด</td></tr>
+            <tr><td><b>Artifact</b></td><td>ผลงานที่แยกหน้าต่าง แก้และนำไปใช้ต่อได้ เช่นโค้ด เอกสาร เว็บ</td></tr>
+            <tr><td><b>Skill</b></td><td>โฟลเดอร์คำสั่ง/สคริปต์ที่ Claude โหลดมาใช้เมื่อเจองานที่ตรง</td></tr>
+            <tr><td><b>Connector</b></td><td>การเชื่อมต่อกับบริการภายนอก (Google Drive, GitHub ฯลฯ) ผ่าน MCP</td></tr>
+            <tr><td><b>MCP</b></td><td>Model Context Protocol — มาตรฐานเปิดให้ AI ต่อกับเครื่องมือ/ข้อมูลภายนอก</td></tr>
+            <tr><td><b>Project</b></td><td>พื้นที่รวมหลายแชทที่แชร์ knowledge และ instructions เดียวกัน</td></tr>
+            <tr><td><b>Memory</b></td><td>ความสามารถจำข้อมูลข้ามแชทเพื่อให้ต่อเนื่องและเป็นส่วนตัว</td></tr>
+            <tr><td><b>System prompt</b></td><td>คำสั่งระดับบนที่กำหนดบทบาท/พฤติกรรมโดยรวมของ Claude</td></tr>
+            <tr><td><b>Few-shot</b></td><td>การให้ตัวอย่าง input→output 2–5 ชุดเพื่อชี้นำรูปแบบคำตอบ</td></tr>
+            <tr><td><b>Hallucination</b></td><td>การที่โมเดล "แต่ง" ข้อมูลที่ฟังดูจริงแต่ไม่ถูกต้อง</td></tr>
+            <tr><td><b>Knowledge cutoff</b></td><td>วันตัดรอบความรู้ของโมเดล ข้อมูลหลังจากนั้นต้องค้นเว็บ</td></tr>
+            <tr><td><b>Subagent</b></td><td>เอเจนต์ย่อยที่ทำงานเฉพาะส่วนแล้วส่งผลกลับให้ตัวหลัก</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout ok" style="margin-top:22px">
+        <span class="ci"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div>
+          <h4>คู่มือฉบับนี้ครบแล้ว</h4>
+          <p>20 หัวข้อครอบคลุมตั้งแต่หน้าแรก โมเดล สไตล์ skills เทคนิค โร้ดแมป ไปจนถึงตั้งค่า ความเป็นส่วนตัว และคำศัพท์ · ฟีเจอร์ของ Claude อัปเดตเรื่อยๆ แนะนำให้เช็คในแอปและเอกสารทางการเป็นระยะ</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<button class="to-top" id="toTop" aria-label="กลับขึ้นบนสุด" title="กลับขึ้นบน">
+  <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-inner">
+    <div>
+      <h4>เกี่ยวกับคู่มือนี้</h4>
+      <p>รวบรวมเมนูทั้งหมดของ Claude พร้อมการเปลี่ยนแปลงล่าสุดเรื่องการย้าย Styles ไปเป็น Skills เนื้อหาทางการอ้างอิงจาก Claude Help Center ตรวจสอบ ณ มิถุนายน 2026 — ฟีเจอร์อาจเปลี่ยนแปลงได้ ควรตรวจสอบในแอปอีกครั้ง</p>
+      <p class="foot-meta">สร้างเพื่อใช้งานส่วนตัว · นำขึ้นเว็บได้ทันที (ไฟล์เดียวจบ ไม่มี dependency)</p>
+    </div>
+    <div>
+      <h4>แหล่งอ้างอิงทางการ</h4>
+      <ul>
+        <li><a href="https://support.claude.com/en/articles/10181068-styles-are-moving-to-skills" target="_blank" rel="noopener">Styles are moving to skills</a></li>
+        <li><a href="https://support.claude.com/en/articles/12512176-what-are-skills" target="_blank" rel="noopener">What are skills?</a></li>
+        <li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices" target="_blank" rel="noopener">Prompting best practices</a></li>
+        <li><a href="https://support.claude.com/en/articles/8664678-change-the-model-effort-and-thinking-settings" target="_blank" rel="noopener">Model, effort &amp; thinking settings</a></li>
+        <li><a href="https://claude.ai/customize/skills" target="_blank" rel="noopener">Customize › Skills</a></li>
+        <li><a href="https://agentskills.io" target="_blank" rel="noopener">Agent Skills open standard</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---- style explorer tabs ---- */
+  var tabs = document.querySelectorAll('.exp-tab');
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      var id = t.getAttribute('data-p');
+      tabs.forEach(function(x){ x.classList.remove('on'); });
+      t.classList.add('on');
+      document.querySelectorAll('.exp-panel').forEach(function(p){ p.classList.remove('on'); });
+      var panel = document.getElementById(id);
+      if(panel) panel.classList.add('on');
+    });
+  });
+
+  /* ---- replica jump-to-section ---- */
+  document.querySelectorAll('.rp-row.jump').forEach(function(r){
+    r.addEventListener('click', function(){
+      var go = r.getAttribute('data-go');
+      var el = document.getElementById(go);
+      if(el){
+        el.scrollIntoView({behavior:'smooth', block:'center'});
+        el.style.transition = 'box-shadow .4s, border-color .4s';
+        el.style.boxShadow = '0 0 0 3px rgba(204,120,92,.35)';
+        setTimeout(function(){ el.style.boxShadow=''; }, 1300);
+      }
+    });
+  });
+
+  /* ---- copy buttons ---- */
+  document.querySelectorAll('.cb-copy').forEach(function(b){
+    b.addEventListener('click', function(){
+      var txt = b.getAttribute('data-copy');
+      navigator.clipboard.writeText(txt).then(function(){
+        var old = b.textContent;
+        b.textContent = '✓ คัดลอกแล้ว';
+        b.classList.add('copied');
+        setTimeout(function(){ b.textContent = old; b.classList.remove('copied'); }, 1600);
+      }).catch(function(){
+        b.textContent = 'คัดลอกไม่สำเร็จ';
+      });
+    });
+  });
+
+  /* ---- active TOC on scroll ---- */
+  var links = document.querySelectorAll('nav.toc a[data-t]');
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        links.forEach(function(a){ a.classList.remove('active'); });
+        var a = map[e.target.id];
+        if(a) a.classList.add('active');
+      }
+    });
+  }, {rootMargin:'-20% 0px -70% 0px', threshold:0});
+  document.querySelectorAll('main section[id]').forEach(function(s){ obs.observe(s); });
+
+  /* ---- workshop checkboxes + progress ---- */
+  var STORE = 'claude-guide-ws-v1';
+  var steps = Array.prototype.slice.call(document.querySelectorAll('.ws-step'));
+  steps.forEach(function(s,i){ s.setAttribute('data-i', i); });
+
+  function loadState(){
+    try{ var raw = localStorage.getItem(STORE); return raw ? JSON.parse(raw) : {}; }
+    catch(e){ return {}; }
+  }
+  function saveState(state){
+    try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){/* hosted-only persistence */}
+  }
+  var state = loadState();
+
+  function refresh(){
+    var done = 0;
+    steps.forEach(function(s,i){
+      if(state[i]){ s.classList.add('done'); done++; }
+      else { s.classList.remove('done'); }
+    });
+    var total = steps.length;
+    var pct = total ? Math.round(done/total*100) : 0;
+    var fill = document.getElementById('wsFill');
+    var pctEl = document.getElementById('wsPct');
+    var cntEl = document.getElementById('wsCount');
+    if(fill) fill.style.width = pct + '%';
+    if(pctEl) pctEl.textContent = pct + '%';
+    if(cntEl) cntEl.textContent = done + ' / ' + total;
+  }
+
+  steps.forEach(function(s,i){
+    s.addEventListener('click', function(e){
+      if(e.target.closest('a')) return; /* let inline links work */
+      state[i] = !state[i];
+      saveState(state);
+      refresh();
+    });
+  });
+
+  var resetBtn = document.getElementById('wsReset');
+  if(resetBtn){
+    resetBtn.addEventListener('click', function(){
+      state = {};
+      saveState(state);
+      refresh();
+    });
+  }
+  refresh();
+
+  /* ---- theme toggle ---- */
+  var THEME = 'claude-guide-theme';
+  var root = document.documentElement;
+  try{ var saved = localStorage.getItem(THEME); if(saved==='dark') root.setAttribute('data-theme','dark'); }catch(e){}
+  var themeBtn = document.getElementById('themeBtn');
+  if(themeBtn){
+    themeBtn.addEventListener('click', function(){
+      var dark = root.getAttribute('data-theme')==='dark';
+      if(dark){ root.removeAttribute('data-theme'); } else { root.setAttribute('data-theme','dark'); }
+      try{ localStorage.setItem(THEME, dark?'light':'dark'); }catch(e){}
+    });
+  }
+
+  /* ---- back to top ---- */
+  var toTop = document.getElementById('toTop');
+  if(toTop){
+    window.addEventListener('scroll', function(){
+      if(window.scrollY > 600){ toTop.classList.add('show'); } else { toTop.classList.remove('show'); }
+    }, {passive:true});
+    toTop.addEventListener('click', function(){ window.scrollTo({top:0, behavior:'smooth'}); });
+  }
+})();
+</script>
+</body>
+</html>
