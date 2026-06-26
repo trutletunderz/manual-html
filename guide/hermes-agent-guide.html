@@ -251,7 +251,7 @@
 
       <div class="note gold">
         <span class="lbl">บริบทของนาย · context</span>
-        <b>นายเคยวางท่อ agentic pipeline ด้วย Hermes มาแล้ว</b> รอบนี้ผมเรียง flow ให้เน้นจุดที่ต่อกับงาน Pedpro ได้ทันที: <b>YouTrack-style task board → Kanban dispatcher</b>, <b>Telegram async gate approval</b>, และ <b>Docker/SSH sandbox</b> สำหรับ serialize human judgment ตามหลัก "parallelize agents, serialize human judgment" ที่นายใช้อยู่
+        <b>นายเคยวางท่อ agentic pipeline ด้วย Hermes มาแล้ว</b> รอบนี้ผมเรียง flow ให้เน้นจุดที่ต่อกับงาน xFish ได้ทันที: <b>YouTrack-style task board → Kanban dispatcher</b>, <b>Telegram async gate approval</b>, และ <b>Docker/SSH sandbox</b> สำหรับ serialize human judgment ตามหลัก "parallelize agents, serialize human judgment" ที่นายใช้อยู่
       </div>
     </section>
 
@@ -619,7 +619,7 @@ answer=$(<span class="k">hermes</span> <span class="f">-z</span> <span class="s"
   <span class="y">container_memory:</span> <span class="s">5120</span>             <span class="c"># MB</span></pre>
       </div>
 
-      <h4>SSH backend (remote server) <span class="en">ตรงกับ Pedpro VPS</span></h4>
+      <h4>SSH backend (remote server) <span class="en">ตรงกับ xFish VPS</span></h4>
       <div class="code">
         <div class="code-bar"><span class="lang">bash</span><span class="tag">.env</span><button class="copy">copy</button></div>
 <pre><span class="c"># ตั้งใน ~/.hermes/.env</span>
@@ -862,7 +862,7 @@ answer=$(<span class="k">hermes</span> <span class="f">-z</span> <span class="s"
 
       <div class="note gold">
         <span class="lbl">ก้าวต่อไป · next</span>
-        ลองวาง flow จริงของ Pedpro: (1) Kanban เป็น task queue, (2) Docker/SSH backend เป็น sandbox, (3) Telegram gateway + webhook เป็น async gate, (4) cron audit ความปลอดภัยทุกวัน แล้วต่อ Claude Code (Sonnet) เป็น builder ผ่าน custom endpoint / ACP — แล้วบอกผมได้ถ้าอยากให้ทำคู่มือเจาะลึกเฉพาะส่วน gateway↔gate approval สำหรับ pipeline สองประตูของนาย 55
+        ลองวาง flow จริงของ xFish: (1) Kanban เป็น task queue, (2) Docker/SSH backend เป็น sandbox, (3) Telegram gateway + webhook เป็น async gate, (4) cron audit ความปลอดภัยทุกวัน แล้วต่อ Claude Code (Sonnet) เป็น builder ผ่าน custom endpoint / ACP — แล้วบอกผมได้ถ้าอยากให้ทำคู่มือเจาะลึกเฉพาะส่วน gateway↔gate approval สำหรับ pipeline สองประตูของนาย 55
       </div>
     </section>
   </main>
