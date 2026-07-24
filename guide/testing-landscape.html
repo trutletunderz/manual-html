@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>แผนที่โลกของ Testing — The Tester's Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#08151a;
+  --ground-2:#0c1e25;
+  --surface:#102a33;
+  --surface-2:#143440;
+  --line:#1d454f;
+  --line-soft:#16343d;
+  --ink:#dfeceb;
+  --ink-dim:#8fa9ac;
+  --ink-faint:#647f84;
+  --amber:#e8a33d;
+  --teal:#4fb8a0;
+  --coral:#e5675f;
+  --violet:#9b8cd6;
+  --mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+  --body:"IBM Plex Sans Thai",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --display:"IBM Plex Sans Thai Looped","IBM Plex Sans Thai",sans-serif;
+  --rail:288px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{
+  margin:0;background:var(--ground);color:var(--ink);
+  font-family:var(--body);font-size:16px;line-height:1.72;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(900px 500px at 12% -8%, rgba(79,184,160,.10), transparent 62%),
+    radial-gradient(700px 420px at 92% 4%, rgba(232,163,61,.07), transparent 60%);
+}
+.wrap{position:relative;z-index:1}
+
+/* ---------- hero ---------- */
+.hero{
+  padding:clamp(38px,7vw,84px) clamp(18px,4vw,48px) clamp(28px,4vw,52px);
+  border-bottom:1px solid var(--line-soft);
+}
+.hero-inner{max-width:1180px;margin:0 auto}
+.eyebrow{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--teal);margin:0 0 18px;
+}
+h1{
+  font-family:var(--display);font-weight:700;
+  font-size:clamp(30px,5.4vw,54px);line-height:1.18;letter-spacing:-.015em;
+  margin:0 0 14px;max-width:17ch;
+}
+h1 em{font-style:normal;color:var(--amber)}
+.lede{
+  max-width:62ch;color:var(--ink-dim);font-size:clamp(15px,1.6vw,17.5px);
+  margin:0 0 34px;
+}
+
+/* ---------- signature: coverage matrix ---------- */
+.matrix-label{
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink-faint);margin:0 0 12px;
+}
+.matrix{
+  display:grid;gap:8px;
+  grid-template-columns:repeat(auto-fill,minmax(148px,1fr));
+  margin:0 0 22px;
+}
+.cell{
+  display:block;text-decoration:none;color:inherit;
+  border:1px solid var(--line-soft);border-radius:3px;
+  background:var(--ground-2);padding:11px 12px 12px;
+  position:relative;overflow:hidden;
+  transition:border-color .18s ease, transform .18s ease, background .18s ease;
+  opacity:0;animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;
+}
+@keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.cell::after{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ink-faint);
+}
+.cell:hover{border-color:var(--line);background:var(--surface);transform:translateY(-2px)}
+.cell:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.cell .code{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--ink-faint);
+  display:block;margin-bottom:3px;
+}
+.cell .nm{font-size:13.5px;line-height:1.35;font-weight:500;display:block}
+.cell .st{
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+  display:block;margin-top:7px;color:var(--ink-faint);
+}
+.s-have::after{background:var(--teal)}   .s-have .st{color:var(--teal)}
+.s-part::after{background:var(--amber)}  .s-part .st{color:var(--amber)}
+.s-gap::after{background:var(--coral)}   .s-gap .st{color:var(--coral)}
+.s-info::after{background:var(--violet)} .s-info .st{color:var(--violet)}
+
+.legend{
+  display:flex;flex-wrap:wrap;gap:8px 22px;
+  font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:.04em;
+}
+.legend b{font-weight:500;display:inline-flex;align-items:center;gap:7px}
+.dot{width:8px;height:8px;border-radius:1px;display:inline-block}
+
+/* ---------- layout ---------- */
+.shell{
+  max-width:1180px;margin:0 auto;
+  display:grid;grid-template-columns:var(--rail) minmax(0,1fr);gap:clamp(24px,4vw,56px);
+  padding:0 clamp(18px,4vw,48px) 120px;
+}
+@media (max-width:1023px){ .shell{grid-template-columns:minmax(0,1fr)} }
+
+/* ---------- rail ---------- */
+.rail{position:sticky;top:0;align-self:start;max-height:100vh;overflow-y:auto;padding:34px 0 40px}
+.rail::-webkit-scrollbar{width:5px}
+.rail::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+.rail h2{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink-faint);margin:0 0 14px;font-weight:500;
+}
+.rail a{
+  display:flex;gap:10px;align-items:baseline;
+  text-decoration:none;color:var(--ink-dim);font-size:13.5px;line-height:1.45;
+  padding:6px 10px 6px 12px;border-left:2px solid transparent;
+  transition:color .15s ease,border-color .15s ease;
+}
+.rail a .c{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);flex:0 0 22px;letter-spacing:.06em}
+.rail a:hover{color:var(--ink)}
+.rail a.on{color:var(--amber);border-left-color:var(--amber)}
+.rail a.on .c{color:var(--amber)}
+@media (max-width:1023px){
+  .rail{display:none;position:static;max-height:none;padding:18px 0 0}
+  .rail.open{display:block}
+  .navbtn{
+    display:block;position:sticky;top:0;z-index:20;width:100%;
+    background:var(--ground-2);color:var(--ink);border:0;border-bottom:1px solid var(--line-soft);
+    font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    padding:13px 18px;text-align:left;cursor:pointer;
+  }
+}
+@media (min-width:1024px){ .navbtn{display:none} }
+
+/* ---------- content ---------- */
+main{padding-top:34px;min-width:0;max-width:800px}
+section{padding:34px 0 8px;border-top:1px solid var(--line-soft)}
+section:first-of-type{border-top:0;padding-top:8px}
+.sec-code{
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--teal);
+  display:block;margin-bottom:9px;
+}
+h3{
+  font-family:var(--display);font-weight:600;
+  font-size:clamp(21px,2.9vw,28px);line-height:1.28;letter-spacing:-.01em;margin:0 0 6px;
+}
+.en{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;color:var(--ink-faint);margin:0 0 20px}
+h4{
+  font-family:var(--body);font-weight:600;font-size:16.5px;color:var(--amber);
+  margin:26px 0 8px;letter-spacing:-.005em;
+}
+p{margin:0 0 14px}
+main ul{margin:0 0 16px;padding-left:0;list-style:none}
+main ul li{
+  position:relative;padding-left:20px;margin-bottom:8px;
+}
+main ul li::before{
+  content:"·";position:absolute;left:6px;top:-1px;color:var(--teal);font-weight:700;
+}
+main ul ul{margin:8px 0 0}
+main ul ul li::before{content:"–";color:var(--ink-faint);font-size:12px;top:0}
+b,strong{font-weight:600;color:#f0f7f6}
+.term{font-family:var(--mono);font-size:13.5px;color:var(--teal);font-weight:500}
+a.ref{color:var(--violet);text-decoration:none;border-bottom:1px solid rgba(155,140,214,.35)}
+a.ref:hover{border-bottom-color:var(--violet)}
+
+.note{
+  border-left:2px solid var(--amber);background:rgba(232,163,61,.055);
+  padding:13px 16px;margin:18px 0;border-radius:0 3px 3px 0;
+}
+.note p:last-child{margin-bottom:0}
+.note .tag{
+  font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--amber);display:block;margin-bottom:6px;
+}
+.note.warn{border-left-color:var(--coral);background:rgba(229,103,95,.06)}
+.note.warn .tag{color:var(--coral)}
+
+table{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:14px}
+th,td{text-align:left;padding:9px 12px 9px 0;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-faint);font-weight:500;
+}
+td:first-child{color:#f0f7f6;font-weight:500;white-space:nowrap;padding-right:18px}
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+.codeblock{position:relative;margin:16px 0 20px}
+pre{
+  margin:0;background:var(--ground-2);border:1px solid var(--line-soft);border-radius:3px;
+  padding:16px 16px;overflow-x:auto;
+}
+code{font-family:var(--mono);font-size:12.8px;line-height:1.65;color:#cfe3e0}
+p code, li code, td code{
+  background:var(--surface);padding:1.5px 6px;border-radius:2px;font-size:12.6px;color:var(--teal);
+}
+.copy{
+  position:absolute;top:8px;right:8px;
+  background:var(--surface);color:var(--ink-dim);border:1px solid var(--line);
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  padding:5px 9px;border-radius:2px;cursor:pointer;transition:all .15s ease;
+}
+.copy:hover{color:var(--amber);border-color:var(--amber)}
+.copy.done{color:var(--teal);border-color:var(--teal)}
+
+.pill{
+  font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 7px;border-radius:2px;border:1px solid var(--line);color:var(--ink-faint);
+  margin-left:8px;vertical-align:2px;white-space:nowrap;display:inline-block;
+}
+.pill.have{color:var(--teal);border-color:rgba(79,184,160,.4)}
+.pill.part{color:var(--amber);border-color:rgba(232,163,61,.4)}
+.pill.gap{color:var(--coral);border-color:rgba(229,103,95,.4)}
+.pill.info{color:var(--violet);border-color:rgba(155,140,214,.4)}
+
+footer{
+  max-width:1180px;margin:0 auto;padding:26px clamp(18px,4vw,48px) 60px;
+  border-top:1px solid var(--line-soft);
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-faint);
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">Field Guide · ฉบับเต็ม</p>
+    <h1>แผนที่โลกของ <em>Testing</em> ทั้งใบ</h1>
+    <p class="lede">
+      15 อาณาเขตของงาน testing ตั้งแต่ระดับพื้นฐานจนถึงยุค agentic — พร้อมทำเครื่องหมายว่า
+      pedpro-pipeline ของคุณยืนอยู่ตรงไหนในแต่ละอาณาเขต แตะที่ช่องเพื่อกระโดดไปอ่าน
+    </p>
+
+    <p class="matrix-label">Coverage matrix — สถานะของคุณ</p>
+    <div class="matrix" id="matrix"></div>
+
+    <div class="legend">
+      <b><span class="dot" style="background:var(--teal)"></span>มีแล้ว / แข็ง</b>
+      <b><span class="dot" style="background:var(--amber)"></span>มีบางส่วน</b>
+      <b><span class="dot" style="background:var(--coral)"></span>ยังไม่มี</b>
+      <b><span class="dot" style="background:var(--violet)"></span>ความรู้พื้นฐาน</b>
+    </div>
+  </div>
+</header>
+
+<button class="navbtn" id="navbtn">☰ สารบัญ</button>
+
+<div class="shell">
+  <nav class="rail" id="rail">
+    <h2>สารบัญ</h2>
+    <div id="toc"></div>
+  </nav>
+
+  <main>
+
+  <!-- ============ LV ============ -->
+  <section id="lv">
+    <span class="sec-code">LV · 01</span>
+    <h3>ระดับของการทดสอบ<span class="pill part">มีบางส่วน</span></h3>
+    <p class="en">Test Levels</p>
+    <p>แกนแรกที่ทุกคนต้องเข้าใจ — "ทดสอบอะไร ในขอบเขตแค่ไหน" ยิ่งระดับต่ำ ยิ่งเร็วและชี้จุดพังได้แม่น ยิ่งระดับสูง ยิ่งใกล้ความจริงแต่ช้าและ debug ยาก</p>
+
+    <div class="tbl-scroll">
+    <table>
+      <tr><th>ระดับ</th><th>ขอบเขต</th><th>ตอบคำถามว่า</th></tr>
+      <tr><td>Unit</td><td>ฟังก์ชัน/คลาสเดียว ไม่มี I/O</td><td>ตรรกะถูกไหม</td></tr>
+      <tr><td>Component</td><td>Vue component เดี่ยว mount จริงแต่ mock API</td><td>render + interaction ถูกไหม</td></tr>
+      <tr><td>Integration</td><td>หลายโมดูลคุยกัน / แตะ DB จริง</td><td>ต่อกันแล้วพังไหม</td></tr>
+      <tr><td>Contract</td><td>ข้อตกลง request/response ระหว่าง FE–BE</td><td>สองฝั่งยังเข้าใจตรงกันไหม</td></tr>
+      <tr><td>System</td><td>ทั้งระบบทำงานร่วมกัน</td><td>ระบบทำงานตาม spec ไหม</td></tr>
+      <tr><td>E2E</td><td>ผ่าน browser จริง เหมือนผู้ใช้</td><td>ผู้ใช้ทำงานสำเร็จไหม</td></tr>
+      <tr><td>Acceptance / UAT</td><td>เจ้าของธุรกิจตรวจ</td><td>ตรงกับที่ขอไหม</td></tr>
+    </table>
+    </div>
+
+    <h4>ชนิดพิเศษที่จัดตามจุดประสงค์</h4>
+    <ul>
+      <li><span class="term">Smoke test</span> — ชุดเล็กมาก รันหลัง deploy ทันที ถ้าพังคือ rollback เลย ไม่ต้องดูอย่างอื่น</li>
+      <li><span class="term">Sanity test</span> — เช็กเฉพาะส่วนที่เพิ่งแก้ ว่าแก้แล้วใช้ได้จริง</li>
+      <li><span class="term">Regression test</span> — ชุดที่สะสมไว้กันของเก่าพัง ทุก bug ที่เจอควรกลายเป็น regression test หนึ่งตัว</li>
+      <li><span class="term">Confirmation test</span> — รัน test ที่เคย fail ซ้ำหลังแก้ เพื่อยืนยันว่าหายจริง</li>
+    </ul>
+
+    <div class="note">
+      <span class="tag">สำหรับ pedpro</span>
+      <p>Contract layer ของคุณคือ Bruno และเป็นจุดแข็ง — คนส่วนใหญ่ไม่มีชั้นนี้เลย แต่ชั้น <b>Component test</b> น่าจะบางที่สุด. Vue component ที่มี business logic ใน computed/watch ควรมี test ระดับ component ก่อน ไม่ใช่ปล่อยให้ E2E รับภาระทั้งหมด เพราะ E2E ที่ fail จะบอกแค่ "ปุ่มไม่ทำงาน" ไม่บอกว่า "computed คำนวณ discount ผิด"</p>
+    </div>
+  </section>
+
+  <!-- ============ SH ============ -->
+  <section id="sh">
+    <span class="sec-code">SH · 02</span>
+    <h3>รูปทรงของ test suite<span class="pill info">ความรู้พื้นฐาน</span></h3>
+    <p class="en">Test Shapes &amp; Distribution</p>
+    <p>สัดส่วนว่าจะลงทุนกับ test ระดับไหนเท่าไหร่ — เป็นเรื่องที่คนเถียงกันมาสิบกว่าปี และไม่มีคำตอบเดียว</p>
+    <ul>
+      <li><span class="term">Test Pyramid</span> (Mike Cohn) — unit เยอะสุด, E2E น้อยสุด เหมาะกับ backend ที่ logic อยู่ในโค้ด</li>
+      <li><span class="term">Testing Trophy</span> (Kent C. Dodds) — integration หนักสุด เหมาะกับ frontend เพราะ bug ส่วนใหญ่เกิดตรงรอยต่อ ไม่ใช่ในฟังก์ชัน</li>
+      <li><span class="term">Testing Honeycomb</span> (Spotify) — integration หนัก, unit บาง เหมาะกับ microservices</li>
+      <li><span class="term">Test Diamond</span> — บาง unit, หนา integration, บาง E2E</li>
+      <li><span class="term">Ice Cream Cone</span> — <b>anti-pattern</b> E2E เยอะสุด manual ทับข้างบน ช้าและ flake ตลอด</li>
+    </ul>
+    <div class="note">
+      <span class="tag">ความเห็น</span>
+      <p>สำหรับ Nuxt/Vue อย่าง pedpro — Trophy ถูกกว่า Pyramid. unit test ที่ทดสอบ <code>formatCurrency()</code> ให้ผ่าน 100% ไม่ได้ป้องกันอะไรเลย ในขณะที่ component test ที่ mount form จริงแล้วยิง MSW จับ bug ได้จริง</p>
+    </div>
+  </section>
+
+  <!-- ============ FN ============ -->
+  <section id="fn">
+    <span class="sec-code">FN · 03</span>
+    <h3>Functional testing<span class="pill have">แข็ง</span></h3>
+    <p class="en">ทดสอบว่า "ระบบทำสิ่งที่ควรทำ"</p>
+    <ul>
+      <li><span class="term">Positive testing</span> — happy path ทำงานถูก</li>
+      <li><span class="term">Negative testing</span> — ใส่ข้อมูลผิดแล้วต้อง error อย่างสุภาพ ไม่ใช่ crash</li>
+      <li><span class="term">Boundary testing</span> — ค่าขอบ 0, 1, max, max+1, ว่าง, null</li>
+      <li><span class="term">Error handling</span> — network timeout, 500, response shape ผิด</li>
+      <li><span class="term">Cross-browser / cross-device</span> — Chromium, WebKit, Firefox, viewport มือถือ</li>
+      <li><span class="term">Localization (L10n) &amp; Internationalization (i18n)</span> — ตัวอักษรไทยไม่ตัดคำ, ข้อความยาวล้นปุ่ม, พ.ศ. vs ค.ศ., timezone ICT</li>
+      <li><span class="term">Compatibility</span> — OS, browser version, screen density</li>
+    </ul>
+    <div class="note warn">
+      <span class="tag">กับดักภาษาไทยโดยเฉพาะ</span>
+      <p>สระลอย/วรรณยุกต์ซ้อน, การตัดคำที่ไม่มีช่องว่าง (word-break), การเรียงลำดับตัวอักษรไทย, และความยาวข้อความไทยที่มักสั้นกว่าอังกฤษ 20–30% ทำให้ layout ที่ทดสอบด้วยอังกฤษดูดีแต่ไทยเบี้ยว — ควรมี test case ที่ใช้ข้อความไทยจริง ไม่ใช่ lorem ipsum</p>
+    </div>
+  </section>
+
+  <!-- ============ NF ============ -->
+  <section id="nf">
+    <span class="sec-code">NF · 04</span>
+    <h3>Non-functional testing<span class="pill gap">ยังไม่มี</span></h3>
+    <p class="en">ทดสอบว่า "ระบบทำได้ดีแค่ไหน"</p>
+    <p>นี่คืออาณาเขตที่ทีมเล็กมองข้ามบ่อยที่สุด และเป็นที่ที่ปัญหาราคาแพงมักซ่อนอยู่</p>
+
+    <h4>Performance</h4>
+    <ul>
+      <li><span class="term">Load test</span> — โหลดปกติที่คาดไว้ ระบบยังไหวไหม</li>
+      <li><span class="term">Stress test</span> — ดันจนพัง เพื่อหาว่าพังที่จุดไหนและพังอย่างไร</li>
+      <li><span class="term">Spike test</span> — โหลดพุ่งฉับพลัน (เกมเปิดอีเวนต์, ประกาศผล)</li>
+      <li><span class="term">Soak / Endurance</span> — รันยาว 8–24 ชม. หา memory leak</li>
+      <li><span class="term">Scalability test</span> — เพิ่มเครื่องแล้ว throughput ขึ้นตามไหม</li>
+      <li><span class="term">Frontend perf</span> — Core Web Vitals (LCP/INP/CLS), bundle size budget, Lighthouse CI</li>
+    </ul>
+
+    <h4>Security</h4>
+    <ul>
+      <li><span class="term">SAST</span> — วิเคราะห์ source code แบบ static (Semgrep, SonarQube)</li>
+      <li><span class="term">DAST</span> — ยิงใส่ระบบที่รันอยู่จริง (OWASP ZAP, Burp)</li>
+      <li><span class="term">SCA</span> — สแกน dependency ที่มีช่องโหว่ (Snyk, Trivy, <code>pnpm audit</code>)</li>
+      <li><span class="term">Secret scanning</span> — token/key ที่หลุดเข้า repo (gitleaks, trufflehog)</li>
+      <li><span class="term">Penetration testing</span> — มนุษย์พยายามเจาะจริง</li>
+      <li><span class="term">Threat modeling</span> — STRIDE, attack tree ทำก่อนเขียนโค้ด ไม่ใช่หลัง</li>
+    </ul>
+
+    <h4>Accessibility (a11y)</h4>
+    <ul>
+      <li>มาตรฐาน <span class="term">WCAG 2.1/2.2</span> ระดับ A / AA / AAA</li>
+      <li>อัตโนมัติจับได้ ~30–40% เท่านั้น (axe-core, Pa11y, Lighthouse) ที่เหลือต้องมือ</li>
+      <li>ที่ต้องทดสอบด้วยมือ: keyboard-only navigation, focus order, screen reader (NVDA/VoiceOver), contrast จริงบนภาพพื้นหลัง</li>
+    </ul>
+
+    <h4>อื่นๆ ที่ควรรู้ว่ามีอยู่</h4>
+    <ul>
+      <li><span class="term">Usability testing</span> — คนจริงลองใช้ ดูว่างงตรงไหน</li>
+      <li><span class="term">Reliability / Resilience</span> — ตัด network, ทำ dependency ล่ม แล้วระบบ degrade อย่างสวยงามไหม</li>
+      <li><span class="term">Compliance testing</span> — PDPA (ไทย), GDPR, PCI-DSS สำหรับระบบที่แตะเงิน</li>
+      <li><span class="term">Installability / Recovery</span> — deploy แล้ว rollback ได้จริงไหม</li>
+    </ul>
+
+    <div class="note warn">
+      <span class="tag">ช่องโหว่ที่ชัดที่สุดของคุณ</span>
+      <p>Pedpro เป็นเกมพอร์ทัลที่มีผู้ใช้ไทยและน่าจะแตะข้อมูลส่วนบุคคล — <b>PDPA compliance</b> และ <b>secret scanning</b> คือสองอย่างที่ควรมีก่อนเรื่องอื่นในหมวดนี้ ส่วน load/spike test ค่อยว่ากันตอนมีอีเวนต์จริง</p>
+    </div>
+  </section>
+
+  <!-- ============ TD ============ -->
+  <section id="td">
+    <span class="sec-code">TD · 05</span>
+    <h3>เทคนิคออกแบบ test case<span class="pill part">มีบางส่วน</span></h3>
+    <p class="en">Test Design Techniques</p>
+    <p>ศาสตร์ที่ทำให้ "เขียน test 10 ตัว" ครอบคลุมกว่า "เขียน test 100 ตัวมั่วๆ" — และเป็นสิ่งที่ AI ยังทำได้ไม่ดีถ้าไม่บอกให้ทำ</p>
+
+    <h4>Black-box — ไม่ดูโค้ด ดูแค่ spec</h4>
+    <ul>
+      <li><span class="term">Equivalence Partitioning</span> — แบ่งข้อมูลเป็นกลุ่มที่ระบบปฏิบัติเหมือนกัน ทดสอบกลุ่มละตัว</li>
+      <li><span class="term">Boundary Value Analysis</span> — bug อยู่ที่ขอบเสมอ ทดสอบ min-1, min, min+1, max-1, max, max+1</li>
+      <li><span class="term">Decision Table</span> — เงื่อนไขหลายตัวผสมกัน ทำตารางว่า combination ไหนให้ผลอะไร</li>
+      <li><span class="term">State Transition</span> — ระบบมี state (ล็อกอิน → เลือกเกม → จ่ายเงิน) ทดสอบทุก transition ที่ถูกและที่ห้าม</li>
+      <li><span class="term">Pairwise / All-pairs</span> — แทนที่จะทดสอบทุก combination (ระเบิด) ทดสอบให้ทุกคู่ของค่าปรากฏอย่างน้อยครั้งเดียว ลดจำนวน case ได้ 10–100 เท่า</li>
+      <li><span class="term">Use case / Scenario testing</span> — ตาม flow ผู้ใช้จริง</li>
+      <li><span class="term">Error guessing</span> — เดาจากประสบการณ์ว่าตรงไหนมักพัง (ไม่เป็นระบบแต่ได้ผลจริง)</li>
+    </ul>
+
+    <h4>White-box — ดูโค้ด</h4>
+    <ul>
+      <li><span class="term">Statement coverage</span> — ทุกบรรทัดถูกรัน</li>
+      <li><span class="term">Branch coverage</span> — ทุก if ถูกรันทั้ง true และ false</li>
+      <li><span class="term">Condition / MC/DC coverage</span> — ทุกเงื่อนไขย่อยมีผลต่อผลลัพธ์ (ใช้ในการบิน/การแพทย์)</li>
+      <li><span class="term">Path coverage</span> — ทุกเส้นทางการทำงาน (ในทางปฏิบัติทำไม่ได้)</li>
+    </ul>
+
+    <h4>เทคนิคขั้นสูงที่ให้ผลตอบแทนสูงมาก</h4>
+    <ul>
+      <li><span class="term">Property-based testing</span> — แทนที่จะเขียน "input A ให้ output B" เขียนว่า "ไม่ว่า input อะไร คุณสมบัตินี้ต้องจริงเสมอ" แล้วให้เครื่องสุ่มยิงพันครั้ง <br><b>เครื่องมือ:</b> fast-check (JS/TS) — เหมาะมากกับ validation logic และ formatter</li>
+      <li><span class="term">Mutation testing</span> — แก้โค้ดจริงให้พังโดยเจตนา (เปลี่ยน <code>&gt;</code> เป็น <code>&gt;=</code>) แล้วดูว่า test จับได้ไหม ถ้าจับไม่ได้ = test นั้นไร้ค่า <br><b>นี่คือตัววัดคุณภาพ test ที่แท้จริง ไม่ใช่ code coverage</b></li>
+      <li><span class="term">Fuzzing</span> — ยิงข้อมูลขยะสุ่มเพื่อหา crash / ช่องโหว่</li>
+      <li><span class="term">Metamorphic testing</span> — ใช้เมื่อไม่รู้คำตอบที่ถูก แต่รู้ความสัมพันธ์ (เช่น เรียงข้อมูลใหม่แล้วผลลัพธ์ต้องเท่าเดิม) — เหมาะกับการทดสอบ AI/ML</li>
+      <li><span class="term">Model-based testing</span> — สร้างโมเดลของระบบ แล้วให้เครื่อง generate test case</li>
+      <li><span class="term">Snapshot / Approval testing</span> — บันทึก output ครั้งแรกเป็น baseline แล้วเทียบครั้งต่อไป</li>
+    </ul>
+
+    <div class="note">
+      <span class="tag">สำหรับ pedpro</span>
+      <p><b>Mutation testing (Stryker)</b> คือสิ่งที่ pipeline ที่ให้ AI เขียน test ต้องมี เพราะปัญหาใหญ่ที่สุดของ AI-generated test คือ tautological test — test ที่ผ่านเสมอไม่ว่าโค้ดจะถูกหรือผิด. Mutation score เป็นเกตเดียวที่จับเรื่องนี้ได้แบบ deterministic</p>
+    </div>
+  </section>
+
+  <!-- ============ DB ============ -->
+  <section id="db">
+    <span class="sec-code">DB · 06</span>
+    <h3>Test doubles<span class="pill part">มีบางส่วน</span></h3>
+    <p class="en">ของปลอมที่ใช้แทนของจริงตอนทดสอบ</p>
+    <p>คำศัพท์ชุดนี้มาจาก Gerard Meszaros และคนใช้ผิดกันเยอะมาก — โดยเฉพาะเรียก stub ว่า mock</p>
+    <div class="tbl-scroll">
+    <table>
+      <tr><th>ชนิด</th><th>ทำอะไร</th></tr>
+      <tr><td>Dummy</td><td>ส่งไปเพื่อให้ signature ครบ ไม่ได้ถูกใช้จริง</td></tr>
+      <tr><td>Stub</td><td>คืนค่าที่กำหนดไว้ล่วงหน้า ไม่สนใจว่าถูกเรียกยังไง</td></tr>
+      <tr><td>Spy</td><td>เหมือน stub แต่บันทึกว่าถูกเรียกกี่ครั้ง ด้วย argument อะไร</td></tr>
+      <tr><td>Mock</td><td>ตั้งความคาดหวังไว้ล่วงหน้า ถ้าไม่ถูกเรียกตามนั้น = fail</td></tr>
+      <tr><td>Fake</td><td>implementation จริงแต่ย่อส่วน (in-memory DB)</td></tr>
+    </table>
+    </div>
+    <div class="note warn">
+      <span class="tag">ปัญหาที่ต้องระวัง</span>
+      <p><b>Mock drift</b> — mock ที่เขียนไว้ตอน API เป็นแบบหนึ่ง แล้ว backend เปลี่ยน แต่ mock ไม่เปลี่ยน ผลคือ test ผ่านหมดแต่ production พัง. ทางแก้คือ mock ต้อง generate จาก contract (Bruno/OpenAPI) ไม่ใช่เขียนมือ — และ over-mocking ทำให้ test ทดสอบแค่ mock ของตัวเอง</p>
+    </div>
+  </section>
+
+  <!-- ============ AP ============ -->
+  <section id="ap">
+    <span class="sec-code">AP · 07</span>
+    <h3>แนวทางและปรัชญา<span class="pill part">มีบางส่วน</span></h3>
+    <p class="en">Approaches &amp; Philosophies</p>
+    <ul>
+      <li><span class="term">TDD</span> — Red → Green → Refactor เขียน test ก่อนโค้ด. ประโยชน์จริงไม่ใช่ "ได้ test" แต่คือมันบังคับให้ออกแบบ interface ก่อนลงมือ</li>
+      <li><span class="term">BDD</span> — เขียนพฤติกรรมด้วยภาษาธุรกิจ Given–When–Then (Gherkin/Cucumber) เพื่อให้คนไม่เขียนโค้ดอ่านออก</li>
+      <li><span class="term">ATDD</span> — ทีม dev + QA + business นั่งเขียน acceptance criteria ร่วมกันก่อนเริ่มงาน</li>
+      <li><span class="term">Specification by Example</span> — ใช้ตัวอย่างรูปธรรมแทนคำอธิบายนามธรรม แล้วตัวอย่างนั้นกลายเป็น test</li>
+      <li><span class="term">Exploratory testing</span> — มนุษย์สำรวจอย่างอิสระโดยไม่มี script ทำแบบมีวินัยเรียก <b>session-based test management</b> (กำหนดเวลา + charter + บันทึกผล) — ยังเป็นวิธีที่หา bug แปลกๆ ได้ดีที่สุด</li>
+      <li><span class="term">Risk-based testing</span> — จัดลำดับตาม (โอกาสพัง × ความเสียหาย) ทดสอบตรงที่เสี่ยงก่อน ไม่ใช่ทดสอบให้ทั่วเท่ากันหมด</li>
+      <li><span class="term">Shift-left</span> — ย้ายการทดสอบไปต้นน้ำ ทดสอบตั้งแต่ตอนเขียน requirement</li>
+      <li><span class="term">Shift-right</span> — ทดสอบต่อใน production ด้วย monitoring, canary, feature flag</li>
+    </ul>
+  </section>
+
+  <!-- ============ DE ============ -->
+  <section id="de">
+    <span class="sec-code">DE · 08</span>
+    <h3>ข้อมูลและสภาพแวดล้อม<span class="pill part">มีบางส่วน</span></h3>
+    <p class="en">Test Data &amp; Environments</p>
+    <p>เรื่องที่น่าเบื่อที่สุดแต่เป็นสาเหตุอันดับหนึ่งของ flaky test</p>
+    <ul>
+      <li><span class="term">Fixtures</span> — ข้อมูลตายตัวที่เตรียมไว้</li>
+      <li><span class="term">Factories / Builders</span> — ฟังก์ชันสร้างข้อมูลที่ override เฉพาะฟิลด์ที่สนใจ <code>makeUser({ role: "admin" })</code> — ดีกว่า fixture มาก เพราะ test อ่านแล้วรู้ว่าอะไรสำคัญ</li>
+      <li><span class="term">Object Mother</span> — ชุด preset ที่ตั้งชื่อตามสถานการณ์ <code>UserMother.suspended()</code></li>
+      <li><span class="term">Seeding</span> — ใส่ข้อมูลตั้งต้นเข้า DB ก่อนรัน</li>
+      <li><span class="term">Data anonymization / Synthetic data</span> — ห้ามเอาข้อมูลผู้ใช้จริงมาใช้ทดสอบ (PDPA) ต้อง mask หรือ generate ใหม่</li>
+      <li><span class="term">Testcontainers</span> — สปิน DB/Redis จริงใน Docker ต่อ test run</li>
+      <li><span class="term">Ephemeral environment</span> — สร้าง env ใหม่ต่อ PR แล้วทิ้ง (คุณทำอยู่แล้วด้วย cloudflared)</li>
+      <li><span class="term">Clock control</span> — freeze เวลา ไม่งั้น test ที่เกี่ยวกับวันที่จะพังตอนเที่ยงคืนหรือปีใหม่</li>
+      <li><span class="term">Seeded randomness</span> — สุ่มได้ แต่ต้อง reproduce ได้ด้วย seed เดิม</li>
+    </ul>
+    <div class="note warn">
+      <span class="tag">ตัวการ flake อันดับต้นๆ</span>
+      <p>เวลา, timezone, ลำดับการรัน test, ข้อมูลค้างจาก test ก่อนหน้า, และ network จริง — ห้าอย่างนี้อธิบาย flaky test ได้เกิน 80% ตัว <b>I</b> (Isolated) และ <b>R</b> (Repeatable) ใน F.I.R.S.T ที่คุณเพิ่งทำ workshop มา คือเรื่องนี้ตรงๆ</p>
+    </div>
+  </section>
+
+  <!-- ============ PR ============ -->
+  <section id="pr">
+    <span class="sec-code">PR · 09</span>
+    <h3>หลักการและทฤษฎี<span class="pill have">แข็ง</span></h3>
+    <p class="en">Principles &amp; Fallacies</p>
+
+    <h4>7 หลักการทดสอบ (ISTQB)</h4>
+    <ul>
+      <li>การทดสอบแสดงว่ามี bug ได้ แต่พิสูจน์ว่าไม่มี bug ไม่ได้</li>
+      <li><span class="term">Exhaustive testing is impossible</span> — ทดสอบทุกความเป็นไปได้ทำไม่ได้ ต้องเลือกด้วยความเสี่ยง</li>
+      <li><span class="term">Early testing</span> — ยิ่งเจอเร็ว ยิ่งถูก (ต้นทุนแก้เพิ่มแบบทวีคูณตามระยะ)</li>
+      <li><span class="term">Defect clustering</span> — bug กระจุกตัว 80% ของ bug อยู่ใน 20% ของโมดูล</li>
+      <li><span class="term">Pesticide paradox</span> — รัน test ชุดเดิมซ้ำๆ จะหยุดเจอ bug ใหม่ ต้องอัปเดต test เรื่อยๆ</li>
+      <li><span class="term">Context dependent</span> — วิธีทดสอบเกมกับทดสอบระบบธนาคารไม่เหมือนกัน</li>
+      <li><span class="term">Absence-of-errors fallacy</span> — ระบบไม่มี bug แต่ผิดโจทย์ ก็ไร้ประโยชน์อยู่ดี</li>
+    </ul>
+
+    <h4>แนวคิดสำคัญอื่นๆ</h4>
+    <ul>
+      <li><span class="term">Test Oracle problem</span> — เราจะรู้ได้ยังไงว่า "ผลลัพธ์ที่ถูก" คืออะไร? นี่คือปัญหาแกนกลางของการทดสอบ และเป็นเหตุผลว่าทำไม AI ที่เขียนทั้งโค้ดและ test ถึงอันตราย — มันเป็น oracle ให้ตัวเอง</li>
+      <li><span class="term">F.I.R.S.T (+U)</span> — Fast, Isolated, Repeatable, Self-validating, Timely (+ Understandable)</li>
+      <li><span class="term">AAA / Given-When-Then</span> — โครงสร้างมาตรฐานของ test หนึ่งตัว</li>
+      <li><span class="term">Test smells</span> — Eager test (ทดสอบหลายอย่างในตัวเดียว), Mystery guest (พึ่งไฟล์ภายนอก), Assertion roulette (assert หลายตัวไม่มีข้อความ), Conditional logic in test</li>
+      <li><span class="term">Goodhart's Law</span> — เมื่อตัววัดกลายเป็นเป้าหมาย มันจะเลิกเป็นตัววัดที่ดี (ดูหมวด Metrics)</li>
+    </ul>
+  </section>
+
+  <!-- ============ MT ============ -->
+  <section id="mt">
+    <span class="sec-code">MT · 10</span>
+    <h3>ตัวชี้วัดคุณภาพ<span class="pill part">มีบางส่วน</span></h3>
+    <p class="en">Quality Metrics</p>
+    <div class="tbl-scroll">
+    <table>
+      <tr><th>ตัววัด</th><th>บอกอะไร</th><th>ความน่าเชื่อถือ</th></tr>
+      <tr><td>Code coverage</td><td>โค้ดถูกรันกี่ %</td><td>ต่ำ — บอกแค่ "ถูกรัน" ไม่ได้บอกว่า "ถูกตรวจ"</td></tr>
+      <tr><td>Mutation score</td><td>test จับ bug ที่ปลูกไว้ได้กี่ %</td><td>สูงมาก — วัดคุณภาพ test จริง</td></tr>
+      <tr><td>Flake rate</td><td>test ให้ผลไม่คงที่กี่ %</td><td>สูง — เกิน 1% คือสัญญาณอันตราย</td></tr>
+      <tr><td>Escaped defect rate</td><td>bug ที่หลุดถึงผู้ใช้</td><td>สูงสุด — ตัวชี้วัดปลายทางที่แท้จริง</td></tr>
+      <tr><td>MTTD / MTTR</td><td>ใช้เวลาเท่าไหร่กว่าจะรู้ / กว่าจะแก้</td><td>สูง</td></tr>
+      <tr><td>Test execution time</td><td>รันนานแค่ไหน</td><td>สูง — ถ้าเกิน 10 นาทีคนจะเลิกรัน</td></tr>
+      <tr><td>Change failure rate</td><td>deploy แล้วพังกี่ % (DORA)</td><td>สูง</td></tr>
+      <tr><td>Defect density</td><td>bug ต่อ 1000 บรรทัด</td><td>ปานกลาง</td></tr>
+    </table>
+    </div>
+    <div class="note warn">
+      <span class="tag">อย่าตั้ง coverage เป็นเป้า</span>
+      <p>ทันทีที่บังคับ "coverage ต้อง 80%" คนและ AI จะเขียน test ที่รันโค้ดโดยไม่ assert อะไรเลย เพื่อดัน % ขึ้น. ใช้ coverage เป็นสัญญาณหาจุดที่ <em>ไม่มี</em> test เลย แล้วใช้ mutation score เป็นเกตจริง</p>
+    </div>
+    <div class="note">
+      <span class="tag">ของคุณ</span>
+      <p><code>blind_approve_rate</code> เป็นตัววัดที่ดีและหายาก — มันวัด "ความน่าเชื่อถือของ gate" ไม่ใช่ "ความครบของ test" ซึ่งเป็นคนละมิติ. คู่ที่ควรมีเพิ่มคือ <b>escaped defect rate</b> เพราะสองตัวนี้รวมกันบอกได้ว่า gate ของคุณเข้มพอดีหรือเข้มเกิน</p>
+    </div>
+  </section>
+
+  <!-- ============ CI ============ -->
+  <section id="ci">
+    <span class="sec-code">CI · 11</span>
+    <h3>วิศวกรรม test ใน CI/CD<span class="pill part">มีบางส่วน</span></h3>
+    <p class="en">Test Engineering in the Pipeline</p>
+    <ul>
+      <li><span class="term">Parallelization / Sharding</span> — แบ่ง test ไปหลาย worker พร้อมกัน</li>
+      <li><span class="term">Test Impact Analysis</span> — รันเฉพาะ test ที่เกี่ยวกับไฟล์ที่แก้ ลดเวลาได้มหาศาลในโปรเจกต์ใหญ่</li>
+      <li><span class="term">Flaky test quarantine</span> — แยก test ที่ไม่นิ่งออกไป ไม่ให้บล็อก merge แต่ต้องมี deadline ซ่อม</li>
+      <li><span class="term">Auto-retry</span> — ลองใหม่เมื่อ fail <b>อันตราย</b> เพราะซ่อน bug จริงที่เกิดเป็นครั้งคราว ควรใช้แค่ E2E และต้องนับ retry เป็น flake</li>
+      <li><span class="term">Fail-fast vs fail-late</span> — หยุดทันทีที่พัง (เร็ว) หรือรันต่อจนจบเพื่อเห็นภาพรวม (ข้อมูลครบ)</li>
+      <li><span class="term">Test artifacts</span> — trace, video, screenshot, HAR ที่เก็บไว้ตอน fail — สำคัญมากเมื่อ debug CI ที่ reproduce ในเครื่องไม่ได้</li>
+      <li><span class="term">Report formats</span> — JUnit XML (มาตรฐานกลาง), Allure, ReportPortal, Playwright HTML reporter</li>
+      <li><span class="term">Quality gate</span> — เงื่อนไข pass/fail ก่อน merge ควรเป็น deterministic ทั้งหมด</li>
+    </ul>
+    <div class="codeblock">
+      <button class="copy">คัดลอก</button>
+<pre><code># โครงสร้าง gate ที่แนะนำ — เรียงจากถูกไปแพง
+1. lint + typecheck        (~10s)   fail-fast
+2. unit + component test   (~60s)   coverage floor
+3. contract test (Bruno)   (~30s)   ห้าม drift
+4. security scan           (~45s)   gitleaks + audit + semgrep
+5. E2E smoke               (~3m)    เฉพาะ critical path
+6. visual regression       (~5m)    เฉพาะตอนจะเข้า main
+7. LLM review              (~2m)    advisory เท่านั้น ไม่ block
+8. human gate              —        คนตัดสิน</code></pre>
+    </div>
+    <p>หลักคือ <b>อะไรที่ตัดสินได้แบบ deterministic ต้องมาก่อน LLM เสมอ</b> เพราะ LLM มีต้นทุนแพงกว่า ช้ากว่า และให้คำตอบไม่คงที่ — เอาไว้ทำสิ่งที่ static analysis ทำไม่ได้เท่านั้น</p>
+  </section>
+
+  <!-- ============ PD ============ -->
+  <section id="pd">
+    <span class="sec-code">PD · 12</span>
+    <h3>ทดสอบบน production<span class="pill gap">ยังไม่มี</span></h3>
+    <p class="en">Testing in Production &amp; Shift-Right</p>
+    <p>ยอมรับความจริงว่า staging ไม่มีวันเหมือน production — จึงต้องมีกลไกทดสอบบนของจริงอย่างปลอดภัย</p>
+    <ul>
+      <li><span class="term">Feature flags</span> — ปล่อยโค้ดแต่ปิดฟีเจอร์ไว้ เปิดให้บางคนก่อน</li>
+      <li><span class="term">Canary release</span> — ปล่อยให้ผู้ใช้ 1–5% ก่อน ดู error rate แล้วค่อยขยาย</li>
+      <li><span class="term">Blue-green deploy</span> — สลับ traffic ทั้งก้อน rollback ได้ทันที</li>
+      <li><span class="term">Dark launch</span> — รันโค้ดใหม่ขนานกับของเก่า แต่ไม่ใช้ผลลัพธ์ เอาไว้เทียบ</li>
+      <li><span class="term">Synthetic monitoring</span> — รัน E2E script ยิงใส่ production ทุก 5 นาที</li>
+      <li><span class="term">RUM (Real User Monitoring)</span> — เก็บ performance/error จากเบราว์เซอร์ผู้ใช้จริง</li>
+      <li><span class="term">Error tracking</span> — Sentry และเพื่อน</li>
+      <li><span class="term">Chaos engineering</span> — จงใจทำให้พัง (ตัด network, kill pod) เพื่อพิสูจน์ว่าระบบทน</li>
+      <li><span class="term">A/B testing</span> — ทดสอบสมมติฐานทางธุรกิจ ไม่ใช่ความถูกต้องของโค้ด</li>
+    </ul>
+    <div class="note">
+      <span class="tag">สำหรับ pedpro</span>
+      <p>สิ่งที่คุ้มที่สุดในหมวดนี้สำหรับทีมเดี่ยวคือ <b>synthetic monitoring</b> — เอา Playwright smoke test ที่มีอยู่แล้ว รันบน Cloud Run ทุก 5 นาทียิงใส่ production แล้วส่งเข้า Telegram channel เดิม. แทบไม่ต้องเขียนอะไรใหม่ ได้ MTTD ลดจากหลักชั่วโมงเหลือหลักนาที</p>
+    </div>
+  </section>
+
+  <!-- ============ AI ============ -->
+  <section id="ai">
+    <span class="sec-code">AI · 13</span>
+    <h3>Testing ยุค agentic<span class="pill have">แข็ง</span></h3>
+    <p class="en">AI-era Testing</p>
+    <h4>สิ่งที่ AI ทำได้ดีจริง</h4>
+    <ul>
+      <li>แปลง acceptance criteria เป็นโครง test case (โดยเฉพาะ boundary + negative case ที่คนขี้เกียจเขียน)</li>
+      <li>สำรวจ UI ด้วย Playwright MCP แล้วดึง selector จริงจาก DOM แทนการเดา</li>
+      <li>อธิบายว่า visual diff ที่เกิดขึ้น "แปลว่าอะไร" ไม่ใช่แค่บอกว่าต่างกี่พิกเซล</li>
+      <li>Self-healing locator — ซ่อม selector ที่พังเพราะ DOM เปลี่ยน</li>
+      <li>Triage — จัดกลุ่ม test ที่ fail ว่าเป็นสาเหตุเดียวกันไหม</li>
+      <li>LLM-as-judge สำหรับสิ่งที่ assert ตรงๆ ไม่ได้ (ข้อความอ่านรู้เรื่องไหม, layout ดูปกติไหม)</li>
+    </ul>
+    <h4>ความเสี่ยงเฉพาะของยุคนี้</h4>
+    <ul>
+      <li><b>Tautological test</b> — AI อ่านโค้ดแล้วเขียน test ที่สะท้อนโค้ด ถ้าโค้ดมี bug test ก็ยืนยัน bug</li>
+      <li><b>Over-mocking</b> — AI ชอบ mock ทุกอย่างจนเหลือแต่การทดสอบ mock ของตัวเอง</li>
+      <li><b>Coverage theater</b> — test เยอะ ตัวเลขสวย แต่ mutation score ต่ำ</li>
+      <li><b>Oracle collapse</b> — agent เดียวเขียนทั้ง spec, code, test → ไม่มีใครตรวจสอบใคร</li>
+      <li><b>Selector drift</b> — self-healing ที่ซ่อมมากเกินไปจะกลบ regression จริง</li>
+    </ul>
+    <div class="note warn">
+      <span class="tag">กฎเหล็กข้อเดียว</span>
+      <p>Test spec ต้องมาจากแหล่งที่ <b>ไม่ใช่ implementation</b> — คือจาก contract, acceptance criteria, หรือ user story และต้องถูกล็อกไว้ก่อนที่โค้ดจะถูกเขียน. ถ้า test เกิดหลังโค้ดโดย agent เดียวกัน คุณไม่ได้มี test คุณมีเอกสารประกอบโค้ด</p>
+    </div>
+  </section>
+
+  <!-- ============ TL ============ -->
+  <section id="tl">
+    <span class="sec-code">TL · 14</span>
+    <h3>ภูมิทัศน์เครื่องมือ<span class="pill info">อ้างอิง</span></h3>
+    <p class="en">Tool Landscape</p>
+    <div class="tbl-scroll">
+    <table>
+      <tr><th>หมวด</th><th>เครื่องมือ</th></tr>
+      <tr><td>Unit / Component</td><td>Vitest, Jest, Vue Test Utils, Testing Library</td></tr>
+      <tr><td>E2E</td><td>Playwright, Cypress, WebdriverIO, Selenium, Puppeteer</td></tr>
+      <tr><td>API</td><td>Bruno, Postman/Newman, Hurl, REST Assured, Schemathesis</td></tr>
+      <tr><td>Contract</td><td>Pact, OpenAPI validator, Bruno + JSON Schema</td></tr>
+      <tr><td>Visual</td><td>Playwright <code>toHaveScreenshot</code>, Chromatic, Percy, Applitools, Lost Pixel, BackstopJS</td></tr>
+      <tr><td>Mock</td><td>MSW, WireMock, nock, Mockoon</td></tr>
+      <tr><td>Performance</td><td>k6, Artillery, JMeter, Gatling, Lighthouse CI, WebPageTest</td></tr>
+      <tr><td>Security</td><td>Semgrep, Snyk, Trivy, gitleaks, OWASP ZAP, Burp Suite, Dependabot</td></tr>
+      <tr><td>Accessibility</td><td>axe-core, Pa11y, Lighthouse, WAVE</td></tr>
+      <tr><td>Mutation</td><td>Stryker (JS/TS), PIT (Java), mutmut (Python)</td></tr>
+      <tr><td>Property-based</td><td>fast-check (JS/TS), Hypothesis (Python), QuickCheck</td></tr>
+      <tr><td>Coverage</td><td>c8, istanbul, Codecov, Coveralls</td></tr>
+      <tr><td>Reporting</td><td>Allure, ReportPortal, Playwright HTML reporter, JUnit XML</td></tr>
+      <tr><td>Container</td><td>Testcontainers, Docker Compose</td></tr>
+      <tr><td>Agentic</td><td>Playwright MCP, Playwright AI Healer, Applitools Eyes MCP</td></tr>
+    </table>
+    </div>
+  </section>
+
+  <!-- ============ RO ============ -->
+  <section id="ro">
+    <span class="sec-code">RO · 15</span>
+    <h3>อาชีพในสาย testing<span class="pill info">อ้างอิง</span></h3>
+    <p class="en">Roles &amp; Career Paths</p>
+    <ul>
+      <li><span class="term">Manual QA / QA Analyst</span> — ออกแบบและรัน test case ด้วยมือ, exploratory testing</li>
+      <li><span class="term">SDET / Test Automation Engineer</span> — เขียนโค้ดสร้าง framework การทดสอบ (เป็น dev ที่เชี่ยวชาญ testing)</li>
+      <li><span class="term">QA Lead / QA Architect</span> — ออกแบบ test strategy ทั้งองค์กร ตัดสินว่าจะลงทุนทดสอบอะไร</li>
+      <li><span class="term">Performance Engineer</span> — เฉพาะทางด้าน load/capacity planning</li>
+      <li><span class="term">Security Engineer / Pen Tester</span> — เฉพาะทางด้านช่องโหว่</li>
+      <li><span class="term">Accessibility Specialist</span> — เฉพาะทาง WCAG</li>
+      <li><span class="term">Release / Quality Manager</span> — ตัดสินใจว่าพร้อม ship ไหม</li>
+      <li><span class="term">SRE</span> — คุณภาพหลัง deploy (SLO, error budget)</li>
+    </ul>
+    <p>ใบรับรองที่รู้จักกันทั่วโลกคือ <span class="term">ISTQB</span> (Foundation → Advanced → Expert) — มีประโยชน์เรื่องคำศัพท์ร่วมและกระบวนการ แต่ไม่ได้สอนการเขียน automation จริง</p>
+  </section>
+
+  <!-- ============ closing ============ -->
+  <section id="next">
+    <span class="sec-code">→ ลำดับถัดไป</span>
+    <h3>ถ้าจะเลือกทำแค่ 5 อย่างสำหรับ pedpro</h3>
+    <p class="en">Ranked by value per effort</p>
+    <ul>
+      <li><b>1. Mutation testing (Stryker)</b> — เกตเดียวที่พิสูจน์ว่า test ที่ AI เขียนมีค่าจริง ตั้ง threshold แล้ว fail-closed</li>
+      <li><b>2. Security scan ชั้น deterministic</b> — gitleaks + <code>pnpm audit</code> + semgrep rule ที่เขียนจาก convention ตัวเอง (<code>DoAdmin</code>/<code>DoIp</code>, <code>v-html</code>, <code>res?.Result</code>)</li>
+      <li><b>3. Test report artifact ต่อ run</b> — HTML หน้าเดียวส่งเข้า Telegram พร้อม S8.5 ทำให้ <code>blind_approve_rate</code> มีความหมายจริง</li>
+      <li><b>4. Component test layer</b> — Vitest + Vue Test Utils + MSW ที่ generate mock จาก Bruno ปิดช่องว่างระหว่าง unit กับ E2E</li>
+      <li><b>5. Synthetic monitoring</b> — smoke test เดิมยิง production ทุก 5 นาที ลด MTTD ทันที</li>
+    </ul>
+    <div class="note">
+      <span class="tag">สิ่งที่ยังไม่ต้องรีบ</span>
+      <p>Load/stress test, chaos engineering, BDD/Cucumber, accessibility audit เต็มรูปแบบ — ทั้งหมดนี้ดี แต่ต้นทุนสูงและยังไม่ใช่คอขวดของคุณตอนนี้</p>
+    </div>
+  </section>
+
+  </main>
+</div>
+
+<footer>แผนที่โลกของ Testing · เขียนเทียบกับบริบท pedpro-pipeline</footer>
+</div>
+
+<script>
+const SECTIONS = [
+  ["lv","LV","ระดับการทดสอบ","s-part","มีบางส่วน"],
+  ["sh","SH","รูปทรง suite","s-info","พื้นฐาน"],
+  ["fn","FN","Functional","s-have","แข็ง"],
+  ["nf","NF","Non-functional","s-gap","ยังไม่มี"],
+  ["td","TD","เทคนิคออกแบบ","s-part","มีบางส่วน"],
+  ["db","DB","Test doubles","s-part","มีบางส่วน"],
+  ["ap","AP","แนวทาง/ปรัชญา","s-part","มีบางส่วน"],
+  ["de","DE","ข้อมูล/สภาพแวดล้อม","s-part","มีบางส่วน"],
+  ["pr","PR","หลักการ/ทฤษฎี","s-have","แข็ง"],
+  ["mt","MT","ตัวชี้วัด","s-part","มีบางส่วน"],
+  ["ci","CI","CI/CD","s-part","มีบางส่วน"],
+  ["pd","PD","Production","s-gap","ยังไม่มี"],
+  ["ai","AI","ยุค agentic","s-have","แข็ง"],
+  ["tl","TL","เครื่องมือ","s-info","อ้างอิง"],
+  ["ro","RO","อาชีพ","s-info","อ้างอิง"]
+];
+
+const matrix = document.getElementById("matrix");
+const toc = document.getElementById("toc");
+SECTIONS.forEach(([id,code,name,cls,st],i)=>{
+  const a = document.createElement("a");
+  a.href = "#"+id; a.className = "cell "+cls;
+  a.style.animationDelay = (i*26)+"ms";
+  a.innerHTML = `<span class="code">${code}</span><span class="nm">${name}</span><span class="st">${st}</span>`;
+  matrix.appendChild(a);
+
+  const t = document.createElement("a");
+  t.href = "#"+id; t.dataset.id = id;
+  t.innerHTML = `<span class="c">${code}</span><span>${name}</span>`;
+  toc.appendChild(t);
+});
+const t2 = document.createElement("a");
+t2.href = "#next"; t2.dataset.id = "next";
+t2.innerHTML = `<span class="c">→</span><span>ลำดับถัดไป</span>`;
+toc.appendChild(t2);
+
+const links = [...toc.querySelectorAll("a")];
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      links.forEach(l=>l.classList.toggle("on", l.dataset.id === e.target.id));
+    }
+  });
+},{rootMargin:"-10% 0px -70% 0px"});
+document.querySelectorAll("section").forEach(s=>obs.observe(s));
+
+document.querySelectorAll(".copy").forEach(btn=>{
+  btn.addEventListener("click", async ()=>{
+    const code = btn.parentElement.querySelector("code").innerText;
+    try{
+      await navigator.clipboard.writeText(code);
+      btn.textContent = "คัดลอกแล้ว"; btn.classList.add("done");
+      setTimeout(()=>{btn.textContent="คัดลอก";btn.classList.remove("done")},1600);
+    }catch(err){ btn.textContent = "คัดลอกไม่ได้"; }
+  });
+});
+
+const navbtn = document.getElementById("navbtn");
+const rail = document.getElementById("rail");
+navbtn.addEventListener("click", ()=> rail.classList.toggle("open"));
+rail.addEventListener("click", e=>{
+  if(e.target.closest("a") && window.innerWidth < 1024) rail.classList.remove("open");
+});
+</script>
+</body>
+</html>

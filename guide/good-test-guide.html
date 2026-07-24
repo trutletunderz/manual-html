@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Good Test — F.I.R.S.T + U | คู่มือเขียน test ที่ดีจริง</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0f14;
+    --bg-grid:rgba(255,255,255,.02);
+    --surface:#131a22;
+    --surface-2:#0f151c;
+    --border:#232d38;
+    --border-soft:#1a222c;
+    --text:#c9d3de;
+    --head:#f0f6fc;
+    --muted:#7d8b9a;
+    --pass:#3fb950;
+    --pass-dim:rgba(63,185,80,.12);
+    --fail:#f85149;
+    --fail-dim:rgba(248,81,73,.10);
+    --warn:#e0a83a;
+    --warn-dim:rgba(224,168,58,.10);
+    --accent:#58a6ff;
+    --accent-dim:rgba(88,166,255,.10);
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --sans:"IBM Plex Sans Thai",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;scroll-padding-top:2rem}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    background:var(--bg);
+    background-image:
+      linear-gradient(var(--bg-grid) 1px,transparent 1px),
+      linear-gradient(90deg,var(--bg-grid) 1px,transparent 1px);
+    background-size:32px 32px;
+    color:var(--text);
+    font-family:var(--sans);
+    font-weight:400;
+    line-height:1.72;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:230px 1fr;gap:52px}
+  @media(max-width:900px){.wrap{grid-template-columns:1fr;gap:0}}
+
+  /* ── TOC ── */
+  nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:40px 0;font-family:var(--mono);font-size:12.5px}
+  @media(max-width:900px){nav.toc{display:none}}
+  nav.toc .brand{color:var(--pass);font-weight:600;letter-spacing:.04em;margin-bottom:4px}
+  nav.toc .brand-sub{color:var(--muted);font-size:11px;margin-bottom:24px}
+  nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:5px 0 5px 14px;border-left:2px solid var(--border-soft);transition:color .15s,border-color .15s}
+  nav.toc a:hover{color:var(--text)}
+  nav.toc a.active{color:var(--head);border-left-color:var(--pass)}
+  nav.toc a .n{color:var(--border);margin-right:8px}
+  nav.toc a.active .n{color:var(--pass)}
+
+  main{padding:40px 0 120px;min-width:0}
+
+  /* ── HERO ── */
+  header.hero{padding:24px 0 44px;border-bottom:1px solid var(--border);margin-bottom:48px}
+  .term-tag{font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;margin-bottom:20px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--fail);box-shadow:16px 0 0 var(--warn),32px 0 0 var(--pass);margin-right:26px}
+  h1{font-size:clamp(2.4rem,6vw,3.6rem);font-weight:700;color:var(--head);line-height:1.05;letter-spacing:-.02em}
+  h1 .plus{color:var(--pass)}
+  .hero-sub{font-family:var(--mono);font-size:clamp(1rem,3vw,1.35rem);color:var(--muted);margin-top:10px;letter-spacing:.12em}
+  .hero-lede{margin-top:26px;max-width:60ch;color:var(--text);font-size:1.05rem}
+  .hero-lede b{color:var(--head);font-weight:600}
+
+  /* ── letter chips row ── */
+  .letters{display:flex;flex-wrap:wrap;gap:8px;margin-top:30px}
+  .letters .chip{font-family:var(--mono);font-size:12.5px;padding:7px 13px;border:1px solid var(--border);border-radius:6px;color:var(--text);background:var(--surface-2);display:flex;align-items:center;gap:8px}
+  .letters .chip .k{color:var(--pass);font-weight:600}
+  .letters .chip.u .k{color:var(--accent)}
+
+  section{margin:64px 0;scroll-margin-top:24px}
+  h2{font-size:1.75rem;font-weight:700;color:var(--head);letter-spacing:-.01em;display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  h2 .idx{font-family:var(--mono);font-size:.9rem;color:var(--pass);font-weight:500}
+  .sec-en{font-family:var(--mono);font-size:12.5px;color:var(--muted);letter-spacing:.08em;margin-bottom:26px;text-transform:uppercase}
+  h3{font-size:1.2rem;color:var(--head);font-weight:600;margin:34px 0 12px}
+  p{margin:14px 0;max-width:68ch}
+  p b,li b{color:var(--head);font-weight:600}
+  a.inline{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-dim)}
+  code.ic{font-family:var(--mono);font-size:.86em;background:var(--surface-2);border:1px solid var(--border-soft);padding:1px 6px;border-radius:4px;color:var(--warn)}
+
+  /* ── principle cards ── */
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:24px}
+  .pcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;position:relative;overflow:hidden}
+  .pcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--pass)}
+  .pcard.u::before{background:var(--accent)}
+  .pcard .ptag{font-family:var(--mono);font-size:11px;color:var(--pass);letter-spacing:.05em;margin-bottom:4px}
+  .pcard.u .ptag{color:var(--accent)}
+  .pcard h4{font-size:1.15rem;color:var(--head);font-weight:600;margin-bottom:8px}
+  .pcard h4 span{font-family:var(--mono);color:var(--muted);font-size:.8em;font-weight:400}
+  .pcard p{font-size:.94rem;margin:8px 0;max-width:none}
+  .pcard .why{font-size:.86rem;color:var(--muted);border-top:1px dashed var(--border);padding-top:10px;margin-top:12px}
+  .pcard .why b{color:var(--warn)}
+
+  /* ── code blocks ── */
+  .code{position:relative;margin:20px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface-2)}
+  .code .bar{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface);border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+  .code .bar .fname{display:flex;align-items:center;gap:9px}
+  .code .bar .fname::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--border);box-shadow:12px 0 0 var(--border)}
+  .code .verdict{font-weight:600;letter-spacing:.05em}
+  .code.bad .verdict{color:var(--fail)}
+  .code.good .verdict{color:var(--pass)}
+  .code pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--text)}
+  .code .copy{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:3px 10px;border-radius:5px;cursor:pointer;transition:.15s}
+  .code .copy:hover{border-color:var(--pass);color:var(--pass)}
+  .code .copy.done{border-color:var(--pass);color:var(--pass)}
+  /* token colors */
+  .c{color:#6a7d8f;font-style:italic}   /* comment */
+  .k{color:#ff7b72}                       /* keyword */
+  .s{color:#7ee787}                       /* string */
+  .f{color:#d2a8ff}                       /* function */
+  .p{color:#79c0ff}                       /* prop/var */
+  .fail-c{color:var(--fail)}
+  .pass-c{color:var(--pass)}
+
+  /* ── callouts ── */
+  .call{border-radius:10px;padding:16px 18px;margin:22px 0;border:1px solid;font-size:.96rem}
+  .call .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.06em;font-weight:600;display:block;margin-bottom:6px}
+  .call.pass{background:var(--pass-dim);border-color:rgba(63,185,80,.3)}
+  .call.pass .lbl{color:var(--pass)}
+  .call.fail{background:var(--fail-dim);border-color:rgba(248,81,73,.3)}
+  .call.fail .lbl{color:var(--fail)}
+  .call.warn{background:var(--warn-dim);border-color:rgba(224,168,58,.3)}
+  .call.warn .lbl{color:var(--warn)}
+  .call p{margin:6px 0;max-width:none}
+
+  /* ── trophy ── */
+  .trophy{display:flex;flex-direction:column;gap:8px;margin:24px 0;font-family:var(--mono);font-size:13px}
+  .trophy .tier{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:8px;border:1px solid var(--border);background:var(--surface)}
+  .trophy .tier .bar{height:10px;border-radius:5px;background:var(--pass);flex-shrink:0}
+  .trophy .tier .meta{flex:1}
+  .trophy .tier .meta .t{color:var(--head);font-weight:600}
+  .trophy .tier .meta .d{color:var(--muted);font-size:11.5px}
+  .trophy .tier .roi{color:var(--pass);font-size:11px}
+
+  /* ── pipeline map / table ── */
+  .rules{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:22px 0}
+  .rules .row{display:grid;grid-template-columns:150px 1fr;gap:0;border-bottom:1px solid var(--border-soft)}
+  .rules .row:last-child{border-bottom:none}
+  .rules .row .c1{padding:14px 16px;font-family:var(--mono);font-size:12px;color:var(--fail);background:var(--surface-2);border-right:1px solid var(--border-soft);display:flex;align-items:center;gap:8px}
+  .rules .row .c1::before{content:"✗";color:var(--fail)}
+  .rules .row .c2{padding:14px 16px;font-size:.92rem}
+  .rules .row .c2 code{font-family:var(--mono);font-size:.85em;color:var(--warn)}
+  @media(max-width:560px){.rules .row{grid-template-columns:1fr}.rules .row .c1{border-right:none;border-bottom:1px solid var(--border-soft)}}
+
+  /* ── cheat ── */
+  .cheat{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:22px}
+  .cheat .cc{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:16px}
+  .cheat .cc .h{font-family:var(--mono);font-size:12px;color:var(--pass);margin-bottom:10px;font-weight:600}
+  .cheat .cc ul{list-style:none;font-size:.88rem}
+  .cheat .cc li{padding:4px 0 4px 18px;position:relative;color:var(--text)}
+  .cheat .cc li::before{content:"›";position:absolute;left:0;color:var(--pass)}
+
+  ul.clean{list-style:none;margin:14px 0}
+  ul.clean li{padding:6px 0 6px 24px;position:relative;max-width:68ch}
+  ul.clean li::before{content:"▸";position:absolute;left:2px;color:var(--pass)}
+
+  footer{border-top:1px solid var(--border);margin-top:80px;padding:32px 0;font-family:var(--mono);font-size:11.5px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  footer .pass-c{color:var(--pass)}
+  ::selection{background:var(--pass-dim);color:var(--head)}
+  nav.toc::-webkit-scrollbar,pre::-webkit-scrollbar{height:8px;width:8px}
+  nav.toc::-webkit-scrollbar-thumb,pre::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="toc" id="toc">
+    <div class="brand">$ good-test</div>
+    <div class="brand-sub">F.I.R.S.T + U · field guide</div>
+    <a href="#firstu"><span class="n">01</span>F.I.R.S.T + U</a>
+    <a href="#core"><span class="n">02</span>แก่น: behavior</a>
+    <a href="#doubles"><span class="n">03</span>Mock ที่ boundary</a>
+    <a href="#traps"><span class="n">04</span>3 กับดัก</a>
+    <a href="#trophy"><span class="n">05</span>Testing Trophy</a>
+    <a href="#anatomy"><span class="n">06</span>Anatomy + naming</a>
+    <a href="#pipeline"><span class="n">07</span>→ S6 gate</a>
+    <a href="#cheat"><span class="n">08</span>Cheat sheet</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="term-tag"><span class="dot"></span>siam-chamnankit://good-test · 2017–2026</div>
+      <h1>Good&nbsp;Test<span class="plus"> +</span></h1>
+      <div class="hero-sub">F . I . R . S . T &nbsp;+&nbsp; U</div>
+      <p class="hero-lede">F.I.R.S.T+U บอกว่า test ที่ดี <b>มีคุณสมบัติอะไร</b> — แต่ไม่ได้บอกว่า <b>เขียนยังไงให้ได้คุณสมบัตินั้น</b>. คู่มือนี้เติมส่วนที่ขาด: หลักการ + ตัวอย่างจริง Vitest&nbsp;+&nbsp;Vue&nbsp;+&nbsp;Pinia แล้วโยงกลับเข้า S6 gate ของ pipeline.</p>
+      <div class="letters">
+        <div class="chip"><span class="k">F</span>ast</div>
+        <div class="chip"><span class="k">I</span>solate</div>
+        <div class="chip"><span class="k">R</span>epeat</div>
+        <div class="chip"><span class="k">S</span>elf-verify</div>
+        <div class="chip"><span class="k">T</span>imely</div>
+        <div class="chip u"><span class="k">U</span>nderstand</div>
+      </div>
+    </header>
+
+    <!-- 01 -->
+    <section id="firstu">
+      <h2><span class="idx">01</span>F.I.R.S.T + U</h2>
+      <div class="sec-en">The properties of a good unit test</div>
+      <p>ห้าตัวแรกมาจาก Clean Code (Robert C. Martin) ส่วน <b>U — Understand</b> คือส่วนที่ Siam Chamnankit เติมเข้ามา และเป็นตัวที่คนมองข้ามบ่อยสุด. อ่านแต่ละใบเป็น "เกณฑ์ที่ test ต้องผ่าน" ไม่ใช่แค่นิยาม.</p>
+
+      <div class="pgrid">
+        <div class="pcard">
+          <div class="ptag">✓ FAST</div>
+          <h4>Fast <span>— เร็ว</span></h4>
+          <p>Test suite ต้องรันเป็นวินาที ไม่ใช่นาที. ถ้าช้า คนจะเลิกรันระหว่างเขียน แล้ว feedback loop ก็ตาย.</p>
+          <div class="why"><b>วิธีทำ:</b> unit test แตะ I/O จริงไม่ได้ — ไม่ DB, ไม่ network, ไม่ sleep. ดันของช้าไปไว้ที่ integration/e2e ชั้นบนสุด.</div>
+        </div>
+        <div class="pcard">
+          <div class="ptag">✓ ISOLATE</div>
+          <h4>Isolate <span>— แยกกัน</span></h4>
+          <p>แต่ละ test ไม่พึ่ง test อื่น ไม่พึ่งลำดับการรัน ไม่พึ่ง shared state.</p>
+          <div class="why"><b>วิธีทำ:</b> reset state ทุก test (<code style="color:inherit">beforeEach</code>). ห้าม test A เขียนไฟล์ให้ test B อ่าน. <b>ตัวที่พังบ่อยสุดข้อ 1.</b></div>
+        </div>
+        <div class="pcard">
+          <div class="ptag">✓ REPEAT</div>
+          <h4>Repeatable <span>— ซ้ำได้</span></h4>
+          <p>รันกี่รอบ บนเครื่องไหน เวลาไหน ก็ได้ผลเดิม.</p>
+          <div class="why"><b>วิธีทำ:</b> ตรึง <code style="color:inherit">Date.now</code>, random, timezone. <b>นี่คือตัวฆ่า flaky test — ตัวที่พังบ่อยสุดข้อ 2.</b></div>
+        </div>
+        <div class="pcard">
+          <div class="ptag">✓ SELF-VERIFY</div>
+          <h4>Self-verifying <span>— ตรวจเอง</span></h4>
+          <p>Test บอก pass/fail เองด้วย assertion ไม่ต้องมีคนไปนั่งอ่าน log แล้วตัดสิน.</p>
+          <div class="why"><b>วิธีทำ:</b> ทุก test ต้องมี assert ที่มีความหมาย. <b>จุดที่ agent ชอบโกง — assert อ่อนๆ ให้ผ่าน.</b></div>
+        </div>
+        <div class="pcard">
+          <div class="ptag">✓ TIMELY</div>
+          <h4>Timely <span>— ทันเวลา</span></h4>
+          <p>เขียน test ใกล้ๆ กับตอนเขียน code — สาย TDD เขียนก่อน code เลย.</p>
+          <div class="why"><b>วิธีทำ:</b> อย่าเลื่อน test ไป "ทีหลัง" เพราะทีหลังไม่เคยมา และ code ที่เขียนโดยไม่คิดถึง test มักจะ test ยาก.</div>
+        </div>
+        <div class="pcard u">
+          <div class="ptag">✓ UNDERSTAND</div>
+          <h4>Understandable <span>— อ่านรู้เรื่อง</span></h4>
+          <p>อ่าน test แล้วรู้ทันทีว่าทดสอบอะไร และตอน fail รู้ทันทีว่าอะไรพัง.</p>
+          <div class="why"><b>วิธีทำ:</b> test คือ documentation ที่รันได้. ชื่อ test = ประโยคที่อ่านออก. <b>สิ่งที่คนเติมเข้ามาเพราะ 5 ตัวแรกยังไม่พอ.</b></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section id="core">
+      <h2><span class="idx">02</span>แก่นข้อเดียวที่ต้องจำ</h2>
+      <div class="sec-en">Test behavior, not implementation</div>
+      <p>ถ้าจะจำได้ข้อเดียวจากทั้งคู่มือ ให้จำข้อนี้: <b>test ที่ดีจะพังก็ต่อเมื่อ "พฤติกรรม" เปลี่ยน ไม่ใช่ตอนที่คุณ refactor โครงสร้างข้างใน.</b> Test ที่ผูกกับ internal state จะกลายเป็นตัว <b>ขวางทาง refactor</b> แทนที่จะคุ้มครองมัน.</p>
+
+      <div class="code bad" data-code="it(&quot;sets loading to true&quot;, () => {
+  const store = useCartStore()
+  store.addItem(item)
+  expect(store.loading).toBe(true)
+})">
+        <div class="bar">
+          <span class="fname">cart.spec.ts · anti-pattern</span>
+          <span class="verdict">✗ ผูกกับ implementation</span>
+        </div>
+        <pre><span class="f">it</span>(<span class="s">"sets loading to true"</span>, () <span class="k">=></span> {
+  <span class="k">const</span> store <span class="k">=</span> <span class="f">useCartStore</span>()
+  store.<span class="f">addItem</span>(item)
+  <span class="f">expect</span>(store.<span class="p">loading</span>).<span class="f">toBe</span>(<span class="k">true</span>)  <span class="c">// ← ทดสอบ internal state</span>
+})</pre>
+      </div>
+      <p style="margin-top:-4px">พอคุณ rename <code class="ic">loading</code> → <code class="ic">isPending</code> ระหว่าง refactor test นี้พังทันที ทั้งที่ระบบยังทำงานถูกทุกอย่าง. นั่นแปลว่า test กำลังทดสอบ "วิธีเขียน" ไม่ใช่ "สิ่งที่ทำได้".</p>
+
+      <div class="code good" data-code="it(&quot;shows the item in cart after adding&quot;, async () => {
+  const { getByTestId } = render(CartView)
+  await fireEvent.click(getByTestId(&quot;add-btn&quot;))
+  expect(getByTestId(&quot;cart-count&quot;)).toHaveTextContent(&quot;1&quot;)
+})">
+        <div class="bar">
+          <span class="fname">cart.spec.ts · behavior</span>
+          <span class="verdict">✓ ทดสอบสิ่งที่ user เห็น</span>
+        </div>
+        <pre><span class="f">it</span>(<span class="s">"shows the item in cart after adding"</span>, <span class="k">async</span> () <span class="k">=></span> {
+  <span class="k">const</span> { getByTestId } <span class="k">=</span> <span class="f">render</span>(CartView)
+  <span class="k">await</span> <span class="f">fireEvent</span>.<span class="f">click</span>(<span class="f">getByTestId</span>(<span class="s">"add-btn"</span>))
+  <span class="f">expect</span>(<span class="f">getByTestId</span>(<span class="s">"cart-count"</span>)).<span class="f">toHaveTextContent</span>(<span class="s">"1"</span>)
+})</pre>
+      </div>
+      <div class="call pass">
+        <span class="lbl">RULE OF THUMB</span>
+        <p>ถามตัวเองก่อนเขียน assert: "ถ้าฉัน refactor โค้ดข้างในโดยไม่เปลี่ยนพฤติกรรม test นี้ควรพังไหม?" — ถ้าคำตอบคือ "ไม่ควร" แต่มันพัง แสดงว่าคุณ assert ผิดชั้น.</p>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section id="doubles">
+      <h2><span class="idx">03</span>Mock เฉพาะที่ boundary</h2>
+      <div class="sec-en">Mock what you don't own</div>
+      <p>Test double (mock / stub / spy / fake) มีไว้ตัด <b>ของที่ควบคุมไม่ได้</b> ออกจากสมการ — network, เวลา, random, filesystem, external API. กฎเดียวที่จำง่ายสุด: <b>mock สิ่งที่คุณไม่ได้เขียนเอง.</b></p>
+      <p>ถ้าคุณ mock ตรรกะของตัวเอง (service, store, composable ของคุณ) คุณกำลังทดสอบ mock ไม่ได้ทดสอบ code จริง. test เขียวแต่ระบบพังได้สบายๆ.</p>
+
+      <div class="code good" data-code="import { vi } from &quot;vitest&quot;
+
+// ✓ mock ที่ boundary: HTTP client (ของนอก)
+vi.mock(&quot;~/api/client&quot;, () => ({
+  fetchUser: vi.fn().mockResolvedValue({ Result: { id: 1, name: &quot;น้อง&quot; } }),
+}))
+
+// ✓ ตรึงเวลา — ทำให้ Repeatable
+beforeEach(() => vi.setSystemTime(new Date(&quot;2026-01-01T00:00:00Z&quot;)))
+afterEach(() => vi.useRealTimers())
+
+it(&quot;maps api result into the view model&quot;, async () => {
+  const vm = await loadUserCard(1)      // ← logic ของเราเอง: ห้าม mock
+  expect(vm).toEqual({ id: 1, label: &quot;น้อง&quot;, joinedYear: 2026 })
+})">
+        <div class="bar">
+          <span class="fname">user-card.spec.ts</span>
+          <span class="verdict">✓ boundary-only mock</span>
+        </div>
+        <pre><span class="k">import</span> { vi } <span class="k">from</span> <span class="s">"vitest"</span>
+
+<span class="c">// ✓ mock ที่ boundary: HTTP client (ของนอก)</span>
+<span class="f">vi</span>.<span class="f">mock</span>(<span class="s">"~/api/client"</span>, () <span class="k">=></span> ({
+  fetchUser: <span class="f">vi</span>.<span class="f">fn</span>().<span class="f">mockResolvedValue</span>({ <span class="p">Result</span>: { id: <span class="p">1</span>, name: <span class="s">"น้อง"</span> } }),
+}))
+
+<span class="c">// ✓ ตรึงเวลา — ทำให้ Repeatable</span>
+<span class="f">beforeEach</span>(() <span class="k">=></span> <span class="f">vi</span>.<span class="f">setSystemTime</span>(<span class="k">new</span> <span class="f">Date</span>(<span class="s">"2026-01-01T00:00:00Z"</span>)))
+<span class="f">afterEach</span>(() <span class="k">=></span> <span class="f">vi</span>.<span class="f">useRealTimers</span>())
+
+<span class="f">it</span>(<span class="s">"maps api result into the view model"</span>, <span class="k">async</span> () <span class="k">=></span> {
+  <span class="k">const</span> vm <span class="k">=</span> <span class="k">await</span> <span class="f">loadUserCard</span>(<span class="p">1</span>)      <span class="c">// ← logic เราเอง: ห้าม mock</span>
+  <span class="f">expect</span>(vm).<span class="f">toEqual</span>({ id: <span class="p">1</span>, label: <span class="s">"น้อง"</span>, joinedYear: <span class="p">2026</span> })
+})</pre>
+      </div>
+      <div class="call warn">
+        <span class="lbl">⚠ SMELL</span>
+        <p>ถ้าไฟล์ test เต็มไปด้วย <code class="ic">vi.mock</code> จนอ่านยากกว่าตัว code เอง — นั่นคือสัญญาณว่า design แน่นเกินไป (coupling สูง) ไม่ใช่ปัญหาของ test. บางที test บอกคุณว่า "แยก dependency ออกมาซะ" ก่อนที่ mock hell จะกิน.</p>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section id="traps">
+      <h2><span class="idx">04</span>สามกับดักที่คนพลาดจริง</h2>
+      <div class="sec-en">The three traps in real codebases</div>
+
+      <h3>1 · Weak assertion — assert อ่อน</h3>
+      <p>อันตรายสุดเพราะ test <b>เขียว</b> แต่ไม่ได้ตรวจอะไรเลย. นี่คือช่องที่ agent ชอบเดินเพื่อให้ผ่าน gate.</p>
+      <div class="code bad" data-code="expect(res).toBeTruthy()            // ผ่านแม้ res ผิด
+expect(res).toBeDefined()           // ผ่านแม้ค่าเป็นขยะ
+expect(items.length).toBeGreaterThan(0)  // ผ่านแม้ได้ item ผิดตัว">
+        <div class="bar"><span class="fname">assertions</span><span class="verdict">✗ อ่อนเกินจับ bug ไม่ได้</span></div>
+        <pre><span class="f">expect</span>(res).<span class="f">toBeTruthy</span>()            <span class="c">// ผ่านแม้ res ผิด</span>
+<span class="f">expect</span>(res).<span class="f">toBeDefined</span>()           <span class="c">// ผ่านแม้ค่าเป็นขยะ</span>
+<span class="f">expect</span>(items.<span class="p">length</span>).<span class="f">toBeGreaterThan</span>(<span class="p">0</span>)  <span class="c">// ผ่านแม้ได้ item ผิดตัว</span></pre>
+      </div>
+      <div class="code good" data-code="expect(res).toEqual({ Result: { id: 1, name: &quot;น้อง&quot; }, Error: null })
+expect(items).toEqual([{ id: 1, sku: &quot;PED-01&quot; }])">
+        <div class="bar"><span class="fname">assertions</span><span class="verdict">✓ assert ค่าจริงทั้งก้อน</span></div>
+        <pre><span class="f">expect</span>(res).<span class="f">toEqual</span>({ <span class="p">Result</span>: { id: <span class="p">1</span>, name: <span class="s">"น้อง"</span> }, <span class="p">Error</span>: <span class="k">null</span> })
+<span class="f">expect</span>(items).<span class="f">toEqual</span>([{ id: <span class="p">1</span>, sku: <span class="s">"PED-01"</span> }])</pre>
+      </div>
+
+      <h3>2 · Over-mocking — mock ตรรกะตัวเอง</h3>
+      <p>ครอบคลุมในข้อ 03 แล้ว. ย้ำสั้นๆ: mock ที่ boundary เท่านั้น. mock service ของตัวเอง = test ที่พิสูจน์ว่า "mock ทำงานตามที่ตั้งค่า" ซึ่งเป็นเรื่องจริงเสมออยู่แล้ว ไร้ค่า.</p>
+
+      <h3>3 · Coverage-chasing — ไล่ตาม 100%</h3>
+      <p>Coverage บอกแค่ว่า <b>บรรทัดถูกรัน</b> ไม่ได้บอกว่า <b>ถูก assert</b>. test getter, glue code ของ framework, หรือ type mapping ตรงๆ เพื่อดันเลข coverage คือการเสียแรงเปล่า.</p>
+      <div class="call fail">
+        <span class="lbl">✗ กับดัก</span>
+        <p>ตัวเลข coverage 100% ที่ได้จาก assert อ่อน = ความมั่นใจปลอม ที่อันตรายกว่า coverage 60% ที่ assert แน่น. เอาแรงไปทุ่มที่ <b>branching, edge case, boundary</b> (empty, null, ค่าติดลบ, ตัวสุดท้ายของ array) — จุดที่ bug ซ่อนจริง.</p>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section id="trophy">
+      <h2><span class="idx">05</span>Testing Trophy สำหรับ frontend</h2>
+      <div class="sec-en">Trophy, not pyramid — for your Nuxt/Vue stack</div>
+      <p>Test pyramid แบบเดิม (unit เยอะสุดล่างสุด) ไม่เหมาะกับ frontend สมัยนี้. Kent C. Dodds เสนอ <b>Testing Trophy</b> ที่ให้น้ำหนัก <b>integration</b> มากสุด เพราะ bug จริงในหน้าเว็บมักเกิดตรง component + store คุยกัน ไม่ใช่ที่ function เดี่ยวๆ. เรียงตาม ROI ในสแตกคุณ:</p>
+      <div class="trophy">
+        <div class="tier"><div class="bar" style="width:40px"></div><div class="meta"><div class="t">Static</div><div class="d">TS strict + ESLint — คุณมีอยู่แล้ว = ชั้นล่างฟรี ไม่ต้องเขียน test</div></div><div class="roi">◆ ฟรี</div></div>
+        <div class="tier"><div class="bar" style="width:120px"></div><div class="meta"><div class="t">Integration · component + Pinia</div><div class="d">render component จริง + store จริง คุยกัน — คุ้มสุด ทุ่มตรงนี้</div></div><div class="roi">◆◆◆ สูงสุด</div></div>
+        <div class="tier"><div class="bar" style="width:80px"></div><div class="meta"><div class="t">Unit · composable / pure logic</div><div class="d">เฉพาะ logic ล้วน (คำนวณ, mapping, validation) ที่แยกออกมาได้</div></div><div class="roi">◆◆ ดี</div></div>
+        <div class="tier"><div class="bar" style="width:50px"></div><div class="meta"><div class="t">E2E · Playwright</div><div class="d">เฉพาะ flow วิกฤต 3–5 อัน (login, จ่ายเงิน, สร้างเกม) — ช้า+flaky อย่าเยอะ</div></div><div class="roi">◆ จำกัด</div></div>
+      </div>
+      <div class="call warn">
+        <span class="lbl">⚠ เกร็ดเรื่อง data-test</span>
+        <p>convention <code class="ic">data-test</code> ของคุณขัดกับปรัชญา Testing Library นิดหน่อย — เขาเชียร์ <code class="ic">getByRole</code>/<code class="ic">getByText</code> เพื่อ test แบบที่ user + screen reader เห็นจริง. <code class="ic">data-test</code> เป็นทางสายกลางที่โอเค (เสถียร ไม่ผูกกับ copy) แค่รู้ไว้ว่ามันแลกมากับการที่ test ไม่ช่วยตรวจ accessibility ให้เลย — a11y ต้องไปตรวจแยก.</p>
+      </div>
+    </section>
+
+    <!-- 06 -->
+    <section id="anatomy">
+      <h2><span class="idx">06</span>Anatomy + การตั้งชื่อ</h2>
+      <div class="sec-en">AAA structure · names that read as sentences</div>
+      <p>โครง test ที่ดีมี 3 ท่อน — <b>Arrange · Act · Assert</b> (หรือ Given–When–Then). หนึ่ง test = หนึ่งพฤติกรรม = โดยหลักควรมี act เดียวและ assert ที่โฟกัสเรื่องเดียว.</p>
+      <div class="code good" data-code="describe(&quot;addItem&quot;, () => {
+  it(&quot;increments cart count when a new item is added&quot;, () => {
+    // Arrange
+    const store = useCartStore()
+    const item = { id: 1, sku: &quot;PED-01&quot; }
+    // Act
+    store.addItem(item)
+    // Assert
+    expect(store.count).toBe(1)
+  })
+
+  it(&quot;does not duplicate when the same item is added twice&quot;, () => {
+    const store = useCartStore()
+    const item = { id: 1, sku: &quot;PED-01&quot; }
+    store.addItem(item)
+    store.addItem(item)
+    expect(store.count).toBe(1)
+  })
+})">
+        <div class="bar"><span class="fname">cart.store.spec.ts</span><span class="verdict">✓ AAA + ชื่ออ่านออก</span></div>
+        <pre><span class="f">describe</span>(<span class="s">"addItem"</span>, () <span class="k">=></span> {
+  <span class="f">it</span>(<span class="s">"increments cart count when a new item is added"</span>, () <span class="k">=></span> {
+    <span class="c">// Arrange</span>
+    <span class="k">const</span> store <span class="k">=</span> <span class="f">useCartStore</span>()
+    <span class="k">const</span> item <span class="k">=</span> { id: <span class="p">1</span>, sku: <span class="s">"PED-01"</span> }
+    <span class="c">// Act</span>
+    store.<span class="f">addItem</span>(item)
+    <span class="c">// Assert</span>
+    <span class="f">expect</span>(store.<span class="p">count</span>).<span class="f">toBe</span>(<span class="p">1</span>)
+  })
+
+  <span class="f">it</span>(<span class="s">"does not duplicate when the same item is added twice"</span>, () <span class="k">=></span> {
+    <span class="k">const</span> store <span class="k">=</span> <span class="f">useCartStore</span>()
+    <span class="k">const</span> item <span class="k">=</span> { id: <span class="p">1</span>, sku: <span class="s">"PED-01"</span> }
+    store.<span class="f">addItem</span>(item)
+    store.<span class="f">addItem</span>(item)
+    <span class="f">expect</span>(store.<span class="p">count</span>).<span class="f">toBe</span>(<span class="p">1</span>)
+  })
+})</pre>
+      </div>
+      <ul class="clean">
+        <li><b>ชื่อ = ประโยค:</b> อ่าน <code class="ic">it(...)</code> ต่อกันแล้วต้องเป็นสเปคที่มนุษย์เข้าใจ. "increments cart count when a new item is added" ดีกว่า "test addItem" เพราะตอน fail มันบอกได้เองว่าพฤติกรรมไหนพัง (นี่คือ U).</li>
+        <li><b>หนึ่ง test หนึ่งเหตุผลที่จะพัง:</b> ถ้า test เดียว assert 5 อย่างไม่เกี่ยวกัน ตอน fail คุณไม่รู้ว่าอันไหนพัง แถมมันหยุดที่ assert แรกที่ fail.</li>
+        <li><b>อย่ามี logic ใน test:</b> ไม่ if/loop/คำนวณใน test. ถ้า test มี logic ใครจะ test ตัว test อีกที? เขียนค่าที่คาดหวังตรงๆ ไปเลย.</li>
+      </ul>
+    </section>
+
+    <!-- 07 -->
+    <section id="pipeline">
+      <h2><span class="idx">07</span>โยงเข้า pedpro-pipeline</h2>
+      <div class="sec-en">S5 authoring rules → S6 Codex rejection criteria</div>
+      <p>สี่กับดักในคู่มือนี้คือของที่ <b>human reviewer มองด้วยตาแล้วจับได้ แต่ <code class="ic">blind_approve_rate</code> จับไม่ได้ถ้าไม่ระบุ</b> — เพราะ test มัน "เขียว" หมด. เอาไปเป็น explicit rejection criteria ให้ Codex ที่ S6 ได้ตรงๆ:</p>
+      <div class="rules">
+        <div class="row"><div class="c1">weak-assert</div><div class="c2">reject ถ้าเจอ <code>toBeTruthy / toBeDefined / toBeGreaterThan(0)</code> เป็น assert หลักของ test — บังคับ assert ค่าจริงด้วย <code>toEqual</code>.</div></div>
+        <div class="row"><div class="c1">impl-coupled</div><div class="c2">reject ถ้า test assert internal state ที่ไม่ใช่ public behavior (เช่น <code>.loading</code>, private field). ถามว่า refactor แล้วควรพังไหม.</div></div>
+        <div class="row"><div class="c1">over-mock</div><div class="c2">reject ถ้า <code>vi.mock</code> ครอบ module ที่อยู่ใน repo เราเอง (ไม่ใช่ของนอก / boundary).</div></div>
+        <div class="row"><div class="c1">unreadable</div><div class="c2">reject ถ้าชื่อ test เป็น <code>"test 1"</code> / <code>"works"</code> — บังคับรูป "does X when Y" (เกณฑ์ U).</div></div>
+        <div class="row"><div class="c1">no-edge</div><div class="c2">flag ถ้า test มีแต่ happy path ไม่มี empty / null / error branch เลย.</div></div>
+      </div>
+      <div class="call pass">
+        <span class="lbl">→ ACTION</span>
+        <p>ยัด 5 บรรทัดบนเป็น checklist ใน 
+          <code class="ic">SKILL.md</code> ของ S5 (ให้ worker เขียนถูกตั้งแต่แรก) <b>และ</b> S6 (ให้ Codex reject). วางที่ S5 ก่อน = ลดจำนวนรอบ loop ที่ต้องวิ่งกลับ ก่อนถึง S8.5 human gate. Codex เป็น non-Claude reviewer ที่ independent อยู่แล้ว — เกณฑ์พวกนี้เป็นแบบ mechanical ที่มันตรวจได้โดยไม่ต้องรัน test.</p>
+      </div>
+    </section>
+
+    <!-- 08 -->
+    <section id="cheat">
+      <h2><span class="idx">08</span>Cheat sheet</h2>
+      <div class="sec-en">Pin this above your desk</div>
+      <div class="cheat">
+        <div class="cc"><div class="h">✓ ทำ</div><ul>
+          <li>test behavior ที่ user เห็น</li>
+          <li>mock เฉพาะ boundary (network/time/random)</li>
+          <li>assert ค่าจริงด้วย toEqual</li>
+          <li>reset state ทุก beforeEach</li>
+          <li>ตรึงเวลา/random ให้ repeatable</li>
+          <li>ชื่อ test = ประโยคที่อ่านออก</li>
+          <li>ทุ่มที่ integration + edge case</li>
+        </ul></div>
+        <div class="cc"><div class="h">✗ อย่าทำ</div><ul>
+          <li>assert internal state</li>
+          <li>mock code ของตัวเอง</li>
+          <li>toBeTruthy เป็น assert หลัก</li>
+          <li>test พึ่ง order การรัน</li>
+          <li>ใช้ Date.now / Math.random ตรงๆ</li>
+          <li>ชื่อ "test 1", "works"</li>
+          <li>ไล่ตาม 100% coverage</li>
+        </ul></div>
+        <div class="cc"><div class="h">F.I.R.S.T+U map</div><ul>
+          <li>Fast → no I/O ใน unit</li>
+          <li>Isolate → beforeEach reset</li>
+          <li>Repeat → ตรึง time/random</li>
+          <li>Self-verify → assert แน่น</li>
+          <li>Timely → เขียนพร้อม code</li>
+          <li>Understand → ชื่อเป็นประโยค</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <footer>
+      <span>Good Test · F.I.R.S.T + U — field guide</span>
+      <span><span class="pass-c">6 passed</span> · 0 failed · <span style="color:var(--muted)">Vitest + Vue + Pinia</span></span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  // copy buttons
+  document.querySelectorAll(".code").forEach(function(block){
+    var bar = block.querySelector(".bar");
+    var btn = document.createElement("button");
+    btn.className = "copy"; btn.textContent = "copy";
+    btn.addEventListener("click", function(){
+      var raw = block.getAttribute("data-code") || block.querySelector("pre").innerText;
+      navigator.clipboard.writeText(raw).then(function(){
+        btn.textContent = "✓ copied"; btn.classList.add("done");
+        setTimeout(function(){ btn.textContent = "copy"; btn.classList.remove("done"); }, 1400);
+      });
+    });
+    bar.appendChild(btn);
+  });
+
+  // scrollspy
+  var links = Array.prototype.slice.call(document.querySelectorAll("nav.toc a"));
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute("href").slice(1)] = a; });
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        links.forEach(function(l){ l.classList.remove("active"); });
+        if(map[e.target.id]) map[e.target.id].classList.add("active");
+      }
+    });
+  }, { rootMargin: "-15% 0px -70% 0px" });
+  document.querySelectorAll("section[id]").forEach(function(s){ obs.observe(s); });
+})();
+</script>
+</body>
+</html>

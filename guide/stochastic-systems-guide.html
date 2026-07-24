@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stochastic Systems Engineering — คู่มือทำงานกับเอไอในโลกที่ไม่นิ่ง</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0E14;
+  --surface:#121826;
+  --raised:#18202F;
+  --line:#242E40;
+  --line-soft:#1B2434;
+  --text:#DCE3ED;
+  --text-dim:#98A3B4;
+  --text-faint:#5F6B7D;
+  --det:#58A6E8;
+  --det-dim:#1E3A55;
+  --sto:#E9A13B;
+  --sto-dim:#4A3418;
+  --ok:#5FBF8F;
+  --fail:#E0625C;
+  --radius:6px;
+  --w:74ch;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:28px}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:"IBM Plex Sans Thai",system-ui,sans-serif;
+  font-weight:300;font-size:16.5px;line-height:1.85;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+
+/* ---------- layout ---------- */
+.wrap{display:grid;grid-template-columns:270px minmax(0,1fr);gap:0;max-width:1240px;margin:0 auto}
+.main{padding:0 40px 140px;min-width:0}
+section{padding-top:64px;border-top:1px solid var(--line-soft);margin-top:64px}
+section:first-of-type{border-top:none}
+
+/* ---------- hero ---------- */
+.hero{grid-column:1/-1;padding:76px 40px 60px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+.hero-inner{max-width:1160px;margin:0 auto}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--text-faint);margin-bottom:22px
+}
+h1{
+  font-size:clamp(28px,4.4vw,46px);line-height:1.28;font-weight:600;margin:0 0 8px;
+  letter-spacing:-.015em;max-width:20ch
+}
+.hero-en{
+  font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--det);
+  letter-spacing:.04em;margin-bottom:30px
+}
+.hero-lede{max-width:60ch;color:var(--text-dim);font-size:17px;margin:0 0 40px}
+.hero-lede strong{color:var(--text);font-weight:500}
+
+/* ---------- signature: run strip ---------- */
+.runbox{
+  border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);
+  padding:20px 22px;max-width:640px
+}
+.runbox-head{
+  display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--text-faint);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px
+}
+.runstrip{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
+.cell{
+  width:22px;height:30px;border-radius:3px;background:var(--raised);
+  border:1px solid var(--line);transition:background .28s ease,border-color .28s ease
+}
+.cell.pass{background:var(--det-dim);border-color:var(--det)}
+.cell.fail{background:#3A1D1C;border-color:var(--fail)}
+.runbox-foot{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.bignum{
+  font-family:"IBM Plex Mono",monospace;font-size:34px;font-weight:600;
+  color:var(--text);letter-spacing:-.02em;line-height:1
+}
+.runnote{font-size:13.5px;color:var(--text-dim);max-width:34ch}
+
+/* ---------- sidebar toc ---------- */
+.toc{
+  position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+  padding:34px 20px 60px 40px;border-right:1px solid var(--line-soft);
+  scrollbar-width:thin;scrollbar-color:var(--line) transparent
+}
+.toc::-webkit-scrollbar{width:5px}
+.toc::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+.toc-title{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--text-faint);margin-bottom:16px
+}
+.toc a{
+  display:block;padding:5px 0 5px 13px;color:var(--text-faint);text-decoration:none;
+  font-size:13.5px;line-height:1.5;border-left:2px solid transparent;transition:color .15s,border-color .15s
+}
+.toc a:hover{color:var(--text)}
+.toc a.active{color:var(--det);border-left-color:var(--det)}
+.toc a.sub{padding-left:26px;font-size:12.5px}
+.toc-group{margin-bottom:14px}
+
+/* ---------- headings ---------- */
+h2{
+  font-size:clamp(23px,2.6vw,30px);font-weight:600;line-height:1.35;margin:0 0 6px;
+  letter-spacing:-.01em
+}
+.h-num{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.2em;
+  color:var(--sto);text-transform:uppercase;display:block;margin-bottom:12px
+}
+.h-en{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--text-faint);
+  letter-spacing:.03em;margin-bottom:26px
+}
+h3{font-size:19px;font-weight:600;margin:38px 0 12px;line-height:1.45}
+h4{font-size:15.5px;font-weight:600;margin:26px 0 8px;color:var(--text)}
+p{margin:0 0 18px;max-width:var(--w)}
+ul,ol{max-width:var(--w);padding-left:20px;margin:0 0 18px}
+li{margin-bottom:9px}
+strong{font-weight:500;color:#F0F4FA}
+a{color:var(--det)}
+
+/* ---------- components ---------- */
+.tag{
+  display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:3px;
+  border:1px solid var(--line);color:var(--text-dim);vertical-align:middle
+}
+.tag.det{color:var(--det);border-color:var(--det-dim);background:rgba(88,166,232,.07)}
+.tag.sto{color:var(--sto);border-color:var(--sto-dim);background:rgba(233,161,59,.07)}
+.tag.ok{color:var(--ok);border-color:#1E4033;background:rgba(95,191,143,.07)}
+.tag.bad{color:var(--fail);border-color:#4A2321;background:rgba(224,98,92,.07)}
+
+.def{
+  border:1px solid var(--line);border-left:2px solid var(--det);background:var(--surface);
+  border-radius:var(--radius);padding:18px 20px;margin:0 0 14px;max-width:var(--w)
+}
+.def.sto-b{border-left-color:var(--sto)}
+.def-term{font-weight:600;font-size:16.5px;margin-bottom:2px}
+.def-en{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--text-faint);
+  letter-spacing:.04em;margin-bottom:10px
+}
+.def p{margin:0;font-size:15.5px;color:var(--text-dim)}
+.def p + p{margin-top:10px}
+.def .ex{
+  margin-top:12px;padding-top:11px;border-top:1px dashed var(--line);
+  font-size:14.5px;color:var(--text-dim)
+}
+.def .ex b{color:var(--sto);font-weight:500;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px}
+
+.callout{
+  border:1px solid var(--line);background:var(--raised);border-radius:var(--radius);
+  padding:18px 20px;margin:24px 0;max-width:var(--w)
+}
+.callout-title{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--sto);margin-bottom:9px
+}
+.callout.warn{border-left:2px solid var(--fail)}
+.callout.warn .callout-title{color:var(--fail)}
+.callout.good{border-left:2px solid var(--ok)}
+.callout.good .callout-title{color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+
+/* ---------- code ---------- */
+.codewrap{position:relative;margin:0 0 20px;max-width:var(--w)}
+.codehead{
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--raised);border:1px solid var(--line);border-bottom:none;
+  border-radius:var(--radius) var(--radius) 0 0;padding:7px 12px;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--text-faint);letter-spacing:.06em
+}
+.copybtn{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;background:transparent;border:1px solid var(--line);
+  color:var(--text-dim);padding:3px 9px;border-radius:3px;cursor:pointer;transition:all .15s
+}
+.copybtn:hover{border-color:var(--det);color:var(--det)}
+.copybtn.done{border-color:var(--ok);color:var(--ok)}
+pre{
+  margin:0;background:#080B11;border:1px solid var(--line);
+  border-radius:0 0 var(--radius) var(--radius);padding:16px 18px;overflow-x:auto;
+  font-family:"IBM Plex Mono",monospace;font-size:13px;line-height:1.7;color:#C8D3E2
+}
+code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
+p code,li code,td code{
+  background:var(--raised);border:1px solid var(--line-soft);
+  padding:1px 5px;border-radius:3px;color:var(--det);font-size:12.5px
+}
+
+/* ---------- table ---------- */
+.tablewrap{overflow-x:auto;margin:0 0 22px;border:1px solid var(--line);border-radius:var(--radius)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:560px}
+th{
+  text-align:left;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);
+  padding:11px 14px;background:var(--raised);border-bottom:1px solid var(--line);font-weight:500
+}
+td{padding:12px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top;color:var(--text-dim)}
+tr:last-child td{border-bottom:none}
+td strong{color:var(--text)}
+
+/* ---------- flow diagram ---------- */
+.flow{
+  display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:26px 0;
+  border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;max-width:var(--w)
+}
+.node{flex:1 1 180px;padding:18px 18px;background:var(--surface);border-right:1px solid var(--line)}
+.node:last-child{border-right:none}
+.node-k{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;margin-bottom:7px
+}
+.node.s .node-k{color:var(--sto)}
+.node.d .node-k{color:var(--det)}
+.node-t{font-weight:600;font-size:15.5px;margin-bottom:5px}
+.node-d{font-size:13.5px;color:var(--text-dim);line-height:1.65}
+
+/* ---------- workshop ---------- */
+.ws{
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);
+  margin:0 0 26px;overflow:hidden
+}
+.ws-head{padding:20px 22px 18px;border-bottom:1px solid var(--line);background:var(--raised)}
+.ws-id{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+  color:var(--sto);margin-bottom:8px;display:flex;gap:12px;align-items:center;flex-wrap:wrap
+}
+.ws-time{color:var(--text-faint);letter-spacing:.08em}
+.ws-title{font-size:19px;font-weight:600;line-height:1.4;margin-bottom:4px}
+.ws-en{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--text-faint)}
+.ws-body{padding:22px}
+.ws-body > *:last-child{margin-bottom:0}
+.ws-row{margin-bottom:20px}
+.ws-k{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--det);margin-bottom:7px
+}
+.ws-row p,.ws-row ul,.ws-row ol{max-width:none;margin-bottom:0}
+.ws-row ol li,.ws-row ul li{font-size:15px}
+.ws .codewrap{max-width:none}
+.ws .tablewrap{max-width:none}
+.expect{
+  border-left:2px solid var(--ok);background:rgba(95,191,143,.05);
+  padding:14px 16px;border-radius:0 var(--radius) var(--radius) 0
+}
+.expect .ws-k{color:var(--ok)}
+.trap{
+  border-left:2px solid var(--fail);background:rgba(224,98,92,.05);
+  padding:14px 16px;border-radius:0 var(--radius) var(--radius) 0
+}
+.trap .ws-k{color:var(--fail)}
+
+/* ---------- misc ---------- */
+.lede{font-size:17.5px;color:var(--text-dim);max-width:62ch;margin-bottom:30px}
+.footer{
+  grid-column:1/-1;border-top:1px solid var(--line);padding:36px 40px 60px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--text-faint);
+  letter-spacing:.04em;line-height:2
+}
+.toc-toggle{display:none}
+
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr}
+  .toc{
+    position:static;height:auto;border-right:none;border-bottom:1px solid var(--line);
+    padding:20px 24px;max-height:none
+  }
+  .toc-list{display:none}
+  .toc-list.open{display:block}
+  .toc-toggle{
+    display:block;width:100%;text-align:left;background:transparent;border:none;
+    color:var(--text-dim);font-family:"IBM Plex Mono",monospace;font-size:11px;
+    letter-spacing:.18em;text-transform:uppercase;cursor:pointer;padding:0
+  }
+  .main{padding:0 24px 90px}
+  .hero{padding:48px 24px 42px}
+  .footer{padding:30px 24px 50px}
+  body{font-size:16px}
+  .flow{flex-direction:column}
+  .node{border-right:none;border-bottom:1px solid var(--line)}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition:none!important;animation:none!important}
+}
+:focus-visible{outline:2px solid var(--det);outline-offset:3px;border-radius:2px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Field guide · ฉบับปฏิบัติ · v2</div>
+    <h1>ทำงานกับสิ่งที่ให้คำตอบไม่ซ้ำเดิม</h1>
+    <div class="hero-en mono">Stochastic Systems Engineering for Software Engineers</div>
+    <p class="hero-lede">
+      เอไอไม่ได้ให้ "คำตอบ" มันให้ <strong>การแจกแจงของคำตอบ</strong>
+      คู่มือนี้ว่าด้วยการเลิกถามว่า "มันทำงานถูกไหม" แล้วเปลี่ยนไปถามสามคำถามใหม่ —
+      ถูกกี่เปอร์เซ็นต์ วัดจากอะไร และถ้าพลาดใครจับ
+    </p>
+
+    <div class="runbox">
+      <div class="runbox-head mono">
+        <span>same input × 20 runs</span>
+        <span id="runstate">running…</span>
+      </div>
+      <div class="runstrip" id="strip" aria-hidden="true"></div>
+      <div class="runbox-foot">
+        <div class="bignum mono" id="rate">—</div>
+        <div class="runnote">รันครั้งเดียวผ่าน ไม่ได้แปลว่ามันผ่าน<br>มันแปลว่าคุณเห็นตัวอย่างมาหนึ่งตัว</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="สารบัญ">
+  <button class="toc-toggle" id="tocToggle" aria-expanded="false">☰ สารบัญ / Contents</button>
+  <div class="toc-list" id="tocList">
+    <div class="toc-title mono">Contents</div>
+    <div class="toc-group">
+      <a href="#s0">สรุปหน้าเดียว</a>
+      <a href="#s1">1 · นิยาม</a>
+      <a href="#s2">2 · ความเป็นมา</a>
+      <a href="#s3">3 · แนวคิดหลัก</a>
+      <a href="#s4">4 · วิธีวัด</a>
+      <a href="#s5">5 · เลือกใช้กับงานไหน</a>
+    </div>
+    <div class="toc-group">
+      <a href="#s6">6 · Workshop</a>
+      <a href="#w1" class="sub">W1 · Baseline pass rate</a>
+      <a href="#w2" class="sub">W2 · temp=0 ก็ยังไม่นิ่ง</a>
+      <a href="#w3" class="sub">W3 · ล่า Distribution Shift</a>
+      <a href="#w4" class="sub">W4 · ถอด Executor ออกมา</a>
+      <a href="#w5" class="sub">W5 · สร้าง Verifier</a>
+      <a href="#w6" class="sub">W6 · ลำดับด่าน</a>
+      <a href="#w7" class="sub">W7 · Best-of-N</a>
+      <a href="#w8" class="sub">W8 · Self-consistency</a>
+      <a href="#w9" class="sub">W9 · บีบด้วย Schema</a>
+      <a href="#w10" class="sub">W10 · Golden set + CI</a>
+      <a href="#w11" class="sub">W11 · blind_approve_rate</a>
+      <a href="#w12" class="sub">W12 · ความผิดพลาดทบต้น</a>
+    </div>
+    <div class="toc-group">
+      <a href="#s7">7 · Checklist &amp; Anti-pattern</a>
+      <a href="#s8">8 · อภิธานศัพท์</a>
+    </div>
+  </div>
+</nav>
+
+<main class="main">
+
+<section id="s0">
+  <span class="h-num mono">§ 00</span>
+  <h2>สรุปหน้าเดียว</h2>
+  <div class="h-en mono">The whole thing, compressed</div>
+
+  <p class="lede">ถ้าอ่านได้แค่ส่วนเดียว อ่านส่วนนี้</p>
+
+  <ol>
+    <li><strong>เอไอไม่ได้สุ่มมั่ว มันเป็น stochastic</strong> — output คือการแจกแจงความน่าจะเป็น และการแจกแจงเป็นสิ่งที่วัดได้</li>
+    <li><strong>ศัตรูตัวจริงไม่ใช่ variance แต่คือ distribution shift</strong> — รันซ้ำแล้วต่างกันเรายังจับได้ แต่แก้ prompt นิดเดียวแล้วการแจกแจงเปลี่ยนทั้งก้อน อันนั้นจับไม่ได้ถ้าไม่มี golden set</li>
+    <li><strong>ทุกประโยคเกี่ยวกับเอไอต้องมีตัวเลขกำกับ</strong> — "มันทำงานได้" ไม่ใช่ข้อมูล "รัน 20 ครั้ง ผ่าน 17" คือข้อมูล</li>
+    <li><strong>เกณฑ์ตัดสินต้อง deterministic</strong> — อย่าเอา LLM มาเป็นมาตรวัดหลัก ไม่งั้นคุณกำลังวัด noise ด้วย noise</li>
+    <li><strong>ระบบต้องมีสามส่วน ไม่ใช่สอง</strong> — Chooser (เอไอตัดสินใจ) → Executor (โค้ดลงมือ) → <em>Verifier (ด่านตรวจที่ deterministic)</em> ส่วนที่สามคือส่วนที่คนลืม</li>
+    <li><strong>ด่านที่ deterministic มาก่อนด่านที่เป็น LLM เสมอ</strong> — lint/test/schema ก่อน แล้วค่อยส่งให้ LLM reviewer</li>
+    <li><strong>variance ไม่ใช่หนี้เสมอไป</strong> — งานที่มีคำตอบเดียว variance คือหนี้ งานค้นหา/ออกแบบ variance คือทรัพยากร</li>
+    <li><strong>ในลูป agentic ความผิดพลาดทบต้น</strong> — 95% ต่อสเต็ป สิบสเต็ปเหลือ 60% ตัวเลขระดับสเต็ปหลอกตาเสมอ</li>
+  </ol>
+</section>
+
+<section id="s1">
+  <span class="h-num mono">§ 01</span>
+  <h2>นิยาม</h2>
+  <div class="h-en mono">Definitions — คำที่ใช้ผิดกันบ่อยที่สุดในวงการ</div>
+
+  <p class="lede">ครึ่งหนึ่งของความสับสนเรื่องเอไอมาจากการใช้คำผิด ส่วนนี้ล็อกคำให้ตรงก่อน</p>
+
+  <div class="def">
+    <div class="def-term">Deterministic</div>
+    <div class="def-en mono">deterministic · เชิงกำหนด</div>
+    <p>ระบบที่ input เดิมให้ output เดิมเสมอ ไม่ว่าจะรันกี่ครั้ง เมื่อไหร่ บนเครื่องไหน นี่คือโลกที่ Software Engineer อยู่มาตลอด และเป็นเหตุผลที่ unit test ทำงานได้</p>
+    <div class="ex"><b>ตัวอย่าง</b><code>sort([3,1,2])</code> ให้ <code>[1,2,3]</code> ทุกครั้ง · การคำนวณ VAT · การ hash · regex match</div>
+  </div>
+
+  <div class="def sto-b">
+    <div class="def-term">Stochastic</div>
+    <div class="def-en mono">stochastic · เชิงความน่าจะเป็น</div>
+    <p>ระบบที่ output ไม่ใช่ค่าเดียวแต่เป็น <strong>การแจกแจงความน่าจะเป็น</strong> รันหลายครั้งจะได้ค่าที่ต่างกัน แต่ต่างกันอย่างมีกฎ ไม่ได้ต่างกันแบบสุ่มมั่ว</p>
+    <p>คำนี้ตรงกว่าคำว่า Non-Deterministic สำหรับ LLM เพราะมันบอกเป็นนัยว่า "วัดได้" ซึ่งเป็นจุดตั้งต้นของทุกอย่างในคู่มือนี้</p>
+    <div class="ex"><b>ตัวอย่าง</b>สั่งให้เอไอเขียนฟังก์ชันเดิม 20 ครั้ง ได้โค้ดที่ต่างกัน 20 แบบ แต่ 17 แบบผ่านเทสต์ — 17/20 คือการแจกแจงที่วัดได้</div>
+  </div>
+
+  <div class="def sto-b">
+    <div class="def-term">Non-Deterministic</div>
+    <div class="def-en mono">non-deterministic · ไม่เชิงกำหนด</div>
+    <p>ทางเทคนิคแปลว่า "ไม่รับประกันว่า input เดิมให้ output เดิม" ซึ่ง LLM เข้าข่าย แต่คำนี้หลวมเกินไปเพราะครอบคลุมทั้ง race condition, ระบบสุ่มไร้กฎ และระบบที่มีการแจกแจงชัดเจน</p>
+    <p>ใช้ได้ในบทสนทนาทั่วไป แต่เวลาออกแบบระบบให้คิดด้วยคำว่า stochastic เพราะมันชี้ไปยังเครื่องมือที่ถูกต้อง (สถิติ) ไม่ใช่การยอมแพ้</p>
+  </div>
+
+  <div class="def sto-b">
+    <div class="def-term">Variance</div>
+    <div class="def-en mono">variance · ความแปรปรวน</div>
+    <p>ระดับความกระจายของ output เมื่อ input เหมือนเดิม วัดง่ายที่สุดด้วย pass rate จากการรันซ้ำ</p>
+    <p>ประเด็นสำคัญ: variance ไม่ได้แปลว่าแย่เสมอ มันแย่เมื่องานมีคำตอบถูกอยู่คำตอบเดียว และมันดีเมื่องานคือการค้นหา (ดู §5)</p>
+  </div>
+
+  <div class="def sto-b">
+    <div class="def-term">Distribution Shift</div>
+    <div class="def-en mono">distribution shift · การเลื่อนของการแจกแจง</div>
+    <p>การที่แก้ prompt / เปลี่ยนโมเดล / สลับลำดับหัวข้อ แล้ว<strong>การแจกแจงทั้งก้อนเลื่อนไป</strong> ไม่ใช่แค่ output เดียวที่เปลี่ยน</p>
+    <p>นี่คือตัวอันตรายที่สุด เพราะมันไม่โผล่ตอนรันซ้ำ มันโผล่ตอนที่เราแก้ prompt แล้วเทสต์เคสที่เพิ่งแก้ผ่าน เลยคิดว่าเรียบร้อย ทั้งที่เคสอื่นอีกยี่สิบเคสร่วงไปแล้ว</p>
+    <div class="ex"><b>ตัวอย่าง</b>ย้ายบรรทัด "ตอบเป็นภาษาไทย" จากท้าย prompt ไปต้น prompt แล้ว pass rate ของ tool-calling ตกจาก 90% เหลือ 65% โดยไม่มีใครรู้</div>
+  </div>
+
+  <div class="def">
+    <div class="def-term">Pass rate / pass@k</div>
+    <div class="def-en mono">pass rate · อัตราผ่าน</div>
+    <p><strong>pass rate</strong> = จำนวนครั้งที่ผ่าน ÷ จำนวนครั้งที่รัน ด้วย input เดิมและเกณฑ์เดิม</p>
+    <p><strong>pass@k</strong> = ความน่าจะเป็นที่ "อย่างน้อยหนึ่งใน k ครั้ง" จะผ่าน ใช้กับงานที่เรามีตัวกรองที่เชื่อถือได้ ถ้า pass rate ต่อครั้ง = p แล้ว pass@k = 1 − (1−p)<sup>k</sup></p>
+    <div class="ex"><b>ตัวอย่าง</b>p = 0.6 ดูแย่ แต่ถ้ามี verifier ที่เชื่อได้ pass@3 = 1 − 0.4³ = 93.6% — นี่คือเหตุผลที่ verifier เปลี่ยนเกมทั้งกระดาน</div>
+  </div>
+
+  <div class="def">
+    <div class="def-term">Deterministic Gate</div>
+    <div class="def-en mono">deterministic gate · ด่านตรวจเชิงกำหนด</div>
+    <p>ด่านตรวจที่ตัดสินผ่าน/ไม่ผ่านด้วยตรรกะที่รันซ้ำแล้วได้ผลเดิม — exit code, schema validation, test suite, diff check, lint</p>
+    <p>คุณสมบัติที่ทำให้มันมีค่า: มันไม่โกหก มันไม่เหนื่อย และมันไม่เปลี่ยนใจ</p>
+  </div>
+
+  <div class="def">
+    <div class="def-term">Fail-closed</div>
+    <div class="def-en mono">fail-closed · ล้มแล้วปิด</div>
+    <p>เมื่อด่านตรวจเออเรอร์หรือตอบไม่ได้ ให้ถือว่า <strong>ไม่ผ่าน</strong> ไม่ใช่ผ่าน ตรงข้ามกับ fail-open ที่ปล่อยผ่านเมื่อระบบพัง</p>
+    <p>ระบบเอไอที่ fail-open คือระบบที่ดูเหมือนทำงานได้ดีมาก จนถึงวันที่มันไม่</p>
+  </div>
+
+  <div class="def">
+    <div class="def-term">Golden set</div>
+    <div class="def-en mono">golden set · ชุดทดสอบอ้างอิง</div>
+    <p>ชุด input + เกณฑ์ผ่านที่ล็อกไว้ ใช้รันซ้ำทุกครั้งที่แก้ prompt หรือเปลี่ยนโมเดล เพื่อจับ distribution shift</p>
+    <p>ถ้าไม่มีสิ่งนี้ ทุกการแก้ prompt คือการเดา</p>
+  </div>
+
+  <div class="def sto-b">
+    <div class="def-term">LLM-as-judge</div>
+    <div class="def-en mono">llm-as-judge · ให้เอไอตัดสินเอไอ</div>
+    <p>การใช้ LLM ตัวหนึ่งประเมินผลงานของอีกตัว มีประโยชน์กับเกณฑ์เชิงคุณภาพที่เขียนเป็นโค้ดไม่ได้ (โทนภาษา ความเข้าใจง่าย)</p>
+    <p>แต่<strong>ห้ามใช้เป็นมาตรวัดหลัก</strong>ในการวัด pass rate เพราะตัวมันเองก็ stochastic — เท่ากับวัด noise ด้วย noise ใช้เป็นด่านรองหลัง deterministic gate เท่านั้น</p>
+  </div>
+
+  <div class="def">
+    <div class="def-term">blind_approve_rate</div>
+    <div class="def-en mono">blind approve rate · อัตราอนุมัติแบบไม่อ่าน</div>
+    <p>ถ้าอนุมัติผลงานของเอไอโดยไม่อ่านเลย จะรอดกี่เปอร์เซ็นต์ วัดจาก: จำนวนงานที่ผ่านทุกด่านแล้วไม่ต้องแก้ ÷ จำนวนงานทั้งหมดที่ถึงด่านมนุษย์</p>
+    <p>เป็นตัวชี้วัดสุขภาพระดับ pipeline ที่ตรงที่สุด เพราะมันวัดสิ่งเดียวที่สำคัญจริง — ความไว้ใจได้แบบมีตัวเลข</p>
+  </div>
+
+  <div class="def">
+    <div class="def-term">Chooser / Executor / Verifier</div>
+    <div class="def-en mono">the three-part split</div>
+    <p>สถาปัตยกรรมหลักของคู่มือนี้ — แยกส่วนที่ต้องยืดหยุ่น (stochastic) ออกจากส่วนที่ต้องแม่น (deterministic) แล้วคั่นกลางด้วยด่านตรวจ อธิบายเต็มใน §3</p>
+  </div>
+</section>
+
+<section id="s2">
+  <span class="h-num mono">§ 02</span>
+  <h2>ความเป็นมา</h2>
+  <div class="h-en mono">Why it isn't stable — และทำไมมันไม่ใช่บั๊ก</div>
+
+  <p class="lede">ความไม่นิ่งของ LLM ไม่ได้มาจากที่เดียว มันมาจากห้าชั้นซ้อนกัน และแต่ละชั้นแก้ได้ไม่เท่ากัน</p>
+
+  <h3>ชั้นที่ 1 — Sampling</h3>
+  <p>โมเดลไม่ได้ "รู้คำตอบ" แล้วพิมพ์ออกมา มันคำนวณความน่าจะเป็นของ token ถัดไปทั้งพจนานุกรม แล้ว<em>สุ่มเลือก</em>ตามน้ำหนักนั้น พารามิเตอร์ <code>temperature</code>, <code>top_p</code>, <code>top_k</code> คือตัวคุมว่าจะสุ่มกว้างแค่ไหน</p>
+  <p>ชั้นนี้เราคุมได้เต็มที่ ตั้ง temperature ต่ำก็ลด variance ได้จริง</p>
+
+  <h3>ชั้นที่ 2 — Floating-point ไม่มีสมบัติการเปลี่ยนกลุ่ม</h3>
+  <p>ในคณิตศาสตร์ (a+b)+c = a+(b+c) แต่ในเลขทศนิยมบนคอมพิวเตอร์ไม่จริง ผลลัพธ์ต่างกันในหลักท้าย ๆ</p>
+  <p>GPU คำนวณแบบขนานและจัดกลุ่มการบวกตาม batch size ที่เข้ามา ณ ขณะนั้น ซึ่งขึ้นกับว่ามีคนอื่นยิง request พร้อมเราหรือเปล่า — เราไม่ได้คุม batch ของ provider ดังนั้นความต่างระดับ 1e-7 จึงเกิดขึ้นได้ และมันพอที่จะพลิกการเลือก token ตรงจุดที่ความน่าจะเป็นสองตัวสูสีกัน</p>
+  <div class="callout">
+    <div class="callout-title mono">นี่คือเหตุผลที่ temperature = 0 ไม่ได้แปลว่า deterministic</div>
+    <p>temperature = 0 แปลว่า "เลือก token ที่น่าจะเป็นมากที่สุด" ซึ่ง deterministic ก็ต่อเมื่อค่าความน่าจะเป็นนิ่ง แต่ค่ามันไม่นิ่ง จึงเหลือความไม่นิ่งตกค้างเสมอ — น้อยลงมาก แต่ไม่ศูนย์ ทดลองเองได้ที่ W2</p>
+  </div>
+
+  <h3>ชั้นที่ 3 — MoE routing</h3>
+  <p>โมเดลสมัยใหม่จำนวนมากเป็น Mixture-of-Experts คือมี "ผู้เชี่ยวชาญ" หลายชุด แล้วมี router เลือกว่าจะส่ง token ไปหาชุดไหน การเลือกนี้ได้รับผลจาก batch ที่เข้ามาพร้อมกัน ทำให้ token เดียวกันในบริบทเดียวกันอาจถูกประมวลผลด้วย expert คนละชุดในการรันคนละครั้ง</p>
+
+  <h3>ชั้นที่ 4 — Serving stack drift</h3>
+  <p>ผู้ให้บริการอัปเดต inference engine, เปลี่ยน quantization, ย้าย hardware, ปรับ system prompt ฝั่งเซิร์ฟเวอร์ โดยที่เลข version ของโมเดลไม่เปลี่ยน pipeline ที่เคยได้ 88% เมื่อเดือนที่แล้วอาจได้ 81% วันนี้โดยที่โค้ดเราไม่เปลี่ยนสักบรรทัด</p>
+  <p>ชั้นนี้เราคุมไม่ได้เลย ทำได้อย่างเดียวคือ<strong>วัดซ้ำเป็นระยะ</strong> — golden set ที่รันทุกสัปดาห์คือระบบเตือนภัยเดียวที่มี</p>
+
+  <h3>ชั้นที่ 5 — ความผิดพลาดทบต้นในลูป</h3>
+  <p>ชั้นนี้ไม่ได้มาจากโมเดล แต่มาจากสถาปัตยกรรมที่เราสร้างเอง และมักเป็นตัวที่ทำให้พังจริง</p>
+  <p>ถ้าแต่ละสเต็ปในลูป agentic ถูก 95% และงานหนึ่งใช้ 10 สเต็ปต่อกัน ความน่าจะเป็นที่ถูกทั้งเส้นคือ 0.95<sup>10</sup> ≈ <strong>60%</strong> ตัวเลข 95% ที่ดูดีมากในระดับสเต็ป กลายเป็นระบบที่พังสี่ครั้งในสิบ</p>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>ชั้น</th><th>ที่มา</th><th>เราคุมได้ไหม</th><th>วิธีรับมือ</th></tr></thead>
+    <tbody>
+      <tr><td><strong>1 · Sampling</strong></td><td>temperature / top_p</td><td><span class="tag ok">คุมได้เต็มที่</span></td><td>ตั้งค่าให้ตรงกับประเภทงาน (§5)</td></tr>
+      <tr><td><strong>2 · Float/batch</strong></td><td>GPU + batch size</td><td><span class="tag bad">คุมไม่ได้</span></td><td>ยอมรับ แล้ววัดเป็น pass rate</td></tr>
+      <tr><td><strong>3 · MoE routing</strong></td><td>สถาปัตยกรรมโมเดล</td><td><span class="tag bad">คุมไม่ได้</span></td><td>เหมือนชั้น 2</td></tr>
+      <tr><td><strong>4 · Serving drift</strong></td><td>ฝั่ง provider</td><td><span class="tag bad">คุมไม่ได้</span></td><td>golden set รันเป็นระยะ (W10)</td></tr>
+      <tr><td><strong>5 · ทบต้นในลูป</strong></td><td>สถาปัตยกรรมของเราเอง</td><td><span class="tag ok">คุมได้เต็มที่</span></td><td>ลดจำนวนสเต็ป + verifier ทุกสเต็ป (W12)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout good">
+    <div class="callout-title mono">ข้อสังเกตที่ควรจำ</div>
+    <p>สองชั้นที่เราคุมได้คือชั้นแรกกับชั้นสุดท้าย และชั้นสุดท้ายให้ผลตอบแทนมากกว่าเยอะ คนส่วนใหญ่ใช้เวลาไปกับการจูน temperature ทั้งที่ปัญหาจริงอยู่ที่ลูปยาวเกินไปและไม่มีด่านตรวจ</p>
+  </div>
+</section>
+
+<section id="s3">
+  <span class="h-num mono">§ 03</span>
+  <h2>แนวคิดหลัก</h2>
+  <div class="h-en mono">The mental model — Chooser / Executor / Verifier</div>
+
+  <p class="lede">เป้าหมายไม่ใช่การทำให้เอไอนิ่ง แต่คือการออกแบบว่าตรงไหนควรนิ่ง ตรงไหนควรฟุ้ง และเอาอะไรมาคั่นกลาง</p>
+
+  <h3>สามส่วน ไม่ใช่สอง</h3>
+  <p>คนที่เริ่มเข้าใจเรื่องนี้มักหยุดที่การแยกสองส่วน — ให้เอไอตัดสินใจ ให้โค้ดลงมือทำ ซึ่งถูก แต่ยังไม่ครบ</p>
+
+  <div class="flow">
+    <div class="node s">
+      <div class="node-k mono">Stochastic</div>
+      <div class="node-t">Chooser</div>
+      <div class="node-d">อ่านบริบทกำกวมแล้วตัดสินใจว่าจะทำอะไรต่อ ยอมรับว่าไม่นิ่ง และไม่พยายามบังคับให้นิ่ง</div>
+    </div>
+    <div class="node d">
+      <div class="node-k mono">Deterministic</div>
+      <div class="node-t">Executor</div>
+      <div class="node-d">ลงมือทำด้วยโค้ดที่เขียนไว้แล้ว ไม่ใช่ให้เอไอคิดวิธีทำใหม่ทุกครั้ง จุดประสงค์คือหดพื้นที่ stochastic ให้เล็กที่สุด</div>
+    </div>
+    <div class="node d">
+      <div class="node-k mono">Deterministic</div>
+      <div class="node-t">Verifier</div>
+      <div class="node-d">ด่านตรวจที่ตัดสินผ่าน/ไม่ผ่านแบบซ้ำได้ มีสิทธิ์ตีกลับ และ fail-closed เสมอ</div>
+    </div>
+  </div>
+
+  <h4>ทำไม Verifier ขาดไม่ได้</h4>
+  <p>Chooser + Executor รวมกันแค่ <em>ลดพื้นที่เสี่ยง</em> แต่ไม่ได้ <em>ปิดความเสี่ยง</em> ตราบใดที่ยังมีส่วน stochastic อยู่ในระบบ มันมีโอกาสพลาดเสมอ</p>
+  <p>Verifier คือสิ่งที่แปลง <strong>"รู้ว่ามีโอกาสพลาด"</strong> ให้กลายเป็น <strong>"จับได้ตอนที่มันพลาด"</strong> — ระบบสองส่วนคือระบบที่หวังว่าจะไม่พลาด ระบบสามส่วนคือระบบที่รู้ว่าจะพลาดและเตรียมรับไว้แล้ว</p>
+  <p>และมันเปลี่ยนคณิตศาสตร์ทั้งกระดาน: ถ้า pass rate ต่อครั้ง = 0.6 ระบบไม่มี verifier ใช้งานไม่ได้ แต่ระบบที่มี verifier เชื่อถือได้ + retry 3 ครั้ง ได้ 1 − 0.4³ = <strong>93.6%</strong></p>
+
+  <h3>ลำดับของด่าน — deterministic มาก่อนเสมอ</h3>
+  <p>ถ้ามีหลายด่าน ให้เรียงจากถูกและแน่นอนที่สุดไปหาแพงและไม่แน่นอนที่สุด</p>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>ลำดับ</th><th>ด่าน</th><th>ประเภท</th><th>เหตุผลที่อยู่ตรงนี้</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Syntax / build / typecheck</td><td><span class="tag det">det</span></td><td>ถูกที่สุด เร็วที่สุด ผิดคือผิดชัด ๆ</td></tr>
+      <tr><td>2</td><td>Schema / contract validation</td><td><span class="tag det">det</span></td><td>จับ output ที่ผิดรูปก่อนใครจะเสียเวลาอ่าน</td></tr>
+      <tr><td>3</td><td>Test suite / assertion</td><td><span class="tag det">det</span></td><td>จับพฤติกรรมที่ผิด ไม่ใช่แค่รูปแบบ</td></tr>
+      <tr><td>4</td><td>Lint / policy / convention check</td><td><span class="tag det">det</span></td><td>บังคับ convention โดยไม่ต้องเถียงกับใคร</td></tr>
+      <tr><td>5</td><td>LLM reviewer</td><td><span class="tag sto">stochastic</span></td><td>เหลือไว้เฉพาะเกณฑ์เชิงคุณภาพที่เขียนเป็นโค้ดไม่ได้</td></tr>
+      <tr><td>6</td><td>ด่านมนุษย์</td><td><span class="tag ok">judgement</span></td><td>ทรัพยากรแพงที่สุด ใช้กับสิ่งที่เครื่องตัดสินแทนไม่ได้เท่านั้น</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-title mono">Anti-pattern ที่เจอบ่อยที่สุด</div>
+    <p>ส่ง output ไปให้ LLM reviewer อ่านทั้งที่ยัง build ไม่ผ่าน — เปลืองโทเคน ช้ากว่า และ reviewer มักจะไปคอมเมนต์เรื่องสไตล์แทนที่จะบอกว่า "อันนี้คอมไพล์ไม่ผ่าน"</p>
+  </div>
+
+  <h3>ขนานตัวแทน แต่เรียงลำดับดุลยพินิจ</h3>
+  <p>ส่วนที่เป็นเครื่องรันขนานได้เต็มที่ — สามตัวแทนทำงานพร้อมกันบนสามสาขา แต่จุดที่ต้องใช้ดุลยพินิจของมนุษย์ต้องเรียงเป็นเส้นเดียว เพราะมนุษย์ทำงานขนานไม่ได้และเป็นคอขวดที่แพงที่สุดในระบบ</p>
+  <p>หน้าที่ของ Verifier ทั้งหมดคือการทำให้ของที่ถึงมือมนุษย์เหลือน้อยที่สุดโดยที่คุณภาพไม่ตก</p>
+
+  <h3>variance เป็นหนี้ หรือเป็นทรัพยากร</h3>
+  <p>ทุกอย่างข้างบนอ่านแล้วเหมือน variance เป็นศัตรู มันไม่ใช่เสมอไป</p>
+  <p><strong>งานที่มีคำตอบถูกอยู่คำตอบเดียว</strong> — แก้บั๊ก ทำ migration เขียน CRUD ตามสเปก — variance คือหนี้ กดให้ต่ำที่สุด</p>
+  <p><strong>งานประเภทค้นหา</strong> — ออกแบบสถาปัตยกรรม หาทางแก้ปัญหาที่ยังไม่รู้วิธี หาเคสที่ยังไม่มีใครนึกถึง — variance คือทรัพยากร วิธีใช้คือ sample เยอะ ๆ แล้วค่อยกรองด้วยเกณฑ์ deterministic ทีหลัง</p>
+  <p>คนที่กด temperature ลงศูนย์กับทุกงานเพราะกลัวความไม่แน่นอน กำลังทิ้งของดีไปโดยไม่รู้ตัว</p>
+</section>
+
+<section id="s4">
+  <span class="h-num mono">§ 04</span>
+  <h2>วิธีวัด</h2>
+  <div class="h-en mono">Measurement — ทำให้ "น่าจะประมาณ 80%" กลายเป็นตัวเลขจริง</div>
+
+  <p class="lede">ถ้าพูดเป็นเปอร์เซ็นต์โดยไม่ได้วัด มันก็คือ vibes อีกแบบหนึ่ง แค่เปลี่ยนหน่วย</p>
+
+  <h3>สี่ขั้นตอน</h3>
+  <ol>
+    <li><strong>ล็อก input ให้เหมือนเดิมเป๊ะ</strong> — รวมถึง context, ไฟล์ที่แนบ, สถานะ repo, และ system prompt ถ้ามีอะไรเปลี่ยนระหว่างรัน ตัวเลขที่ได้ไม่มีความหมาย</li>
+    <li><strong>รัน n ครั้ง</strong> — n = 20 พอเป็นจุดเริ่มต้นสำหรับตัดสินใจในทีม ถ้าจะเอาไปตัดสินใจเรื่องใหญ่ต้องมากกว่านี้ (ดูตารางด้านล่าง)</li>
+    <li><strong>ตัดสินด้วย assertion ที่ deterministic</strong> — exit code, schema, test suite, diff ตรงจุด ห้ามใช้ LLM เป็นมาตรวัดหลัก</li>
+    <li><strong>เก็บเป็น baseline แล้วรันซ้ำทุกครั้งที่แก้</strong> — แก้ prompt แก้สกิล เปลี่ยนโมเดล ต้องรันชุดเดิมทั้งชุด ไม่ใช่รันเฉพาะเคสที่เพิ่งแก้</li>
+  </ol>
+  <p>ข้อ 4 คือยาแก้ distribution shift โดยตรง และเป็นข้อที่คนข้ามมากที่สุด</p>
+
+  <h3>n เท่าไหร่ถึงพอ</h3>
+  <p>ช่วงความเชื่อมั่นของ pass rate กว้างกว่าที่คนคิดมาก ตารางนี้คือความกว้างคร่าว ๆ ของช่วงความเชื่อมั่น 95% เมื่อวัดได้ p ≈ 0.85</p>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>n</th><th>วัดได้ 85% แปลว่าค่าจริงอยู่ราว</th><th>ใช้ตัดสินอะไรได้</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">5</td><td>55% – 98%</td><td><span class="tag bad">แทบไม่ได้อะไร</span> ใช้ดูว่า "พังทันทีไหม" เท่านั้น</td></tr>
+      <tr><td class="mono">20</td><td>68% – 95%</td><td>พอบอกได้ว่าอยู่ระดับไหน ใช้เทียบก่อน/หลังแบบหยาบ</td></tr>
+      <tr><td class="mono">50</td><td>75% – 92%</td><td>เทียบสอง prompt ที่ต่างกันชัดเจนได้</td></tr>
+      <tr><td class="mono">200</td><td>80% – 89%</td><td>จับ regression ระดับ 5–10% ได้จริง</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-title mono">กับดักที่ทำให้ทีมทะเลาะกันบ่อย</div>
+    <p>รัน 20 ครั้งได้ 85% แล้วแก้ prompt รันใหม่ได้ 90% <strong>นี่ยังไม่ใช่หลักฐานว่าดีขึ้น</strong> ช่วงความเชื่อมั่นสองอันทับกันหมด ถ้าจะเคลมว่าดีขึ้นจริงต้องเพิ่ม n หรือยอมรับตรง ๆ ว่ายังบอกไม่ได้</p>
+  </div>
+
+  <h3>เกณฑ์ผ่านต้องเขียนยังไง</h3>
+  <p>เกณฑ์ที่ดีมีลักษณะเดียวกับ unit test ที่ดี — เฉพาะเจาะจง ตรวจพฤติกรรมไม่ใช่ถ้อยคำ และรันแล้วให้ผลเดิม</p>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>เกณฑ์ที่ใช้ไม่ได้</th><th>เกณฑ์ที่ใช้ได้</th></tr></thead>
+    <tbody>
+      <tr><td>"โค้ดดูดี"</td><td><code>tsc --noEmit</code> ผ่าน + เทสต์ที่มีอยู่ผ่านทั้งหมด</td></tr>
+      <tr><td>"ตอบครบถ้วน"</td><td>JSON parse ได้ + ผ่าน schema + มีคีย์ที่กำหนดครบ</td></tr>
+      <tr><td>"แก้ถูกจุด"</td><td>diff แตะเฉพาะไฟล์ในลิสต์ที่อนุญาต + ไม่แตะ config</td></tr>
+      <tr><td>"เรียกใช้ API ถูก"</td><td>เรียก endpoint ตรงตาม contract ที่ล็อกไว้ + payload ผ่าน schema</td></tr>
+      <tr><td>"ไม่ทำอะไรอันตราย"</td><td>ไม่มีคำสั่งใน denylist + ไม่แตะไฟล์นอก working dir</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title mono">ที่ว่างสำหรับตัวเลขของคุณ</div>
+    <p>คู่มือนี้เว้นตัวเลขจริงไว้ให้เติมสามชุด — pass rate ของสกิลตัวหลัก, blind_approve_rate ก่อน/หลังใส่ Verifier, และเคส distribution shift ที่เจอจริง ตัวเลขจากระบบตัวเองมีน้ำหนักกว่าตัวเลขจาก paper ไหนก็ตาม</p>
+  </div>
+</section>
+
+<section id="s5">
+  <span class="h-num mono">§ 05</span>
+  <h2>เลือกใช้กับงานไหน</h2>
+  <div class="h-en mono">Task taxonomy — ตรงไหนควรนิ่ง ตรงไหนควรฟุ้ง</div>
+
+  <p class="lede">คำถามแรกก่อนตั้งค่าอะไรทั้งสิ้น: งานนี้มีคำตอบถูกอยู่กี่คำตอบ</p>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>ประเภทงาน</th><th>คำตอบถูก</th><th>variance คือ</th><th>ตั้งค่า &amp; เทคนิค</th><th>ด่านตรวจที่ต้องมี</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>แก้บั๊กที่มี repro</strong></td><td>หนึ่ง</td><td><span class="tag bad">หนี้</span></td>
+        <td>temp ต่ำ · ทำครั้งเดียว · retry เมื่อ verifier ตีกลับ</td><td>เทสต์ที่ repro บั๊กนั้น</td>
+      </tr>
+      <tr>
+        <td><strong>Migration / refactor เชิงกล</strong></td><td>หนึ่ง</td><td><span class="tag bad">หนี้</span></td>
+        <td>ถอดเป็นสคริปต์ (W4) อย่าให้ LLM ทำซ้ำมือ</td><td>build + test + diff scope</td>
+      </tr>
+      <tr>
+        <td><strong>CRUD ตามสเปก/contract</strong></td><td>หนึ่ง</td><td><span class="tag bad">หนี้</span></td>
+        <td>temp ต่ำ · บีบด้วย schema (W9) · เทมเพลตตายตัว</td><td>contract check + typecheck</td>
+      </tr>
+      <tr>
+        <td><strong>สกัดข้อมูล / แปลงรูปแบบ</strong></td><td>หนึ่ง</td><td><span class="tag bad">หนี้</span></td>
+        <td>structured output บังคับ schema · ห้ามให้ตอบ free-form</td><td>schema validation แบบ fail-closed</td>
+      </tr>
+      <tr>
+        <td><strong>จำแนกประเภท / ตัดสินใจ routing</strong></td><td>หนึ่ง</td><td><span class="tag bad">หนี้</span></td>
+        <td>self-consistency โหวตสามเสียง (W8)</td><td>enum ที่รับได้เท่านั้น</td>
+      </tr>
+      <tr>
+        <td><strong>เขียนเทสต์เพิ่ม</strong></td><td>หลาย</td><td><span class="tag ok">ทรัพยากร</span></td>
+        <td>sample เยอะ · เก็บเฉพาะเทสต์ที่จับบั๊กได้จริง</td><td>mutation testing / coverage delta</td>
+      </tr>
+      <tr>
+        <td><strong>ออกแบบสถาปัตยกรรม</strong></td><td>หลาย</td><td><span class="tag ok">ทรัพยากร</span></td>
+        <td>best-of-N (W7) · temp สูง · หลายมุมมอง</td><td>มนุษย์ + เกณฑ์ที่เขียนไว้ล่วงหน้า</td>
+      </tr>
+      <tr>
+        <td><strong>หาเคสที่ยังไม่มีใครนึกถึง</strong></td><td>หลาย</td><td><span class="tag ok">ทรัพยากร</span></td>
+        <td>sample สูงสุด · เน้นความหลากหลายมากกว่าคุณภาพต่อชิ้น</td><td>ดูดพวกซ้ำออกแล้วให้มนุษย์คัด</td>
+      </tr>
+      <tr>
+        <td><strong>เขียนเนื้อหา / เอกสาร</strong></td><td>หลาย</td><td><span class="tag sto">แล้วแต่</span></td>
+        <td>โครงล็อก temp ต่ำ · เนื้อหา temp กลาง</td><td>ตรวจข้อเท็จจริง + ตรวจโครงตาม outline</td>
+      </tr>
+      <tr>
+        <td><strong>รีวิวโค้ด</strong></td><td>หลาย</td><td><span class="tag sto">แล้วแต่</span></td>
+        <td>ให้ทำหลัง deterministic gate เท่านั้น · จำกัดขอบเขตที่ให้ดู</td><td>เทียบกับ checklist ที่ล็อกไว้</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>กฎง่าย ๆ สามข้อ</h3>
+  <ol>
+    <li><strong>ถ้าเขียนเป็นโค้ดได้ ให้เขียนเป็นโค้ด</strong> — อย่าจ่าย variance ให้กับงานที่ไม่ต้องใช้ดุลยพินิจ</li>
+    <li><strong>ถ้ามีคำตอบถูกคำตอบเดียว ให้มี verifier ก่อนเริ่ม</strong> — ถ้ายังเขียน verifier ไม่ได้ แปลว่ายังนิยามงานไม่ชัดพอ</li>
+    <li><strong>ถ้าคำตอบมีหลายแบบ ให้ sample เยอะแล้วกรอง</strong> — อย่าพยายามให้มันถูกในครั้งแรก จ่ายด้วยจำนวนครั้งถูกกว่าจ่ายด้วยการจูน prompt</li>
+  </ol>
+</section>
+
+<section id="s6">
+  <span class="h-num mono">§ 06</span>
+  <h2>Workshop</h2>
+  <div class="h-en mono">12 hands-on labs — ทำจริง ได้ตัวเลขจริง</div>
+
+  <p class="lede">
+    ทุก workshop ออกแบบให้จบใน 20–90 นาที ใช้ repo จริงของตัวเอง และจบด้วย<strong>ตัวเลข</strong> ไม่ใช่ความรู้สึก
+    ทำเรียงตามลำดับได้ผลดีที่สุด เพราะ W1 สร้างเครื่องมือที่ตัวหลัง ๆ ใช้ต่อ
+  </p>
+
+  <div class="ws" id="w1">
+    <div class="ws-head">
+      <div class="ws-id mono"><span>W1</span><span class="ws-time">45 นาที</span><span class="tag det">พื้นฐาน · ต้องทำก่อน</span></div>
+      <div class="ws-title">วัด baseline pass rate ของสกิลที่ใช้อยู่จริง</div>
+      <div class="ws-en mono">Measure what you already have</div>
+    </div>
+    <div class="ws-body">
+      <div class="ws-row">
+        <div class="ws-k mono">เป้าหมาย</div>
+        <p>เปลี่ยนประโยค "สกิลตัวนี้ใช้ได้ดี" ให้เป็นตัวเลข และสร้าง harness ที่ workshop ที่เหลือจะใช้ต่อ</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">เตรียม</div>
+        <p>เลือกสกิล/prompt ที่ใช้บ่อยที่สุดหนึ่งตัว · เตรียม input จริงหนึ่งชุดที่ล็อกได้ · คิดเกณฑ์ผ่านที่เป็นโค้ด</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ขั้นตอน</div>
+        <ol>
+          <li>เขียนเกณฑ์ผ่านเป็นฟังก์ชันเดียวที่คืน boolean — ถ้าเขียนไม่ได้ ให้หยุดแล้วนิยามงานใหม่ก่อน นี่คือสัญญาณว่างานยังกำกวมเกินไป</li>
+          <li>รันสกิลด้วย input เดิม 20 ครั้ง เก็บ output ทุกครั้งลงไฟล์แยก อย่าเขียนทับ</li>
+          <li>รันเกณฑ์กับทั้ง 20 output นับ pass rate</li>
+          <li>เปิดอ่านเคสที่ fail ทุกเคส แล้วจัดกลุ่มว่าพังแบบเดียวกันหรือคนละแบบ</li>
+        </ol>
+      </div>
+      <div class="ws-row">
+        <div class="codewrap">
+          <div class="codehead mono"><span>bench.ts — harness ที่ใช้ต่อได้ทุก workshop</span><button class="copybtn mono">copy</button></div>
+<pre><code>type Result = { run: number, pass: boolean, ms: number, output: string }
+
+async function bench(
+  task: () =&gt; Promise&lt;string&gt;,
+  check: (out: string) =&gt; Promise&lt;boolean&gt;,
+  n = 20
+): Promise&lt;Result[]&gt; {
+  const results: Result[] = []
+  for (let i = 0; i &lt; n; i++) {
+    const t0 = Date.now()
+    let output = ""
+    let pass = false
+    try {
+      output = await task()
+      pass = await check(output)
+    } catch (e) {
+      output = String(e)
+      pass = false          // fail-closed: เออเรอร์ = ไม่ผ่าน
+    }
+    results.push({ run: i + 1, pass, ms: Date.now() - t0, output })
+    console.log(`run ${i + 1}/${n} ${pass ? "PASS" : "FAIL"} ${Date.now() - t0}ms`)
+  }
+  return results
+}
+
+function report(results: Result[]) {
+  const passed = results.filter(r =&gt; r.pass).length
+  const n = results.length
+  const p = passed / n
+  // ช่วงความเชื่อมั่นแบบหยาบ (normal approx) — เตือนใจว่า n น้อยแปลว่าบอกอะไรไม่ได้
+  const se = Math.sqrt(p * (1 - p) / n)
+  const lo = Math.max(0, p - 1.96 * se)
+  const hi = Math.min(1, p + 1.96 * se)
+  console.log(`\npass rate: ${passed}/${n} = ${(p * 100).toFixed(1)}%`)
+  console.log(`95% CI:    ${(lo * 100).toFixed(1)}% – ${(hi * 100).toFixed(1)}%`)
+}</code></pre>
+        </div>
+      </div>
+      <div class="ws-row expect">
+        <div class="ws-k mono">สิ่งที่ควรเห็น</div>
+        <p>คนส่วนใหญ่เจอตัวเลขที่ต่ำกว่าที่คิดไว้ 10–30% และเจอว่าเคสที่ fail ไม่ได้พังแบบเดียวกัน — มักมีสองสามโหมดความพังที่แยกกันชัดเจน ซึ่งแต่ละโหมดแก้คนละวิธี</p>
+      </div>
+      <div class="ws-row trap">
+        <div class="ws-k mono">กับดัก</div>
+        <p>เขียนเกณฑ์ให้หลวมเพื่อให้ตัวเลขสวย เช่นเช็คแค่ว่า output ไม่ว่าง ตัวเลขที่ได้จะไร้ประโยชน์ทันที เกณฑ์ควรเข้มพอที่ว่า "ถ้าผ่านแล้วกล้า merge"</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws" id="w2">
+    <div class="ws-head">
+      <div class="ws-id mono"><span>W2</span><span class="ws-time">30 นาที</span><span class="tag sto">ทำลายความเชื่อ</span></div>
+      <div class="ws-title">พิสูจน์ว่า temperature = 0 ก็ยังไม่นิ่ง</div>
+      <div class="ws-en mono">Determinism you thought you bought</div>
+    </div>
+    <div class="ws-body">
+      <div class="ws-row">
+        <div class="ws-k mono">เป้าหมาย</div>
+        <p>เห็นด้วยตาตัวเองว่าการตั้ง temperature เป็น 0 ลด variance ได้มาก แต่ไม่ได้ทำให้เป็น deterministic เพื่อจะได้เลิกพึ่งมันเป็นกลไกความปลอดภัย</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ขั้นตอน</div>
+        <ol>
+          <li>เลือก prompt ที่คำตอบยาวพอสมควร (200+ tokens) และมีจุดที่ต้องตัดสินใจกำกวม เช่นให้ตั้งชื่อตัวแปรหรือเลือกรูปแบบการจัดโครงสร้าง</li>
+          <li>ยิงด้วย temperature 0 จำนวน 30 ครั้ง เก็บ hash ของ output ทุกครั้ง</li>
+          <li>นับจำนวน hash ที่ไม่ซ้ำกัน</li>
+          <li>ทำซ้ำด้วย temperature 0.7 แล้วเทียบจำนวน hash ที่ไม่ซ้ำ</li>
+          <li>ถ้ามีเวลา ลองยิงตอนช่วงเวลาที่คนใช้เยอะกับช่วงดึก แล้วเทียบกัน</li>
+        </ol>
+      </div>
+      <div class="ws-row">
+        <div class="codewrap">
+          <div class="codehead mono"><span>drift.ts</span><button class="copybtn mono">copy</button></div>
+<pre><code>import { createHash } from "node:crypto"
+
+const sha = (s: string) =&gt; createHash("sha256").update(s).digest("hex").slice(0, 12)
+
+async function uniqueness(temp: number, n = 30) {
+  const seen = new Map&lt;string, number&gt;()
+  for (let i = 0; i &lt; n; i++) {
+    const out = await callModel({ prompt: PROMPT, temperature: temp })
+    const h = sha(out.trim())
+    seen.set(h, (seen.get(h) ?? 0) + 1)
+  }
+  const sorted = [...seen.entries()].sort((a, b) =&gt; b[1] - a[1])
+  console.log(`temp=${temp}  unique=${seen.size}/${n}`)
+  console.log(`  โหมดที่พบบ่อยสุด: ${sorted[0][1]}/${n} ครั้ง`)
+  return seen.size
+}</code></pre>
+        </div>
+      </div>
+      <div class="ws-row expect">
+        <div class="ws-k mono">สิ่งที่ควรเห็น</div>
+        <p>temp = 0 มักได้ output ไม่ซ้ำอยู่ 2–5 แบบจาก 30 ครั้ง ไม่ใช่ 1 แบบ ส่วน temp = 0.7 อาจได้ 25–30 แบบ บทเรียนคือ temp 0 คือ "ลด variance" ไม่ใช่ "ปิด variance"</p>
+      </div>
+      <div class="ws-row trap">
+        <div class="ws-k mono">กับดัก</div>
+        <p>ถ้า prompt ง่ายมากจนคำตอบสั้นและชัด (เช่นถามผลบวกเลขสองตัว) จะได้ 1 แบบทั้ง 30 ครั้ง แล้วสรุปผิดว่ามันนิ่ง ต้องใช้ prompt ที่มีจุดตัดสินใจกำกวมจริง ๆ</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws" id="w3">
+    <div class="ws-head">
+      <div class="ws-id mono"><span>W3</span><span class="ws-time">60 นาที</span><span class="tag bad">สำคัญที่สุด</span></div>
+      <div class="ws-title">ล่า Distribution Shift ใน prompt ของตัวเอง</div>
+      <div class="ws-en mono">Hunting the invisible regression</div>
+    </div>
+    <div class="ws-body">
+      <div class="ws-row">
+        <div class="ws-k mono">เป้าหมาย</div>
+        <p>เห็นว่าการแก้ prompt ที่ "ดูไม่น่ามีผล" ทำให้ pass rate เปลี่ยนได้แค่ไหน นี่คือ workshop ที่เปลี่ยนวิธีทำงานของคนมากที่สุด</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ขั้นตอน</div>
+        <ol>
+          <li>เอา prompt จาก W1 มาเป็นตัวตั้ง วัด baseline ไว้แล้ว</li>
+          <li>สร้างตัวแปร 5 แบบที่ "ไม่ควรมีผล" — สลับลำดับสองหัวข้อที่ไม่เกี่ยวกัน · เปลี่ยน bullet เป็นเลขข้อ · ย้ายคำสั่งภาษาจากท้ายไปต้น · เพิ่มบรรทัด "ตอบให้กระชับ" · ตัดตัวอย่างออกหนึ่งตัวอย่าง</li>
+          <li>วัด pass rate ของทั้ง 5 แบบด้วย n เท่ากันและเกณฑ์เดียวกัน</li>
+          <li>เรียงจากดีสุดไปแย่สุด แล้วดูว่าช่องว่างกว้างแค่ไหน</li>
+          <li>เลือกตัวที่แย่สุด เปิดอ่าน output ว่าพังแบบไหน — มักจะพังคนละแบบกับ baseline</li>
+        </ol>
+      </div>
+      <div class="ws-row">
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>ตัวแปร</th><th>สิ่งที่เปลี่ยน</th><th>pass rate</th><th>ผลพังแบบไหน</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">v0</td><td>baseline</td><td class="mono">__ / 20</td><td>—</td></tr>
+              <tr><td class="mono">v1</td><td>สลับลำดับหัวข้อ</td><td class="mono">__ / 20</td><td></td></tr>
+              <tr><td class="mono">v2</td><td>bullet → เลขข้อ</td><td class="mono">__ / 20</td><td></td></tr>
+              <tr><td class="mono">v3</td><td>ย้ายคำสั่งภาษา</td><td class="mono">__ / 20</td><td></td></tr>
+              <tr><td class="mono">v4</td><td>เพิ่ม "ตอบให้กระชับ"</td><td class="mono">__ / 20</td><td></td></tr>
+              <tr><td class="mono">v5</td><td>ตัดตัวอย่างออก 1</td><td class="mono">__ / 20</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="ws-row expect">
+        <div class="ws-k mono">สิ่งที่ควรเห็น</div>
+        <p>ช่องว่างระหว่างตัวดีสุดกับแย่สุดมักกว้าง 15–40% จากการแก้ที่ทุกคนในทีมจะเรียกว่า "แก้นิดเดียว" และตัวที่ทำให้แย่ลงมักไม่ใช่ตัวที่เดาไว้ล่วงหน้า</p>
+      </div>
+      <div class="ws-row trap">
+        <div class="ws-k mono">กับดัก</div>
+        <p>เห็นตัวเลขต่างกัน 5% แล้วรีบสรุปว่าตัวไหนดีกว่า — ที่ n = 20 ความต่าง 5% ยังอยู่ใน noise กลับไปดู §4 ถ้าจะเคลมต้องเพิ่ม n หรือรอให้ช่องว่างกว้างพอ</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws" id="w4">
+    <div class="ws-head">
+      <div class="ws-id mono"><span>W4</span><span class="ws-time">90 นาที</span><span class="tag det">แปลง sto → det</span></div>
+      <div class="ws-title">ถอด Executor ออกมาเป็นโค้ด</div>
+      <div class="ws-en mono">Turning a stochastic step into a deterministic one</div>
+    </div>
+    <div class="ws-body">
+      <div class="ws-row">
+        <div class="ws-k mono">เป้าหมาย</div>
+        <p>หางานที่ปล่อยให้เอไอทำเองซ้ำ ๆ ทั้งที่มันคือขั้นตอนตายตัว แล้วแปลงเป็นสคริปต์ ผลคือ pass rate ของขั้นนั้นกลายเป็น ~100% และเร็วขึ้นหลายเท่า</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">วิธีหาว่าอันไหนควรถอด</div>
+        <p>เปิด log ย้อนหลังแล้วหาขั้นตอนที่เข้าเงื่อนไขสามข้อพร้อมกัน</p>
+        <ul>
+          <li>ทำบ่อย (สัปดาห์ละหลายครั้งขึ้นไป)</li>
+          <li>ขั้นตอนเหมือนเดิมทุกครั้ง — ถ้าให้คนอธิบายวิธีทำ จะอธิบายเป็นสเต็ปตายตัวได้</li>
+          <li>เคยพลาดอย่างน้อยหนึ่งครั้ง</li>
+        </ul>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ขั้นตอน</div>
+        <ol>
+          <li>เลือกงานหนึ่งอย่าง วัด pass rate แบบเดิมไว้ก่อนด้วย W1 harness</li>
+          <li>ให้เอไอเขียนสคริปต์ที่ทำงานนั้น พร้อม test — จุดสำคัญคือให้มันเขียน<strong>เครื่องมือ</strong> ไม่ใช่ให้มันทำงาน</li>
+          <li>รีวิวสคริปต์ด้วยตาตัวเอง หนึ่งครั้ง ให้จบ</li>
+          <li>เปลี่ยนบทบาทเอไอจาก "ผู้ทำ" เป็น "ผู้เลือกว่าจะเรียกเครื่องมือไหนด้วย argument อะไร"</li>
+          <li>วัด pass rate ใหม่ เทียบกับของเดิม</li>
+        </ol>
+      </div>
+      <div class="ws-row">
+        <div class="codewrap">
+          <div class="codehead mono"><span>ก่อน / หลัง — รูปแบบที่เปลี่ยนไป</span><button class="copybtn mono">copy</button></div>
+<pre><code>// ก่อน — ทุกครั้งคือการพนัน
+// prompt: "อ่าน Bruno collection แล้วสร้าง type สำหรับ endpoint นี้"
+// → เอไอตีความ schema เอง เขียน type เอง พลาดได้หลายจุด
+
+// หลัง — เอไอเลือก โค้ดทำ
+// 1) เครื่องมือ (deterministic, มีเทสต์, รันซ้ำได้ผลเดิม)
+export function genTypesFromBruno(collectionPath: string, endpoint: string): string {
+  const spec = parseBrunoFile(collectionPath, endpoint)   // อ่าน contract จริง
+  return renderTypeScript(spec)                            // แปลงตามกฎตายตัว
+}
+
+// 2) เอไอทำแค่: เลือก endpoint ไหน แล้วเรียกเครื่องมือ
+// prompt: "จาก YouTrack ticket นี้ endpoint ไหนเกี่ยวข้อง แล้วเรียก genTypesFromBruno"
+//
+// พื้นที่ stochastic หดจาก "ทั้งงาน" เหลือแค่ "เลือกชื่อ endpoint"
+// และการเลือกผิดจับได้ทันทีเพราะชื่อที่ไม่มีอยู่จะ throw</code></pre>
+        </div>
+      </div>
+      <div class="ws-row expect">
+        <div class="ws-k mono">สิ่งที่ควรเห็น</div>
+        <p>pass rate ของขั้นตอนนั้นขึ้นไปเกือบ 100% เวลาลดลงมาก และที่สำคัญที่สุด — ความพังที่เหลืออยู่ย้ายไปกองอยู่ที่จุดเดียว (การเลือก argument) ซึ่งง่ายต่อการใส่ verifier มาก</p>
+      </div>
+      <div class="ws-row trap">
+        <div class="ws-k mono">กับดัก</div>
+        <p>ถอดงานที่ยังไม่นิ่งจริงออกมาเป็นสคริปต์เร็วเกินไป จะได้สคริปต์ที่ต้องแก้ทุกสัปดาห์ เกณฑ์คือ "ขั้นตอนเหมือนเดิมทุกครั้ง" ถ้ายังไม่เหมือน ปล่อยให้เป็น stochastic ไปก่อน</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws" id="w5">
+    <div class="ws-head">
+      <div class="ws-id mono"><span>W5</span><span class="ws-time">75 นาที</span><span class="tag det">ส่วนที่คนลืม</span></div>
+      <div class="ws-title">สร้าง Verifier ที่ตีกลับได้จริง</div>
+      <div class="ws-en mono">Building the third part</div>
+    </div>
+    <div class="ws-body">
+      <div class="ws-row">
+        <div class="ws-k mono">เป้าหมาย</div>
+        <p>มีด่านตรวจที่ deterministic ล้วน ต่อท้าย Executor และมีอำนาจตีกลับ พร้อมพฤติกรรม fail-closed</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">หลักการออกแบบ</div>
+        <ul>
+          <li><strong>ตรวจผลลัพธ์ ไม่ใช่ตรวจกระบวนการ</strong> — อย่าถามว่าเอไอคิดถูกไหม ให้ถามว่าของที่ออกมาใช้ได้ไหม</li>
+          <li><strong>เออเรอร์ = ไม่ผ่าน</strong> — ถ้า verifier เองพัง ต้องตีกลับ ไม่ใช่ปล่อยผ่าน</li>
+          <li><strong>บอกเหตุผลที่เครื่องอ่านได้</strong> — ข้อความตีกลับจะถูกป้อนกลับเข้า Chooser รอบถัดไป ต้องเจาะจงพอที่จะแก้ตรงจุด</li>
+          <li><strong>มีเพดานรอบ</strong> — retry ไม่จำกัดคือลูปไม่รู้จบที่เผาเงิน กำหนดไว้ 2–3 รอบแล้วส่งต่อมนุษย์</li>
+        </ul>
+      </div>
+      <div class="ws-row">
+        <div class="codewrap">
+          <div class="codehead mono"><span>verifier.ts</span><button class="copybtn mono">copy</button></div>
+<pre><code>type Verdict = { Result: "pass" } | { Result: "reject", Error: string[] }
+
+type Check = { name: string, run: () =&gt; Promise&lt;string | null&gt; }  // null = ผ่าน
+
+// เรียงจากถูกและเร็วที่สุดไปหาแพงที่สุด — ตกด่านแรกไม่ต้องจ่ายด่านหลัง
+const checks: Check[] = [
+  { name: "typecheck", run: async () =&gt; await sh("tsc --noEmit") ? null : "typecheck ไม่ผ่าน" },
+  { name: "schema",    run: async () =&gt; validateSchema(output) },
+  { name: "tests",     run: async () =&gt; await sh("pnpm test") ? null : "เทสต์ตก" },
+  { name: "scope",     run: async () =&gt; diffOutsideAllowlist() },
+  { name: "convention",run: async () =&gt; await sh("pnpm lint") ? null : "lint ไม่ผ่าน" }
+]
+
+async function verify(): Promise&lt;Verdict&gt; {
+  const errors: string[] = []
+  for (const c of checks) {
+    try {
+      const err = await c.run()
+      if (err) {
+        errors.push(`[${c.name}] ${err}`)
+        break                       // ตกด่านแรกแล้วหยุด ไม่ต้องจ่ายด่านที่เหลือ
+      }
+    } catch (e) {
+      errors.push(`[${c.name}] ตรวจไม่สำเร็จ: ${String(e)}`)
+      break                         // fail-closed: ตรวจไม่ได้ = ไม่ผ่าน
+    }
+  }
+  return errors.length === 0 ? { Result: "pass" } : { Result: "reject", Error: errors }
+}
+
+async function runWithVerifier(maxAttempts = 3) {
+  let feedback = ""
+  for (let attempt = 1; attempt &lt;= maxAttempts; attempt++) {
+    await execute(feedback)
+    const v = await verify()
+    if (v.Result === "pass") return { Result: "done", attempts: attempt }
+    feedback = v.Error.join("\n")
+    console.log(`attempt ${attempt} ถูกตีกลับ:\n${feedback}`)
+  }
+  return { Result: "escalate", Error: feedback }   // ถึงเพดานแล้วส่งต่อมนุษย์
+}</code></pre>
+        </div>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ทดสอบว่า verifier ใช้ได้จริงหรือเปล่า</div>
+        <ol>
+          <li>เอา output ที่ fail จาก W1 มา 5 เคส — verifier ต้องจับได้ทั้ง 5 ถ้าจับไม่ได้แปลว่ายังหลวม</li>
+          <li>เอา output ที่ pass มา 5 เคส — verifier ต้องปล่อยผ่านทั้ง 5 ถ้าตีกลับแปลว่าเข้มเกินและจะทำให้ระบบวนไม่รู้จบ</li>
+          <li>ทำให้ verifier เองพังโดยตั้งใจ (ลบไฟล์ config) — ต้องได้ reject ไม่ใช่ pass</li>
+        </ol>
+      </div>
+      <div class="ws-row expect">
+        <div class="ws-k mono">สิ่งที่ควรเห็น</div>
+        <p>วัด pass rate ใหม่แบบมี retry 3 รอบ ตัวเลขจะกระโดดขึ้นมากตามสูตร pass@k — จาก 60% ต่อครั้ง เป็นราว 90%+ ต่องาน โดยที่ไม่ได้แตะ prompt เลยสักตัวอักษร</p>
+      </div>
+      <div class="ws-row trap">
+        <div class="ws-k mono">กับดัก</div>
+        <p>Verifier ที่ตรวจเก่งเกินไปจนตีกลับแทบทุกครั้ง ทำให้ระบบวนจนถึงเพดานตลอด สังเกตจากอัตราการ escalate ถ้าเกิน 30% แปลว่า verifier เข้มเกิน ไม่ใช่เอไอห่วย</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws" id="w6">
+    <div class="ws-head">
+      <div class="ws-id mono"><span>W6</span><span class="ws-time">40 นาที</span><span class="tag det">จัดลำดับ</span></div>
+      <div class="ws-title">เรียงด่าน deterministic ไว้หน้า LLM reviewer</div>
+      <div class="ws-en mono">Gate ordering — cheap and certain first</div>
+    </div>
+    <div class="ws-body">
+      <div class="ws-row">
+        <div class="ws-k mono">เป้าหมาย</div>
+        <p>วัดว่าการจัดลำดับด่านใหม่ประหยัดเวลาและโทเคนไปเท่าไหร่ และทำให้คุณภาพรีวิวดีขึ้นแค่ไหน</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ขั้นตอน</div>
+        <ol>
+          <li>เก็บ 30 เคสจริงจาก log ที่เคยส่งเข้า LLM reviewer</li>
+          <li>รัน deterministic gate กับทั้ง 30 เคส นับว่ากี่เคสตกตั้งแต่ด่านแรก</li>
+          <li>เทียบต้นทุน: เคสที่ตกด่านแรกคือเคสที่ไม่ควรจ่ายค่ารีวิวเลย คิดเป็นโทเคนและวินาทีเท่าไหร่</li>
+          <li>อ่านคอมเมนต์ของ LLM reviewer ในเคสที่ build ไม่ผ่าน — นับว่ากี่เคสที่ reviewer ไปคอมเมนต์เรื่องอื่นแทนที่จะบอกว่ามันคอมไพล์ไม่ผ่าน</li>
+        </ol>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ตารางที่ต้องกรอก</div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>ตัวชี้วัด</th><th>ก่อนจัดลำดับ</th><th>หลังจัดลำดับ</th></tr></thead>
+            <tbody>
+              <tr><td>เคสที่ถึง LLM reviewer</td><td class="mono">30</td><td class="mono">__</td></tr>
+              <tr><td>โทเคนที่ใช้รวม</td><td class="mono">__</td><td class="mono">__</td></tr>
+              <tr><td>เวลาเฉลี่ยต่อเคส</td><td class="mono">__ s</td><td class="mono">__ s</td></tr>
+              <tr><td>เคสที่ reviewer พลาดของที่เครื่องจับได้</td><td class="mono">__</td><td class="mono">0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="ws-row expect">
+        <div class="ws-k mono">สิ่งที่ควรเห็น</div>
+        <p>มักมี 20–40% ของเคสที่ตกด่าน deterministic ตั้งแต่ด่านแรก แปลว่าค่ารีวิวส่วนนั้นเคยจ่ายทิ้งไปเปล่า ๆ และคุณภาพคอมเมนต์ของ reviewer ดีขึ้นทันทีเพราะมันได้อ่านแต่ของที่ทำงานได้แล้ว</p>
+      </div>
+      <div class="ws-row trap">
+        <div class="ws-k mono">กับดัก</div>
+        <p>ย้าย LLM reviewer ไปท้ายสุดแล้วลืมส่งผลของด่านก่อนหน้าให้มันด้วย reviewer ควรรู้ว่าอะไรผ่านมาแล้วบ้าง จะได้ไม่เสียเวลาตรวจซ้ำ</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws" id="w7">
+    <div class="ws-head">
+      <div class="ws-id mono"><span>W7</span><span class="ws-time">50 นาที</span><span class="tag sto">variance เป็นทรัพยากร</span></div>
+      <div class="ws-title">Best-of-N สำหรับงานที่ไม่มีคำตอบเดียว</div>
+      <div class="ws-en mono">Spending variance on purpose</div>
+    </div>
+    <div class="ws-body">
+      <div class="ws-row">
+        <div class="ws-k mono">เป้าหมาย</div>
+        <p>ใช้ความไม่แน่นอนให้เป็นประโยชน์ — sample เยอะแล้วกรองด้วยเกณฑ์ที่ deterministic แทนที่จะพยายามจูน prompt ให้ถูกในครั้งเดียว</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">เหมาะกับ</div>
+        <p>ออกแบบสถาปัตยกรรม · เขียนเทสต์เพิ่ม · หาเคสขอบ · หาชื่อ/โครงสร้างที่ดีกว่า · แก้บั๊กที่ยังไม่รู้สาเหตุ</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ขั้นตอน</div>
+        <ol>
+          <li>เลือกโจทย์ที่คำตอบมีได้หลายแบบ</li>
+          <li>ยิง 8 ครั้งที่ temperature สูง (0.8–1.0) แบบขนาน</li>
+          <li>ตัดตัวที่ตกเกณฑ์ deterministic ออกก่อน — คอมไพล์ไม่ผ่าน ผิด schema ผิด convention</li>
+          <li>ดูดตัวที่เหมือนกันออก เหลือแต่แนวทางที่ต่างกันจริง</li>
+          <li>ที่เหลือค่อยให้มนุษย์หรือ LLM reviewer จัดอันดับ</li>
+        </ol>
+      </div>
+      <div class="ws-row">
+        <div class="codewrap">
+          <div class="codehead mono"><span>bestof.ts</span><button class="copybtn mono">copy</button></div>
+<pre><code>async function bestOfN(prompt: string, n = 8) {
+  // ยิงขนาน — variance สูงคือสิ่งที่ต้องการ ไม่ใช่สิ่งที่ต้องกด
+  const candidates = await Promise.all(
+    Array.from({ length: n }, () =&gt; callModel({ prompt, temperature: 0.9 }))
+  )
+
+  // ชั้นที่ 1: กรองด้วยเกณฑ์ที่ deterministic — ถูกและไม่โกหก
+  const valid = []
+  for (const c of candidates) {
+    if (await passesDeterministicChecks(c)) valid.push(c)
+  }
+
+  // ชั้นที่ 2: ดูดของซ้ำออก เก็บเฉพาะแนวทางที่ต่างกันจริง
+  const distinct = dedupeBySignature(valid, structuralSignature)
+
+  console.log(`${n} ตัวอย่าง → ผ่านเกณฑ์ ${valid.length} → ต่างกันจริง ${distinct.length}`)
+  return distinct   // ที่เหลือค่อยให้คนจัดอันดับ
+}</code></pre>
+        </div>
+      </div>
+      <div class="ws-row expect">
+        <div class="ws-k mono">สิ่งที่ควรเห็น</div>
+        <p>จาก 8 ตัวอย่าง มักผ่านเกณฑ์ 4–6 ตัว แล้วเหลือแนวทางที่ต่างกันจริง 2–3 แนว ซึ่งเป็นจำนวนที่มนุษย์ตัดสินใจได้พอดี และมักมีอย่างน้อยหนึ่งแนวที่คิดเองไม่ออก</p>
+      </div>
+      <div class="ws-row trap">
+        <div class="ws-k mono">กับดัก</div>
+        <p>ใช้ best-of-N กับงานที่มีคำตอบเดียว จะได้ 8 ตัวเลือกที่ถูกอยู่ตัวเดียวและเสียเวลาไปกับการเลือก ถ้ามีคำตอบเดียว ให้ใช้ verifier + retry (W5) ไม่ใช่ best-of-N</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws" id="w8">
+    <div class="ws-head">
+      <div class="ws-id mono"><span>W8</span><span class="ws-time">40 นาที</span><span class="tag det">โหวต</span></div>
+      <div class="ws-title">Self-consistency สำหรับงานจำแนกและตัดสินใจ</div>
+      <div class="ws-en mono">Majority vote as a cheap verifier</div>
+    </div>
+    <div class="ws-body">
+      <div class="ws-row">
+        <div class="ws-k mono">เป้าหมาย</div>
+        <p>สำหรับงานที่ output เป็นตัวเลือกจำกัด (จำแนกประเภท, ตัดสินใจ routing, ให้คะแนน) ใช้การโหวตหลายเสียงลด variance โดยไม่ต้องเขียน verifier ที่ซับซ้อน</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">หลักการ</div>
+        <p>ถ้าโมเดลถูก 80% ต่อครั้งและความผิดพลาดกระจายตัว โหวต 3 เสียงแบบ majority จะได้ความถูกต้องราว 89% และ 5 เสียงราว 94% — ราคาที่จ่ายคือโทเคนคูณจำนวนเสียง</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ขั้นตอน</div>
+        <ol>
+          <li>บังคับ output ให้เป็น enum ที่กำหนดไว้เท่านั้น — ถ้าตอบนอกลิสต์ให้ถือว่าเสียงเสีย</li>
+          <li>ยิง 3 ครั้ง (หรือ 5 ถ้างานสำคัญ) นับเสียงข้างมาก</li>
+          <li><strong>เก็บระดับความเห็นพ้องไว้ด้วย</strong> — 3/3 กับ 2/3 คือสัญญาณคนละแบบ</li>
+          <li>ตั้งกฎว่า ถ้าไม่เป็นเอกฉันท์ ให้ส่งต่อมนุษย์หรือด่านที่แพงกว่า</li>
+        </ol>
+      </div>
+      <div class="ws-row">
+        <div class="codewrap">
+          <div class="codehead mono"><span>vote.ts</span><button class="copybtn mono">copy</button></div>
+<pre><code>type Vote = { Result: string, confidence: number, unanimous: boolean }
+
+const LABELS = ["bug", "feature", "chore", "docs"] as const
+
+async function classify(input: string, voters = 3): Promise&lt;Vote&gt; {
+  const raw = await Promise.all(
+    Array.from({ length: voters }, () =&gt; callModel({ prompt: build(input), temperature: 0.3 }))
+  )
+
+  // เสียงที่ตอบนอก enum ถือว่าเสีย ไม่นับ — fail-closed ระดับเสียง
+  const valid = raw.map(r =&gt; r.trim()).filter(r =&gt; LABELS.includes(r as any))
+
+  const tally = new Map&lt;string, number&gt;()
+  for (const v of valid) tally.set(v, (tally.get(v) ?? 0) + 1)
+
+  const [winner, count] = [...tally.entries()].sort((a, b) =&gt; b[1] - a[1])[0] ?? ["", 0]
+  return {
+    Result: winner,
+    confidence: count / voters,
+    unanimous: count === voters
+  }
+}
+
+// การใช้งาน: ไม่เป็นเอกฉันท์ = ส่งต่อ ไม่ใช่เดา
+const v = await classify(ticket)
+if (!v.unanimous) await escalateToHuman(ticket, v)</code></pre>
+        </div>
+      </div>
+      <div class="ws-row expect">
+        <div class="ws-k mono">สิ่งที่ควรเห็น</div>
+        <p>ความถูกต้องขึ้นราว 5–15% และที่มีค่ากว่านั้นคือ — เคสที่โหวตไม่เป็นเอกฉันท์มักเป็นเคสที่มนุษย์ก็ลังเลเหมือนกัน ระดับความเห็นพ้องจึงกลายเป็นเครื่องตรวจจับ "โจทย์กำกวม" ได้ฟรี ๆ</p>
+      </div>
+      <div class="ws-row trap">
+        <div class="ws-k mono">กับดัก</div>
+        <p>ใช้กับงานที่ output เป็นข้อความยาว — โหวตไม่ได้เพราะไม่มีวันซ้ำกัน เทคนิคนี้ใช้ได้เฉพาะเมื่อ output อยู่ในเซ็ตจำกัดเท่านั้น</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws" id="w9">
+    <div class="ws-head">
+      <div class="ws-id mono"><span>W9</span><span class="ws-time">45 นาที</span><span class="tag det">บีบพื้นที่</span></div>
+      <div class="ws-title">บีบ variance ด้วย schema แทนการขอร้องใน prompt</div>
+      <div class="ws-en mono">Constrain the output space, not the wording</div>
+    </div>
+    <div class="ws-body">
+      <div class="ws-row">
+        <div class="ws-k mono">เป้าหมาย</div>
+        <p>เปรียบเทียบสองวิธีคุม output — เขียนใน prompt ว่า "ตอบเป็น JSON แบบนี้นะ" กับบังคับด้วย structured output/schema จริง ๆ แล้ววัดว่าต่างกันเท่าไหร่</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ขั้นตอน</div>
+        <ol>
+          <li>เลือกงานที่ต้องได้ output มีโครงสร้าง เช่นสกัดข้อมูลจากตั๋วงาน</li>
+          <li>เวอร์ชัน A: อธิบายรูปแบบใน prompt อย่างละเอียด พร้อมตัวอย่าง</li>
+          <li>เวอร์ชัน B: ใช้ structured output / JSON schema ของ provider บังคับ</li>
+          <li>วัดทั้งสองแบบ 20 ครั้ง ด้วยเกณฑ์เดียวกัน — parse ได้ไหม ผ่าน schema ไหม ค่าที่ได้ถูกไหม</li>
+          <li>แยกตัวเลขเป็นสองชั้น: <em>ผิดรูป</em> (parse/schema ไม่ผ่าน) กับ <em>ผิดเนื้อหา</em> (รูปถูกแต่ค่าผิด)</li>
+        </ol>
+      </div>
+      <div class="ws-row">
+        <div class="codewrap">
+          <div class="codehead mono"><span>schema-gate.ts</span><button class="copybtn mono">copy</button></div>
+<pre><code>import { z } from "zod"
+
+const TicketInfo = z.object({
+  ticketId: z.string().regex(/^[A-Z]+-\d+$/),
+  type: z.enum(["bug", "feature", "chore", "docs"]),
+  affectedFiles: z.array(z.string()).max(20),
+  needsMigration: z.boolean()
+})
+
+type TicketInfo = z.infer&lt;typeof TicketInfo&gt;
+
+// ด่านนี้ deterministic ล้วน — รันซ้ำได้ผลเดิม ไม่ต้องพึ่งโมเดล
+function parseStrict(raw: string): { Result: TicketInfo } | { Error: string } {
+  let json: unknown
+  try {
+    json = JSON.parse(raw)
+  } catch {
+    return { Error: "ไม่ใช่ JSON ที่ parse ได้" }
+  }
+  const r = TicketInfo.safeParse(json)
+  if (!r.success) return { Error: r.error.issues.map(i =&gt; `${i.path.join(".")}: ${i.message}`).join("; ") }
+  return { Result: r.data }
+}</code></pre>
+        </div>
+      </div>
+      <div class="ws-row expect">
+        <div class="ws-k mono">สิ่งที่ควรเห็น</div>
+        <p>ความผิดพลาด<em>เชิงรูปแบบ</em>หายไปเกือบหมดในเวอร์ชัน B แต่ความผิดพลาด<em>เชิงเนื้อหา</em>แทบไม่เปลี่ยน บทเรียนสำคัญคือ schema แก้ปัญหาได้ชั้นเดียว อีกชั้นยังต้องใช้ verifier</p>
+      </div>
+      <div class="ws-row trap">
+        <div class="ws-k mono">กับดัก</div>
+        <p>เห็นว่า parse ผ่าน 100% แล้วสรุปว่าแก้ปัญหาแล้ว ทั้งที่ค่าใน field อาจผิดหมด นี่คือเหตุผลที่ต้องแยกวัดสองชั้น</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws" id="w10">
+    <div class="ws-head">
+      <div class="ws-id mono"><span>W10</span><span class="ws-time">90 นาที</span><span class="tag bad">ลงทุนครั้งเดียว ใช้ตลอด</span></div>
+      <div class="ws-title">Golden set + รันอัตโนมัติทุกครั้งที่แก้ prompt</div>
+      <div class="ws-en mono">Regression harness for prompts</div>
+    </div>
+    <div class="ws-body">
+      <div class="ws-row">
+        <div class="ws-k mono">เป้าหมาย</div>
+        <p>ทำให้การแก้ prompt มีเซฟตี้เน็ตแบบเดียวกับที่โค้ดมี — และจับ serving drift ของ provider ที่เราคุมไม่ได้</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">องค์ประกอบของ golden set ที่ดี</div>
+        <ul>
+          <li><strong>8–20 เคส</strong> ครอบคลุมทั้งเคสปกติ เคสขอบ และเคสที่เคยพังจริง</li>
+          <li><strong>เคสที่เคยพังต้องอยู่ในชุดถาวร</strong> — บั๊กที่กลับมาคือบั๊กที่ไม่มีเทสต์</li>
+          <li><strong>เกณฑ์ผ่านเป็นโค้ดทั้งหมด</strong> ไม่มี "ดูแล้วโอเค"</li>
+          <li><strong>ล็อกทุกอย่างที่ล็อกได้</strong> — โมเดล เวอร์ชัน temperature seed context</li>
+        </ul>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ขั้นตอน</div>
+        <ol>
+          <li>รวบรวมเคสจาก log จริง เน้นเคสที่เคยพัง</li>
+          <li>เขียนเกณฑ์ผ่านของแต่ละเคส (ใช้ harness จาก W1)</li>
+          <li>รัน 5 รอบต่อเคสเพื่อได้ baseline พร้อมช่วงความเชื่อมั่น เก็บลงไฟล์ที่ commit ไว้</li>
+          <li>ผูกกับ CI: รันอัตโนมัติเมื่อไฟล์ prompt/สกิลเปลี่ยน + รันตามเวลาสัปดาห์ละครั้งเพื่อจับ drift</li>
+          <li>ตั้งเกณฑ์เตือน: ตกเกิน 10% จาก baseline = บล็อก · ตกเกิน 5% = เตือน</li>
+        </ol>
+      </div>
+      <div class="ws-row">
+        <div class="codewrap">
+          <div class="codehead mono"><span>golden.yaml + runner</span><button class="copybtn mono">copy</button></div>
+<pre><code># golden/cases.yaml
+- id: "extract-thai-ticket"
+  input: "fixtures/ticket-th-001.md"
+  runs: 5
+  checks: ["parse", "schema", "ticket_id_matches"]
+  baseline: 0.95
+- id: "regression-bug-412"     # เคสที่เคยพังจริง ห้ามลบตลอดไป
+  input: "fixtures/nested-array-edge.md"
+  runs: 5
+  checks: ["parse", "schema", "no_empty_array"]
+  baseline: 0.80
+
+# ci: เทียบกับ baseline แล้วบล็อกเมื่อตกเกินเกณฑ์
+async function runGolden() {
+  let blocked = false
+  for (const c of cases) {
+    const rate = await measure(c)
+    const drop = c.baseline - rate
+    const mark = drop &gt; 0.10 ? "BLOCK" : drop &gt; 0.05 ? "WARN" : "ok"
+    if (mark === "BLOCK") blocked = true
+    console.log(`${mark.padEnd(5)} ${c.id}  ${(rate * 100).toFixed(0)}% (baseline ${(c.baseline * 100).toFixed(0)}%)`)
+  }
+  process.exit(blocked ? 1 : 0)     // fail-closed ใน CI
+}</code></pre>
+        </div>
+      </div>
+      <div class="ws-row expect">
+        <div class="ws-k mono">สิ่งที่ควรเห็น</div>
+        <p>ครั้งแรกที่รันหลังแก้ prompt จะเจอเคสที่ตกโดยไม่รู้ตัวอย่างน้อยหนึ่งเคสเกือบทุกครั้ง และภายในไม่กี่สัปดาห์จะเห็นการเลื่อนของ baseline ที่มาจากฝั่ง provider โดยที่โค้ดเราไม่เปลี่ยนเลย</p>
+      </div>
+      <div class="ws-row trap">
+        <div class="ws-k mono">กับดัก</div>
+        <p>ตั้ง baseline จากการรันครั้งเดียวต่อเคส ตัวเลขจะแกว่งจน CI แดงตลอดแล้วทีมจะเริ่มเมิน ต้องรันหลายรอบต่อเคส และตั้งเกณฑ์เตือนให้กว้างกว่า noise</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws" id="w11">
+    <div class="ws-head">
+      <div class="ws-id mono"><span>W11</span><span class="ws-time">60 นาที</span><span class="tag ok">ตัวชี้วัดระดับระบบ</span></div>
+      <div class="ws-title">วัด blind_approve_rate ของ pipeline ทั้งเส้น</div>
+      <div class="ws-en mono">The one number that matters</div>
+    </div>
+    <div class="ws-body">
+      <div class="ws-row">
+        <div class="ws-k mono">เป้าหมาย</div>
+        <p>ตอบคำถามเดียวให้ได้ด้วยตัวเลข — ถ้าอนุมัติงานของเอไอโดยไม่อ่านเลย จะรอดกี่เปอร์เซ็นต์</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ทำไมตัวนี้สำคัญกว่า pass rate รายสเต็ป</div>
+        <p>pass rate บอกสุขภาพของชิ้นส่วน แต่ blind_approve_rate บอกสุขภาพของทั้งระบบรวมถึงจุดต่อระหว่างสเต็ป ซึ่งเป็นที่ที่ปัญหาจริงอยู่ และมันแปลงเป็นภาษาธุรกิจได้ตรง ๆ ว่าประหยัดเวลามนุษย์ไปเท่าไหร่</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ขั้นตอน</div>
+        <ol>
+          <li>นิยามให้ชัดว่า "รอด" คืออะไร — เสนอ: merge แล้วไม่ถูก revert และไม่มี follow-up fix ภายใน 7 วัน</li>
+          <li>เก็บ 30–50 งานจริงที่ผ่าน pipeline มาถึงด่านมนุษย์</li>
+          <li>สำหรับแต่ละงาน บันทึกสองอย่าง: มนุษย์แก้อะไรก่อน approve ไหม และหลัง merge มีปัญหาตามมาไหม</li>
+          <li>คำนวณ: งานที่ไม่ต้องแก้และไม่มีปัญหาตามมา ÷ งานทั้งหมด</li>
+          <li>แยกตัวเลขตามประเภทงาน — จะเห็นว่าบางประเภทพร้อมปล่อยแล้ว บางประเภทยังไม่ควร</li>
+        </ol>
+      </div>
+      <div class="ws-row">
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>ประเภทงาน</th><th>n</th><th>ไม่ต้องแก้</th><th>ไม่มีปัญหาตามมา</th><th>blind_approve_rate</th></tr></thead>
+            <tbody>
+              <tr><td>แก้บั๊กเล็ก</td><td class="mono">__</td><td class="mono">__</td><td class="mono">__</td><td class="mono">__%</td></tr>
+              <tr><td>ฟีเจอร์ตาม contract</td><td class="mono">__</td><td class="mono">__</td><td class="mono">__</td><td class="mono">__%</td></tr>
+              <tr><td>refactor</td><td class="mono">__</td><td class="mono">__</td><td class="mono">__</td><td class="mono">__%</td></tr>
+              <tr><td>งานที่แตะ schema/migration</td><td class="mono">__</td><td class="mono">__</td><td class="mono">__</td><td class="mono">__%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="ws-row expect">
+        <div class="ws-k mono">สิ่งที่ควรเห็น</div>
+        <p>ตัวเลขรวมมักต่ำกว่าที่รู้สึก และช่องว่างระหว่างประเภทงานกว้างมาก นั่นคือแผนที่ว่าควรลงแรงใส่ verifier ตรงไหนก่อน — ไปที่ประเภทที่ปริมาณเยอะแต่ rate ต่ำ</p>
+      </div>
+      <div class="ws-row trap">
+        <div class="ws-k mono">กับดัก</div>
+        <p>วัดแค่ "มนุษย์กด approve ไหม" โดยไม่ตามผลหลัง merge — จะได้ตัวเลขที่สวยเกินจริง เพราะปัญหาส่วนใหญ่โผล่ทีหลัง</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws" id="w12">
+    <div class="ws-head">
+      <div class="ws-id mono"><span>W12</span><span class="ws-time">50 นาที</span><span class="tag bad">เลขที่หลอกตา</span></div>
+      <div class="ws-title">คำนวณความผิดพลาดทบต้นในลูปของตัวเอง</div>
+      <div class="ws-en mono">Why 95% per step is not 95%</div>
+    </div>
+    <div class="ws-body">
+      <div class="ws-row">
+        <div class="ws-k mono">เป้าหมาย</div>
+        <p>เห็นว่าจำนวนสเต็ปในลูปคือตัวแปรที่ทำลาย reliability มากที่สุด และเห็นว่าการใส่ verifier รายสเต็ปเปลี่ยนคณิตศาสตร์ยังไง</p>
+      </div>
+      <div class="ws-row">
+        <div class="ws-k mono">ขั้นตอน</div>
+        <ol>
+          <li>วาดลูป agentic ที่ใช้อยู่ นับจำนวนสเต็ปที่มี LLM ตัดสินใจจริง ๆ (ไม่นับสเต็ปที่เป็นโค้ดล้วน)</li>
+          <li>ประมาณ pass rate ต่อสเต็ปจากข้อมูลที่มี ถ้าไม่มีให้ใช้ 0.95 ไปก่อน</li>
+          <li>คูณกันเป็นความน่าจะเป็นทั้งเส้น เทียบกับ blind_approve_rate จริงจาก W11</li>
+          <li>ลองสามสถานการณ์: ลดสเต็ปลงครึ่ง · ใส่ verifier ทุกสเต็ปที่ retry ได้ 2 ครั้ง · ทำทั้งสองอย่าง</li>
+        </ol>
+      </div>
+      <div class="ws-row">
+        <div class="codewrap">
+          <div class="codehead mono"><span>compound.ts</span><button class="copybtn mono">copy</button></div>
+<pre><code>// ไม่มี verifier: ทุกสเต็ปต้องถูกหมด
+const naive = (p: number, steps: number) =&gt; p ** steps
+
+// มี verifier ที่จับได้จริง + retry: แต่ละสเต็ปได้โอกาสใหม่
+const withVerifier = (p: number, steps: number, retries: number) =&gt;
+  (1 - (1 - p) ** (retries + 1)) ** steps
+
+for (const steps of [3, 5, 10, 20]) {
+  const a = naive(0.95, steps)
+  const b = withVerifier(0.95, steps, 2)
+  console.log(`${String(steps).padStart(2)} สเต็ป  ไม่มี verifier ${(a * 100).toFixed(1)}%  มี verifier+retry2 ${(b * 100).toFixed(1)}%`)
+}
+
+//  3 สเต็ป  ไม่มี verifier 85.7%  มี verifier+retry2 100.0%
+//  5 สเต็ป  ไม่มี verifier 77.4%  มี verifier+retry2  99.9%
+// 10 สเต็ป  ไม่มี verifier 59.9%  มี verifier+retry2  99.9%
+// 20 สเต็ป  ไม่มี verifier 35.8%  มี verifier+retry2  99.8%</code></pre>
+        </div>
+      </div>
+      <div class="ws-row expect">
+        <div class="ws-k mono">สิ่งที่ควรเห็น</div>
+        <p>ตัวเลขทฤษฎีมักสูงกว่า blind_approve_rate จริงพอสมควร ช่องว่างนั้นคือสิ่งที่โมเดลง่าย ๆ นี้ไม่ได้นับ — ความผิดพลาดที่เกี่ยวเนื่องกัน (สเต็ปแรกเข้าใจโจทย์ผิด สเต็ปที่เหลือถูกหมดแต่ผิดเรื่อง) และช่องว่างระหว่างสเต็ปที่ verifier มองไม่เห็น</p>
+      </div>
+      <div class="ws-row trap">
+        <div class="ws-k mono">กับดัก</div>
+        <p>สูตรด้านบนสมมติว่า verifier จับได้ 100% และความผิดพลาดเป็นอิสระต่อกัน ทั้งสองข้อไม่จริงในโลกจริง ใช้เป็นเพดานบน ไม่ใช่คำสัญญา — ตัวเลขที่เชื่อได้คือตัวที่วัดจากระบบจริงเท่านั้น</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout good">
+    <div class="callout-title mono">ลำดับที่แนะนำถ้ามีเวลาจำกัด</div>
+    <p>ถ้าทำได้แค่สามอัน: <strong>W1</strong> (รู้ว่าอยู่ตรงไหน) → <strong>W5</strong> (ได้ผลตอบแทนสูงสุดต่อแรงที่ลง) → <strong>W10</strong> (ทำให้ของที่ได้ไม่หายไป) ส่วน W3 คืออันที่ควรทำถ้าอยากเปลี่ยนความคิดคนในทีม</p>
+  </div>
+</section>
+
+<section id="s7">
+  <span class="h-num mono">§ 07</span>
+  <h2>Checklist &amp; Anti-pattern</h2>
+  <div class="h-en mono">สิ่งที่ตรวจก่อนปล่อย และสิ่งที่เจอบ่อยที่สุด</div>
+
+  <h3>Checklist ก่อนปล่อยระบบเอไอเข้า production</h3>
+  <ul>
+    <li>รู้ pass rate ของทุกสเต็ปที่มี LLM ตัดสินใจ เป็นตัวเลขที่วัดมา ไม่ใช่ประมาณ</li>
+    <li>ทุกสเต็ปที่มีคำตอบถูกคำตอบเดียว มี deterministic verifier ต่อท้าย</li>
+    <li>Verifier ทุกตัว fail-closed — ทดสอบด้วยการทำให้มันพังโดยตั้งใจแล้ว</li>
+    <li>ด่าน deterministic อยู่หน้าด่าน LLM ทั้งหมด</li>
+    <li>มีเพดานจำนวนรอบ retry และมีทางออกไปหามนุษย์เมื่อถึงเพดาน</li>
+    <li>มี golden set ที่รันอัตโนมัติเมื่อ prompt เปลี่ยน และรันตามเวลาเพื่อจับ drift</li>
+    <li>รู้ blind_approve_rate แยกตามประเภทงาน</li>
+    <li>นับจำนวนสเต็ปในลูปแล้ว และตอบได้ว่าทำไมถึงต้องมีเท่านั้น</li>
+    <li>ทุกสิ่งที่เขียนเป็นโค้ดได้ ถูกเขียนเป็นโค้ดแล้ว</li>
+    <li>log เก็บ output ดิบทุกครั้ง ไม่ใช่เก็บแค่ผลสรุป — ไม่งั้นวัดย้อนหลังไม่ได้</li>
+  </ul>
+
+  <h3>Anti-pattern ที่เจอบ่อยที่สุดสิบอัน</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>อาการ</th><th>ทำไมถึงพัง</th><th>ทางแก้</th></tr></thead>
+    <tbody>
+      <tr><td><strong>รันครั้งเดียวผ่านแล้วถือว่าเสร็จ</strong></td><td>เห็นตัวอย่างมาหนึ่งตัวจากการแจกแจงทั้งก้อน</td><td>W1</td></tr>
+      <tr><td><strong>แก้ prompt แล้วเทสต์เฉพาะเคสที่เพิ่งแก้</strong></td><td>distribution shift ทำให้เคสอื่นร่วงเงียบ ๆ</td><td>W3 + W10</td></tr>
+      <tr><td><strong>ใช้ LLM เป็นมาตรวัดหลัก</strong></td><td>วัด noise ด้วย noise ตัวเลขที่ได้ไม่มีความหมาย</td><td>§4</td></tr>
+      <tr><td><strong>fail-open เมื่อ verifier เออเรอร์</strong></td><td>ระบบดูดีจนถึงวันที่ verifier พังแล้วทุกอย่างผ่านหมด</td><td>W5</td></tr>
+      <tr><td><strong>ส่งของเข้า LLM reviewer ก่อน build ผ่าน</strong></td><td>จ่ายแพงเพื่อให้คนบอกเรื่องที่เครื่องบอกได้ฟรี</td><td>W6</td></tr>
+      <tr><td><strong>retry ไม่จำกัดจำนวนรอบ</strong></td><td>ลูปไม่รู้จบที่เผาเงินและเวลา</td><td>W5</td></tr>
+      <tr><td><strong>ให้เอไอทำงานเดิมซ้ำแทนที่จะให้เขียนเครื่องมือ</strong></td><td>จ่าย variance ทุกครั้งให้กับงานที่ไม่ต้องใช้ดุลยพินิจ</td><td>W4</td></tr>
+      <tr><td><strong>ลูปยาว 15+ สเต็ปโดยไม่มีด่านคั่น</strong></td><td>ความผิดพลาดทบต้นจนเหลือไม่ถึงครึ่ง</td><td>W12</td></tr>
+      <tr><td><strong>กด temperature เป็น 0 กับทุกงาน</strong></td><td>ทิ้งประโยชน์ของ variance ในงานค้นหา และยังไม่ได้ determinism อยู่ดี</td><td>W2 + W7</td></tr>
+      <tr><td><strong>เก็บแต่ผลสรุป ไม่เก็บ output ดิบ</strong></td><td>พอจะวัดย้อนหลังหรือหาสาเหตุก็ทำไม่ได้</td><td>W1</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>ประโยคที่ควรเลิกพูด และประโยคที่ควรพูดแทน</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>เลิกพูด</th><th>พูดแทน</th></tr></thead>
+    <tbody>
+      <tr><td>"สกิลตัวนี้ใช้ได้"</td><td>"สกิลตัวนี้ผ่าน 17/20 ด้วยเกณฑ์ X"</td></tr>
+      <tr><td>"แก้ prompt แล้วดีขึ้น"</td><td>"แก้แล้วได้ 90% จาก 85% ที่ n=20 ซึ่งยังอยู่ใน noise"</td></tr>
+      <tr><td>"เอไอมันมั่ว"</td><td>"เคสนี้ pass rate 40% พังแบบเดิมสามในห้าครั้ง"</td></tr>
+      <tr><td>"เดี๋ยวมันก็ทำถูกเอง"</td><td>"ถ้าไม่มี verifier มันจะไม่รู้ว่าตัวเองผิด"</td></tr>
+      <tr><td>"pipeline เราเสถียรแล้ว"</td><td>"blind_approve_rate อยู่ที่ __% แยกตามประเภทงานคือ __"</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="s8">
+  <span class="h-num mono">§ 08</span>
+  <h2>อภิธานศัพท์</h2>
+  <div class="h-en mono">Glossary — ไทย / อังกฤษ</div>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>English</th><th>ไทย</th><th>ความหมายสั้น ๆ</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">deterministic</td><td>เชิงกำหนด</td><td>input เดิม → output เดิมเสมอ</td></tr>
+      <tr><td class="mono">stochastic</td><td>เชิงความน่าจะเป็น</td><td>output เป็นการแจกแจง ไม่ใช่ค่าเดียว</td></tr>
+      <tr><td class="mono">variance</td><td>ความแปรปรวน</td><td>ความกระจายของ output เมื่อ input เหมือนเดิม</td></tr>
+      <tr><td class="mono">distribution shift</td><td>การเลื่อนของการแจกแจง</td><td>แก้นิดเดียวแล้วการแจกแจงทั้งก้อนเปลี่ยน</td></tr>
+      <tr><td class="mono">pass rate</td><td>อัตราผ่าน</td><td>ผ่านกี่ครั้งจากกี่ครั้ง ด้วยเกณฑ์เดิม</td></tr>
+      <tr><td class="mono">pass@k</td><td>โอกาสผ่านใน k ครั้ง</td><td>1 − (1−p)^k ใช้ได้เมื่อมีตัวกรองที่เชื่อได้</td></tr>
+      <tr><td class="mono">confidence interval</td><td>ช่วงความเชื่อมั่น</td><td>ค่าจริงน่าจะอยู่ในช่วงไหน — n น้อยแปลว่าช่วงกว้าง</td></tr>
+      <tr><td class="mono">deterministic gate</td><td>ด่านตรวจเชิงกำหนด</td><td>ด่านที่ตัดสินซ้ำได้ผลเดิม</td></tr>
+      <tr><td class="mono">fail-closed</td><td>ล้มแล้วปิด</td><td>ตรวจไม่ได้ = ไม่ผ่าน</td></tr>
+      <tr><td class="mono">fail-open</td><td>ล้มแล้วเปิด</td><td>ตรวจไม่ได้ = ปล่อยผ่าน (อันตราย)</td></tr>
+      <tr><td class="mono">golden set</td><td>ชุดทดสอบอ้างอิง</td><td>เคส + เกณฑ์ที่ล็อกไว้ ใช้จับ regression</td></tr>
+      <tr><td class="mono">LLM-as-judge</td><td>ให้เอไอตัดสินเอไอ</td><td>ใช้ได้เป็นด่านรอง ห้ามเป็นมาตรวัดหลัก</td></tr>
+      <tr><td class="mono">self-consistency</td><td>โหวตเสียงข้างมาก</td><td>ยิงหลายครั้งแล้วนับเสียง ใช้กับ output ที่เป็นเซ็ตจำกัด</td></tr>
+      <tr><td class="mono">best-of-N</td><td>สุ่มเยอะแล้วคัด</td><td>ใช้ variance เป็นทรัพยากรในงานค้นหา</td></tr>
+      <tr><td class="mono">structured output</td><td>ผลลัพธ์บังคับโครงสร้าง</td><td>บีบ output ด้วย schema แทนการขอร้องใน prompt</td></tr>
+      <tr><td class="mono">compounding error</td><td>ความผิดพลาดทบต้น</td><td>p^n — สเต็ปยิ่งเยอะ ยิ่งเหลือน้อย</td></tr>
+      <tr><td class="mono">blind approve rate</td><td>อัตราอนุมัติแบบไม่อ่าน</td><td>อนุมัติโดยไม่ตรวจแล้วรอดกี่เปอร์เซ็นต์</td></tr>
+      <tr><td class="mono">escalation</td><td>การส่งต่อมนุษย์</td><td>ทางออกเมื่อระบบถึงเพดาน retry</td></tr>
+      <tr><td class="mono">serving drift</td><td>การเลื่อนฝั่งผู้ให้บริการ</td><td>โมเดลเวอร์ชันเดิมแต่พฤติกรรมเปลี่ยน</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  Stochastic Systems Engineering — field guide v2<br>
+  หลักการเดียวที่ต้องจำ: ทุกประโยคเกี่ยวกับเอไอต้องมีตัวเลขกำกับ<br>
+  ถ้าเขียนเป็นโค้ดได้ ให้เขียนเป็นโค้ด · ถ้ามีคำตอบเดียว ให้มี verifier · ถ้ามีหลายคำตอบ ให้ sample แล้วกรอง
+</footer>
+</div>
+
+<script>
+// ---------- hero: การรันจริง 20 ครั้ง ----------
+(function () {
+  var strip = document.getElementById("strip")
+  var rateEl = document.getElementById("rate")
+  var stateEl = document.getElementById("runstate")
+  if (!strip) return
+
+  // ผลที่ล็อกไว้ตายตัว — 17/20 ให้เห็นว่าความพังกระจุกไม่ใช่กระจาย
+  var results = [1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,1]
+  var cells = []
+  for (var i = 0; i < results.length; i++) {
+    var c = document.createElement("span")
+    c.className = "cell"
+    strip.appendChild(c)
+    cells.push(c)
+  }
+
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  var passed = 0
+
+  function finish() {
+    passed = results.reduce(function (a, b) { return a + b }, 0)
+    for (var i = 0; i < cells.length; i++) cells[i].className = "cell " + (results[i] ? "pass" : "fail")
+    rateEl.textContent = "85%"
+    stateEl.textContent = passed + "/20 pass"
+  }
+
+  if (reduce) { finish(); return }
+
+  var idx = 0
+  var timer = setInterval(function () {
+    if (idx >= results.length) {
+      clearInterval(timer)
+      stateEl.textContent = "17/20 pass"
+      return
+    }
+    cells[idx].className = "cell " + (results[idx] ? "pass" : "fail")
+    if (results[idx]) passed++
+    idx++
+    rateEl.textContent = Math.round(passed / idx * 100) + "%"
+    stateEl.textContent = "run " + idx + "/20"
+  }, 130)
+})()
+
+// ---------- copy buttons ----------
+document.querySelectorAll(".copybtn").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    var pre = btn.closest(".codewrap").querySelector("pre")
+    var text = pre.innerText
+    navigator.clipboard.writeText(text).then(function () {
+      btn.textContent = "copied"
+      btn.classList.add("done")
+      setTimeout(function () {
+        btn.textContent = "copy"
+        btn.classList.remove("done")
+      }, 1600)
+    }).catch(function () {
+      btn.textContent = "failed"
+      setTimeout(function () { btn.textContent = "copy" }, 1600)
+    })
+  })
+})
+
+// ---------- scrollspy ----------
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll(".toc a"))
+  var map = {}
+  var targets = []
+  links.forEach(function (a) {
+    var id = a.getAttribute("href").slice(1)
+    var el = document.getElementById(id)
+    if (el) { map[id] = a; targets.push(el) }
+  })
+
+  var visible = new Set()
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) visible.add(e.target.id)
+      else visible.delete(e.target.id)
+    })
+    // เลือกตัวที่อยู่บนสุดในบรรดาที่มองเห็น
+    var best = null
+    var bestTop = Infinity
+    targets.forEach(function (t) {
+      if (!visible.has(t.id)) return
+      var top = t.getBoundingClientRect().top
+      if (top < bestTop) { bestTop = top; best = t.id }
+    })
+    if (!best) return
+    links.forEach(function (a) { a.classList.remove("active") })
+    if (map[best]) {
+      map[best].classList.add("active")
+      // เลื่อน TOC ตามถ้าลิงก์ที่ active หลุดจอ
+      var toc = document.querySelector(".toc")
+      if (toc && toc.scrollHeight > toc.clientHeight) {
+        var r = map[best].getBoundingClientRect()
+        var tr = toc.getBoundingClientRect()
+        if (r.top < tr.top || r.bottom > tr.bottom) {
+          map[best].scrollIntoView({ block: "nearest" })
+        }
+      }
+    }
+  }, { rootMargin: "-8% 0px -70% 0px", threshold: 0 })
+
+  targets.forEach(function (t) { obs.observe(t) })
+})()
+
+// ---------- mobile toc ----------
+(function () {
+  var btn = document.getElementById("tocToggle")
+  var list = document.getElementById("tocList")
+  if (!btn || !list) return
+  btn.addEventListener("click", function () {
+    var open = list.classList.toggle("open")
+    btn.setAttribute("aria-expanded", String(open))
+  })
+  list.addEventListener("click", function (e) {
+    if (e.target.tagName === "A" && window.innerWidth <= 900) {
+      list.classList.remove("open")
+      btn.setAttribute("aria-expanded", "false")
+    }
+  })
+})()
+</script>
+</body>
+</html>
