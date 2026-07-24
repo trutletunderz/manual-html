@@ -1,0 +1,2647 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L0 — QA/Testing Foundation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e1418;
+  --bg-deep:#0a0f12;
+  --surface:#151e24;
+  --surface-2:#1b262d;
+  --line:#26343d;
+  --line-soft:#1e2a32;
+  --text:#d8e2e8;
+  --text-dim:#93a6b2;
+  --text-mute:#6b7f8c;
+  --amber:#d9a441;
+  --amber-dim:#8a6a2c;
+  --teal:#5fb3a1;
+  --rust:#d9614c;
+  --violet:#9b8bd0;
+  --radius:3px;
+  --sans:"IBM Plex Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:var(--sans);font-weight:300;font-size:15.5px;line-height:1.85;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--amber);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:2px}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:290px minmax(0,1fr);gap:0;max-width:1400px;margin:0 auto}
+
+/* ---------- sidebar ---------- */
+.rail{
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+  border-right:1px solid var(--line-soft);background:var(--bg-deep);
+  padding:34px 0 60px;
+}
+.rail::-webkit-scrollbar{width:6px}
+.rail::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+.rail-brand{padding:0 26px 24px;border-bottom:1px solid var(--line-soft);margin-bottom:18px}
+.rail-brand .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--amber);text-transform:uppercase}
+.rail-brand h1{font-size:19px;font-weight:600;margin:8px 0 4px;letter-spacing:-.01em}
+.rail-brand p{font-family:var(--mono);font-size:10.5px;color:var(--text-mute);margin:0;letter-spacing:.03em}
+.rail nav{padding:0 14px}
+.rail-grp{margin-bottom:4px}
+.rail-grp>a{
+  display:flex;gap:9px;align-items:baseline;padding:7px 12px;border-radius:var(--radius);
+  font-size:13px;color:var(--text-dim);font-weight:400;
+}
+.rail-grp>a:hover{background:var(--surface);color:var(--text);text-decoration:none}
+.rail-grp>a .n{font-family:var(--mono);font-size:10.5px;color:var(--text-mute);min-width:16px}
+.rail-sub{list-style:none;margin:0 0 8px;padding:0 0 0 12px;border-left:1px solid var(--line-soft);margin-left:22px}
+.rail-sub a{
+  display:block;padding:4px 10px;font-size:12.3px;color:var(--text-mute);
+  border-radius:var(--radius);line-height:1.5;
+}
+.rail-sub a:hover{color:var(--text-dim);background:var(--surface);text-decoration:none}
+.rail-sub a.on{color:var(--amber);background:rgba(217,164,65,.07)}
+.rail-sub a.on::before{content:"";position:absolute;margin-left:-23px;width:2px;height:18px;background:var(--amber)}
+
+/* ---------- main ---------- */
+main{padding:0 0 120px;min-width:0}
+.wrap{max-width:860px;padding:0 44px}
+
+/* hero */
+.hero{padding:86px 44px 60px;border-bottom:1px solid var(--line-soft);max-width:904px}
+.hero .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase}
+.hero h2{font-size:clamp(32px,5vw,46px);font-weight:600;line-height:1.24;letter-spacing:-.02em;margin:16px 0 20px}
+.hero .lede{font-size:17px;color:var(--text-dim);max-width:640px;font-weight:300}
+.hero-meta{display:flex;flex-wrap:wrap;gap:0;margin-top:38px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.hero-meta div{flex:1 1 150px;padding:16px 20px;border-right:1px solid var(--line)}
+.hero-meta div:last-child{border-right:0}
+.hero-meta dt{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--text-mute);text-transform:uppercase;margin:0}
+.hero-meta dd{margin:6px 0 0;font-size:20px;font-weight:600;font-family:var(--mono);color:var(--amber)}
+.hero-meta dd small{font-size:11px;color:var(--text-dim);font-family:var(--sans);font-weight:400;display:block;margin-top:2px}
+
+/* chapter */
+.chapter{padding-top:78px}
+.ch-head{padding:0 44px;max-width:904px;margin-bottom:34px}
+.ch-num{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase}
+.ch-head h2{font-size:29px;font-weight:600;margin:10px 0 10px;letter-spacing:-.015em}
+.ch-head .goal{font-size:14.5px;color:var(--text-mute);font-style:italic;margin:0;max-width:600px}
+.ch-head hr{border:0;border-top:1px solid var(--line);margin:26px 0 0}
+
+/* topic */
+.topic{padding:0 44px;margin-bottom:52px;max-width:904px;scroll-margin-top:20px}
+.t-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.t-num{font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:500}
+.t-head h3{font-size:19.5px;font-weight:600;margin:0;letter-spacing:-.01em;flex:1 1 auto;min-width:0}
+.ref{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--text-mute);
+  border:1px solid var(--line);border-radius:2px;padding:2px 6px;white-space:nowrap;
+}
+p{margin:0 0 15px}
+.topic ul,.topic ol{margin:0 0 16px;padding-left:20px}
+.topic li{margin-bottom:7px}
+strong{font-weight:600;color:#eaf1f5}
+em{color:var(--text-dim)}
+
+/* table */
+.tw{overflow-x:auto;margin:0 0 20px;border:1px solid var(--line);border-radius:var(--radius)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:460px}
+th{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-mute);text-align:left;font-weight:500;
+  padding:11px 15px;background:var(--bg-deep);border-bottom:1px solid var(--line);
+  white-space:nowrap;
+}
+td{padding:11px 15px;border-bottom:1px solid var(--line-soft);vertical-align:top;line-height:1.65}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:rgba(255,255,255,.014)}
+td code{font-size:12px}
+
+/* callout */
+.note{
+  border-left:3px solid var(--line);background:var(--surface);
+  padding:16px 20px;margin:0 0 20px;border-radius:0 var(--radius) var(--radius) 0;
+}
+.note .lbl{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--text-mute);display:block;margin-bottom:7px;
+}
+.note p:last-child{margin-bottom:0}
+.note.key{border-left-color:var(--amber);background:rgba(217,164,65,.05)}
+.note.key .lbl{color:var(--amber)}
+.note.warn{border-left-color:var(--rust);background:rgba(217,97,76,.05)}
+.note.warn .lbl{color:var(--rust)}
+.note.pipe{border-left-color:var(--teal);background:rgba(95,179,161,.05)}
+.note.pipe .lbl{color:var(--teal)}
+.note.quote{border-left-color:var(--violet);background:rgba(155,139,208,.05)}
+.note.quote .lbl{color:var(--violet)}
+.note.quote p{font-size:16px;font-weight:400}
+
+/* code */
+.code{position:relative;margin:0 0 20px}
+.code pre{
+  margin:0;background:var(--bg-deep);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.75;
+  color:#c3d2da;
+}
+.copy{
+  position:absolute;top:9px;right:9px;background:var(--surface-2);border:1px solid var(--line);
+  color:var(--text-mute);font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;padding:4px 9px;border-radius:2px;cursor:pointer;
+  transition:color .15s,border-color .15s;
+}
+.copy:hover{color:var(--amber);border-color:var(--amber-dim)}
+.copy.done{color:var(--teal);border-color:var(--teal)}
+
+/* misc */
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.d-r{background:var(--rust)}.d-a{background:var(--amber)}.d-t{background:var(--teal)}
+.pending{
+  margin:0 44px 52px;max-width:904px;border:1px dashed var(--line);border-radius:var(--radius);
+  padding:26px 24px;color:var(--text-mute);
+}
+.pending .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber-dim);display:block;margin-bottom:8px}
+.pending ul{margin:10px 0 0;padding-left:20px;font-size:13.5px}
+footer{padding:44px;border-top:1px solid var(--line-soft);max-width:904px;color:var(--text-mute);font-size:12.5px;font-family:var(--mono)}
+
+/* mobile */
+.rail-toggle{display:none}
+@media (max-width:940px){
+  .shell{grid-template-columns:1fr}
+  .rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line-soft);padding:22px 0 18px;display:none}
+  .rail.open{display:block}
+  .rail-toggle{
+    display:block;position:sticky;top:0;z-index:20;width:100%;background:var(--bg-deep);
+    border:0;border-bottom:1px solid var(--line-soft);color:var(--amber);
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    padding:14px 22px;text-align:left;cursor:pointer;
+  }
+  .hero,.ch-head,.topic,.pending,footer,.wrap{padding-left:22px;padding-right:22px}
+  .pending{margin-left:0;margin-right:0}
+  .hero{padding-top:48px}
+}
+</style>
+</head>
+<body>
+
+<button class="rail-toggle" id="railToggle" aria-expanded="false">☰ สารบัญ</button>
+
+<div class="shell">
+
+<aside class="rail" id="rail">
+  <div class="rail-brand">
+    <span class="tag">Layer 0 · Foundation</span>
+    <h1>QA &amp; Testing</h1>
+    <p>62 topics · 10 chapters</p>
+  </div>
+  <nav id="toc">
+    <div class="rail-grp">
+      <a href="#ch1"><span class="n">01</span> คุณภาพและการทดสอบคืออะไร</a>
+      <ul class="rail-sub">
+        <li><a href="#t1-1">1.1 นิยามของ "คุณภาพ"</a></li>
+        <li><a href="#t1-2">1.2 QA vs QC vs Testing</a></li>
+        <li><a href="#t1-3">1.3 Test Objectives</a></li>
+        <li><a href="#t1-4">1.4 Testing vs Checking</a></li>
+        <li><a href="#t1-5">1.5 Testing vs Debugging</a></li>
+        <li><a href="#t1-6">1.6 Information service</a></li>
+        <li><a href="#t1-7">1.7 Context-Driven Framework</a></li>
+        <li><a href="#t1-8">1.8 7 Testing Principles</a></li>
+      </ul>
+    </div>
+    <div class="rail-grp">
+      <a href="#ch2"><span class="n">02</span> คำศัพท์แกนกลาง</a>
+      <ul class="rail-sub">
+        <li><a href="#t2-1">2.1 Defect Chain</a></li>
+        <li><a href="#t2-2">2.2 Testware Vocabulary</a></li>
+        <li><a href="#t2-3">2.3 SUT / Test Item</a></li>
+        <li><a href="#t2-4">2.4 Incident vs Defect</a></li>
+        <li><a href="#t2-5">2.5 False Positive / Negative</a></li>
+        <li><a href="#t2-6">2.6 Glossary EN ↔ TH</a></li>
+      </ul>
+    </div>
+    <div class="rail-grp">
+      <a href="#ch3"><span class="n">03</span> มิติของการทดสอบ</a>
+      <ul class="rail-sub">
+        <li><a href="#t3-1">3.1 Verification vs Validation</a></li>
+        <li><a href="#t3-2">3.2 Static vs Dynamic</a></li>
+        <li><a href="#t3-3">3.3 Black / White / Grey box</a></li>
+        <li><a href="#t3-4">3.4 Test Levels</a></li>
+        <li><a href="#t3-5">3.5 Test Types</a></li>
+        <li><a href="#t3-6">3.6 ศัพท์ที่มักตกหล่น</a></li>
+        <li><a href="#t3-7">3.7 ISO/IEC 25010</a></li>
+        <li><a href="#t3-8">3.8 Agile Testing Quadrants</a></li>
+      </ul>
+    </div>
+    <div class="rail-grp">
+      <a href="#ch4"><span class="n">04</span> กระบวนการและวงจร</a>
+      <ul class="rail-sub">
+        <li><a href="#t4-1">4.1 SDLC + V-Model</a></li>
+        <li><a href="#t4-2">4.2 Test Process 7 กิจกรรม</a></li>
+        <li><a href="#t4-3">4.3 Shift Left 5 รูปแบบ</a></li>
+        <li><a href="#t4-4">4.4 TDD / ATDD / BDD</a></li>
+        <li><a href="#t4-5">4.5 Requirement Testability</a></li>
+        <li><a href="#t4-6">4.6 Maintenance Testing</a></li>
+      </ul>
+    </div>
+    <div class="rail-grp">
+      <a href="#ch5"><span class="n">05</span> การตัดสินใจภายใต้ข้อจำกัด</a>
+      <ul class="rail-sub">
+        <li><a href="#t5-1">5.1 Risk Vocabulary</a></li>
+        <li><a href="#t5-2">5.2 Risk → Test Focus</a></li>
+        <li><a href="#t5-3">5.3 Stopping Criteria</a></li>
+        <li><a href="#t5-4">5.4 เมื่อไหร่ที่ไม่ควรเทส</a></li>
+        <li><a href="#t5-5">5.5 Test Estimation</a></li>
+        <li><a href="#t5-6">5.6 Regression Selection</a></li>
+      </ul>
+    </div>
+    <div class="rail-grp">
+      <a href="#ch6"><span class="n">06</span> หลักฐานที่เชื่อถือได้</a>
+      <ul class="rail-sub">
+        <li><a href="#t6-1">6.1 Oracle 8 ชั้น</a></li>
+        <li><a href="#t6-2">6.2 Testability 5 มิติ</a></li>
+        <li><a href="#t6-3">6.3 Empirical Inquiry</a></li>
+        <li><a href="#t6-4">6.4 AAA + Test Naming</a></li>
+        <li><a href="#t6-5">6.5 Testware Review</a></li>
+        <li><a href="#t6-6">6.6 Test Environment</a></li>
+        <li><a href="#t6-7">6.7 Configuration Management</a></li>
+        <li><a href="#t6-8">6.8 Traceability &amp; Coverage</a></li>
+      </ul>
+    </div>
+    <div class="rail-grp">
+      <a href="#ch7"><span class="n">07</span> เมื่อเจอปัญหา</a>
+      <ul class="rail-sub">
+        <li><a href="#t7-1">7.1 Defect Lifecycle</a></li>
+        <li><a href="#t7-2">7.2 Bug Report ที่ดี</a></li>
+        <li><a href="#t7-3">7.3 Cannot Reproduce</a></li>
+        <li><a href="#t7-4">7.4 Bug Advocacy</a></li>
+        <li><a href="#t7-5">7.5 Root Cause Analysis</a></li>
+      </ul>
+    </div>
+    <div class="rail-grp">
+      <a href="#ch8"><span class="n">08</span> คนและองค์กร</a>
+      <ul class="rail-sub">
+        <li><a href="#t8-1">8.1 Levels of Independence</a></li>
+        <li><a href="#t8-2">8.2 Psychology of Testing</a></li>
+        <li><a href="#t8-3">8.3 Whole-Team Quality</a></li>
+        <li><a href="#t8-4">8.4 Roles + 30-60-90</a></li>
+        <li><a href="#t8-5">8.5 Ethics &amp; PDPA</a></li>
+        <li><a href="#t8-6">8.6 Retrospective</a></li>
+      </ul>
+    </div>
+    <div class="rail-grp">
+      <a href="#ch9"><span class="n">09</span> การวัดผลและรายงาน</a>
+      <ul class="rail-sub">
+        <li><a href="#t9-1">9.1 Metrics</a></li>
+        <li><a href="#t9-2">9.2 Cost of Quality</a></li>
+        <li><a href="#t9-3">9.3 Test Debt</a></li>
+        <li><a href="#t9-4">9.4 Documentation</a></li>
+        <li><a href="#t9-5">9.5 Credible Reporting</a></li>
+      </ul>
+    </div>
+    <div class="rail-grp">
+      <a href="#ch10"><span class="n">10</span> บริบทเฉพาะ</a>
+      <ul class="rail-sub">
+        <li><a href="#t10-1">10.1 Thai Localization</a></li>
+        <li><a href="#t10-2">10.2 Test Data 5 ประเภท</a></li>
+        <li><a href="#t10-3">10.3 การเทสระบบ LLM</a></li>
+        <li><a href="#t10-4">10.4 6 กับดักของคนใหม่</a></li>
+      </ul>
+    </div>
+    <div class="rail-grp">
+      <a href="#appendix"><span class="n">＋</span> ภาคผนวก</a>
+      <ul class="rail-sub">
+        <li><a href="#t11-1">A · Readiness Checklist</a></li>
+        <li><a href="#t11-2">B · แบบฝึกหัด</a></li>
+        <li><a href="#t11-3">C · คำถามสัมภาษณ์</a></li>
+        <li><a href="#t11-4">D · แหล่งเรียนรู้</a></li>
+        <li><a href="#t11-5">E · Errata</a></li>
+        <li><a href="#t11-6">F · Roadmap L0–L5</a></li>
+      </ul>
+    </div>
+  </nav>
+</aside>
+
+<main>
+
+<header class="hero">
+  <span class="eyebrow">Layer 0 — Foundation</span>
+  <h2>คำศัพท์ที่ต้องใช้ให้ถูก<br>และ mental model ที่ต้องมี<br>ก่อนแตะเครื่องมือใดๆ</h2>
+  <p class="lede">ชั้นนี้ไม่ได้ทำให้เทสเก่งขึ้นทันที แต่ทำให้คิดและสื่อสารเรื่องคุณภาพได้แม่นยำ — คนที่ข้ามชั้นนี้จะเขียน bug report ที่โดนตีกลับ เถียงเรื่อง severity ไม่ชนะ และออกแบบ test level ผิดชั้นตลอดชีวิต</p>
+  <dl class="hero-meta">
+    <div><dt>Topics</dt><dd>62</dd></div>
+    <div><dt>Chapters</dt><dd>10</dd></div>
+    <div><dt>Audit rounds</dt><dd>2<small>oracle คนละชนิด</small></dd></div>
+    <div><dt>Errata</dt><dd>5<small>แก้แล้ว บันทึกไว้</small></dd></div>
+  </dl>
+</header>
+
+<!-- ══════════════ CHAPTER 1 ══════════════ -->
+<section class="chapter" id="ch1">
+  <div class="ch-head">
+    <span class="ch-num">Chapter 01</span>
+    <h2>คุณภาพและการทดสอบคืออะไร</h2>
+    <p class="goal">ตอบให้ได้ว่าทำสิ่งนี้ไปทำไม ก่อนจะเรียนว่าทำยังไง</p>
+    <hr>
+  </div>
+
+  <article class="topic" id="t1-1">
+    <div class="t-head"><span class="t-num">1.1</span><h3>นิยามของ "คุณภาพ"</h3><span class="ref">0.41</span></div>
+    <p>ปัญหาใหญ่ของคนใหม่คือพูดคำว่า "คุณภาพ" โดยไม่รู้ว่าตัวเองหมายถึงอะไร มี 3 นิยามที่ใช้กันจริง และมันไม่เหมือนกัน</p>
+    <div class="tw"><table>
+      <thead><tr><th>นิยาม</th><th>เจ้าของ</th><th>ใจความ</th><th>ปัญหา</th></tr></thead>
+      <tbody>
+        <tr><td>Conformance to requirements</td><td>Crosby</td><td>ตรงตามที่ระบุไว้</td><td>ถ้า requirement ผิดล่ะ</td></tr>
+        <tr><td>Fitness for use</td><td>Juran</td><td>ใช้งานได้ตามวัตถุประสงค์</td><td>ใครกำหนดวัตถุประสงค์</td></tr>
+        <tr><td><strong>Value to some person</strong></td><td>Weinberg</td><td>คุณค่าต่อใครสักคน</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note quote"><span class="lbl">Bach / Bolton</span>
+      <p>"Quality is value to some person, at some time, <strong>who matters</strong>."</p>
+    </div>
+    <p><strong>คุณภาพไม่ใช่คุณสมบัติของซอฟต์แวร์ — มันคือความสัมพันธ์ระหว่างซอฟต์แวร์กับคน</strong> แปลว่าไม่มีคุณภาพแบบเป็นกลาง มีแต่ "คุณภาพต่อใคร" และคนสองคนที่เถียงกันว่าของนี้ดีหรือไม่ดี อาจถูกทั้งคู่เพราะยืนคนละจุด</p>
+    <div class="tw"><table>
+      <thead><tr><th>ผู้มีส่วนได้เสีย</th><th>"คุณภาพ" แปลว่า</th></tr></thead>
+      <tbody>
+        <tr><td>ผู้ใช้ปลายทาง</td><td>โหลดเร็ว ทำธุรกรรมได้จริง ไม่ค้าง</td></tr>
+        <tr><td>ฝ่ายธุรกิจ</td><td>conversion สูง ไม่มี chargeback</td></tr>
+        <tr><td>ฝ่ายบัญชี</td><td>ยอดตรง 100% ตรวจสอบย้อนหลังได้</td></tr>
+        <tr><td>คนดูแลระบบ</td><td>แก้ง่าย debug ได้ ไม่ต้องตื่นตี 3</td></tr>
+        <tr><td>ผู้ตรวจสอบ</td><td>audit trail ครบ ข้อมูลไม่รั่ว</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">เอาไปใช้</span>
+      <p>เวลามีคนพูดว่า "อันนี้ไม่มีคุณภาพ" อย่าเถียงว่าจริงหรือไม่จริง ให้ถามว่า <strong>"ต่อใคร และวัดจากอะไร"</strong> — คำถามนี้เปลี่ยนการเถียงกันเรื่องความเห็นให้กลายเป็นการคุยกันเรื่องข้อเท็จจริงทันที</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t1-2">
+    <div class="t-head"><span class="t-num">1.2</span><h3>QA vs QC vs Testing</h3><span class="ref">0.0a</span></div>
+    <p>สามคำนี้ถูกใช้ปนกันหมด ทั้งที่มันคนละชั้นกัน</p>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>QA</th><th>QC</th><th>Testing</th></tr></thead>
+      <tbody>
+        <tr><td>โฟกัส</td><td><strong>Process</strong></td><td>Product</td><td>Product</td></tr>
+        <tr><td>เจตนา</td><td>ป้องกัน</td><td>ตรวจจับ</td><td>ตรวจจับ + ให้ข้อมูล</td></tr>
+        <tr><td>คำถามหลัก</td><td>ทำงานแบบนี้แล้วจะเกิดบั๊กไหม</td><td>ของที่ทำเสร็จตรงสเปคไหม</td><td>มันพังตรงไหน เสี่ยงแค่ไหน</td></tr>
+        <tr><td>ทำอะไร</td><td>ตั้ง standard, DoD, gate, retro</td><td>ตรวจของที่ build เสร็จ</td><td>ออกแบบ + รันเทส หา risk</td></tr>
+        <tr><td>เวลา</td><td>ตลอด lifecycle</td><td>หลัง build</td><td>ตลอด (ถ้าทำเป็น)</td></tr>
+      </tbody>
+    </table></div>
+    <p>ความสัมพันธ์คือ <strong>Testing ⊂ QC ⊂ QA</strong></p>
+    <div class="note warn"><span class="lbl">ความจริงในตลาดงาน</span>
+      <p>ประกาศรับ "QA Engineer" ส่วนใหญ่จริงๆ คือ <strong>Manual Tester</strong> — นั่งเขียน test case แล้วคลิกตามสเปค นั่นคือ QC ล้วนๆ ไม่ใช่ QA ต้องรู้ไว้ ไม่งั้นสมัครไปแล้วงงว่าทำไมไม่ได้แตะ process อะไรเลย</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t1-3">
+    <div class="t-head"><span class="t-num">1.3</span><h3>Test Objectives — เทสไปเพื่ออะไร</h3><span class="ref">0.51</span></div>
+    <p>วัตถุประสงค์เป็นตัวกำหนดว่าอะไรคือ "เทสที่ดี" — คนส่วนใหญ่รู้แค่ข้อ 2</p>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>วัตถุประสงค์</th><th>ถ้าไม่รู้ข้อนี้จะพลาดยังไง</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>ประเมิน work product</td><td>คิดว่าต้องมีโค้ดก่อนถึงจะเทสได้</td></tr>
+        <tr><td>2</td><td>ทำให้ failure ปรากฏ / พบ defect</td><td>—</td></tr>
+        <tr><td>3</td><td>ลดความเสี่ยง</td><td>เทสทุกอย่างเท่ากันแทนที่จะเทสตามความเสี่ยง</td></tr>
+        <tr><td>4</td><td>ตรวจสอบความสอดคล้อง</td><td>ลืมว่าบางเทสมีไว้เพื่อ audit ไม่ใช่หาบั๊ก</td></tr>
+        <tr><td>5</td><td><strong>ให้ข้อมูลเพื่อการตัดสินใจ</strong></td><td>คิดว่าตัวเองเป็นคนตัดสินใจ → gatekeeper mindset</td></tr>
+        <tr><td>6</td><td>สร้างความเชื่อมั่น</td><td>ไม่เข้าใจว่าทำไม regression suite มีค่าแม้ไม่เคยแดง</td></tr>
+        <tr><td>7</td><td>Validation</td><td>เทสตรงสเปคแล้วคิดว่าจบ</td></tr>
+      </tbody>
+    </table></div>
+    <p>วัตถุประสงค์เปลี่ยนตามบริบท — unit test ตอน dev เขียนมีไว้เพื่อข้อ 6 (ความเชื่อมั่นตอน refactor) ไม่ใช่เพื่อหาบั๊ก ส่วน exploratory session มีไว้เพื่อข้อ 2 เป็นหลัก</p>
+    <div class="note key"><span class="lbl">คำถามก่อนเขียนเทส</span>
+      <p>"เทสตัวนี้มีไว้เพื่ออะไรใน 7 ข้อนี้" — ถ้าตอบว่า <em>"เพื่อเพิ่ม coverage"</em> นั่นไม่ใช่วัตถุประสงค์ นั่นคือ Goodhart</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t1-4">
+    <div class="t-head"><span class="t-num">1.4</span><h3>Testing vs Checking</h3><span class="ref">0.15</span></div>
+    <p>การแยกที่ Bach และ Bolton เสนอ และเป็นแนวคิดที่สำคัญที่สุดสำหรับคนที่ทำงานกับระบบอัตโนมัติ</p>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Checking</th><th>Testing</th></tr></thead>
+      <tbody>
+        <tr><td>นิยาม</td><td>ประเมินด้วยกฎการตัดสินเชิงอัลกอริทึม</td><td>ประเมินโดยเรียนรู้ผ่านการสำรวจและทดลอง</td></tr>
+        <tr><td>ทำอะไร</td><td><strong>ยืนยันความเชื่อที่มีอยู่แล้ว</strong></td><td><strong>สร้างความเชื่อใหม่</strong></td></tr>
+        <tr><td>เครื่องทำแทนได้ไหม</td><td>ได้ 100%</td><td>ไม่ได้</td></tr>
+        <tr><td>ต้องใช้อะไร</td><td>กฎ</td><td>สติปัญญา (sapience)</td></tr>
+        <tr><td>ผลลัพธ์</td><td>pass / fail</td><td>ความเข้าใจ + คำถามใหม่</td></tr>
+        <tr><td>ตัวอย่าง</td><td><code>expect(total).toBe(150)</code></td><td>"ถ้ากด submit สองครั้งตอนเน็ตช้าล่ะ"</td></tr>
+      </tbody>
+    </table></div>
+    <div class="code">
+<pre>Testing (มนุษย์คิด) ──produces──&gt; Checks (เครื่องรัน)
+                                       │
+                       Checks ไม่เคย produce Testing กลับมาเอง</pre>
+    </div>
+    <p><strong>สิ่งที่ automate ได้ทั้งหมดคือ checking</strong> และ check ทุกตัวเกิดจากการที่มีใครสักคนเคยคิดว่า "อันนี้ควรตรวจ" ถ้าไม่มีใครคิด check นั้นไม่มีวันเกิด และ defect ตรงนั้นไม่มีวันถูกจับ ตลอดกาล</p>
+    <div class="note pipe"><span class="lbl">ประยุกต์กับ agentic pipeline</span>
+      <p>LLM เขียน assert ได้เก่งมาก แต่มัน assert จาก <em>สิ่งที่โค้ดทำ</em> (checking พฤติกรรมปัจจุบัน) ไม่ใช่ <em>สิ่งที่โค้ดควรทำ</em> (testing เทียบกับ oracle อิสระ)</p>
+      <p>เลิกพูดคำว่า "automated testing" ให้พูดว่า <strong>"automated checking"</strong> จะแม่นกว่า และทำให้ทีมไม่หลงว่า automate เยอะแล้วเทสครบ</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t1-5">
+    <div class="t-head"><span class="t-num">1.5</span><h3>Testing vs Debugging</h3><span class="ref">0.52</span></div>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Testing</th><th>Debugging</th></tr></thead>
+      <tbody>
+        <tr><td>เป้าหมาย</td><td>ทำให้ failure <strong>ปรากฏ</strong></td><td>หา<strong>สาเหตุ</strong>แล้วแก้</td></tr>
+        <tr><td>คำถาม</td><td>มันพังไหม พังตรงไหน แค่ไหน</td><td>ทำไมมันพัง แก้ยังไง</td></tr>
+        <tr><td>ผลลัพธ์</td><td>ข้อมูล + bug report</td><td>โค้ดที่เปลี่ยน</td></tr>
+        <tr><td>จบเมื่อ</td><td>reproduce ได้ + ระบุขอบเขตได้</td><td>defect ถูกกำจัด</td></tr>
+      </tbody>
+    </table></div>
+    <div class="code">
+<pre>Testing → พบ failure → Debugging → แก้ defect
+                                       ↓
+                          Confirmation Test (บั๊กนี้หายจริงไหม)
+                                       ↓
+                          Regression Test (ของอื่นพังไหม)</pre>
+    </div>
+    <div class="note warn"><span class="lbl">กับดักของ dev ที่เปลี่ยนสาย</span>
+      <p>เห็นหน้าขาว → เปิด DevTools → เห็น error → เปิดโค้ด → แก้เลย 30 วินาที → เสร็จ</p>
+      <p>ดูเหมือนมีประสิทธิภาพ แต่คุณเพิ่งทำลาย <strong>ขอบเขตของบั๊ก</strong> (มันเกิดที่อื่นด้วยไหม), <strong>ความรุนแรงที่แท้จริง</strong>, <strong>หลักฐาน</strong>, <strong>ข้อมูลสำหรับ RCA</strong> และ <strong>metric</strong> ไปพร้อมกันทั้งหมด</p>
+    </div>
+    <div class="note key"><span class="lbl">กฎที่ควรยึด</span>
+      <p>เห็น failure → <strong>บันทึกก่อน → isolate ก่อน → แล้วค่อยแก้</strong> ต้นทุน 5 นาทีที่เพิ่มขึ้น แลกกับการรู้ว่าปัญหาเดียวกันมีอยู่อีกกี่ที่ มักคุ้มเกิน 10 เท่า</p>
+    </div>
+    <div class="note pipe"><span class="lbl">ประยุกต์กับ agentic pipeline</span>
+      <p>ถ้า agent ตัวเดียวกันทั้งเขียนเทส รันเทส และแก้โค้ด = <strong>independence ระดับ 0</strong> และ failure ที่ถูกแก้ระหว่างทางจะไม่เคยถูกบันทึกเป็น defect เลย → ข้อมูลสำหรับ RCA หายไปทั้งหมด</p>
+      <p>ที่แย่กว่านั้น: วิธีที่ง่ายที่สุดในการทำให้เทสแดงกลายเป็นเขียว คือ<strong>แก้เทส</strong> ไม่ใช่แก้โค้ด</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t1-6">
+    <div class="t-head"><span class="t-num">1.6</span><h3>Mindset — information service ไม่ใช่ gatekeeper</h3><span class="ref">0.0c</span></div>
+    <div class="note quote"><span class="lbl">Rapid Software Testing</span>
+      <p>"Testing is an <strong>information service</strong> to stakeholders about risk."</p>
+    </div>
+    <p>คุณไม่ได้มีหน้าที่ "ทำให้ระบบไม่มีบั๊ก" (เป็นไปไม่ได้) คุณมีหน้าที่ <strong>ทำให้คนตัดสินใจ release ได้อย่างมีข้อมูล</strong> ใครที่ยังคิดว่าตัวเองเป็นยามเฝ้าประตูจะเป็นศัตรูกับทีม dev ตลอดชีวิต และผลคือคุณภาพแย่ลง เพราะข้อมูลหยุดไหล</p>
+    <p>3 ทักษะที่ไม่มีใน checklist ไหน:</p>
+    <div class="tw"><table>
+      <thead><tr><th>ทักษะ</th><th>ใช้ทำอะไร</th></tr></thead>
+      <tbody>
+        <tr><td>ความช่างสงสัย</td><td>ตั้งคำถามที่ไม่มีใครคิดจะถาม</td></tr>
+        <tr><td>Systems thinking</td><td>เดาว่าอะไรจะพังเมื่อ 2 ระบบคุยกัน</td></tr>
+        <tr><td>การสื่อสาร</td><td>บอกบั๊กโดยไม่ให้ dev รู้สึกโดนโจมตี</td></tr>
+      </tbody>
+    </table></div>
+  </article>
+
+  <article class="topic" id="t1-7">
+    <div class="t-head"><span class="t-num">1.7</span><h3>Context-Driven Framework</h3><span class="ref">0.57</span></div>
+    <p>กรอบที่ควบคุมการใช้ทุกหัวข้อที่เหลือ — ถ้าไม่มีอันนี้ คุณจะเอา checklist ทั้งหมดไปใช้แบบตายตัว ซึ่งขัดกับสิ่งที่หลักสูตรบอกเอง</p>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>หลักการ</th><th>ความหมายที่ใช้จริง</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>คุณค่าของ practice ขึ้นกับบริบท</td><td>ไม่มี practice ที่ดีในทุกที่</td></tr>
+        <tr><td>2</td><td><strong>มี good practice ในบริบท แต่ไม่มี best practice</strong></td><td>ข้อที่สำคัญที่สุด</td></tr>
+        <tr><td>3</td><td>คนที่ทำงานร่วมกันคือส่วนสำคัญที่สุดของบริบท</td><td>เครื่องมือไม่ได้กำหนดผลลัพธ์ คนกำหนด</td></tr>
+        <tr><td>4</td><td>โปรเจกต์คลี่คลายไปในทางที่คาดเดาไม่ได้</td><td>แผนต้องปรับได้</td></tr>
+        <tr><td>5</td><td>ผลิตภัณฑ์คือทางแก้ปัญหา ถ้าไม่แก้ = ไม่ทำงาน</td><td>เชื่อมกับ 1.1</td></tr>
+        <tr><td>6</td><td>การเทสที่ดีคืองานฝีมือทางปัญญาที่ท้าทาย</td><td>ไม่ใช่การทำตามขั้นตอน</td></tr>
+        <tr><td>7</td><td>ผ่านการตัดสินใจและทักษะเท่านั้น เราจึงทำสิ่งที่ถูกในเวลาที่ถูก</td><td>ตัดสินใจ &gt; กระบวนการ</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Mission — 4 คำถามก่อนเริ่มทุกงาน</strong></p>
+    <div class="tw"><table>
+      <thead><tr><th>คำถาม</th><th>ทำไมสำคัญ</th></tr></thead>
+      <tbody>
+        <tr><td>ใครคือ client ของงานเทสนี้</td><td>คนที่คุณส่งข้อมูลให้ ไม่ใช่ "ทีม" ลอยๆ</td></tr>
+        <tr><td>เขาต้องการข้อมูลอะไร</td><td>หาบั๊ก / ประเมินความพร้อม / ยืนยันว่าแก้แล้ว — คนละงาน</td></tr>
+        <tr><td>ข้อจำกัดคืออะไร</td><td>เวลา env ข้อมูล สิทธิ์เข้าถึง</td></tr>
+        <tr><td>อะไรที่จะ<em>ไม่</em>ทำ</td><td>ต้องพูดออกมา ไม่ใช่เงียบไว้</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">Heuristic ≠ Rule</span>
+      <p>Heuristic = วิธีแก้ปัญหาที่ใช้ได้ผลบ่อย แต่ไม่รับประกัน และ<strong>ต้องรู้ว่ามันผิดได้เมื่อไหร่</strong></p>
+      <p>ทุกสิ่งในเอกสารนี้ — ตาราง checklist กฎ สัดส่วน — เป็น heuristic ทั้งหมด ทุกครั้งที่หยิบมาใช้ให้ถามว่า <strong>"heuristic นี้ผิดในกรณีไหน และกรณีนั้นคือกรณีนี้หรือเปล่า"</strong></p>
+    </div>
+    <div class="note warn"><span class="lbl">ความเสี่ยงเฉพาะของ agentic pipeline</span>
+      <p>LLM รับ heuristic ไปเป็นกฎเสมอ มันไม่ถามว่า "กรณีนี้เข้าข้อยกเว้นไหม" — สิ่งที่เขียนใน CLAUDE.md จะถูกบังคับใช้ 100% ไม่ว่าบริบทจะเป็นยังไง</p>
+      <p>การตัดสินใจว่า heuristic ไหนควรกลายเป็นกฎ (deterministic gate) และอันไหนต้องคงความเป็น heuristic (มนุษย์ตัดสิน) คือการตัดสินใจทางสถาปัตยกรรมที่สำคัญที่สุดในไปป์ไลน์</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t1-8">
+    <div class="t-head"><span class="t-num">1.8</span><h3>7 Testing Principles พร้อมข้อวิจารณ์</h3><span class="ref">0.6</span></div>
+
+    <p><strong>1. Testing shows presence of defects, not their absence</strong></p>
+    <div class="note quote"><span class="lbl">Dijkstra, 1970</span>
+      <p>"Program testing can be used to show the presence of bugs, but never to show their absence."</p>
+    </div>
+    <p>จริงระดับคณิตศาสตร์ — เลิกพูดว่า "เทสผ่านหมดแล้ว ไม่มีบั๊ก" ให้พูดว่า <strong>"เทสที่เราเลือกมาผ่านหมด ความเสี่ยงที่เหลืออยู่คือ X, Y"</strong></p>
+
+    <p><strong>2. Exhaustive testing is impossible</strong></p>
+    <p>ฟอร์ม 5 ช่อง ช่องละ 100 ค่า = 10<sup>10</sup> combination ถ้ารันได้ 1,000 เคส/วินาที ใช้เวลา <strong>317 ปี</strong> และนั่นยังไม่นับลำดับการกรอก browser network state</p>
+    <p>ผลที่ตามมา: งานหลักของ tester ไม่ใช่ "เทส" แต่คือ <strong>"เลือกว่าจะไม่เทสอะไร"</strong></p>
+
+    <p><strong>3. Early testing saves time and money (Shift Left)</strong></p>
+    <div class="note warn"><span class="lbl">ตัวเลขที่ทุกคนอ้างเป็นของปลอม</span>
+      <p>กราฟ "แก้บั๊กใน production แพงกว่า 100 เท่า" ต้นทางคือ Boehm ปี 1981 บนโปรเจกต์ waterfall ยุค mainframe — Bossavit สืบ citation ใน <em>The Leprechauns of Software Engineering</em> แล้วพบว่าแทบไม่มี raw data รองรับ</p>
+      <p>ทิศทางถูก (เจอเร็ว = ถูกกว่า) แต่<strong>อย่าอ้างตัวเลข 100x ในสไลด์</strong> ให้อ้าง DORA metrics แทน เพราะมี data จริงเป็นแสนตัวอย่าง</p>
+    </div>
+
+    <p><strong>4. Defects cluster together</strong></p>
+    <p>80% ของ defect มักอยู่ใน 20% ของ module — และมักเป็น module ที่ซับซ้อนที่สุด แก้บ่อยที่สุด และไม่มีใครเข้าใจทั้งหมด</p>
+    <div class="code"><button class="copy">copy</button>
+<pre>git log --format=format: --name-only | sort | uniq -c | sort -rn | head -20</pre>
+    </div>
+    <p>20 ไฟล์ที่ถูกแก้บ่อยที่สุด = แผนที่ความเสี่ยงของคุณ ฟรีๆ ใน 5 วินาที</p>
+
+    <p><strong>5. Pesticide Paradox</strong></p>
+    <p>รัน regression suite เดิมซ้ำๆ มันจะเจอบั๊กน้อยลงเรื่อยๆ ไม่ใช่เพราะโค้ดดีขึ้น แต่เพราะ<strong>มันฆ่าแมลงที่มันฆ่าเป็นไปหมดแล้ว</strong> และแมลงที่เหลือคือตัวที่ยาชนิดนี้ไม่โดน</p>
+    <div class="note pipe"><span class="lbl">ประยุกต์</span>
+      <p>Agentic pipeline สร้าง regression test ได้เร็วมาก ซึ่งแปลว่ามันสะสม "ยาสูตรเดิม" เร็วกว่าคนทั่วไปหลายเท่า — ทางแก้คือ exploratory testing และการ <em>refresh</em> suite เป็นระยะ ไม่ใช่เพิ่มอย่างเดียว</p>
+    </div>
+
+    <p><strong>6. Testing is context dependent</strong></p>
+    <p>เทสแอปธนาคาร ≠ เทสเกม ≠ เทสเว็บ marketing — ไม่มี best practice สากล มีแต่ practice ที่เหมาะกับบริบทนี้</p>
+
+    <p><strong>7. Absence-of-errors is a fallacy</strong></p>
+    <p>ระบบที่ไม่มีบั๊กเลย แต่ผู้ใช้ไม่ต้องการ = <strong>ระบบที่ล้มเหลว 100%</strong> — ข้อที่สำคัญที่สุดและถูกละเลยมากที่สุด</p>
+  </article>
+</section>
+
+<!-- ══════════════ CHAPTER 2 ══════════════ -->
+<section class="chapter" id="ch2">
+  <div class="ch-head">
+    <span class="ch-num">Chapter 02</span>
+    <h2>คำศัพท์แกนกลาง</h2>
+    <p class="goal">พูดให้แม่น เพื่อให้ประชุมกันรู้เรื่อง</p>
+    <hr>
+  </div>
+
+  <article class="topic" id="t2-1">
+    <div class="t-head"><span class="t-num">2.1</span><h3>Defect Chain</h3><span class="ref">0.1</span></div>
+    <div class="code">
+<pre>Root Cause  →  Error  →  Defect  →  Failure
+(สาเหตุเชิงระบบ)  (มนุษย์)   (สิ่งของ)    (พฤติกรรม)</pre>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>ขั้น</th><th>นิยาม</th><th>เจ้าของ</th><th>เห็นด้วยตาไหม</th></tr></thead>
+      <tbody>
+        <tr><td>Root Cause</td><td>สาเหตุเชิงระบบที่ทำให้ error เกิดขึ้นได้</td><td>Process</td><td>ต้องขุด</td></tr>
+        <tr><td>Error / Mistake</td><td>การกระทำของมนุษย์ที่ผิด</td><td>คน</td><td>ไม่เห็น อยู่ในหัว</td></tr>
+        <tr><td>Defect / Bug / Fault</td><td>สิ่งที่ผิดที่ฝังอยู่ใน artifact</td><td>Artifact</td><td>เห็นถ้าอ่าน</td></tr>
+        <tr><td>Failure</td><td>ระบบทำงานไม่ตรงที่คาดหวัง <strong>ตอนรัน</strong></td><td>Runtime</td><td>เห็นชัด</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>ตัวอย่างจริง</strong></p>
+    <div class="code"><button class="copy">copy</button>
+<pre>// spec: GET /api/promotion/list → Result: PromotionItem[] | null
+// แต่ spec ไม่ได้เขียนคำว่า nullable ไว้ชัด
+
+const res = await api.getPromotionList({ DoAdmin, DoIp })
+const items = res?.Result.map(x =&gt; x.Name)   // ← Defect อยู่ตรงนี้</pre>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>ขั้น</th><th>ในเคสนี้คือ</th></tr></thead>
+      <tbody>
+        <tr><td>Root Cause</td><td>spec ไม่บังคับระบุ nullability + ไม่มี gate ตรวจว่า optional chain ครอบถึง property ปลายทาง</td></tr>
+        <tr><td>Error</td><td>dev สมมติเองว่า <code>Result</code> เป็น array เสมอ (เพราะ 20 endpoint ก่อนหน้าเป็นแบบนั้น)</td></tr>
+        <tr><td>Defect</td><td><code>res?.Result.map()</code> — optional chain ครอบแค่ <code>res</code></td></tr>
+        <tr><td>Failure</td><td>ผู้ใช้ใหม่ที่ยังไม่มีโปรโมชั่น → หน้าขาว</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">กฎเหล็ก 3 ข้อ</span>
+      <p><strong>1. Defect ไม่ได้กลายเป็น Failure เสมอไป</strong> — ถ้าทุก account ใน test data มีโปรโมชั่นหมด เทสจะผ่าน 100% ทั้งที่ defect นั่งอยู่ตรงนั้นเงียบๆ เรียกว่า <em>latent defect</em></p>
+      <p><strong>2. Failure เกิดได้โดยไม่มี Defect ในโค้ด</strong> — env, infra, หรือ test เขียนผิดเอง</p>
+      <p><strong>3. Defect ไม่ได้อยู่แค่ในโค้ด</strong> — defect ใน requirement/spec แพงกว่ามาก เพราะมันแตกลูกเป็น defect ในโค้ดหลายจุดพร้อมกัน</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t2-2">
+    <div class="t-head"><span class="t-num">2.2</span><h3>Testware Vocabulary</h3><span class="ref">0.7</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>คำ</th><th>นิยาม</th><th>ตัวอย่าง</th></tr></thead>
+      <tbody>
+        <tr><td>Test Basis</td><td>เอกสารที่ใช้อ้างอิงในการออกแบบเทส</td><td>API spec, ticket, Figma, กฎหมาย</td></tr>
+        <tr><td>Test Condition</td><td>สิ่งที่ <em>ควร</em> ถูกเทส (ยังไม่ใช่ขั้นตอน)</td><td>"การถอนเงินเมื่อยอดไม่พอ"</td></tr>
+        <tr><td>Test Case</td><td>precondition + input + <strong>expected result</strong> + postcondition</td><td>ยอด 100 ถอน 150 → error, ยอดยัง 100</td></tr>
+        <tr><td>Test Script</td><td>test case ที่เขียนเป็นโค้ดรันได้</td><td>ไฟล์ <code>.spec.ts</code></td></tr>
+        <tr><td>Test Suite</td><td>กลุ่มของ test case</td><td>smoke suite, regression suite</td></tr>
+        <tr><td>Test Data</td><td>ข้อมูลที่ใช้ป้อน</td><td>account ที่ยอด = 0, = 1, = ติดลบ</td></tr>
+        <tr><td><strong>Test Oracle</strong></td><td><strong>แหล่งที่บอกว่าผลลัพธ์ที่ถูกคืออะไร</strong></td><td>spec, ระบบเดิม, กฎธุรกิจ</td></tr>
+        <tr><td>Test Environment</td><td>ที่ที่รันเทส</td><td>preview, staging</td></tr>
+        <tr><td>Entry Criteria</td><td>เงื่อนไขที่ต้องครบก่อนเริ่มเทส</td><td>build ผ่าน, env พร้อม, smoke ผ่าน</td></tr>
+        <tr><td>Exit Criteria / DoD</td><td>เงื่อนไขที่ต้องครบก่อนบอกว่าเสร็จ</td><td>ไม่มี blocker, regression pass</td></tr>
+        <tr><td>Traceability</td><td>เส้นเชื่อม requirement ↔ test ↔ defect</td><td>ticket ↔ test file</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">คำที่สำคัญที่สุดคือ Test Oracle</span>
+      <p><strong>Oracle Problem</strong> = "คุณรู้ได้ยังไงว่าผลลัพธ์ที่เห็นมันถูก"</p>
+      <p>ไม่มี expected result ที่ชัดเจน → <strong>มันไม่ใช่ test case มันคือการเดินเล่น</strong></p>
+      <p>Assert ที่อ่อน (<code>expect(res).toBeTruthy()</code>) → oracle อ่อน → เทสผ่านทั้งที่ของพัง</p>
+    </div>
+    <div class="note warn"><span class="lbl">ความเสี่ยงอันดับ 1 ของ AI-generated test</span>
+      <p>LLM มักเขียน test ที่ assert <strong>สิ่งที่โค้ดทำ</strong> ไม่ใช่ <strong>สิ่งที่โค้ดควรทำ</strong> — เทสมันจะ pass เสมอ เพราะมันลอกพฤติกรรมของ defect มาเป็น expected result</p>
+      <p>คำถามที่ต้องถามทุกครั้ง: <em>"ถ้าผม revert การแก้ไข test นี้จะแดงไหม"</em> ถ้าตอบไม่ได้ = test นั้นไม่มีค่า</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t2-3">
+    <div class="t-head"><span class="t-num">2.3</span><h3>SUT / AUT / Test Item</h3><span class="ref">0.49</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>คำ</th><th>หมายถึง</th></tr></thead>
+      <tbody>
+        <tr><td>SUT (System Under Test)</td><td>สิ่งที่กำลังถูกทดสอบ</td></tr>
+        <tr><td>AUT (Application Under Test)</td><td>เหมือนกัน ใช้กับ application</td></tr>
+        <tr><td>Test Item</td><td>ส่วนประกอบที่ถูกทดสอบในรอบนั้น</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>ทุกอย่างที่อยู่นอกขอบ SUT คือ dependency ที่ต้องถูกควบคุม</strong> — ไม่ mock ก็ต้องทำให้ deterministic</p>
+    <div class="code">
+<pre>SUT = withdraw composable
+├─ ข้างใน: logic ตรวจยอด, การเรียก store
+└─ ข้างนอก (ต้องคุม): API client, clock, router, toast
+
+SUT = หน้า /wallet ทั้งหน้า
+├─ ข้างใน: component + store + composable
+└─ ข้างนอก (ต้องคุม): backend API, auth session</pre>
+    </div>
+    <div class="note warn"><span class="lbl">อาการที่บอกว่าขอบเขตผิด</span>
+      <p>unit test ที่ mock 15 อย่าง — นั่นแปลว่าขอบเขต SUT ผิด ไม่ใช่ว่าคุณ mock ไม่เก่ง</p>
+      <p>ถ้าตอบไม่ได้ว่า SUT คืออะไร เทสตัวนั้นจะกลายเป็นเทสที่ช้าแบบ E2E แต่ครอบคลุมแบบ unit — แย่ที่สุดของทั้งสองโลก</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t2-4">
+    <div class="t-head"><span class="t-num">2.4</span><h3>Incident vs Defect + Bug Taxonomy</h3><span class="ref">0.27</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>คำ</th><th>นิยาม</th></tr></thead>
+      <tbody>
+        <tr><td>Test Incident / Anomaly</td><td>สิ่งที่สังเกตเห็นแล้วผิดปกติ — <strong>ยังไม่รู้ว่าเป็นบั๊กจริงไหม</strong></td></tr>
+        <tr><td>Defect</td><td>incident ที่ถูกยืนยันแล้วว่าเป็นความผิดพลาดใน artifact</td></tr>
+      </tbody>
+    </table></div>
+    <p>ทุก incident ไม่ได้เป็น defect เสมอไป — อาจเป็น env ผิด test เขียนผิด spec ที่เข้าใจผิด หรือพฤติกรรมที่ตั้งใจแล้ว <strong>ก่อนเปิด ticket ให้ triage เสมอ</strong></p>
+    <p><strong>ประเภทบั๊กตามพฤติกรรมการ reproduce</strong></p>
+    <div class="tw"><table>
+      <thead><tr><th>ชื่อ</th><th>ลักษณะ</th><th>รับมือ</th></tr></thead>
+      <tbody>
+        <tr><td>Bohrbug</td><td>reproduce ได้แน่นอนทุกครั้ง</td><td>ง่ายสุด</td></tr>
+        <tr><td><strong>Heisenbug</strong></td><td>หายไปเมื่อพยายามสังเกต (ใส่ log, เปิด debugger)</td><td>มักเป็น race condition / timing</td></tr>
+        <tr><td>Mandelbug</td><td>สาเหตุซับซ้อนจนดูเหมือนสุ่ม</td><td>ต้องมี observability ที่ดี</td></tr>
+        <tr><td>Schrödinbug</td><td>ทำงานอยู่ดีๆ จนมีคนอ่านโค้ดแล้วพบว่ามันไม่ควรทำงานได้ตั้งแต่แรก</td><td>เจอตอน review</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">Heisenbug กับ LLM reviewer</span>
+      <p>Heisenbug คือสัญญาณเกือบแน่นอนของ concurrency / async timing — ในโลก frontend มักเป็น race ระหว่าง API สองตัว, state update ที่ไม่ได้ await, debounce ที่ไม่ cancel, component unmount ก่อน promise resolve</p>
+      <p>และนี่คือประเภท defect ที่ <strong>LLM reviewer อ่อนที่สุด</strong> เพราะต้องจำลอง execution timeline ในหัว ไม่ใช่แค่อ่านโค้ดทีละบรรทัด</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t2-5">
+    <div class="t-head"><span class="t-num">2.5</span><h3>False Positive / False Negative</h3><span class="ref">0.29</span></div>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>ของจริงมี defect</th><th>ของจริงไม่มี defect</th></tr></thead>
+      <tbody>
+        <tr><td><strong>เทสแดง</strong></td><td><span class="dot d-t"></span>True Positive</td><td><span class="dot d-a"></span><strong>False Positive</strong> — สัญญาณหลอก</td></tr>
+        <tr><td><strong>เทสเขียว</strong></td><td><span class="dot d-r"></span><strong>False Negative</strong> — ปล่อยผี</td><td><span class="dot d-t"></span>True Negative</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">ระวังความกำกวมของคำศัพท์</span>
+      <p>คำสองคำนี้มีการใช้กลับด้านกันในวงการ ขึ้นกับว่าตีความ "positive" ว่า <em>ตรวจเจอ</em> หรือ <em>ผลเทสผ่าน</em></p>
+      <p>ในที่ประชุม <strong>อย่าใช้คำนี้เดี่ยวๆ</strong> ให้พูดว่า "เทสแดงแต่ของไม่ได้พัง" หรือ "เทสเขียวแต่ของพัง" — ยาวกว่าแต่ไม่มีใครเข้าใจผิด</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>False Positive (แดงหลอก)</th><th>False Negative (เขียวหลอก)</th></tr></thead>
+      <tbody>
+        <tr><td>มองเห็นไหม</td><td>เห็นทันที</td><td><strong>มองไม่เห็นจนกว่าลูกค้าจะเจอ</strong></td></tr>
+        <tr><td>ต้นทุนทันที</td><td>เสียเวลา debug</td><td>0 (ดูเหมือนดี)</td></tr>
+        <tr><td>ต้นทุนสะสม</td><td>ทำลายความเชื่อถือในระบบเทส</td><td>ทำลายความเชื่อถือในผลิตภัณฑ์</td></tr>
+        <tr><td>ตรวจจับ</td><td>ง่าย</td><td><strong>ต้องมีกลไกพิเศษ</strong></td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>4 วิธีวัด False Negative</strong> (เรียงจากทำง่ายไปยาก)</p>
+    <div class="tw"><table>
+      <thead><tr><th>วิธี</th><th>ทำยังไง</th><th>ให้อะไร</th></tr></thead>
+      <tbody>
+        <tr><td>Escaped Defect Rate</td><td>นับบั๊กที่ production เจอต่อ release</td><td>ตรงที่สุด แต่ feedback ช้า</td></tr>
+        <tr><td>Seeded Defect</td><td>จงใจแทรก defect ที่รู้อยู่แล้ว ดูว่า gate จับได้กี่ %</td><td>feedback เร็ว</td></tr>
+        <tr><td>Mutation Testing</td><td>ให้เครื่องแก้โค้ดแบบสุ่ม ดูว่าเทสแดงไหม</td><td>วัด oracle strength (L5)</td></tr>
+        <tr><td><strong>Reverse-check</strong></td><td>revert การแก้ → เทสที่เกี่ยวข้องต้องแดง</td><td>ทำได้ใน CI ทันที</td></tr>
+      </tbody>
+    </table></div>
+    <div class="code"><button class="copy">copy</button>
+<pre>Precision = TP / (TP + FP)   → "เวลามันแดง เชื่อได้แค่ไหน"
+Recall    = TP / (TP + FN)   → "ของที่พังจริง มันจับได้กี่ %"</pre>
+    </div>
+    <div class="note pipe"><span class="lbl">ความอสมมาตรที่ต้องระวังใน metric</span>
+      <p>metric ที่วัดแค่ "มนุษย์อนุมัติโดยไม่ตรวจกี่ %" จะ <strong>มองเห็น false positive แต่มองไม่เห็น false negative เลย</strong></p>
+      <p>เทสแดงหลอก → คุณเปิดดู → ตัวเลขลดลง (จับได้)<br>
+         เทสเขียวหลอก → คุณอนุมัติเลย → <strong>ตัวเลขสูงขึ้น = ระบบให้รางวัลกับความผิดพลาด</strong></p>
+      <p>ต้องมี metric คู่ที่จับทั้งสองด้านเสมอ ไม่งั้นระบบจะ optimize ไปทางเดียวโดยอัตโนมัติ</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t2-6">
+    <div class="t-head"><span class="t-num">2.6</span><h3>Glossary EN ↔ TH</h3><span class="ref">0.39</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>English</th><th>ไทย</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>
+        <tr><td>Quality Assurance</td><td>การประกันคุณภาพ</td><td>เน้น process</td></tr>
+        <tr><td>Quality Control</td><td>การควบคุมคุณภาพ</td><td>เน้น product</td></tr>
+        <tr><td>Checking</td><td>การตรวจสอบตามกฎ</td><td><strong>ไม่มีคำไทยตรงตัว</strong></td></tr>
+        <tr><td>Error / Mistake</td><td>ความผิดพลาดของมนุษย์</td><td>ระวังสับสนกับ error ใน console</td></tr>
+        <tr><td>Defect / Fault</td><td>ข้อบกพร่อง / บั๊ก</td><td>ทับศัพท์ได้</td></tr>
+        <tr><td>Failure</td><td>ความล้มเหลว / อาการเสีย</td><td>—</td></tr>
+        <tr><td>Verification</td><td>การทวนสอบ</td><td>ตรงสเปคไหม</td></tr>
+        <tr><td>Validation</td><td>การตรวจรับ</td><td>ตรงความต้องการไหม</td></tr>
+        <tr><td>Test Oracle</td><td>เกณฑ์ตัดสินผลลัพธ์</td><td><strong>ทับศัพท์ดีกว่า</strong></td></tr>
+        <tr><td>Test Basis</td><td>ฐานอ้างอิงในการทดสอบ</td><td>—</td></tr>
+        <tr><td>Coverage</td><td>ความครอบคลุม</td><td>—</td></tr>
+        <tr><td>Traceability</td><td>ความสามารถสืบย้อน</td><td>—</td></tr>
+        <tr><td>Regression</td><td>การถดถอย</td><td>—</td></tr>
+        <tr><td>Confirmation Test</td><td>การทดสอบยืนยันการแก้ไข</td><td>—</td></tr>
+        <tr><td>Severity</td><td>ความรุนแรง</td><td>—</td></tr>
+        <tr><td>Priority</td><td>ลำดับความสำคัญ</td><td>—</td></tr>
+        <tr><td><strong>Residual Risk</strong></td><td>ความเสี่ยงคงเหลือ</td><td>คำสำคัญ</td></tr>
+        <tr><td>Testability</td><td>ความสามารถในการทดสอบ</td><td>—</td></tr>
+        <tr><td>Flaky Test</td><td>เทสที่ผลไม่คงที่</td><td>ไม่มีคำไทยที่ติดปาก</td></tr>
+        <tr><td>Escaped Defect</td><td>ข้อบกพร่องที่หลุดรอด</td><td>—</td></tr>
+        <tr><td>Exploratory Testing</td><td>การทดสอบเชิงสำรวจ</td><td>—</td></tr>
+        <tr><td>Acceptance Criteria</td><td>เกณฑ์การยอมรับ</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+  </article>
+</section>
+
+<!-- ══════════════ CHAPTER 3 ══════════════ -->
+<section class="chapter" id="ch3">
+  <div class="ch-head">
+    <span class="ch-num">Chapter 03</span>
+    <h2>มิติของการทดสอบ</h2>
+    <p class="goal">จัดหมวดหมู่ให้ถูก เพื่อรู้ว่ากำลังทำอะไรอยู่</p>
+    <hr>
+  </div>
+
+  <article class="topic" id="t3-1">
+    <div class="t-head"><span class="t-num">3.1</span><h3>Verification vs Validation</h3><span class="ref">0.2</span></div>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Verification</th><th>Validation</th></tr></thead>
+      <tbody>
+        <tr><td>คำถาม</td><td>Are we building the product <strong>right</strong>?</td><td>Are we building the <strong>right</strong> product?</td></tr>
+        <tr><td>เทียบกับอะไร</td><td>Spec / design / convention</td><td>ความต้องการจริงของผู้ใช้</td></tr>
+        <tr><td>ตอบได้โดย</td><td>เครื่อง, reviewer, static analysis</td><td>มนุษย์ที่รู้ business เท่านั้น</td></tr>
+        <tr><td>พังแล้วเป็นยังไง</td><td>ของไม่ตรงสเปค</td><td><strong>ของตรงสเปคเป๊ะ แต่ไม่มีใครอยากใช้</strong></td></tr>
+      </tbody>
+    </table></div>
+    <div class="note pipe"><span class="lbl">ประยุกต์กับ pipeline</span>
+      <p>type check, lint, convention check, contract check, static review, E2E ตาม flow — <strong>ทั้งหมดคือ verification</strong></p>
+      <p>Validation มีทางเดียวคือ <strong>มนุษย์ดูของจริงแล้วบอกว่าใช่หรือไม่ใช่</strong> — นี่คือเหตุผลเชิงทฤษฎีที่ human gate ข้ามไม่ได้ ไม่ใช่แค่ความระแวง</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t3-2">
+    <div class="t-head"><span class="t-num">3.2</span><h3>Static vs Dynamic Testing</h3><span class="ref">0.3</span></div>
+    <p>คนใหม่ 95% คิดว่า testing = รันแล้วดู นี่คือความเข้าใจผิดที่ทำให้เสียเวลาไปเป็นปี</p>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Static Testing</th><th>Dynamic Testing</th></tr></thead>
+      <tbody>
+        <tr><td>รันโค้ดไหม</td><td>ไม่</td><td>ใช่</td></tr>
+        <tr><td>เจออะไร</td><td><strong>Defect โดยตรง</strong></td><td><strong>Failure</strong> แล้วค่อยสาวกลับหา defect</td></tr>
+        <tr><td>เจอ defect ประเภทไหน</td><td>dead code, spec คลุมเครือ, ขาด error handling, security pattern</td><td>performance, race condition, integration, UX จริง</td></tr>
+        <tr><td>เจอไม่ได้เลย</td><td>อะไรที่ขึ้นกับ runtime state</td><td>อะไรที่ไม่มี test case ครอบ</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Review 4 ระดับ</strong> เรียงตามความเข้มงวด: Informal review → Walkthrough → Technical review → <strong>Inspection</strong> (มี moderator, checklist, entry/exit criteria, เก็บ metric)</p>
+    <div class="note warn"><span class="lbl">Errata — แก้จากฉบับร่าง</span>
+      <p>เคยเขียนว่า "static ถูกกว่า dynamic เสมอ" — <strong>ไม่จริง</strong> Human review เป็น static ที่แพงที่สุดต่อชั่วโมงในทีม</p>
+      <p>หลักการที่ถูกคือเรียงตาม <strong>ต้นทุนต่อ defect ที่เจอ</strong> จากถูกไปแพง และให้แต่ละชั้นกรองของที่ชั้นถัดไปไม่ต้องดู</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>ชนิด</th><th>ต้นทุนต่อครั้ง</th><th>ต้นทุนต่อ defect</th></tr></thead>
+      <tbody>
+        <tr><td>Static — เครื่อง (TS, lint, SAST)</td><td>~0</td><td><strong>ถูกที่สุดในระบบ</strong></td></tr>
+        <tr><td>Static — LLM review</td><td>ต่ำ</td><td>ต่ำ–กลาง (ไม่แน่นอน)</td></tr>
+        <tr><td>Static — มนุษย์ review</td><td><strong>สูงมาก</strong></td><td>คุ้มเฉพาะ defect ที่เครื่องหาไม่ได้</td></tr>
+        <tr><td>Dynamic — automated</td><td>ต่ำ (หลังเขียนแล้ว)</td><td>ต่ำ</td></tr>
+        <tr><td>Dynamic — manual</td><td>สูง</td><td>สูง</td></tr>
+      </tbody>
+    </table></div>
+  </article>
+
+  <article class="topic" id="t3-3">
+    <div class="t-head"><span class="t-num">3.3</span><h3>Black / White / Grey box</h3><span class="ref">0.16</span></div>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Black-box</th><th>White-box</th><th>Grey-box</th></tr></thead>
+      <tbody>
+        <tr><td>เห็นภายในไหม</td><td>ดูแต่ input/output</td><td>เห็นโค้ด/โครงสร้าง</td><td>เห็นบางส่วน (schema, log)</td></tr>
+        <tr><td>ออกแบบเทสจาก</td><td>spec, พฤติกรรม</td><td>control flow</td><td>ทั้งสอง</td></tr>
+        <tr><td>จับอะไรเก่ง</td><td>ฟีเจอร์หาย, ตีความ spec ผิด</td><td>branch ที่ไม่เคยรัน, dead code</td><td>integration, data flow</td></tr>
+        <tr><td>จับอะไรไม่ได้</td><td>dead path</td><td><strong>ฟีเจอร์ที่ลืมเขียนไปเลย</strong></td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">White-box มองไม่เห็น "สิ่งที่ไม่มีอยู่"</span>
+      <p>ถ้า requirement บอกว่าต้องมีการตรวจวงเงินถอนต่อวัน แต่ dev ลืมเขียนไปเลย → coverage จะเป็น 100% อย่างสมบูรณ์แบบ เพราะโค้ดที่มีอยู่ถูกรันครบหมด <strong>แต่ defect ที่ร้ายแรงที่สุดนั่งอยู่ในช่องว่างที่ไม่มีโค้ด</strong></p>
+    </div>
+    <div class="note warn"><span class="lbl">Anchoring ของ reviewer</span>
+      <p>Reviewer ที่อ่านโค้ดก่อน จะประเมินจากมุม "โค้ดนี้ทำอะไร" มากกว่า "requirement ต้องการอะไร" — ถ้าอยากจับ "ฟีเจอร์ที่ลืมทำ" ต้องให้ spec ก่อนโค้ด หรือแยกเป็นสอง pass</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t3-4">
+    <div class="t-head"><span class="t-num">3.4</span><h3>Test Levels</h3><span class="ref">0.4</span></div>
+    <p><strong>Test Level = "เทสของชิ้นไหน ในบริบทไหน"</strong> (แกนตั้ง)</p>
+    <div class="tw"><table>
+      <thead><tr><th>Level</th><th>เทสอะไร</th><th>คำถามที่ตอบ</th><th>Test Basis</th></tr></thead>
+      <tbody>
+        <tr><td>Unit / Component</td><td>ฟังก์ชัน/composable เดี่ยว</td><td>ตรรกะชิ้นนี้ถูกไหม</td><td>โค้ด, detailed design</td></tr>
+        <tr><td>Integration</td><td>จุดต่อระหว่าง 2 ชิ้น</td><td>มันคุยกันรู้เรื่องไหม</td><td>architecture, interface spec</td></tr>
+        <tr><td>System</td><td>ระบบทั้งก้อน</td><td>ทั้งระบบตาม requirement ไหม</td><td>requirement, use case</td></tr>
+        <tr><td>Acceptance</td><td>ระบบในมุมผู้ใช้/ธุรกิจ</td><td>ปล่อยได้ไหม</td><td>business need, contract</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>แยก Integration ให้ละเอียด</strong> — Component Integration (module ในระบบเดียวกัน) vs <strong>System Integration</strong> (ข้ามระบบ/ข้ามทีม)</p>
+    <div class="note key"><span class="lbl">System Integration คือที่ที่ defect แพงที่สุดชอบซ่อนตัว</span>
+      <p>เพราะไม่มีใครเป็นเจ้าของ "ช่องว่าง" ระหว่างสองระบบ ทีม A บอกว่า "ผมส่งถูกแล้ว" ทีม B บอกว่า "ผมรับตามสเปค" แล้ว defect ก็ลอยอยู่ตรงกลาง</p>
+      <p>นี่คือคุณค่าที่แท้จริงของ <strong>contract testing</strong> — มันเปลี่ยนช่องว่างที่ไม่มีเจ้าของ ให้กลายเป็น artifact ที่ตรวจสอบได้</p>
+    </div>
+    <div class="note warn"><span class="lbl">Level ≠ Tool</span>
+      <p>สิ่งที่กำหนด level คือ <strong>ขอบเขตของ SUT</strong> ไม่ใช่เครื่องมือ — Playwright ใช้เทส component ก็ได้ Vitest ใช้เทส integration ก็ได้</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t3-5">
+    <div class="t-head"><span class="t-num">3.5</span><h3>Test Types</h3><span class="ref">0.5</span></div>
+    <p><strong>Test Type = "เทสคุณลักษณะไหน"</strong> (แกนนอน) — ตัดกับ level เป็นตาราง ทำให้เกิด "system-level performance test" ได้</p>
+    <div class="tw"><table>
+      <thead><tr><th>Type</th><th>ถามว่า</th><th>ตัวอย่าง</th></tr></thead>
+      <tbody>
+        <tr><td>Functional</td><td>มันทำสิ่งที่ควรทำไหม</td><td>กดฝากเงินแล้วยอดขึ้นถูกไหม</td></tr>
+        <tr><td>Non-functional</td><td>มันทำ<strong>ได้ดีแค่ไหน</strong></td><td>โหลด 500 คนพร้อมกันยังไหวไหม</td></tr>
+        <tr><td>Structural</td><td>โครงสร้างภายในถูกครอบคลุมไหม</td><td>branch coverage ของ validator</td></tr>
+        <tr><td>Change-related</td><td>ของเก่ายังดีอยู่ไหม</td><td>Regression + Confirmation</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Confirmation Testing</th><th>Regression Testing</th></tr></thead>
+      <tbody>
+        <tr><td>ทำเมื่อไหร่</td><td>หลัง dev บอกว่าแก้แล้ว</td><td>หลังมีการเปลี่ยนแปลงใดๆ</td></tr>
+        <tr><td>เทสอะไร</td><td><strong>บั๊กตัวนั้น</strong>ว่าหายจริงไหม</td><td><strong>ของอื่นทั้งหมด</strong>ว่าพังไหม</td></tr>
+        <tr><td>ขอบเขต</td><td>แคบมาก</td><td>กว้าง</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">กฎที่ไม่มีข้อยกเว้น</span>
+      <p>ทุกครั้งที่เจอ production bug → เขียน automated test ที่ <strong>fail ก่อนแก้ และ pass หลังแก้</strong> เสมอ</p>
+      <p>นี่คือกลไกเดียวที่ทำให้ regression suite โตอย่างมีเหตุผล แทนที่จะโตแบบสุ่มจนกลายเป็นหนี้ 3,000 test ที่ไม่มีใครกล้าลบ</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t3-6">
+    <div class="t-head"><span class="t-num">3.6</span><h3>ศัพท์ที่มักตกหล่น</h3><span class="ref">0.19</span></div>
+    <p><strong>A — ตามความลึก/จังหวะ</strong></p>
+    <div class="tw"><table>
+      <thead><tr><th>คำ</th><th>นิยาม</th><th>ใช้เมื่อไหร่</th><th>ขนาด</th></tr></thead>
+      <tbody>
+        <tr><td>Smoke Test</td><td>เช็คว่าฟังก์ชันหลักยังทำงาน</td><td>ทุก build ก่อนเทสอย่างอื่น</td><td>5–20 เคส · &lt; 5 นาที</td></tr>
+        <tr><td>Sanity Test</td><td>เช็คแคบๆ ว่าสิ่งที่เพิ่งแก้ใช้ได้</td><td>หลัง hotfix</td><td>3–10 เคส</td></tr>
+        <tr><td>Build Verification Test</td><td>= smoke ในบริบท CI</td><td>gate ทางเข้า</td><td>อัตโนมัติ</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>B — ตามผู้ทำ/สภาพแวดล้อม</strong></p>
+    <div class="tw"><table>
+      <thead><tr><th>คำ</th><th>ใครทำ</th><th>ที่ไหน</th><th>จุดประสงค์</th></tr></thead>
+      <tbody>
+        <tr><td>UAT</td><td>ผู้ใช้จริง/ตัวแทน business</td><td>staging</td><td><strong>Validation</strong></td></tr>
+        <tr><td><strong>OAT</strong></td><td>ทีม ops</td><td>prod-like</td><td>backup, restore, rollback ทำงานไหม</td></tr>
+        <tr><td>Alpha Testing</td><td>ผู้ใช้ภายนอก <strong>ที่ฝั่งผู้พัฒนา</strong></td><td>env ผู้พัฒนา</td><td>สังเกตพฤติกรรมได้</td></tr>
+        <tr><td>Beta Testing</td><td>ผู้ใช้จริง <strong>ที่สภาพแวดล้อมตัวเอง</strong></td><td>เครื่องผู้ใช้</td><td>ปัญหา compatibility จริง</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">OAT คือสิ่งที่คนลืมบ่อยที่สุด</span>
+      <p>เคยลอง restore database จริงไหม เคยลอง rollback deployment จริงไหม — ถ้าไม่เคย <strong>คุณไม่มี backup คุณมีไฟล์ที่หวังว่าจะใช้ได้</strong></p>
+    </div>
+    <p><strong>C — ตามเจตนา</strong></p>
+    <div class="tw"><table>
+      <thead><tr><th>คำ</th><th>นิยาม</th></tr></thead>
+      <tbody>
+        <tr><td>Positive (Happy Path)</td><td>ป้อนสิ่งที่ถูกต้อง → คาดว่าสำเร็จ</td></tr>
+        <tr><td>Negative</td><td>ป้อนสิ่งที่ผิด → <strong>คาดว่าถูกปฏิเสธอย่างสง่างาม</strong></td></tr>
+        <tr><td>Boundary</td><td>ป้อนค่าขอบ</td></tr>
+        <tr><td>Destructive / Adversarial</td><td>จงใจทำลาย</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">Errata — สัดส่วนที่เคยระบุไว้</span>
+      <p>เคยเขียนสัดส่วน 30/40/20/10 ราวกับเป็นมาตรฐาน — <strong>ไม่มีมาตรฐานสากล</strong> สัดส่วนที่ถูกขึ้นกับความเสี่ยง</p>
+      <p>สิ่งที่ยืนยันได้จริง: ทีมส่วนใหญ่มี positive มากเกินไปอย่างมีนัยสำคัญ — ใช้เป็น <strong>สัญญาณเตือน</strong> ไม่ใช่เป้า ถ้านับแล้ว positive &gt; 70% ให้สงสัยไว้ก่อน</p>
+      <p>เหตุผลที่ error path ถูกละเลย: เขียนยากกว่า mock ยากกว่า และ<strong>ไม่มีใครเขียน requirement ของ error path</strong></p>
+    </div>
+    <p><strong>D — ad-hoc / exploratory</strong> — <em>Exploratory ≠ Ad-hoc</em> Exploratory มีโครงสร้าง (charter, timebox, note-taking) แค่ไม่ได้เขียน test case ไว้ล่วงหน้า ส่วน Ad-hoc ไม่มีแผนและทำซ้ำไม่ได้</p>
+  </article>
+
+  <article class="topic" id="t3-7">
+    <div class="t-head"><span class="t-num">3.7</span><h3>ISO/IEC 25010 — พจนานุกรมของคำว่าคุณภาพ</h3><span class="ref">0.17</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>Characteristic</th><th>แปล</th><th>Sub-characteristics สำคัญ</th></tr></thead>
+      <tbody>
+        <tr><td>Functional Suitability</td><td>ทำหน้าที่ครบถูกไหม</td><td>completeness, correctness</td></tr>
+        <tr><td>Performance Efficiency</td><td>เร็ว/กินทรัพยากรแค่ไหน</td><td>time behaviour, <strong>capacity</strong></td></tr>
+        <tr><td>Compatibility</td><td>อยู่ร่วม/คุยกับคนอื่นได้ไหม</td><td>co-existence, interoperability</td></tr>
+        <tr><td>Usability <em>(2023 → Interaction Capability)</em></td><td>ใช้ง่ายไหม</td><td>learnability, error protection, <strong>accessibility</strong></td></tr>
+        <tr><td>Reliability</td><td>พึ่งพาได้ไหม</td><td>availability, fault tolerance, <strong>recoverability</strong></td></tr>
+        <tr><td>Security</td><td>ปลอดภัยไหม</td><td>confidentiality, <strong>integrity</strong>, authenticity</td></tr>
+        <tr><td>Maintainability</td><td>แก้ง่ายไหม</td><td>modularity, analysability, <strong>testability</strong></td></tr>
+        <tr><td>Portability <em>(2023 → Flexibility)</em></td><td>ย้าย/ติดตั้งง่ายไหม</td><td>adaptability, installability</td></tr>
+        <tr><td><em>(2023 เพิ่ม)</em> Safety</td><td>ทำอันตรายไหม</td><td>fail safe, hazard warning</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>วิธีใช้จริง — Quality Attribute Matrix</strong> อย่าเทสทุกตัวเท่ากัน ให้จัดน้ำหนักตามบริบท (หลักการข้อ 6)</p>
+    <div class="note key"><span class="lbl">Testability คือ characteristic ที่คุณควบคุมได้มากที่สุด</span>
+      <p>สังเกตว่ามันอยู่ใต้ <strong>maintainability</strong> — แปลว่าเป็นคุณสมบัติของ <strong>การออกแบบ</strong> ไม่ใช่ของทีมเทส</p>
+      <p><em>"ถ้าเทสยาก อย่าโทษ tester — โทษ design"</em> untestable code คือ defect ประเภทหนึ่ง</p>
+    </div>
+    <p>สิ่งที่ทำให้ระบบ testable: <code>data-test</code> selector, result shape ที่คงที่, state รวมศูนย์, <strong>seedable test data</strong>, <strong>clock injection</strong>, <strong>feature flag</strong></p>
+  </article>
+
+  <article class="topic" id="t3-8">
+    <div class="t-head"><span class="t-num">3.8</span><h3>Agile Testing Quadrants</h3><span class="ref">0.26</span></div>
+    <div class="code">
+<pre>                    Business-facing
+                          │
+         Q2               │              Q3
+  Functional tests        │     Exploratory testing
+  Story tests             │     Usability testing
+  Prototypes              │     UAT / Alpha / Beta
+  Automated + Manual      │     Manual
+                          │
+Supporting ───────────────┼─────────────── Critiquing
+the Team                  │                the Product
+                          │
+         Q1               │              Q4
+  Unit tests              │     Performance / Load
+  Component tests         │     Security / Accessibility
+  Automated               │     Tools-driven
+                          │
+                    Technology-facing</pre>
+    </div>
+    <div class="note warn"><span class="lbl">Errata — หมายเลข Q1–Q4 ไม่ได้บอกลำดับ</span>
+      <p>มันเป็นแค่ป้ายชื่อของช่อง ไม่ใช่ step — ให้จำเป็น <strong>2 แกน</strong> แทน: business/technology × supporting/critiquing</p>
+      <p>ผู้เขียนต้นฉบับเองก็ระบุว่าหมายเลขสร้างความสับสนมากกว่าช่วย</p>
+    </div>
+    <div class="note pipe"><span class="lbl">ใช้เป็นเครื่องมือหาช่องว่าง</span>
+      <p>รูปแบบที่พบทั่วไปในทีมที่ automate เก่ง: <strong>Q1 + Q2 แข็งแรงมาก แต่ Q3 + Q4 แทบว่างเปล่า</strong></p>
+      <p>เพราะ Q1/Q2 คือส่วนที่เครื่องทำแทนได้ ส่วน Q3 ต้องใช้ sapience และ Q4 ต้องใช้เครื่องมือเฉพาะทาง — สำหรับผลิตภัณฑ์ที่มีเงินและ traffic spike <strong>Q4 ว่างเปล่า = ความเสี่ยงที่ประเมินค่าไม่ได้</strong></p>
+    </div>
+  </article>
+</section>
+
+<!-- ══════════════ CHAPTER 4 ══════════════ -->
+<section class="chapter" id="ch4">
+  <div class="ch-head">
+    <span class="ch-num">Chapter 04</span>
+    <h2>กระบวนการและวงจร</h2>
+    <p class="goal">รู้ว่าการเทสวางตัวอยู่ตรงไหนของการพัฒนา</p>
+    <hr>
+  </div>
+
+  <article class="topic" id="t4-1">
+    <div class="t-head"><span class="t-num">4.1</span><h3>SDLC Models + V-Model</h3><span class="ref">0.18</span></div>
+    <div class="code">
+<pre>Requirements ─────────────────────────────► Acceptance Testing
+  │                                              ▲
+  └─ System Spec ──────────────────► System Testing
+       │                                    ▲
+       └─ Architecture ──────► Integration Testing
+            │                        ▲
+            └─ Detailed Design ► Unit Testing
+                 │                ▲
+                 └──── Code ──────┘</pre>
+    </div>
+    <p><strong>สิ่งที่ V-model สอน และยังจริงแม้ในยุค agile</strong></p>
+    <ul>
+      <li><strong>แต่ละ test level มี test basis ของตัวเอง</strong> — acceptance test อ้าง requirement ไม่ใช่โค้ด</li>
+      <li><strong>การเทสเริ่มได้ตั้งแต่ยังไม่มีโค้ด</strong> — พอมี requirement ก็ออกแบบ acceptance test ได้ทันที นี่คือ shift-left ตัวจริง ไม่ใช่แค่ "รัน CI เร็วขึ้น"</li>
+      <li><strong>ถ้าเขียน test ไม่ได้ = requirement ยังไม่ชัดพอ</strong> — ใช้เป็นเครื่องมือกด requirement ให้ชัด</li>
+    </ul>
+    <div class="tw"><table>
+      <thead><tr><th>Model</th><th>testing อยู่ตรงไหน</th><th>Feedback loop</th><th>ข้อเสีย</th></tr></thead>
+      <tbody>
+        <tr><td>Waterfall</td><td>ท้ายสุด phase เดียว</td><td>เป็นเดือน</td><td>เจอ defect ตอนแก้แพงสุด</td></tr>
+        <tr><td>V-Model</td><td>ขนานทุก phase (execute ท้าย)</td><td>ปานกลาง</td><td>ยังต้อง spec ครบก่อน</td></tr>
+        <tr><td>Iterative</td><td>ทุกรอบ</td><td>เป็นสัปดาห์</td><td>regression โตเร็ว</td></tr>
+        <tr><td>Agile / Scrum</td><td>ใน sprint, whole-team</td><td>เป็นวัน</td><td>ต้องมี automation ไม่งั้นตาย</td></tr>
+        <tr><td>DevOps / CD</td><td>ในไปป์ไลน์ + shift-right</td><td>เป็นนาที</td><td>ต้อง observability ดีมาก</td></tr>
+        <tr><td><strong>Agentic</strong></td><td>ทุก stage + human gate</td><td>นาที–ชม.</td><td><strong>oracle problem ทวีคูณ</strong></td></tr>
+      </tbody>
+    </table></div>
+    <div class="note pipe"><span class="lbl">จุดที่ agentic ต่างจากทุกโมเดลข้างบน</span>
+      <p>ปริมาณโค้ดที่ผลิตต่อหน่วยเวลาสูงกว่ามาก แต่ <strong>ปริมาณ "testing" (คิดว่าควรตรวจอะไร) ไม่ได้เพิ่มตาม</strong> → อัตราส่วน check-per-testing เพิ่มขึ้นเรื่อยๆ = ความเสี่ยงสะสมโดยมองไม่เห็น</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t4-2">
+    <div class="t-head"><span class="t-num">4.2</span><h3>Test Process 7 กิจกรรม</h3><span class="ref">0.10</span></div>
+    <p>agile ไม่ได้ยกเลิกกิจกรรมเหล่านี้ แค่ทำถี่ขึ้นและเบาลง</p>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>กิจกรรม</th><th>ทำอะไร</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Test Planning</td><td>กำหนดขอบเขต ความเสี่ยง กลยุทธ์</td></tr>
+        <tr><td>2</td><td>Monitoring &amp; Control</td><td>ดูว่าตรงแผนไหม ปรับ</td></tr>
+        <tr><td>3</td><td><strong>Test Analysis</strong></td><td><strong>หาว่าอะไรควรถูกเทส</strong> → test conditions</td></tr>
+        <tr><td>4</td><td><strong>Test Design</strong></td><td><strong>ออกแบบว่าจะเทสยังไง</strong> → test cases</td></tr>
+        <tr><td>5</td><td>Test Implementation</td><td>สร้าง script, test data, env</td></tr>
+        <tr><td>6</td><td>Test Execution</td><td>รันจริง</td></tr>
+        <tr><td>7</td><td>Test Completion</td><td>สรุป เก็บ lesson learned ปิด</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">ขั้นที่ 3 และ 4 คือที่ที่มูลค่าทั้งหมดอยู่</span>
+      <p>และเป็นสองขั้นที่คนข้ามบ่อยที่สุด — คนส่วนใหญ่กระโดดจาก "ได้ ticket" ไป "เขียนโค้ดเทส" เลย</p>
+      <p>ผลลัพธ์: automation suite ใหญ่มหึมาที่ครอบคลุมแค่ happy path เพราะไม่มีใครเคยนั่งคิดว่า <em>"เงื่อนไขอะไรบ้างที่ควรถูกทดสอบ"</em> ตั้งแต่แรก</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t4-3">
+    <div class="t-head"><span class="t-num">4.3</span><h3>Shift Left — 5 รูปแบบ</h3><span class="ref">0.55</span></div>
+    <p><strong>Shift Left = ย้าย "จุดที่ได้ feedback" ไปต้นน้ำ</strong> ไม่ใช่ "เทสให้เยอะขึ้น" และไม่ใช่ "รัน CI เร็วขึ้น"</p>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>รูปแบบ</th><th>ต้องมีอะไร</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><strong>Review requirement/spec ก่อนมีโค้ด</strong></td><td>คนที่ตั้งคำถามกับ requirement ได้</td></tr>
+        <tr><td>2</td><td><strong>เขียน test/AC ก่อนโค้ด</strong></td><td>วินัย + AC ที่ testable</td></tr>
+        <tr><td>3</td><td>Static analysis ทันทีที่เขียน</td><td>type system, lint</td></tr>
+        <tr><td>4</td><td>CI feedback เร็ว</td><td>suite ที่เร็วพอ</td></tr>
+        <tr><td>5</td><td>เริ่มคิดเรื่อง non-functional แต่เนิ่นๆ</td><td>เครื่องมือเฉพาะทาง</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">Shift left ≠ ทิ้งการเทสท้ายน้ำ</span>
+      <p>ข้อผิดพลาดที่เจอบ่อย: ลงทุนกับ unit test + static analysis หนักมาก แล้วสรุปว่า "เทสท้ายน้ำไม่จำเป็นแล้ว" — <strong>ผิด</strong> เพราะ defect บางประเภทมองไม่เห็นที่ต้นน้ำโดยธรรมชาติ</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>Defect</th><th>ทำไมต้นน้ำจับไม่ได้</th></tr></thead>
+      <tbody>
+        <tr><td>Integration ระหว่างระบบจริง</td><td>ต้องมีของจริงทั้งสองฝั่ง</td></tr>
+        <tr><td>Performance ภายใต้โหลดจริง</td><td>ต้องมี scale จริง</td></tr>
+        <tr><td>UX ที่ผู้ใช้จริงสับสน</td><td>ต้องมีผู้ใช้จริง</td></tr>
+        <tr><td>Race condition ในสภาพเครือข่ายจริง</td><td>ต้องมี latency จริง</td></tr>
+        <tr><td>ข้อมูลสกปรกที่มีอยู่ใน production</td><td>ต้องมีข้อมูลจริง</td></tr>
+      </tbody>
+    </table></div>
+    <p>สูตรที่ถูกต้องคือ <strong>shift left และ shift right</strong> — ไม่ใช่แทนที่กัน</p>
+  </article>
+
+  <article class="topic" id="t4-4">
+    <div class="t-head"><span class="t-num">4.4</span><h3>Test-First: TDD / ATDD / BDD</h3><span class="ref">0.53</span></div>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>TDD</th><th>ATDD</th><th>BDD</th></tr></thead>
+      <tbody>
+        <tr><td>ระดับ</td><td>Unit / component</td><td>Acceptance</td><td>Feature / behavior</td></tr>
+        <tr><td>ใครเขียน</td><td>Developer</td><td><strong>PO + Dev + Tester ร่วมกัน</strong></td><td>ทีม + stakeholder</td></tr>
+        <tr><td>ขับเคลื่อนอะไร</td><td><strong>การออกแบบโค้ด</strong></td><td><strong>ความเข้าใจร่วมว่า "เสร็จคืออะไร"</strong></td><td><strong>ความเข้าใจร่วมเรื่องพฤติกรรม</strong></td></tr>
+        <tr><td>วงจร</td><td>Red → Green → Refactor</td><td>Discuss → Distill → Develop → Demo</td><td>Discovery → Formulation → Automation</td></tr>
+        <tr><td>ผลพลอยได้</td><td>test suite</td><td>test suite + AC ที่ชัด</td><td>เอกสารมีชีวิต</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">ทั้งสามอย่างไม่ได้มีไว้เพื่อสร้างเทส</span>
+      <p><strong>TDD ไม่ใช่เทคนิคการเทส มันคือเทคนิคการออกแบบ</strong> — test suite เป็นผลพลอยได้ ไม่ใช่เป้าหมาย</p>
+      <p><strong>ATDD/BDD ไม่ใช่เครื่องมือ automation มันคือเทคนิคการสื่อสาร</strong> — Cucumber เป็นทางเลือก ไม่ใช่ข้อบังคับ</p>
+      <p>ความเข้าใจผิดที่พบบ่อยที่สุด: "เราใช้ Cucumber แปลว่าเราทำ BDD" — ผิด ถ้าไม่มีการคุยกันระหว่าง 3 บทบาทก่อนเขียน คุณแค่ได้ Gherkin syntax ที่แพงกว่า test ธรรมดา</p>
+    </div>
+    <p><strong>ผลเชิงโครงสร้างของลำดับ test-after</strong></p>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Test-first</th><th>Test-after</th></tr></thead>
+      <tbody>
+        <tr><td>Oracle มาจากไหน</td><td><strong>เจตนา</strong> (สิ่งที่โค้ดควรทำ)</td><td><strong>โค้ด</strong> (สิ่งที่โค้ดทำอยู่)</td></tr>
+        <tr><td>ถ้าโค้ดผิดตั้งแต่แรก</td><td>เทสจะแดง</td><td><strong>เทสจะเขียวและยืนยันความผิดนั้น</strong></td></tr>
+        <tr><td>จับ "ลืมทำฟีเจอร์" ได้ไหม</td><td>ได้</td><td>ไม่ได้</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">ไม่ใช่ข้อบกพร่องของ LLM</span>
+      <p>LLM ที่เก่งที่สุดในโลกเขียนเทสหลังโค้ด ก็ยังได้เทสที่ encode พฤติกรรมปัจจุบันอยู่ดี เพราะ<strong>มันไม่มี oracle อื่นให้ใช้</strong> — นี่คือผลที่หลีกเลี่ยงไม่ได้ของลำดับ ไม่ใช่ของโมเดล</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>ระดับ</th><th>ทางแก้</th><th>ต้นทุน</th><th>ได้อะไร</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Reverse verification — test ต้องแดงเมื่อ revert</td><td>ต่ำ</td><td>จับเทสที่ไม่มี oracle</td></tr>
+        <tr><td>2</td><td><strong>AC-first</strong> — บังคับให้ AC มีก่อน แล้ว generate test จาก AC ไม่ใช่จากโค้ด</td><td>กลาง</td><td>oracle มาจากเจตนา</td></tr>
+        <tr><td>3</td><td>Test-first จริง — เขียน test แดงก่อน แล้วเขียนโค้ด</td><td>สูง</td><td>เต็มรูปแบบ</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note pipe"><span class="lbl">ระวังในระดับ 2</span>
+      <p>ถ้าให้ agent ตัวเดียวกันเขียนทั้ง AC และโค้ด → กลับไปที่เดิม เพราะ AC ก็มาจากหัวเดียวกัน</p>
+      <p><strong>AC ต้องมาจากมนุษย์ หรืออย่างน้อยต้องถูกมนุษย์อนุมัติก่อนเริ่ม</strong> — จุดที่ human judgment มีค่าที่สุดอยู่ต้นน้ำ ไม่ใช่ปลายน้ำ</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t4-5">
+    <div class="t-head"><span class="t-num">4.5</span><h3>Requirement Testability + DoR/DoD</h3><span class="ref">0.20</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>คุณสมบัติ</th><th>คำถามตรวจสอบ</th><th>ตัวอย่างที่แย่</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Testable</strong></td><td>เขียน expected result ได้ไหม</td><td>"ระบบต้องเร็ว"</td></tr>
+        <tr><td>Unambiguous</td><td>ตีความได้แบบเดียวไหม</td><td>"แสดงข้อมูลที่เกี่ยวข้อง"</td></tr>
+        <tr><td>Complete</td><td>ครอบคลุม error case ไหม</td><td>บอกแค่กรณีสำเร็จ</td></tr>
+        <tr><td>Consistent</td><td>ขัดกับข้ออื่นไหม</td><td>หน้า A บอก 5 นาที หน้า B บอก 10</td></tr>
+        <tr><td>Necessary</td><td>ถ้าไม่มีจะเป็นไรไหม</td><td>ฟีเจอร์ที่ไม่มีใครขอ</td></tr>
+        <tr><td>Feasible</td><td>ทำได้จริงไหม</td><td>"รองรับ user ไม่จำกัด"</td></tr>
+        <tr><td>Traceable</td><td>สาวกลับไปหา business goal ได้ไหม</td><td>ไม่มีที่มา</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">เทคนิคที่ ROI สูงที่สุดในทั้งชั้น</span>
+      <p>ก่อนเริ่มโค้ด ให้ถามว่า <strong>"ถ้าผมต้องเขียน test ที่พิสูจน์ว่าข้อนี้เสร็จแล้ว ผมจะเขียนยังไง"</strong></p>
+      <p>ถ้าตอบไม่ได้ → requirement ยังไม่ testable → <strong>นั่นคือ defect ใน requirement</strong> และคุณเพิ่งทำ static testing สำเร็จโดยยังไม่มีโค้ดสักบรรทัด</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>คลุมเครือ</th><th>Testable</th></tr></thead>
+      <tbody>
+        <tr><td>"ระบบต้องเร็ว"</td><td>หน้า /wallet โหลดเสร็จ (LCP) ≤ 2.5 วิ ที่ p95 บน 4G, device mid-range</td></tr>
+        <tr><td>"จัดการ error ให้ดี"</td><td>เมื่อ API คืน 5xx → toast ภาษาไทย + ปุ่มลองใหม่ + log ไป Sentry + <strong>ไม่ล้าง form ที่กรอกไว้</strong></td></tr>
+        <tr><td>"รองรับผู้ใช้เยอะ"</td><td>1,000 concurrent user, error rate &lt; 0.1%, p95 &lt; 800ms, ต่อเนื่อง 30 นาที</td></tr>
+        <tr><td>"UI สวย"</td><td>ผ่าน design token, WCAG AA contrast ≥ 4.5:1, CLS &lt; 0.1</td></tr>
+      </tbody>
+    </table></div>
+    <div class="code"><button class="copy">copy</button>
+<pre>Feature: การถอนเงิน
+
+  Scenario: ถอนเงินเกินยอดคงเหลือ
+    Given ผู้ใช้ล็อกอินอยู่ และมียอดคงเหลือ 100 บาท
+    When ผู้ใช้กรอกจำนวนถอน 150 บาท และกดยืนยัน
+    Then ระบบแสดงข้อความ "ยอดเงินคงเหลือไม่เพียงพอ"
+    And  ยอดคงเหลือยังคงเป็น 100 บาท
+    And  ไม่มีการเรียก POST /wallet/withdraw</pre>
+    </div>
+    <p>คุณค่าที่แท้จริงของ Gherkin ไม่ใช่ Cucumber แต่คือมันบังคับให้ระบุ 3 อย่างที่ requirement ปกติชอบซ่อน: <strong>Given</strong> = precondition + test data · <strong>When</strong> = action ที่ชัดเจน 1 อย่าง · <strong>Then</strong> = <strong>oracle</strong></p>
+    <p>สังเกตบรรทัดสุดท้าย <code>ไม่มีการเรียก POST</code> — oracle ที่แข็งแรงมาก และเป็นสิ่งที่ requirement แบบ prose ไม่มีวันเขียนถึง</p>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>DoR — พร้อมเริ่ม</th><th>DoD — พร้อมปิด</th></tr></thead>
+      <tbody>
+        <tr><td>ตรวจเมื่อไหร่</td><td>ก่อนดึงงานเข้า sprint</td><td>ก่อนบอกว่าเสร็จ</td></tr>
+        <tr><td>ตัวอย่าง</td><td>AC เขียนแบบ testable แล้ว · API spec มีอยู่แล้ว · รู้ว่า test data แบบไหนต้องใช้ · ระบุ non-functional ที่เกี่ยวข้อง</td><td>ผ่าน type check + lint · test เขียนแล้ว<strong>และเคยเห็นมันแดง</strong> · contract check ผ่าน · review ผ่าน · error path ผ่าน · human approved</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note pipe"><span class="lbl">Entry gate มักหายไป</span>
+      <p>ไปป์ไลน์ส่วนใหญ่มี exit gate เยอะมาก แต่ไม่มี <strong>entry gate ที่ตรวจว่า requirement testable หรือยัง</strong></p>
+      <p>ผลคือ agent เริ่มทำงานจาก ticket ที่คลุมเครือ → <strong>มันจะเติมสมมติฐานเอง</strong> (LLM ไม่เคยบอกว่า "ผมไม่เข้าใจโจทย์") → defect ระดับ requirement ไหลลงทั้งสาย แล้วไปโผล่ที่ human gate = แพงที่สุด</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t4-6">
+    <div class="t-head"><span class="t-num">4.6</span><h3>Maintenance Testing</h3><span class="ref">0.54</span></div>
+    <p>หลักสูตรทั่วไปสอนเหมือนทุกโปรเจกต์เริ่มจากศูนย์ ซึ่งไม่จริง — งานส่วนใหญ่คือการเปลี่ยนแปลงของที่มีอยู่</p>
+    <div class="tw"><table>
+      <thead><tr><th>ประเภท</th><th>คืออะไร</th><th>ความเสี่ยงเด่น</th></tr></thead>
+      <tbody>
+        <tr><td>Corrective</td><td>แก้บั๊ก</td><td>fix ทำให้ที่อื่นพัง</td></tr>
+        <tr><td>Adaptive</td><td>ปรับให้เข้ากับสภาพแวดล้อมใหม่</td><td><strong>พังในที่ที่ไม่มีใครแตะโค้ดเลย</strong></td></tr>
+        <tr><td>Perfective</td><td>ปรับปรุงประสิทธิภาพ/โครงสร้าง</td><td><strong>refactor แล้วพฤติกรรมเปลี่ยนโดยไม่ตั้งใจ</strong></td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>ตัวกระตุ้น</th><th>สิ่งที่ต้องระวังเป็นพิเศษ</th></tr></thead>
+      <tbody>
+        <tr><td>Hotfix</td><td>ทำภายใต้ความกดดัน → ข้าม gate บ่อยที่สุด → <strong>แหล่ง defect ต่อบรรทัดสูงที่สุดในทุกระบบ</strong></td></tr>
+        <tr><td>Dependency upgrade</td><td>โค้ดไม่เปลี่ยนแต่พฤติกรรมเปลี่ยน — ต้องรัน regression เต็ม ไม่ใช่ selection</td></tr>
+        <tr><td>Platform / runtime upgrade</td><td>Node, Docker base image, browser</td></tr>
+        <tr><td><strong>Data migration</strong></td><td>ต้องเทส<strong>ทั้งกระบวนการย้าย และ ข้อมูลปลายทาง</strong> — คนเทสแค่อย่างหลัง</td></tr>
+        <tr><td>Config / feature flag change</td><td>ไม่มีโค้ดเปลี่ยน → มักไม่ผ่าน gate ใดๆ เลย</td></tr>
+        <tr><td>Retirement / archiving</td><td>ข้อมูลที่ archive ยังกู้คืนได้จริงไหม audit trail ยังครบไหม</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">ช่องโหว่ที่พบบ่อยในไปป์ไลน์</span>
+      <p>ไปป์ไลน์ถูกออกแบบมาสำหรับ "การเปลี่ยนแปลงโค้ด" — แต่ตัวกระตุ้นครึ่งหนึ่งข้างบน<strong>ไม่ผ่านไปป์ไลน์เลย</strong></p>
+      <p>อันตรายที่สุดคือ <strong>backend เปลี่ยน API โดยที่ frontend ไม่แตะอะไร</strong> — contract spec ที่เป็น read-only source of truth จะไม่รู้ตัวจนกว่าผู้ใช้จะเจอ</p>
+      <p>ทางแก้: <strong>nightly contract verification</strong> ที่ยิง spec ทั้งชุดใส่ backend จริงแล้วเทียบ response — รันโดยไม่ต้องมีใครแก้โค้ด</p>
+    </div>
+  </article>
+</section>
+
+<!-- ══════════════ CHAPTER 5 ══════════════ -->
+<section class="chapter" id="ch5">
+  <div class="ch-head">
+    <span class="ch-num">Chapter 05</span>
+    <h2>การตัดสินใจภายใต้ข้อจำกัด</h2>
+    <p class="goal">งานหลักของ tester คือเลือกว่าจะไม่เทสอะไร</p>
+    <hr>
+  </div>
+
+  <article class="topic" id="t5-1">
+    <div class="t-head"><span class="t-num">5.1</span><h3>Risk Vocabulary</h3><span class="ref">0.23</span></div>
+    <p><strong>Risk = โอกาสที่จะเกิด (Likelihood) × ผลกระทบ (Impact)</strong></p>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Product Risk</th><th>Project Risk</th></tr></thead>
+      <tbody>
+        <tr><td>เกี่ยวกับ</td><td>คุณภาพของ<strong>ของ</strong></td><td>ความสำเร็จของ<strong>งาน</strong></td></tr>
+        <tr><td>ตัวอย่าง</td><td>คำนวณเงินผิด ข้อมูลรั่ว ล่มตอน peak</td><td>ทำไม่ทัน คนลาออก requirement เปลี่ยนตลอด</td></tr>
+        <tr><td>ใครจัดการ</td><td><strong>Tester / QA</strong></td><td>PM / Lead</td></tr>
+        <tr><td>ลดยังไง</td><td>เทสมากขึ้นในจุดเสี่ยง</td><td>ปรับ scope ทรัพยากร timeline</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Residual Risk</strong> = ความเสี่ยงที่ยังเหลือหลังทำทุกอย่างแล้ว — <strong>คำที่ต้องใช้แทน "ไม่มีบั๊กแล้ว"</strong></p>
+    <div class="note key"><span class="lbl">ประโยคมาตรฐานตอนรายงาน</span>
+      <p><em>"เทสตามแผนผ่านครบแล้วครับ ความเสี่ยงคงเหลือหลักคือ (1) ยังไม่ได้เทสบน iOS 15 ลงไป (2) ยังไม่ได้ทดสอบ concurrent withdraw ตอนโหลดสูง — ประเมินว่าโอกาสเกิดต่ำแต่ผลกระทบสูง ถ้ายอมรับได้ปล่อยได้ครับ"</em></p>
+      <p>ประโยคนี้ทำสามอย่างพร้อมกัน: ไม่โกหก · ให้ข้อมูลตัดสินใจ · ย้ายความรับผิดชอบการตัดสินใจไปอยู่ที่คนที่ควรเป็นเจ้าของ</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t5-2">
+    <div class="t-head"><span class="t-num">5.2</span><h3>จาก Risk ไปสู่ "จะทำอะไรก่อน"</h3><span class="ref">0.58</span></div>
+    <p>การรู้คำว่า likelihood × impact ไม่ได้ช่วยตอนมีเวลา 2 ชั่วโมง — ต้องมีสะพานไปสู่การกระทำ</p>
+    <div class="code">
+<pre>1. อะไรที่อาจเสียหาย?          → รายการความเสี่ยง
+2. ใครเจ็บ และเจ็บแค่ไหน?       → impact
+3. มันน่าจะเกิดไหม เพราะอะไร?   → likelihood + เหตุผล
+4. ถ้าจะรู้ ต้องดูตรงไหน?       → test focus  ← ขั้นที่คนข้าม</pre>
+    </div>
+    <p><strong>สัญญาณที่บอกว่าตรงไหนเสี่ยง</strong> — ใช้ได้ทันทีโดยไม่ต้องคำนวณ</p>
+    <div class="tw"><table>
+      <thead><tr><th>สัญญาณ</th><th>เหตุผล</th></tr></thead>
+      <tbody>
+        <tr><td>เพิ่งแก้ / แก้บ่อย</td><td><code>git log</code> บอกได้ใน 5 วินาที</td></tr>
+        <tr><td>ซับซ้อน</td><td>complexity สูง = defect กระจุก</td></tr>
+        <tr><td>ใหม่</td><td>ไม่มีประวัติ = ไม่รู้อะไรเลย</td></tr>
+        <tr><td>จุดต่อระหว่างระบบ</td><td>ไม่มีเจ้าของช่องว่าง</td></tr>
+        <tr><td>เกี่ยวกับเงิน / สิทธิ์ / ข้อมูลส่วนตัว</td><td>impact สูงตายตัว</td></tr>
+        <tr><td>เคยพังมาก่อน</td><td>ที่เดิมพังซ้ำเป็นเรื่องปกติ</td></tr>
+        <tr><td>ไม่มีใครเข้าใจทั้งหมด</td><td>ส่วนที่ agent เขียนแล้วอ่านผ่านๆ</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>Depth</th><th>ทำอะไร</th><th>ให้กับ</th></tr></thead>
+      <tbody>
+        <tr><td>Sample</td><td>ลองทางหลัก 1 ครั้ง</td><td>ความเสี่ยงต่ำ</td></tr>
+        <tr><td>Sweep</td><td>happy + negative หลัก</td><td>ความเสี่ยงกลาง</td></tr>
+        <tr><td>Deep</td><td>boundary + error + concurrency + data สกปรก</td><td>ความเสี่ยงสูง</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">"มีเวลา 2 ชม. ก่อน release จะทำอะไร"</span>
+      <p>smoke → <strong>สิ่งที่เปลี่ยน</strong> → จุดที่ของที่เปลี่ยนไปกระทบ → ความเสี่ยงสูงสุด 3 อันดับ → <strong>หยุด แล้วรายงานว่าเหลืออะไรที่ไม่ได้ดู</strong></p>
+      <p>สิ่งที่ห้ามทำคือ "รันทุกอย่างให้ได้มากที่สุด" เพราะลำดับสุ่ม = ถ้าหมดเวลาคุณไม่รู้ว่าที่เหลือสำคัญแค่ไหน</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t5-3">
+    <div class="t-head"><span class="t-num">5.3</span><h3>Stopping Criteria</h3><span class="ref">0.28</span></div>
+    <p><strong>คำตอบที่ผิด:</strong> "เทสจนไม่มีบั๊ก" — เป็นไปไม่ได้ (หลักการข้อ 1 และ 2)</p>
+    <div class="tw"><table>
+      <thead><tr><th>เกณฑ์</th><th>วิธีวัด</th><th>ข้อควรระวัง</th></tr></thead>
+      <tbody>
+        <tr><td>Coverage-based</td><td>ครอบคลุม requirement/risk ครบตามแผน</td><td>อย่าใช้ code coverage เป็นเป้า</td></tr>
+        <tr><td>Defect discovery rate</td><td>อัตราการเจอบั๊กใหม่<strong>แบนราบลง</strong></td><td>อาจแปลว่ายาหมดฤทธิ์ ไม่ใช่ของดีขึ้น</td></tr>
+        <tr><td><strong>Risk-based</strong></td><td>ความเสี่ยงที่เหลือต่ำพอที่ผู้มีอำนาจยอมรับได้</td><td>ต้องมีคนรับผิดชอบตัดสิน</td></tr>
+        <tr><td>Time / Budget-based</td><td>หมดเวลา/งบ</td><td>เกณฑ์ที่แย่ที่สุด แต่ใช้จริงบ่อยที่สุด</td></tr>
+        <tr><td>Confidence-based</td><td>ทีมมั่นใจพอ</td><td>อัตวิสัย ต้องคู่กับข้อมูล</td></tr>
+      </tbody>
+    </table></div>
+    <div class="code">
+<pre>จำนวน defect ใหม่ที่เจอ
+    │
+    │      ╭─╮
+    │     ╱   ╲___
+    │    ╱        ╲____
+    │   ╱              ╲______
+    └──────────────────────────► เวลา
+      A      B       C      D
+
+A = เพิ่งเริ่ม ยังไม่รู้จักระบบ
+B = พีค กำลังเข้าใจระบบและเจอเยอะ
+C = เริ่มลด (ของดีขึ้น หรือ ยาหมดฤทธิ์?) ← ต้องแยกให้ออก
+D = แบน → พิจารณาหยุด หรือ เปลี่ยนวิธีเทส</pre>
+    </div>
+    <div class="note warn"><span class="lbl">จุด C คือกับดัก</span>
+      <p>ถ้าตีความว่า "ของดีขึ้น" แต่ความจริงคือ "เทสชุดเดิมหมดฤทธิ์" คุณจะปล่อยของที่ยังมีความเสี่ยงสูงออกไป</p>
+      <p><strong>วิธีแยก:</strong> ที่จุด C ให้<strong>เปลี่ยนวิธีเทส</strong> (เอาคนใหม่มาลอง, exploratory session, เปลี่ยน test data) ถ้าเจอบั๊กพุ่งขึ้นอีก = ยาหมดฤทธิ์ ถ้ายังแบน = ของดีขึ้นจริง</p>
+    </div>
+    <div class="note key"><span class="lbl">คำตอบที่ดีที่สุด</span>
+      <p><em>"หยุดเมื่อความเสี่ยงคงเหลือต่ำพอที่ผู้ตัดสินใจยอมรับได้ — และหน้าที่ผมคือทำให้เขาเห็นความเสี่ยงนั้นชัดพอที่จะตัดสินใจได้อย่างมีข้อมูล ไม่ใช่ตัดสินใจแทนเขา"</em></p>
+    </div>
+  </article>
+
+  <article class="topic" id="t5-4">
+    <div class="t-head"><span class="t-num">5.4</span><h3>เมื่อไหร่ที่ไม่ควรเทส</h3><span class="ref">0.48</span></div>
+    <div class="note quote"><span class="lbl">หลักการ</span>
+      <p>คุณกำลังจัดสรรงบประมาณการเทสที่จำกัด ให้กับความเป็นไปได้ที่ไม่จำกัด — <strong>"ไม่เทสอะไรบางอย่าง" คือการตัดสินใจที่คุณทำอยู่ทุกวัน ต่างกันแค่ว่ารู้ตัวหรือไม่รู้ตัว</strong></p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>สถานการณ์</th><th>เหตุผล</th></tr></thead>
+      <tbody>
+        <tr><td>ต้นทุนเทส &gt; ต้นทุนความเสียหาย</td><td>เทส 3 วันเพื่อป้องกันบั๊กที่แก้ 10 นาที = ขาดทุน</td></tr>
+        <tr><td>Prototype ที่จะทิ้ง</td><td>เทสของที่จะไม่มีชีวิตต่อ = สูญเปล่า 100%</td></tr>
+        <tr><td>ฟีเจอร์ที่กำลังจะถอด</td><td>อย่าลงทุนในของที่กำลังตาย</td></tr>
+        <tr><td><strong>Feedback loop จาก production เร็วกว่าการเทส</strong></td><td>บางอย่างถูกกว่าถ้า ship + monitor + rollback</td></tr>
+        <tr><td>ความเสี่ยงต่ำมากและกู้คืนง่ายมาก</td><td>เช่น เปลี่ยนสีปุ่มแล้ว rollback ได้ใน 1 นาที</td></tr>
+        <tr><td>สิ่งที่ type system รับประกันแล้ว</td><td>อย่าเขียน unit test ตรวจว่า TS ทำงาน</td></tr>
+      </tbody>
+    </table></div>
+    <div class="code"><button class="copy">copy</button>
+<pre>คุ้มที่จะเทส เมื่อ:
+
+ต้นทุนการเทส  &lt;  (โอกาสเกิด × ความเสียหาย)  −  ต้นทุนการกู้คืน</pre>
+    </div>
+    <div class="note key"><span class="lbl">ผลลัพธ์ที่น่าสนใจ</span>
+      <p>ถ้าลงทุนใน <strong>rollback ที่เร็วและปลอดภัย</strong> ตัวลบด้านขวาจะใหญ่ขึ้น → <strong>จำนวนสิ่งที่คุ้มค่าจะเทสลดลง</strong></p>
+      <p>แปลว่า <strong>การลงทุนใน deployability สามารถลดภาระการเทสได้จริง</strong> — สำหรับคนทำคนเดียว นี่อาจคุ้มกว่าการเพิ่ม gate อีกชั้น</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t5-5">
+    <div class="t-head"><span class="t-num">5.5</span><h3>Test Estimation</h3><span class="ref">0.36</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>วิธี</th><th>ทำยังไง</th><th>เมื่อไหร่</th></tr></thead>
+      <tbody>
+        <tr><td>Metrics-based</td><td>ดูจากประวัติ: งานแบบนี้เคยใช้เวลาเท่าไหร่</td><td>มีข้อมูลย้อนหลัง — <strong>แม่นสุด</strong></td></tr>
+        <tr><td>Expert-based</td><td>ถามคนที่เคยทำ</td><td>ไม่มีข้อมูล</td></tr>
+        <tr><td>Wideband Delphi</td><td>ประเมินแยกกัน → เปิดเผย → คุยเฉพาะที่ต่างมาก → ประเมินใหม่</td><td>ทีม, ลดอคติหมู่</td></tr>
+        <tr><td>Three-point (PERT)</td><td><code>(O + 4M + P) / 6</code></td><td>ความไม่แน่นอนสูง</td></tr>
+        <tr><td>% ของ dev effort</td><td>โดยทั่วไป 25–40%</td><td>ประเมินคร่าวๆ</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>สิ่งที่คนลืมใส่เสมอ</strong> — เวลาเตรียม test data (มักนานกว่าเขียนเทสเอง) · เวลาตั้ง environment · <strong>เวลา re-test หลัง fix</strong> · เวลา regression ของฟีเจอร์เก่า · เวลาเขียนและสื่อสาร bug report · <strong>เวลาแก้ flaky test</strong> · เวลารอ (รอ build, รอ env, รอ dev fix)</p>
+    <div class="note pipe"><span class="lbl">สูตรเปลี่ยนไปในบริบท agentic</span>
+      <p>เวลาเขียนเทสเกือบเป็นศูนย์ แต่ <strong>เวลามนุษย์ตรวจสอบไม่ลด</strong> → ตัวจำกัดของ throughput ย้ายไปอยู่ที่ human gate ทั้งหมด</p>
+      <p>สิ่งที่ควร optimize จึงไม่ใช่ "ให้ agent เร็วขึ้น" แต่คือ <strong>"ให้มนุษย์ตัดสินใจได้เร็วขึ้นโดยไม่ลดคุณภาพการตัดสินใจ"</strong> — สรุปเฉพาะสิ่งที่เปลี่ยน, screenshot diff, ชี้จุดที่ควรเพ่ง ไม่ใช่โยนทั้งหน้าให้ดูเอง</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t5-6">
+    <div class="t-head"><span class="t-num">5.6</span><h3>Regression Test Selection</h3><span class="ref">0.45</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>กลยุทธ์</th><th>ทำอะไร</th><th>ข้อเสีย</th></tr></thead>
+      <tbody>
+        <tr><td>Retest-all</td><td>รันทุกอย่าง</td><td>พอ suite โตจะพัง</td></tr>
+        <tr><td><strong>Selection</strong></td><td>รันเฉพาะเทสที่เกี่ยวกับสิ่งที่เปลี่ยน</td><td><strong>ต้องมี traceability</strong> ไม่งั้นเดา</td></tr>
+        <tr><td><strong>Prioritization</strong></td><td>เรียงตามความเสี่ยง รันจากสำคัญไปไม่สำคัญ</td><td>ต้องมี risk model</td></tr>
+        <tr><td>Minimization</td><td>ลบเทสที่ซ้ำซ้อน</td><td>เสี่ยงลบของที่ยังมีค่า</td></tr>
+      </tbody>
+    </table></div>
+    <div class="code">
+<pre>suite &lt; 10 นาที        → retest-all พอ ไม่ต้องคิดมาก
+10–30 นาที             → prioritization (smoke + high-risk อยู่ต้น)
+&gt; 30 นาที              → selection + แยก suite เป็นชั้น
+&gt; 2 ชม.                → มีปัญหาเชิงโครงสร้าง ไม่ใช่ปัญหาการเลือก</pre>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>ชั้น</th><th>เมื่อไหร่</th><th>เวลา</th><th>เนื้อหา</th></tr></thead>
+      <tbody>
+        <tr><td>Smoke</td><td>ทุก commit</td><td>&lt; 2 นาที</td><td>เส้นทางหลักที่ถ้าพังคือจบ</td></tr>
+        <tr><td>PR suite</td><td>ทุก PR</td><td>&lt; 10 นาที</td><td>unit + integration + E2E ที่เกี่ยวกับ diff</td></tr>
+        <tr><td>Nightly</td><td>ทุกคืน</td><td>ไม่จำกัด</td><td>ทั้งหมด + cross-browser</td></tr>
+        <tr><td>Pre-release</td><td>ก่อนปล่อย</td><td>ไม่จำกัด</td><td>ทั้งหมด + performance + a11y</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note pipe"><span class="lbl">คำตอบของ "agent สร้างเทสเร็วมากจน suite บวม"</span>
+      <p>อย่าแก้ด้วยการห้ามสร้าง — <strong>ให้แก้ด้วยการจัดชั้น</strong> และ selection จะแม่นยำมากถ้ามี traceability annotation เพราะรู้เลยว่า diff แตะ requirement ไหน → รันเทสของ requirement นั้น</p>
+    </div>
+  </article>
+</section>
+
+<!-- ══════════════ CHAPTER 6 ══════════════ -->
+<section class="chapter" id="ch6">
+  <div class="ch-head">
+    <span class="ch-num">Chapter 06</span>
+    <h2>หลักฐานที่เชื่อถือได้</h2>
+    <p class="goal">ทำให้ผล "ผ่าน" มีความหมายจริง — บทที่หนาที่สุดและเป็นแกนกลางของทั้งชั้น</p>
+    <hr>
+  </div>
+
+  <article class="topic" id="t6-1">
+    <div class="t-head"><span class="t-num">6.1</span><h3>Test Oracle — ลำดับชั้น 8 ชั้น</h3><span class="ref">0.42</span></div>
+    <p>Ticket เขียนว่า <em>"ทำหน้าถอนเงิน"</em> จบ — คุณจะเทสอะไร นี่คือสถานการณ์ที่เจอบ่อยที่สุดในชีวิตจริง</p>
+    <div class="tw"><table>
+      <thead><tr><th>ชั้น</th><th>Oracle</th><th>ความแข็งแรง</th><th>ตัวอย่าง</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Explicit spec</td><td><span class="dot d-t"></span>แข็งสุด</td><td>API spec, AC, Figma</td></tr>
+        <tr><td>2</td><td>Comparable product</td><td><span class="dot d-t"></span>แข็ง</td><td>เวอร์ชันเก่า, คู่แข่ง, ระบบพี่น้อง</td></tr>
+        <tr><td>3</td><td>Standards</td><td><span class="dot d-t"></span>แข็ง</td><td>HTTP status, WCAG, PDPA</td></tr>
+        <tr><td>4</td><td><strong>Internal consistency</strong></td><td><span class="dot d-a"></span>กลาง</td><td>หน้าอื่นในแอปทำแบบไหน</td></tr>
+        <tr><td>5</td><td>Claims</td><td><span class="dot d-a"></span>กลาง</td><td>สิ่งที่หน้าโฆษณา/help doc บอกไว้</td></tr>
+        <tr><td>6</td><td>Purpose</td><td><span class="dot d-a"></span>กลาง</td><td>ฟีเจอร์นี้มีไว้ทำอะไร</td></tr>
+        <tr><td>7</td><td>User expectation</td><td><span class="dot d-r"></span>อ่อน</td><td>คนทั่วไปคาดหวังยังไง</td></tr>
+        <tr><td>8</td><td>History</td><td><span class="dot d-r"></span>อ่อน</td><td>เมื่อวานมันทำแบบนี้</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">เทคนิคที่ทรงพลังที่สุดในหัวข้อนี้</span>
+      <p>เวลาเจอปัญหาโดยใช้ oracle ชั้นล่างๆ (4–8) <strong>อย่ารายงานว่า "บั๊ก"</strong> เพราะจะโดนตีกลับทันทีว่า "spec ไม่ได้บอกไว้"</p>
+      <p>ให้รายงานเป็น <strong>"ความไม่สอดคล้อง" พร้อมระบุว่าไม่สอดคล้องกับอะไร</strong></p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>อย่ารายงานแบบนี้</th><th>รายงานแบบนี้</th></tr></thead>
+      <tbody>
+        <tr><td>"ปุ่มยกเลิกควรอยู่ซ้าย"</td><td>"ปุ่มยกเลิกอยู่ขวา ซึ่ง<strong>ต่างจากอีก 8 หน้าในแอปที่อยู่ซ้ายทั้งหมด</strong> — ตั้งใจหรือเปล่าครับ"</td></tr>
+        <tr><td>"error message ไม่ดี"</td><td>"API คืน 500 ตอนกรอกข้อมูลผิด ซึ่ง<strong>ตามมาตรฐาน HTTP ควรเป็น 4xx</strong> — ผลคือ Sentry แจ้งเตือนทุกครั้งที่ user กรอกผิด"</td></tr>
+        <tr><td>"ควรมี loading"</td><td>"หน้านี้ไม่มี loading state ตอนโหลด 3 วิ <strong>ขณะที่หน้า /promotion มี</strong> — ผู้ใช้อาจกดซ้ำ"</td></tr>
+      </tbody>
+    </table></div>
+    <p>การผูกกับ oracle ที่ระบุชื่อได้ เปลี่ยนคำพูดจาก <em>"ความเห็นของ tester"</em> เป็น <strong>"ข้อเท็จจริงที่ปฏิเสธได้ยาก"</strong></p>
+    <div class="note warn"><span class="lbl">กรณีพิเศษ: ไม่มี spec คือ defect</span>
+      <p>ถ้าไม่มี oracle ชั้นไหนตอบได้เลยว่าผลลัพธ์ที่ถูกคืออะไร → นั่นไม่ใช่ปัญหาของคุณ นั่นคือ <strong>defect ใน requirement</strong></p>
+      <p><em>"AC ไม่ได้ระบุว่าถ้าถอนเงินตอน session หมดอายุพอดีควรเกิดอะไร — ผมทดสอบไม่ได้เพราะไม่รู้ว่าอะไรถูก ต้องการการตัดสินใจก่อนครับ"</em></p>
+    </div>
+  </article>
+
+  <article class="topic" id="t6-2">
+    <div class="t-head"><span class="t-num">6.2</span><h3>Testability Analysis — 5 มิติ</h3><span class="ref">0.59</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>มิติ</th><th>คำถาม</th><th>ถ้าต่ำจะเป็นยังไง</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Epistemic</strong></td><td>เรารู้อะไรเกี่ยวกับผลิตภัณฑ์นี้บ้าง มี oracle ไหม</td><td>เทสไปก็ไม่รู้ว่าผลถูกหรือผิด</td></tr>
+        <tr><td><strong>Observability</strong></td><td>เห็นสถานะภายในได้แค่ไหน (log, event, state)</td><td>ของพังแล้วไม่รู้ตัว</td></tr>
+        <tr><td><strong>Controllability</strong></td><td>ตั้งสถานะที่ต้องการได้ไหม (เวลา ข้อมูล error)</td><td>เทส edge case ไม่ได้เลย</td></tr>
+        <tr><td><strong>Decomposability</strong></td><td>แยกส่วนทดสอบได้ไหม</td><td>ต้องเทสทั้งระบบทุกครั้ง</td></tr>
+        <tr><td><strong>Project / Value</strong></td><td>มีเวลา เครื่องมือ สิทธิ์ ข้อมูล พอไหม</td><td>ดีบนกระดาษแต่ทำจริงไม่ได้</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">Controllability คือมิติที่มักอ่อนที่สุด</span>
+      <p>ปัญหาที่ดูเหมือนคนละเรื่อง — oracle อ่อน, negative test น้อย, error path ไม่ถูกเทส, Q4 ว่าง — <strong>สืบกลับไปได้ที่ controllability ต่ำ ไม่ใช่ที่คนหรือ agent ไม่เก่ง</strong></p>
+      <p>agent ไม่ได้ขี้เกียจเขียนเทส error path มัน<strong>เขียนไม่ได้</strong> เพราะไม่มีกลไกบังคับให้ error เกิด</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>สิ่งที่เพิ่ม</th><th>ปลดล็อกอะไร</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Test seed endpoint</strong> — สร้าง account ที่ยอด = 0 / 1 / limit / มีรายการ 10,000</td><td>test data 5 ประเภทเขียนได้จริง</td></tr>
+        <tr><td><strong>Clock injection</strong></td><td>เทส session หมดอายุ, timezone, boundary วันที่ โดยไม่ต้องรอ</td></tr>
+        <tr><td><strong>Fault injection</strong> — บังคับให้ API คืน 500 / timeout / ช้า</td><td>error path เทสได้, race condition เทสได้</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Testability เป็นเรื่องที่ต้องต่อรอง ไม่ใช่ยอมรับ</strong> — เมื่อเจอของที่เทสไม่ได้ ให้รายงานแบบนี้ ไม่ใช่บ่นว่าเทสยาก</p>
+    <div class="note quote"><span class="lbl">Testability advocacy</span>
+      <p><em>"ตอนนี้ผมทดสอบกรณี API timeout ไม่ได้เลย เพราะไม่มีกลไกบังคับให้เกิด — ความเสี่ยงคือ error path ทั้งหมดไม่เคยถูกทดสอบ ถ้าเพิ่ม fault injection flag ใน dev mode ผมจะครอบคลุมได้เพิ่มประมาณ X เคส"</em></p>
+    </div>
+  </article>
+
+  <article class="topic" id="t6-3">
+    <div class="t-head"><span class="t-num">6.3</span><h3>Testing as Empirical Inquiry</h3><span class="ref">0.60</span></div>
+    <p>1.4 บอกว่า testing ต้องใช้มนุษย์คิด — นี่คือคำตอบว่า <strong>คิดยังไง</strong></p>
+    <div class="code">
+<pre>Question  →  Model  →  Experiment  →  Observation  →  Inference
+   ↑                                                      │
+   └──────────── คำถามใหม่ที่ดีกว่า ←──────────────────────┘</pre>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>ขั้น</th><th>ทำอะไร</th><th>ตัวอย่าง</th></tr></thead>
+      <tbody>
+        <tr><td>Question</td><td>ตั้งคำถามที่ตอบได้</td><td>"ถ้ากดถอนสองครั้งเร็วๆ จะเกิดอะไร"</td></tr>
+        <tr><td>Model</td><td>สร้างภาพในหัวว่าระบบทำงานยังไง</td><td>"น่าจะยิง POST 2 ครั้ง ถ้า backend ไม่มี idempotency…"</td></tr>
+        <tr><td>Experiment</td><td>ออกแบบการทดลองที่แยกตัวแปร</td><td>throttle 3G + กดสองครั้งใน 200ms</td></tr>
+        <tr><td><strong>Observation</strong></td><td><strong>สิ่งที่เห็นจริง</strong></td><td>ยอดลด 200 จาก 2 request สำเร็จ</td></tr>
+        <tr><td><strong>Inference</strong></td><td><strong>สิ่งที่แปลว่า</strong></td><td>ไม่มี idempotency key</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">Observation ≠ Inference</span>
+      <p>ทักษะที่แยกคนที่ report แล้วถูกเชื่อ ออกจากคนที่ report แล้วถูกเถียง</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>ปนกัน</th><th>แยก</th></tr></thead>
+      <tbody>
+        <tr><td>"API ไม่มี idempotency"</td><td><strong>เห็น:</strong> POST 2 ครั้ง ได้ 200 ทั้งคู่ ยอดลด 200<br><strong>อนุมาน:</strong> น่าจะไม่มี idempotency — ยังไม่ยืนยัน</td></tr>
+        <tr><td>"state management พัง"</td><td><strong>เห็น:</strong> ยอดบน header ไม่เปลี่ยนจนกด F5<br><strong>อนุมาน:</strong> อาจไม่ได้ refetch หรือ store ไม่ update</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>ทำไมต้องแยก</strong> — (1) Observation ปฏิเสธไม่ได้ แต่ inference ปฏิเสธได้ ถ้า report inference แล้วผิด ทั้ง report จะถูกทิ้งทั้งใบ ทั้งที่ observation ยังถูกอยู่ (2) inference ที่ผิดทำให้ dev ไปแก้ผิดที่ (3) เป็นเกราะป้องกัน confirmation bias ของตัวเอง</p>
+    <div class="note warn"><span class="lbl">LLM ปนสองอย่างนี้เสมอ</span>
+      <p>มันเขียน "the issue is caused by…" โดยไม่แยกว่าอันไหนเห็นจริงอันไหนเดา — เวลาอ่าน log จาก agent <strong>ให้แยกเองทุกครั้ง อย่ารับ inference มาเป็น observation</strong></p>
+    </div>
+  </article>
+
+  <article class="topic" id="t6-4">
+    <div class="t-head"><span class="t-num">6.4</span><h3>AAA + Test Naming</h3><span class="ref">0.46</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>AAA (สำหรับ dev)</th><th>Gherkin (สำหรับ business)</th><th>ทำหน้าที่</th></tr></thead>
+      <tbody>
+        <tr><td>Arrange</td><td>Given</td><td>เตรียม precondition + data</td></tr>
+        <tr><td>Act</td><td>When</td><td>ทำ action <strong>เดียว</strong></td></tr>
+        <tr><td>Assert</td><td>Then</td><td><strong>oracle</strong> — ตรวจผลลัพธ์</td></tr>
+      </tbody>
+    </table></div>
+    <div class="code"><button class="copy">copy</button>
+<pre>test("ปฏิเสธการถอนเมื่อยอดคงเหลือไม่พอ", async () =&gt; {
+  // Arrange
+  const store = useWalletStore()
+  store.balance = 100
+
+  // Act
+  const result = await store.withdraw(150)
+
+  // Assert
+  expect(result.Error).toBeDefined()
+  expect(result.Error.message).toBe("ยอดเงินคงเหลือไม่เพียงพอ")
+  expect(store.balance).toBe(100)          // ← state ไม่เปลี่ยน
+  expect(apiSpy).not.toHaveBeenCalled()    // ← ไม่ยิง API ★
+})</pre>
+    </div>
+    <div class="note key"><span class="lbl">บรรทัดสุดท้ายคือหัวใจ</span>
+      <p><strong>การ assert ว่าอะไร "ไม่เกิดขึ้น" คือ oracle ที่แข็งแรงที่สุดและคนเขียนน้อยที่สุด</strong></p>
+      <p>LLM แทบไม่เคยเขียน assertion แบบนี้เอง เพราะมันต้องรู้ว่า <em>"สิ่งที่ไม่ควรเกิด"</em> คืออะไร ซึ่งไม่ได้อยู่ในโค้ด — มันอยู่ใน<strong>เจตนา</strong></p>
+      <p>เป็น deterministic check ที่เพิ่มได้ทันที: <em>test ที่เทส error path ต้องมี negative assertion อย่างน้อย 1 ตัว</em> — ตรวจด้วย AST ได้ ไม่ต้องพึ่ง LLM</p>
+    </div>
+    <p><strong>กฎการตั้งชื่อ</strong> — ชื่อเทสคือ spec ตอนตี 3 CI แดง คุณอ่านแค่ชื่อ</p>
+    <div class="tw"><table>
+      <thead><tr><th>ไม่ดี</th><th>ดี</th></tr></thead>
+      <tbody>
+        <tr><td><code>test("withdraw")</code></td><td><code>test("ปฏิเสธการถอนเมื่อยอดคงเหลือไม่พอ")</code></td></tr>
+        <tr><td><code>test("works")</code></td><td><code>test("แสดง empty state เมื่อไม่มีโปรโมชั่น")</code></td></tr>
+        <tr><td><code>test("test case 3")</code></td><td><code>test("คงข้อมูลในฟอร์มไว้เมื่อ API คืน 500")</code></td></tr>
+      </tbody>
+    </table></div>
+    <p>สูตร: <code>&lt;ผลลัพธ์ที่คาดหวัง&gt; เมื่อ &lt;เงื่อนไข&gt;</code> — ห้ามใส่ชื่อฟังก์ชัน ห้ามใส่หมายเลข</p>
+    <p><strong>One concept per test</strong> ไม่ได้แปลว่า assert ได้ตัวเดียว แต่แปลว่า <strong>ถ้าเทสแดง ต้องรู้ทันทีว่าเรื่องอะไรพัง</strong></p>
+  </article>
+
+  <article class="topic" id="t6-5">
+    <div class="t-head"><span class="t-num">6.5</span><h3>Testware Review + คุณสมบัติของเทสที่เชื่อถือได้</h3><span class="ref">0.61</span></div>
+    <div class="note quote"><span class="lbl">หลักการตั้งต้น</span>
+      <p><strong>Test code มีบั๊กได้ แต่ไม่มีเทสของเทส</strong> — วิธีเดียวคือทำให้มันเรียบง่ายจนตรวจด้วยตาได้</p>
+      <p>นี่คือเหตุผลที่ test code ไม่ควรมี logic — logic ในเทส = ที่ซ่อนบั๊กที่ไม่มีใครเห็น</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>คำถาม</th><th>จับอะไร</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><strong>Oracle มาจากไหน — spec/AC หรือจากโค้ดที่เพิ่งเขียน</strong></td><td>test-after ที่ยืนยัน defect</td></tr>
+        <tr><td>2</td><td><strong>ถ้า revert โค้ด เทสนี้จะแดงไหม</strong></td><td>เทสไม่มีค่า</td></tr>
+        <tr><td>3</td><td>Assertion ตรวจ<strong>สิ่งสำคัญ</strong>หรือตรวจสิ่งที่ตรวจง่าย</td><td>oracle อ่อน</td></tr>
+        <tr><td>4</td><td>มี <strong>negative assertion</strong> ไหม</td><td>สิ่งที่ไม่ควรเกิด</td></tr>
+        <tr><td>5</td><td>ชื่อเทสบอกได้ไหมว่าพังเรื่องอะไร</td><td>diagnosability</td></tr>
+        <tr><td>6</td><td><strong>มี logic ในเทสไหม</strong> (if / loop / try-catch)</td><td>บั๊กในเทส</td></tr>
+        <tr><td>7</td><td>Mock เกินจำเป็นไหม</td><td>SUT ผิดขอบเขต</td></tr>
+        <tr><td>8</td><td>Failure message วินิจฉัยได้ไหม</td><td>เสียเวลา debug</td></tr>
+        <tr><td>9</td><td>รันเดี่ยวๆ ผ่านไหม / สลับลำดับผ่านไหม</td><td>shared state</td></tr>
+        <tr><td>10</td><td>ผูกกับ requirement/risk ไหน</td><td>orphan test</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>ข้อ 1, 2, 4, 6 ตรวจอัตโนมัติได้ด้วย AST</strong> — ไม่ต้องพึ่ง LLM เลย</p>
+    <div class="tw"><table>
+      <thead><tr><th>คุณสมบัติ</th><th>หมายความว่า</th><th>พังแล้วเป็นยังไง</th></tr></thead>
+      <tbody>
+        <tr><td>Hermetic</td><td>มีทุกอย่างที่ต้องใช้ในตัวเอง</td><td>พังเมื่อของข้างนอกเปลี่ยน</td></tr>
+        <tr><td>Order-independent</td><td>รันลำดับไหนก็ได้</td><td>เขียวตอนรันชุด แดงตอนรันเดี่ยว</td></tr>
+        <tr><td>Isolated state</td><td>ไม่แชร์ DB/global กับเทสอื่น</td><td>เทสอื่นทำให้ตัวนี้พัง</td></tr>
+        <tr><td>Deterministic</td><td>input เดิม → ผลเดิมเสมอ</td><td>flaky</td></tr>
+        <tr><td>Self-cleaning</td><td>teardown คืนสภาพ</td><td>หนี้สะสมข้ามรอบ</td></tr>
+      </tbody>
+    </table></div>
+    <div class="code">
+<pre>เทสแดง
+  ├─ ของพัง        → defect จริง → ดี เทสทำงาน
+  ├─ เทสพัง        → defect ใน testware → แก้เทส (แต่ต้องบันทึก!)
+  └─ environment   → ไม่ใช่ทั้งคู่ → แก้ env</pre>
+    </div>
+    <div class="note warn"><span class="lbl">คนใหม่จะเดาทางที่ 2 หรือ 3 เสมอ</span>
+      <p>เพราะมันสบายใจกว่า — และนั่นคือกลไกที่ทำให้บั๊กจริงถูกมองข้าม</p>
+      <p>ถ้าบันทึกว่าแต่ละครั้งที่แดงถูกจัดเป็นทางไหน คุณจะเห็นทันทีว่า agent เลือกทาง 2 บ่อยผิดปกติไหม — <strong>ซึ่งคือสัญญาณว่ามันแก้เทสให้เขียวแทนที่จะแก้ของ</strong></p>
+    </div>
+  </article>
+
+  <article class="topic" id="t6-6">
+    <div class="t-head"><span class="t-num">6.6</span><h3>Test Environment</h3><span class="ref">0.24</span></div>
+    <p><strong>8 แกนที่ทำให้ "works on my machine" เกิดขึ้น</strong></p>
+    <div class="tw"><table>
+      <thead><tr><th>แกน</th><th>ตัวอย่าง</th></tr></thead>
+      <tbody>
+        <tr><td>Data</td><td>test data ที่ dev มี ≠ prod มี</td></tr>
+        <tr><td>Config / Env var</td><td>timeout, feature flag, API base URL</td></tr>
+        <tr><td>Version</td><td>Node, browser, dependency, OS</td></tr>
+        <tr><td>Scale</td><td>10 record vs 10 ล้าน record</td></tr>
+        <tr><td>Network</td><td>localhost 0ms vs 4G 200ms + packet loss</td></tr>
+        <tr><td><strong>Time / Timezone</strong></td><td><strong>Asia/Bangkok (UTC+7) vs UTC</strong> — จุดตายของ dev ไทย</td></tr>
+        <tr><td>Concurrency</td><td>คนเดียวใช้ vs 500 คนพร้อมกัน</td></tr>
+        <tr><td>External deps</td><td>mock vs sandbox vs ของจริง</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>Env</th><th>ใช้ทำอะไร</th><th>data</th><th>ความใกล้ prod</th></tr></thead>
+      <tbody>
+        <tr><td>Local</td><td>dev + unit test</td><td>mock / seed</td><td>ต่ำ</td></tr>
+        <tr><td>CI</td><td>automated check ทุก PR</td><td>seed แน่นอน</td><td>ต่ำ–กลาง</td></tr>
+        <tr><td>Preview</td><td>ดูของจริงต่อ PR</td><td>seed</td><td>กลาง</td></tr>
+        <tr><td>Staging</td><td>integration + UAT</td><td>anonymized prod data</td><td><strong>สูงสุดที่ทำได้</strong></td></tr>
+        <tr><td>Production</td><td>ของจริง</td><td>จริง</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">กฎทอง 4 ข้อ</span>
+      <p><strong>1.</strong> Environment ต้อง reset ได้และทำซ้ำได้ ไม่งั้นเทสที่แดงวันนี้ เขียวพรุ่งนี้ โดยไม่มีใครรู้ว่าทำไม<br>
+      <strong>2.</strong> ห้ามใช้ข้อมูลจริงของผู้ใช้ใน test env โดยไม่ anonymize<br>
+      <strong>3.</strong> Environment ที่แตกต่างจาก prod มาก = false confidence<br>
+      <strong>4.</strong> Timezone ต้อง pin ให้ชัดในทุก env — ไทย UTC+7 ทำให้ boundary ของ "วันนี้" เลื่อน 7 ชม.</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t6-7">
+    <div class="t-head"><span class="t-num">6.7</span><h3>Configuration Management</h3><span class="ref">0.31</span></div>
+    <p>หัวข้อที่ฟังดูน่าเบื่อ แต่มันคือสิ่งที่ทำให้<strong>ผลการเทสมีความหมาย</strong></p>
+    <div class="tw"><table>
+      <thead><tr><th>คำถาม</th><th>ถ้าตอบไม่ได้</th></tr></thead>
+      <tbody>
+        <tr><td><strong>"เทสบน build ไหน"</strong></td><td>reproduce ไม่ได้ → bug report ไร้ค่า</td></tr>
+        <tr><td>"test data version ไหน"</td><td>เขียว/แดงสลับโดยไม่รู้สาเหตุ</td></tr>
+        <tr><td>"config / env var ตอนนั้นเป็นยังไง"</td><td>"works on my machine" ตลอดกาล</td></tr>
+        <tr><td>"test script version ไหน"</td><td>ไม่รู้ว่าเทสเปลี่ยนหรือของเปลี่ยน</td></tr>
+        <tr><td>"dependency version"</td><td>บั๊กจาก transitive dependency หาไม่เจอ</td></tr>
+      </tbody>
+    </table></div>
+    <div class="code"><button class="copy">copy</button>
+<pre>// Build Identity — เข้าถึงได้จาก UI (footer / meta tag / window global)
+{
+  commit: "a3f9c21",
+  builtAt: "2026-07-24T09:12:33Z",
+  pipelineRun: "run-4821",
+  env: "preview"
+}</pre>
+    </div>
+    <div class="note pipe"><span class="lbl">คำถามที่ต้องตอบได้</span>
+      <p>เมื่อดู preview ผ่าน tunnel — <strong>คุณมั่นใจได้ยังไงว่าที่เห็นคือ build ที่เพิ่งทำเสร็จ ไม่ใช่ cache หรือ tunnel เก่า</strong></p>
+      <p>ถ้าเคย approve ของที่ดูจาก tunnel เก่าโดยไม่รู้ตัว = คุณเพิ่งสร้าง false negative ที่ตรวจจับไม่ได้เลย</p>
+      <p>ทางแก้: ให้ notification แสดง commit hash + build time และให้ UI แสดงค่าเดียวกัน → <strong>ตรวจสอบด้วยตาได้</strong> เป็น deterministic check ที่ราคาศูนย์</p>
+    </div>
+    <p><strong>กฎ 3 ข้อ</strong> — (1) Bug report ทุกใบต้องระบุ build identity ไม่มี = ตีกลับได้ (2) Test artifact ต้องเดินทางไปกับ build ที่มันเทส (3) Environment ต้อง reproducible จาก code</p>
+  </article>
+
+  <article class="topic" id="t6-8">
+    <div class="t-head"><span class="t-num">6.8</span><h3>Traceability &amp; Coverage Items</h3><span class="ref">0.30</span></div>
+    <p><strong>Coverage = (coverage item ที่ถูกทดสอบ / ทั้งหมด) × 100</strong> — หัวใจอยู่ที่ <strong>คุณเลือกอะไรเป็น coverage item</strong></p>
+    <div class="tw"><table>
+      <thead><tr><th>Coverage item</th><th>นับอะไร</th><th>ข้อดี</th><th>ข้อเสีย</th></tr></thead>
+      <tbody>
+        <tr><td>Statement / Line</td><td>บรรทัดที่ถูกรัน</td><td>วัดง่าย</td><td><strong>อ่อนที่สุด</strong> — รันโดยไม่ assert ก็นับ</td></tr>
+        <tr><td>Branch / Decision</td><td>ทางแยกที่เดินครบทั้งสองทาง</td><td>ดีกว่ามาก</td><td>ยังไม่ครอบ condition ซับซ้อน</td></tr>
+        <tr><td>Condition / MC-DC</td><td>แต่ละเงื่อนไขย่อยมีผลต่อผลลัพธ์</td><td>เข้มมาก</td><td>แพง (ใช้ในการบิน/การแพทย์)</td></tr>
+        <tr><td><strong>Requirement</strong></td><td>requirement ที่มีเทสอย่างน้อย 1 ตัว</td><td><strong>ตอบ business ได้</strong></td><td>ไม่บอกคุณภาพเทส</td></tr>
+        <tr><td><strong>Risk</strong></td><td>ความเสี่ยงที่ถูกทดสอบ</td><td><strong>มีความหมายที่สุด</strong></td><td>ต้องทำ risk analysis ก่อน</td></tr>
+        <tr><td>Acceptance criteria</td><td>AC ที่ถูกครอบ</td><td>ชัด ตรวจได้</td><td>ขึ้นกับคุณภาพ AC</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">"coverage เท่าไหร่" เป็นคำถามที่ไม่สมบูรณ์</span>
+      <p>คำถามแรกที่ต้องถามกลับคือ <strong>"coverage ของอะไร"</strong></p>
+      <p>Code coverage 95% + Requirement coverage 40% = สถานการณ์ที่พบบ่อยและอันตรายมาก แปลว่า "โค้ดที่เขียนไปถูกรันหมด แต่ requirement ครึ่งหนึ่งยังไม่มีใครแตะ"</p>
+    </div>
+    <div class="code">
+<pre>Business Goal
+     │
+     ├──► Requirement / AC ──► Test Condition ──► Test Case ──► Test Result
+     │                                                   │
+     └───────────────────────────────────────────────────┴──► Defect</pre>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>ทิศทาง</th><th>คำถาม</th><th>สิ่งที่จับได้</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Forward</strong> (req → test)</td><td>"requirement นี้มีใครเทสไหม"</td><td><strong>Coverage gap</strong> — requirement ที่ไม่มีเทสเลย</td></tr>
+        <tr><td><strong>Backward</strong> (test → req)</td><td>"เทสตัวนี้มีไว้ทำไม"</td><td><strong>Orphan test</strong> — เทสที่ไม่ผูกกับอะไร</td></tr>
+      </tbody>
+    </table></div>
+    <div class="code"><button class="copy">copy</button>
+<pre>/**
+ * @requirement PED-1234
+ * @ac AC-2 ถอนเงินเกินยอดคงเหลือต้องถูกปฏิเสธ
+ * @risk R-03 สูญเสียเงินจากการถอนเกิน (L3 × I5 = 15)
+ */
+test("ปฏิเสธการถอนเมื่อยอดคงเหลือไม่พอ", async () =&gt; {
+  // ...
+})</pre>
+    </div>
+    <p>scan comment เหล่านี้ด้วย script สั้นๆ → ได้ traceability matrix อัตโนมัติ และทำให้ <strong>deterministic gate ที่ fail เมื่อมี AC ที่ไม่มี test อ้างถึง</strong> เป็นไปได้ทันที</p>
+  </article>
+</section>
+
+<!-- ══════════════ CHAPTER 7 ══════════════ -->
+<section class="chapter" id="ch7">
+  <div class="ch-head">
+    <span class="ch-num">Chapter 07</span>
+    <h2>เมื่อเจอปัญหา</h2>
+    <p class="goal">เปลี่ยนสิ่งที่เห็นให้กลายเป็นข้อมูลที่ทีมใช้ได้</p>
+    <hr>
+  </div>
+
+  <article class="topic" id="t7-1">
+    <div class="t-head"><span class="t-num">7.1</span><h3>Defect Lifecycle + Severity vs Priority</h3><span class="ref">0.8</span></div>
+    <div class="code">
+<pre>New → Assigned → In Progress → Fixed → Ready to Test
+                                            ↓
+                              ┌─────── Verified → Closed
+                              └─────── Reopened → (วนกลับ)
+
+ทางแยกอื่น: Rejected / Duplicate / Deferred / Cannot Reproduce / Won't Fix</pre>
+    </div>
+    <p><strong>Reopen rate สูง</strong> = สัญญาณว่า bug report ไม่ชัด หรือ dev แก้แบบเดา — เป็น metric ที่ดีกว่า "จำนวนบั๊ก" มาก</p>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Severity</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td>ใครตัดสิน</td><td><strong>Tester / QA</strong></td><td><strong>PO / Business</strong></td></tr>
+        <tr><td>วัดอะไร</td><td>ความรุนแรงทาง<strong>เทคนิค</strong></td><td>ความเร่งด่วนทาง<strong>ธุรกิจ</strong></td></tr>
+        <tr><td>ตัวอย่างสเกล</td><td>Critical / Major / Minor / Trivial</td><td>P0 / P1 / P2 / P3</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Priority สูง</th><th>Priority ต่ำ</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Severity สูง</strong></td><td>ระบบล่ม เงินหาย → แก้เดี๋ยวนี้</td><td>ระบบ crash แต่อยู่ในหน้าที่คนใช้ปีละครั้ง</td></tr>
+        <tr><td><strong>Severity ต่ำ</strong></td><td><strong>สะกดชื่อบริษัทผิดบนหน้าแรก</strong> — ไม่พังอะไรเลย แต่ต้องแก้ก่อนขึ้นข่าว</td><td>จัดตัวอักษรเหลื่อม 1px</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">ขอบเขตอำนาจ</span>
+      <p>คุณเถียงเรื่อง <strong>severity</strong> ได้ (คุณเป็นคนรู้ผลกระทบทางเทคนิค) แต่ <strong>priority ไม่ใช่ของคุณ</strong></p>
+      <p>Tester ที่พยายามคุม priority คือ tester ที่จะทะเลาะกับ PO ทุกสัปดาห์ — หน้าที่คุณคือ<strong>ให้ข้อมูลความเสี่ยงจนเขาตัดสินใจผิดได้ยาก</strong></p>
+    </div>
+  </article>
+
+  <article class="topic" id="t7-2">
+    <div class="t-head"><span class="t-num">7.2</span><h3>Bug Report ที่ดี</h3><span class="ref">0.9</span></div>
+    <div class="code"><button class="copy">copy</button>
+<pre>[Title] ยอดคงเหลือไม่อัปเดตหลังถอนเงินสำเร็จ (Chrome / iOS Safari)
+
+## Environment
+- Build: pedpro-ui @ commit a3f9c21 / preview URL
+- Browser: Chrome 126 (Win 11), Safari iOS 17.5
+- Account: test_user_004 (ยอดเริ่มต้น 1,000)
+
+## Steps to Reproduce
+1. Login ด้วย test_user_004
+2. ไปหน้า /wallet/withdraw
+3. กรอกจำนวน 500 → กด "ยืนยัน"
+4. รอ toast "ถอนเงินสำเร็จ"
+
+## Expected
+ยอดคงเหลือบน header เปลี่ยนเป็น 500 ทันที
+
+## Actual
+ยอดยังแสดง 1,000 จนกว่าจะ refresh หน้า
+
+## Evidence
+- video: withdraw-bug.webm (0:12)
+- console: ไม่มี error
+- network: POST /wallet/withdraw → 200 แต่ไม่มีการเรียก GET /wallet/balance ตามหลัง
+
+## Severity: Major
+## Frequency: 5/5 ครั้ง (100% reproducible)
+## Impact
+ผู้ใช้เข้าใจว่าถอนไม่สำเร็จ → กดซ้ำ → เสี่ยง double withdraw
+
+## Notes
+เกิดหลัง PR #412 ที่แก้ wallet store — ไม่แน่ใจว่าเกี่ยวไหม</pre>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>หลักการ</th><th>ทำไม</th></tr></thead>
+      <tbody>
+        <tr><td>Title ต้องอ่านแล้วรู้เรื่องโดยไม่ต้องเปิด</td><td>PO scan 40 ticket ใน 5 นาที</td></tr>
+        <tr><td><strong>แยก Expected / Actual ชัด</strong></td><td>ถ้าเขียนไม่ได้ = คุณยังไม่มี oracle = ยังไม่ควร report</td></tr>
+        <tr><td>Frequency</td><td>1/20 กับ 5/5 คนละเรื่องกันเลย</td></tr>
+        <tr><td>Impact เชิงธุรกิจ ไม่ใช่แค่เทคนิค</td><td>นี่คือสิ่งที่เปลี่ยน priority ได้</td></tr>
+        <tr><td>ห้ามใส่ทฤษฎีว่าใครผิด</td><td>"โค้ดพี่เอผิด" = สงคราม · "เกิดหลัง PR #412" = ข้อมูล</td></tr>
+        <tr><td>1 report = 1 defect</td><td>ยัด 3 บั๊กใน ticket เดียว = ปิดไม่ได้สักอัน</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">Isolation คือทักษะที่แยกมืออาชีพจากมือใหม่</span>
+      <p>ก่อน report ต้อง<strong>ลดขั้นตอนให้เหลือน้อยที่สุดที่ยัง reproduce ได้</strong> และลองในเงื่อนไขต่างกัน (browser อื่น, account อื่น) เพื่อบอก<strong>ขอบเขต</strong>ของบั๊ก</p>
+      <p>dev ที่ได้ report แบบนี้จะแก้เร็วกว่า 3 เท่า</p>
+    </div>
+    <p>สังเกตว่าช่อง <strong>Notes อยู่ล่างสุดโดยตั้งใจ</strong> — นั่นคือที่ของ <em>inference</em> ส่วนที่เหลือทั้งหมดคือ <em>observation</em> (ย้อนกลับไป 6.3)</p>
+  </article>
+
+  <article class="topic" id="t7-3">
+    <div class="t-head"><span class="t-num">7.3</span><h3>"Cannot Reproduce" — workflow ที่ขาดหายไป</h3><span class="ref">0.44</span></div>
+    <div class="note quote"><span class="lbl">หลักการตั้งต้น</span>
+      <p>"Cannot reproduce" เป็นข้อความเกี่ยวกับ<strong>กระบวนการของคุณ</strong> ไม่ใช่เกี่ยวกับ<strong>การมีอยู่ของบั๊ก</strong></p>
+      <p>บั๊กที่ reproduce ไม่ได้ ≠ บั๊กที่ไม่มีอยู่</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>แกน</th><th>สิ่งที่ต้องลอง</th></tr></thead>
+      <tbody>
+        <tr><td>Data</td><td>account ใหม่/เก่า, zero state, ข้อมูลเยอะ, ข้อมูลสกปรก</td></tr>
+        <tr><td><strong>Timing</strong></td><td>กดเร็ว, กดซ้ำ, กดตอนกำลังโหลด, ปล่อยทิ้งจน session ใกล้หมด</td></tr>
+        <tr><td>Sequence</td><td>สลับลำดับขั้นตอน, กด back, refresh กลางทาง</td></tr>
+        <tr><td><strong>Network</strong></td><td>throttle 3G/4G, ตัดเน็ตกลางคัน, latency สูง</td></tr>
+        <tr><td>State</td><td>cache, localStorage, cookie เก่า, tab หลายอัน</td></tr>
+        <tr><td><strong>Concurrency</strong></td><td>เปิด 2 tab ทำพร้อมกัน, 2 device account เดียวกัน</td></tr>
+        <tr><td>Environment</td><td>browser อื่น, incognito, device จริง vs emulator</td></tr>
+        <tr><td>Identity</td><td>role อื่น, permission ต่างกัน, account เก่ามาก</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>3 แกนตัวหนา = สาเหตุของ "no repro" ในงาน frontend เกิน 70%</strong></p>
+    <p>เครื่องมือที่ต้องเปิดไว้<strong>ก่อน</strong>พยายาม reproduce: อัดวิดีโอตลอด (ถูกกว่าการพยายามซ้ำ 30 รอบ) · เก็บ HAR file · console log + preserve log ข้าม navigation · <strong>correlation ID</strong> ในทุก request</p>
+    <div class="code"><button class="copy">copy</button>
+<pre>Status: Cannot reproduce (ยังไม่ปิด)
+- ลองแล้ว: 20 รอบ / 3 browser / 2 device / throttle 3G
+- ยังไม่ได้ลอง: concurrent 2 tab, account ที่มี transaction &gt; 1000 รายการ
+- สมมติฐาน: น่าจะเป็น race ระหว่าง GET /balance กับ POST /withdraw
+- Action: เพิ่ม logging ที่จุด X เพื่อจับข้อมูลถ้าเกิดอีก</pre>
+    </div>
+    <div class="note key"><span class="lbl">คำตอบที่ถูกต้องคือเพิ่ม observability</span>
+      <p>ไม่ใช่การพยายามหนักขึ้น — นี่คือ <strong>shift-right</strong> เวอร์ชันเริ่มต้น</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t7-4">
+    <div class="t-head"><span class="t-num">7.4</span><h3>Bug Advocacy — เมื่อบั๊กถูกปัดตก</h3><span class="ref">0.43</span></div>
+    <div class="note quote"><span class="lbl">เข้าใจก่อนว่าคุณกำลังทำอะไร</span>
+      <p>คุณไม่ได้พยายาม<strong>ชนะ</strong> คุณกำลังทำให้แน่ใจว่า<strong>การตัดสินใจนั้นเกิดขึ้นบนข้อมูลที่ครบ</strong></p>
+      <p>ถ้าเขารู้ทุกอย่างแล้วยังตัดสินใจไม่แก้ — นั่นคือสิทธิ์ของเขา และงานคุณจบแล้ว</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>เทคนิค</th><th>ทำยังไง</th><th>ผลลัพธ์</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1. หาเวอร์ชันที่แย่กว่า</strong></td><td>isolate ต่อจนเจออาการที่รุนแรงกว่า</td><td>"UI เหลื่อม" → "กดซ้ำแล้วถอนซ้อน 2 ครั้ง"</td></tr>
+        <tr><td>2. หาความถี่</td><td>ลองซ้ำหลายรอบ หลาย config</td><td>1/20 กับ 5/5 คนละเรื่อง</td></tr>
+        <tr><td>3. หาว่ากระทบใคร</td><td>user กี่ % เจอเส้นทางนี้</td><td>"edge case" → "40% ของ user ใหม่"</td></tr>
+        <tr><td>4. เชื่อมกับตัวเลขธุรกิจ</td><td>ticket support, drop-off rate, refund</td><td>เปลี่ยนจากเรื่องเทคนิคเป็นเรื่องเงิน</td></tr>
+        <tr><td>5. หาญาติของมัน</td><td>บั๊กแบบเดียวกันในที่อื่น</td><td>one-off → cluster = ปัญหาเชิงระบบ</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">เทคนิคที่ 1 คือของจริง</span>
+      <p>บั๊กส่วนใหญ่ถูกปัดตกเพราะ <strong>อาการที่คุณรายงานคืออาการที่อ่อนที่สุดของมัน</strong> ไม่ใช่เพราะมันไม่สำคัญ</p>
+      <p>"ยอดเงินไม่อัปเดตจนกว่าจะ refresh" → ฟังดู minor<br>
+      isolate ต่อ → "ผู้ใช้เห็นยอดเดิม จึงกดถอนซ้ำ → request ที่สอง → ถ้า backend ไม่มี idempotency = <strong>ถอนซ้อน</strong>"<br>
+      → กลายเป็น critical ทันที <strong>โดยที่บั๊กไม่ได้เปลี่ยน มีแต่ความเข้าใจที่เปลี่ยน</strong></p>
+    </div>
+    <div class="note warn"><span class="lbl">กฎการหยุด</span>
+      <p>รายงาน 1 ครั้ง → เสริมข้อมูล 1 ครั้ง → บันทึกว่าใครตัดสินใจอะไร → <strong>ปล่อย</strong></p>
+      <p>Tester ที่สู้ทุกบั๊กจะสูญเสียเครดิตจนกระทั่งวันที่มีบั๊กสำคัญจริงๆ ไม่มีใครฟัง — <strong>เครดิตคือทรัพยากรที่จำกัดและใช้แล้วหมด</strong></p>
+    </div>
+  </article>
+
+  <article class="topic" id="t7-5">
+    <div class="t-head"><span class="t-num">7.5</span><h3>Root Cause Analysis</h3><span class="ref">0.32</span></div>
+    <p>RCA คือกิจกรรมที่แยก <strong>QA (ปรับ process)</strong> ออกจาก <strong>Tester (หา bug)</strong> อย่างชัดเจนที่สุด</p>
+    <p><strong>เทคนิค 1 — 5 Whys</strong></p>
+    <div class="code">
+<pre>Failure: ผู้ใช้เห็นหน้าขาวตอนเข้าหน้าโปรโมชั่น
+
+Why 1: เพราะ res?.Result.map() พังตอน Result เป็น null
+Why 2: เพราะ dev สมมติว่า Result เป็น array เสมอ
+Why 3: เพราะ spec ไม่ได้ระบุ nullability ชัดเจน
+Why 4: เพราะไม่มีมาตรฐานว่า spec ต้องระบุ nullable ทุกฟิลด์
+Why 5: เพราะไม่มี gate ที่ตรวจว่า spec ครบก่อนเริ่มพัฒนา
+        ↑ ระดับนี้แก้ได้จริง = root cause</pre>
+    </div>
+    <p>ถ้าหยุดที่ Why 1 → แก้ได้ 1 บรรทัด และบั๊กแบบเดียวกันจะกลับมาอีกใน endpoint ที่ 21<br>ถ้าไปถึง Why 5 → แก้ครั้งเดียว ป้องกันได้ทั้งหมวด</p>
+    <div class="note warn"><span class="lbl">ข้อจำกัดของ 5 Whys</span>
+      <p>มันเป็น<strong>เส้นตรงเส้นเดียว</strong> ทั้งที่ปัญหาจริงมักมีหลายสาเหตุร่วมกัน และไวต่ออคติของคนถาม (ถามคนละคนได้คนละ root cause)</p>
+      <p>ใช้เมื่อปัญหาไม่ซับซ้อนหรือต้องการเร็ว — <strong>ห้ามใช้เดี่ยวๆ กับ incident ใหญ่</strong></p>
+    </div>
+    <p><strong>เทคนิค 2 — Ishikawa / Fishbone</strong> สำหรับปัญหาที่มีหลายสาเหตุ</p>
+    <div class="tw"><table>
+      <thead><tr><th>หมวด</th><th>ตัวอย่างสาเหตุ</th></tr></thead>
+      <tbody>
+        <tr><td>Requirement</td><td>spec คลุมเครือ, AC ไม่ testable, ไม่มี error case</td></tr>
+        <tr><td>Process</td><td>ไม่มี DoR, review ข้าม, gate ปิดได้</td></tr>
+        <tr><td>People / Agent</td><td>ตีความผิด, ขาดความรู้โดเมน, LLM เติมสมมติฐานเอง</td></tr>
+        <tr><td>Tooling</td><td>type system ไม่บังคับ, lint rule ขาด, gate อ่อน</td></tr>
+        <tr><td>Data</td><td>test data ไม่มี zero/boundary state</td></tr>
+        <tr><td>Environment</td><td>env ต่างจาก prod, timezone, scale</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>เทคนิค 3 — Defect Trend Analysis</strong> ดูรูปแบบของบั๊กทั้งกอง แทนที่จะวิเคราะห์ทีละตัว</p>
+    <div class="tw"><table>
+      <thead><tr><th>คำถาม</th><th>สิ่งที่ค้นพบ</th></tr></thead>
+      <tbody>
+        <tr><td>Defect กระจุกที่ module ไหน</td><td>จุดเสี่ยง → เอาไปทำ risk-based testing</td></tr>
+        <tr><td><strong>เจอที่ stage ไหน vs ควรเจอที่ stage ไหน</strong></td><td><strong>ช่องโหว่ของ gate</strong> ← มีค่าที่สุด</td></tr>
+        <tr><td>ประเภทไหนซ้ำบ่อยสุด</td><td>โอกาสย้ายไป prevention</td></tr>
+        <tr><td>Reopen rate ของ module ไหนสูง</td><td>bug report ไม่ชัด หรือโค้ดซับซ้อนเกิน</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note pipe"><span class="lbl">ตัวอย่างการอ่านผล</span>
+      <p><em>"Defect ประเภท null-handling 12 ตัวใน 3 เดือน — 11 ตัวถูกเจอที่ human gate ทั้งที่ควรถูกจับตั้งแต่ CI"</em></p>
+      <p>→ gate มีช่องโหว่เฉพาะเรื่อง null<br>
+      → <strong>ทางแก้ไม่ใช่ "บอก LLM ให้ระวัง null" แต่คือเขียน lint rule / type guard ที่ทำให้เขียนแบบนั้นไม่ผ่านตั้งแต่แรก</strong></p>
+    </div>
+    <div class="note key"><span class="lbl">กฎเหล็กของ RCA</span>
+      <p>ถ้า root cause ที่หาได้คือ <strong>"คนพลาด"</strong> หรือ <strong>"agent พลาด"</strong> แสดงว่ายังขุดไม่ลึกพอ</p>
+      <p>คนพลาดเป็นเรื่องปกติของธรรมชาติ — คำถามที่ถูกคือ <strong>"ทำไมระบบถึงยอมให้ความผิดพลาดนั้นผ่านไปได้"</strong></p>
+    </div>
+  </article>
+</section>
+
+<!-- ══════════════ CHAPTER 8 ══════════════ -->
+<section class="chapter" id="ch8">
+  <div class="ch-head">
+    <span class="ch-num">Chapter 08</span>
+    <h2>คนและองค์กร</h2>
+    <p class="goal">คุณภาพเป็นปัญหาการประสานงาน ไม่ใช่ปัญหาเทคนิคล้วน</p>
+    <hr>
+  </div>
+
+  <article class="topic" id="t8-1">
+    <div class="t-head"><span class="t-num">8.1</span><h3>Levels of Independence</h3><span class="ref">0.21</span></div>
+    <p>ยิ่งผู้ตรวจเป็นอิสระจากผู้สร้างมาก → ยิ่งเจอ defect เยอะ แต่ยิ่งช้าและรู้บริบทน้อยลง</p>
+    <div class="tw"><table>
+      <thead><tr><th>ระดับ</th><th>ใครตรวจ</th><th>เจอ defect</th><th>ข้อเสีย</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>คนเขียนตรวจเอง</td><td>น้อยสุด</td><td><strong>confirmation bias เต็มขั้น</strong></td></tr>
+        <tr><td>1</td><td>คนอื่นในทีมเดียวกัน</td><td>น้อย–ปานกลาง</td><td>bias ร่วมทีม (คิดเหมือนกัน)</td></tr>
+        <tr><td>2</td><td>ทีมเทสแยกในองค์กร</td><td>ปานกลาง–เยอะ</td><td>ช้าลง, อาจกลายเป็น "โยนข้ามกำแพง"</td></tr>
+        <tr><td>3</td><td>ทีมจากหน่วยธุรกิจอื่น</td><td>เยอะ</td><td>รู้บริบทน้อย</td></tr>
+        <tr><td>4</td><td>บริษัทภายนอก / auditor</td><td>เยอะสุด</td><td>แพงสุด ช้าสุด</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>Reviewer ในไปป์ไลน์</th><th>ระดับ</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>
+        <tr><td>Agent เขียนเองแล้วเช็คเอง</td><td><strong>0</strong></td><td>เชื่อไม่ได้เดี่ยวๆ</td></tr>
+        <tr><td>Agent instance อื่น review</td><td><strong>1</strong></td><td>ดีขึ้นแต่ยัง bias ร่วมโมเดล</td></tr>
+        <tr><td>LLM คนละค่าย review</td><td><strong>~2–3</strong></td><td>คนละ training = bias ต่างกัน</td></tr>
+        <tr><td>Deterministic gate</td><td><strong>4 เทียบเท่า</strong></td><td>ไม่มี bias เพราะไม่มีความคิด</td></tr>
+        <tr><td>เจ้าของโปรเจกต์เอง</td><td><strong>1–2</strong></td><td>มี ownership bias</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">Correlated blind spots</span>
+      <p>Independence ระหว่าง LLM สองตัว <strong>ไม่เท่ากับ</strong> independence ระหว่างมนุษย์สองคน เพราะโมเดลถูกเทรนบนข้อมูลอินเทอร์เน็ตชุดใกล้เคียงกัน <strong>มีแนวโน้มพลาดเรื่องเดียวกัน</strong> — เช่น มองข้าม race condition, assume happy path, อ่อนเรื่อง Thai localization</p>
+      <p>แปลว่า <strong>deterministic gate ยังคงเป็น independence ที่แท้จริงที่สุดที่คุณมี</strong> — ทุกครั้งที่เจอ defect ประเภทใหม่ ให้ถามว่า "แปลงเป็น deterministic check ได้ไหม" ก่อนจะไปเพิ่มคำสั่งให้ LLM reviewer</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t8-2">
+    <div class="t-head"><span class="t-num">8.2</span><h3>Psychology of Testing</h3><span class="ref">0.22</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>อคติ</th><th>อาการ</th><th>ทางแก้</th></tr></thead>
+      <tbody>
+        <tr><td>Confirmation Bias</td><td>ออกแบบเทสเพื่อ<strong>พิสูจน์ว่ามันทำงาน</strong> ไม่ใช่หาว่ามันพัง</td><td>บังคับ ratio negative test</td></tr>
+        <tr><td>Inattentional Blindness</td><td>ไม่เห็นสิ่งที่ไม่ได้มองหา</td><td>ใช้ checklist, สลับคนเทส</td></tr>
+        <tr><td>Anchoring</td><td>ยึดข้อมูลแรกที่ได้ — อ่านโค้ดก่อน → เทสตามที่โค้ดทำ</td><td>อ่าน spec ก่อนโค้ดเสมอ</td></tr>
+        <tr><td>Availability Heuristic</td><td>เทสหนักเฉพาะเรื่องที่เพิ่งเจอ</td><td>ใช้ risk analysis เชิงระบบ</td></tr>
+        <tr><td><strong>Automation Bias</strong></td><td><strong>เชื่อผลจากเครื่องมากกว่าตาตัวเอง</strong></td><td>ดูของจริงเสมอก่อนปล่อย</td></tr>
+        <tr><td>Sunk Cost</td><td>ไม่ยอมทิ้ง test suite ที่ลงทุนไปเยอะ</td><td>ตัดสินจากมูลค่าปัจจุบัน ไม่ใช่ต้นทุนอดีต</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">Automation Bias คือความเสี่ยงอันดับ 1 ของระบบอัตโนมัติ</span>
+      <p>เมื่อระบบตรวจอัตโนมัติเก่งขึ้นเรื่อยๆ <strong>ความตั้งใจของมนุษย์ตอนตรวจจะลดลงเร็วกว่าที่ระบบเก่งขึ้น</strong></p>
+    </div>
+    <div class="code">
+<pre>เดือน 1:  อัตราอนุมัติแบบไม่เปิดดู 40% → ตรวจละเอียดทุกครั้ง
+เดือน 3:  75% → เปิดดูบ้าง
+เดือน 6:  92% → กด ✅ โดยไม่เปิดดู
+เดือน 7:  ระบบผ่านทุก gate แต่ปล่อยของเสียขึ้น production
+          เพราะ gate สุดท้ายกลายเป็นตรายางไปแล้ว</pre>
+    </div>
+    <p>ที่น่ากลัวคือ <strong>ตัวเลขที่สูงขึ้น <em>ดูเหมือน</em> ความสำเร็จ</strong> ทั้งที่มันอาจเป็นสัญญาณว่ามนุษย์เลิกตรวจแล้ว — metric ตัวเดียวแยกสองกรณีนี้ไม่ออก</p>
+    <div class="note pipe"><span class="lbl">ทางแก้ 3 ข้อ</span>
+      <p><strong>1. Seeded defect / canary run</strong> — สุ่มแทรก build ที่มี defect ที่รู้อยู่แล้ว ~1 ใน 20 ครั้ง ถ้ากดผ่าน = gate เสื่อมแล้ว (เทคนิคมาตรฐานในอุตสาหกรรมที่ใช้ human inspection)<br>
+      <strong>2. บังคับ friction</strong> — ห้ามกด ✅ เฉยๆ ต้องพิมพ์ตอบว่า "ตรวจอะไรไปบ้าง" อย่างน้อย 1 ประโยค → บังคับให้เกิด <em>testing</em> ไม่ใช่แค่ <em>checking</em><br>
+      <strong>3. จับคู่ metric เสมอ</strong> — ถ้าอัตราอนุมัติแบบไม่ตรวจขึ้น <em>และ</em> escaped defect ขึ้น = ระบบกำลังหลอกคุณ</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>อย่าพูด</th><th>พูดแทน</th></tr></thead>
+      <tbody>
+        <tr><td>"โค้ดคุณมีบั๊ก"</td><td>"ผมเจอพฤติกรรมที่ต่างจาก spec ตรงนี้"</td></tr>
+        <tr><td>"ทำไมไม่เทสก่อน"</td><td>"เคสนี้อาจไม่ได้อยู่ใน spec เดิม"</td></tr>
+        <tr><td>"อันนี้พังชัดๆ"</td><td>"ที่ผมเข้าใจ expected คือ X แต่เห็น Y — ตรงไหนผิดครับ"</td></tr>
+      </tbody>
+    </table></div>
+  </article>
+
+  <article class="topic" id="t8-3">
+    <div class="t-head"><span class="t-num">8.3</span><h3>Whole-Team Quality + Moral Hazard</h3><span class="ref">0.47</span></div>
+    <p>"Quality is not the QA team's responsibility. It's everyone's." — ฟังดูเป็นคำขวัญ แต่มีกลไกทางเศรษฐศาสตร์อยู่จริง</p>
+    <div class="code">
+<pre>มีทีม QA แยก + เป็นด่านสุดท้าย
+        ↓
+dev รู้ว่า "เดี๋ยว QA จับได้"
+        ↓
+dev ลดความระมัดระวังลง (ไม่ได้ตั้งใจ — เป็น rational response)
+        ↓
+defect ที่ไหลเข้า QA เพิ่มขึ้น → QA เป็นคอขวด
+        ↓
+ทีมโทษ QA ว่าช้า → QA ถูกกดดันให้ปล่อยเร็ว
+        ↓
+คุณภาพแย่ลงกว่าตอนไม่มี QA แยก</pre>
+    </div>
+    <div class="note warn"><span class="lbl">Moral hazard ตัวนี้ย้ายที่ในบริบท agentic</span>
+      <p>ทำงานคนเดียว + agent ดูเหมือนไม่มีปัญหานี้ — <strong>แต่มันย้ายไปอยู่ต้นน้ำ</strong></p>
+      <p>ไปป์ไลน์มี gate หลายชั้น → คุณ (ตอนเขียน ticket) รู้ว่า "เดี๋ยว gate จับได้" → เขียน requirement หยาบลง → agent ได้โจทย์คลุมเครือ → <strong>เติมสมมติฐานเอง</strong> → gate จับ syntax/type ได้ แต่จับ "เข้าใจโจทย์ผิด" ไม่ได้ → defect ระดับ requirement ไหลถึงปลายทางทุกครั้ง</p>
+      <p>นี่คือเหตุผลเชิงพฤติกรรมที่ <strong>entry gate สำคัญ</strong> — มันไม่ได้แค่ตรวจ requirement มันบังคับให้<strong>คุณ</strong>ยังคงลงทุนกับต้นน้ำ แม้ปลายน้ำจะแข็งแรงขึ้นเรื่อยๆ</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>โมเดล</th><th>รูปร่าง</th><th>เหมาะกับ</th></tr></thead>
+      <tbody>
+        <tr><td>Gatekeeper</td><td>QA อยู่ท้ายสาย มีอำนาจ block</td><td>ระบบที่มีกฎเกณฑ์กำกับเข้ม</td></tr>
+        <tr><td>Embedded</td><td>tester นั่งในทีม dev ตลอด sprint</td><td>ทีม agile ทั่วไป</td></tr>
+        <tr><td><strong>Quality Coach</strong></td><td>ไม่มี tester รันเทส แต่มีคนออกแบบระบบคุณภาพ + สอนทีม</td><td><strong>ทีมที่ automate เก่ง</strong></td></tr>
+      </tbody>
+    </table></div>
+  </article>
+
+  <article class="topic" id="t8-4">
+    <div class="t-head"><span class="t-num">8.4</span><h3>Roles + แผน 30-60-90 วัน</h3><span class="ref">0.0b · 0.33</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>Role</th><th>เวลาส่วนใหญ่หมดไปกับ</th><th>ทักษะที่ใช้</th><th>ความเสี่ยงในยุค AI</th></tr></thead>
+      <tbody>
+        <tr><td>Manual Tester</td><td>รัน test case, เขียน bug report</td><td>ความละเอียด ความอดทน</td><td><strong>สูงสุด</strong></td></tr>
+        <tr><td>Test Analyst</td><td>วิเคราะห์ requirement, ออกแบบเทส, risk analysis</td><td>คิดเชิงระบบ สื่อสาร</td><td>ปานกลาง</td></tr>
+        <tr><td>SDET / Automation</td><td>เขียน framework, แก้ flaky, ดูแล CI</td><td><strong>โค้ดระดับ dev</strong></td><td>ต่ำ</td></tr>
+        <tr><td>Quality Engineer / Coach</td><td>ออกแบบ process, สอนทีม, วาง strategy</td><td>อิทธิพลโดยไม่มีอำนาจสั่ง</td><td>ต่ำสุด</td></tr>
+        <tr><td>QA Lead / Manager</td><td>strategy, คน, รายงานผู้บริหาร</td><td>คน + ธุรกิจ</td><td>ต่ำ</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>สิ่งที่ไม่ถูกแทนที่</strong> — การรู้ว่า<em>ควรตรวจอะไร</em> (testing ไม่ใช่ checking) · risk analysis ที่ต้องเข้าใจธุรกิจ · exploratory testing ที่ใช้สัญชาตญาณกับ domain · การออกแบบ<strong>ระบบคุณภาพ</strong>ทั้งระบบ · การสื่อสารความเสี่ยงให้คนตัดสินใจ</p>
+    <div class="tw"><table>
+      <thead><tr><th>ช่วง</th><th>เป้าหมาย</th><th>สิ่งที่ต้องส่งมอบ</th></tr></thead>
+      <tbody>
+        <tr><td>0–30 วัน</td><td><strong>เข้าใจบริบท ไม่ใช่แก้ปัญหา</strong></td><td>เข้าใจ product + business model · เข้าใจ user จริง · <strong>อ่าน defect เก่า 3 เดือนย้อนหลัง</strong> · วาด architecture คร่าวๆ · หาว่าใครรู้อะไร</td></tr>
+        <tr><td>31–60 วัน</td><td>หา quick win ที่จับต้องได้</td><td>Quality attribute matrix · หา defect cluster จาก git history · สร้าง smoke suite ถ้ายังไม่มี · แก้ flaky test ที่กวนใจทีมที่สุด</td></tr>
+        <tr><td>61–90 วัน</td><td>เปลี่ยน process</td><td>เสนอ DoR/DoD · วาง traceability · ตั้ง metric พื้นฐาน · เสนอ test strategy</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">กฎข้อเดียวของ 30 วันแรก</span>
+      <p>อย่าเพิ่งวิจารณ์อะไรทั้งนั้น — คนใหม่ที่เข้ามาแล้วบอกว่า "ทำไมไม่ทำแบบนี้" ในสัปดาห์แรก จะถูกปิดข้อมูลไปตลอด และ<strong>ข้อมูลคือวัตถุดิบเดียวของงาน QA</strong></p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>เทคนิคทีม</th><th>คืออะไร</th><th>เมื่อไหร่</th></tr></thead>
+      <tbody>
+        <tr><td>Bug Bash</td><td>ทั้งทีม (รวม PO, design) ระดมเทสพร้อมกัน 1–2 ชม.</td><td>ก่อน release ใหญ่</td></tr>
+        <tr><td>Pair Testing</td><td>tester + dev เทสด้วยกัน</td><td>ฟีเจอร์ซับซ้อน</td></tr>
+        <tr><td><strong>Three Amigos</strong></td><td>PO + Dev + Tester คุย AC ก่อนเริ่มโค้ด</td><td><strong>ก่อนเริ่มทุก story</strong></td></tr>
+        <tr><td>Blameless Postmortem</td><td>ทบทวน incident โดยไม่หาคนผิด</td><td>หลัง production incident</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note pipe"><span class="lbl">Three Amigos สำหรับคนทำคนเดียว</span>
+      <p>บทบาททั้งสามยุบมาอยู่ที่คุณคนเดียว ซึ่งอันตราย เพราะไม่มีใครถามคำถามที่คุณไม่ได้คิด</p>
+      <p><strong>ให้ใช้ agent สวมบทบาทแต่ละคนถามกลับ</strong> ก่อนเริ่มงาน — นี่คือการใช้ LLM ที่ตรงจุดแข็งของมันจริงๆ มันเก่งเรื่อง "ถามคำถามที่คุณไม่ได้คิด" มากกว่าเรื่อง "ตรวจว่าโค้ดถูกไหม"</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t8-5">
+    <div class="t-head"><span class="t-num">8.5</span><h3>Ethics &amp; PDPA</h3><span class="ref">0.37</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>สถานการณ์</th><th>สิ่งที่ควรทำ</th></tr></thead>
+      <tbody>
+        <tr><td>ถูกกดดันให้บอกว่า "ผ่าน" ทั้งที่ยังเสี่ยง</td><td><strong>รายงานข้อเท็จจริง + ความเสี่ยงเป็นลายลักษณ์อักษร</strong> แล้วให้ผู้มีอำนาจตัดสินใจและรับผิดชอบ — อย่าตัดสินใจแทน และอย่าโกหก</td></tr>
+        <tr><td>เจอช่องโหว่ security ร้ายแรง</td><td>รายงานผ่านช่องทางภายในที่เหมาะสม <strong>ห้ามทดลองต่อในระบบจริง ห้ามเผยแพร่</strong></td></tr>
+        <tr><td>เห็นข้อมูลส่วนตัวของผู้ใช้ระหว่างเทส</td><td>ไม่บันทึก ไม่แชร์ ไม่ใส่ใน bug report — ปิดบังก่อนเสมอ</td></tr>
+        <tr><td>ถูกขอให้เทสสิ่งที่ตัวเองเขียน</td><td>ทำได้แต่ต้องบอกข้อจำกัดเรื่อง independence</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>ทางเลือกจัดการ test data</th><th>ความปลอดภัย</th><th>ความสมจริง</th></tr></thead>
+      <tbody>
+        <tr><td>ใช้ prod data ตรงๆ</td><td><span class="dot d-r"></span>เสี่ยงสูง</td><td>สูงสุด</td></tr>
+        <tr><td>Masking / Anonymization</td><td><span class="dot d-a"></span>ต้องทำให้ระบุตัวตนกลับไม่ได้จริง</td><td>สูง</td></tr>
+        <tr><td>Pseudonymization</td><td><span class="dot d-a"></span>ยังถือเป็นข้อมูลส่วนบุคคลอยู่</td><td>สูง</td></tr>
+        <tr><td>Synthetic data</td><td><span class="dot d-t"></span>ปลอดภัยสุด</td><td>ต้องออกแบบให้ดี</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">จุดรั่วที่คนไม่คิดถึง</span>
+      <p>การ mask แบบง่ายๆ (เปลี่ยนชื่อเป็น <code>User001</code>) มัก<strong>ไม่พอ</strong> เพราะ re-identification ทำได้จากการรวมฟิลด์อื่น (วันเกิด + รหัสไปรษณีย์ + เพศ) — ถ้าข้อมูลอ่อนไหว ควรปรึกษาผู้เชี่ยวชาญด้านกฎหมายหรือ DPO ขององค์กร ไม่ใช่ตัดสินใจเองจากความรู้ทั่วไป</p>
+      <p>Screenshot / video ที่ CI เก็บไว้ อาจมีเลขบัญชี ชื่อจริง เบอร์โทร บนหน้าจอ หรือ token ใน network log — <strong>ควรมี policy ว่าเก็บกี่วัน ใครเข้าถึงได้ มี masking ไหม</strong></p>
+    </div>
+  </article>
+
+  <article class="topic" id="t8-6">
+    <div class="t-head"><span class="t-num">8.6</span><h3>Retrospective &amp; Process Improvement</h3><span class="ref">0.56</span></div>
+    <p>จุดที่วงกลมปิด — ย้อนกลับไป 1.2: QA = process, Tester = product</p>
+    <div class="code">
+<pre>Testing → เจอ defect         (Tester)
+Metric  → เห็นรูปแบบ          (Test Analyst)
+RCA     → รู้สาเหตุเชิงระบบ     (Test Analyst / QA)
+Retro   → เปลี่ยน process     (QA) ← ถ้าไม่มีขั้นนี้ ทุกอย่างข้างบนสูญเปล่า</pre>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>RCA</th><th>Blameless Postmortem</th><th>Retrospective</th></tr></thead>
+      <tbody>
+        <tr><td>ทำเมื่อไหร่</td><td>เจอ defect สำคัญ</td><td>หลัง incident ใน production</td><td>ตามรอบ (sprint/เดือน)</td></tr>
+        <tr><td>ขอบเขต</td><td>1 defect</td><td>1 incident</td><td><strong>ทั้งกระบวนการ</strong></td></tr>
+        <tr><td>ถามว่า</td><td>ทำไมถึงเกิด</td><td>เกิดอะไรขึ้น ระบบตอบสนองยังไง</td><td><strong>เราทำงานกันยังไง ควรเปลี่ยนอะไร</strong></td></tr>
+        <tr><td>ผลลัพธ์</td><td>root cause + fix</td><td>timeline + action</td><td><strong>process change</strong></td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>คำถาม</th><th>สิ่งที่ควรดูประกอบ</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>อะไรที่ได้ผลดี ควรรักษาไว้</td><td>gate ไหนจับของได้จริงบ้าง</td></tr>
+        <tr><td>2</td><td>อะไรที่ควรเปลี่ยน</td><td>defect ที่หลุด, flaky ที่ค้าง, stage ที่ช้า</td></tr>
+        <tr><td>3</td><td><strong>defect ที่หลุดเดือนนี้ ควรถูกจับที่ไหน</strong></td><td>stage of detection</td></tr>
+        <tr><td>4</td><td><strong>เจอ defect ประเภทเดิมครั้งที่เท่าไหร่แล้ว</strong></td><td>ครั้งที่ 3 = ย้ายไป prevention</td></tr>
+        <tr><td>5</td><td>action item 1–2 ข้อ ที่มีเจ้าของและกำหนดเวลา</td><td>เกิน 3 ข้อ = ไม่มีข้อไหนเกิดขึ้นจริง</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">สำหรับคนทำคนเดียว retro ยิ่งสำคัญกว่าทีมปกติ</span>
+      <p>ในทีม 5 คน จะมีคนบ่นว่า "อันนี้มันน่ารำคาญนะ" โดยธรรมชาติ — <strong>นั่นคือ feedback loop ฟรีที่คุณไม่มี</strong></p>
+      <p>Agent ไม่บ่น มันทำตามที่สั่งจนกว่าคุณจะสั่งใหม่ ถ้าไม่มีจังหวะที่คุณหยุดถามตัวเองว่า "ระบบนี้ยังดีอยู่ไหม" <strong>ไปป์ไลน์จะเสื่อมโดยไม่มีสัญญาณเตือนใดๆ</strong></p>
+      <p>เดือนละครั้ง 30 นาที = ปีละ 6 ชั่วโมง ถูกกว่า production incident ครั้งเดียวมาก</p>
+    </div>
+  </article>
+</section>
+
+<!-- ══════════════ CHAPTER 9 ══════════════ -->
+<section class="chapter" id="ch9">
+  <div class="ch-head">
+    <span class="ch-num">Chapter 09</span>
+    <h2>การวัดผลและรายงาน</h2>
+    <p class="goal">ทำให้คนอื่นตัดสินใจได้ ไม่ใช่ตัดสินใจแทนเขา</p>
+    <hr>
+  </div>
+
+  <article class="topic" id="t9-1">
+    <div class="t-head"><span class="t-num">9.1</span><h3>Metrics</h3><span class="ref">0.35</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>Metric</th><th>สูตร</th><th>บอกอะไร</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Escaped Defect Rate</strong></td><td>defect ที่ผู้ใช้เจอ / defect ทั้งหมด</td><td><strong>gate ปล่อยผีแค่ไหน</strong></td></tr>
+        <tr><td>DDP / DRE</td><td>defect ที่เจอก่อน release / ทั้งหมด</td><td>ประสิทธิภาพการตรวจจับ</td></tr>
+        <tr><td>Defect Density</td><td>defect / KLOC หรือ / module</td><td>หา cluster</td></tr>
+        <tr><td>Reopen Rate</td><td>reopen / fixed</td><td>คุณภาพ bug report + การแก้</td></tr>
+        <tr><td>Defect Age</td><td>เวลาตั้งแต่ inject จนถึง detect</td><td>ความเร็วของ feedback loop</td></tr>
+        <tr><td>MTTD / MTTR</td><td>เวลาเฉลี่ยตรวจพบ / กู้คืน</td><td>ความสามารถรับมือ</td></tr>
+        <tr><td>Change Failure Rate</td><td>deploy ที่ต้อง hotfix / ทั้งหมด</td><td>สุขภาพระบบโดยรวม</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">Metric ขยะที่ต้องเลิกใช้</span>
+      <p><strong>จำนวน test case</strong> — สร้าง test ขยะได้ไม่จำกัด<br>
+      <strong>จำนวนบั๊กที่ tester หาได้</strong> — สร้างแรงจูงใจให้ report เรื่องจิ๊บจ๊อย + เป็นศัตรูกับ dev<br>
+      <strong>Code coverage เป็น KPI</strong> — ได้ 100% coverage ที่ไม่มี assert<br>
+      <strong>Pass rate</strong> — สูงได้ด้วยการเขียนแต่ happy path<br>
+      <strong>จำนวนบั๊กที่ dev ทำ</strong> — ทำลายความไว้ใจ → ปิดข้อมูล → คุณภาพแย่ลง</p>
+    </div>
+    <div class="note quote"><span class="lbl">Goodhart's Law</span>
+      <p>"เมื่อตัววัดกลายเป็นเป้าหมาย มันจะเลิกเป็นตัววัดที่ดี"</p>
+      <p><strong>กฎที่ใช้ตัดสิน:</strong> metric ตัวไหนที่ <em>"ปั่นให้สวยได้โดยไม่ต้องทำให้ของดีขึ้น"</em> → ห้ามใช้เป็น KPI (ใช้เป็นข้อมูลประกอบได้)</p>
+    </div>
+    <div class="note pipe"><span class="lbl">ชุด metric ขั้นต่ำสำหรับ agentic pipeline</span>
+      <p>ต้องมีทั้งตัวที่จับ <strong>false positive</strong> (flaky rate) และ <strong>false negative</strong> (escaped defect, seeded-defect catch rate) — ไม่งั้นระบบจะ optimize ไปทางเดียวโดยอัตโนมัติ</p>
+      <p>เพิ่ม <strong>stage of detection</strong> เข้าไปด้วย เพราะมันคือ metric เดียวที่ชี้ว่า <em>gate ชั้นไหน</em> มีช่องโหว่</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t9-2">
+    <div class="t-head"><span class="t-num">9.2</span><h3>Cost of Quality</h3><span class="ref">0.25</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>ถัง</th><th>คืออะไร</th><th>ตัวอย่าง</th><th>ราคาต่อ defect</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Prevention</strong></td><td>ป้องกันไม่ให้เกิด</td><td>convention, type system, DoR, training</td><td><span class="dot d-t"></span>ถูกสุด</td></tr>
+        <tr><td>Appraisal</td><td>ตรวจหา</td><td>code review, testing, static analysis</td><td><span class="dot d-a"></span>ปานกลาง</td></tr>
+        <tr><td>Internal Failure</td><td>เจอก่อนถึงผู้ใช้</td><td>แก้บั๊กใน sprint, rework, build แดง</td><td><span class="dot d-a"></span>แพง</td></tr>
+        <tr><td>External Failure</td><td>ผู้ใช้เจอก่อน</td><td>hotfix ฉุกเฉิน, refund, เสียลูกค้า</td><td><span class="dot d-r"></span>แพงสุด</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Prevention + Appraisal = Cost of Good Quality (ลงทุน)</strong> · <strong>Internal + External Failure = Cost of Poor Quality (เสียเปล่า)</strong></p>
+    <div class="note key"><span class="lbl">วิธีใช้จริง</span>
+      <p>เวลาต้องอธิบายว่าทำไมต้องลงทุนกับ QA ให้แปลงเป็นภาษานี้: <strong>"เราไม่ได้เพิ่มต้นทุน เรากำลังย้ายต้นทุนจากถังขวา (แพง) ไปถังซ้าย (ถูก)"</strong></p>
+    </div>
+    <div class="note pipe"><span class="lbl">หลักการที่ควรยึด</span>
+      <p>ถ้าเจอ defect ประเภทเดิม<strong>ครั้งที่ 3</strong> → หยุดเพิ่ม appraisal (เทสให้เยอะขึ้น) แล้วไปแก้ที่ prevention (ทำให้เขียนผิดแบบนั้นไม่ได้ตั้งแต่แรก)</p>
+      <p>ตัวอย่าง: <code>res?.Result.map()</code> พลาดซ้ำๆ → อย่าไปเพิ่ม test case → เขียน <strong>lint rule</strong> ที่ห้ามเข้าถึง property โดยไม่มี guard — ย้ายจาก appraisal → prevention และมันจ่ายคืนตลอดไป</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t9-3">
+    <div class="t-head"><span class="t-num">9.3</span><h3>Test Debt</h3><span class="ref">0.38</span></div>
+    <p>คนพูดถึง technical debt กันเยอะ แต่ลืมว่า<strong>เทสก็สร้างหนี้ได้</strong></p>
+    <div class="tw"><table>
+      <thead><tr><th>ประเภทหนี้</th><th>อาการ</th><th>ดอกเบี้ย</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Flaky test</strong></td><td>แดงสลับเขียวโดยไม่มีสาเหตุ</td><td><span class="dot d-r"></span>ทำลายความเชื่อถือทั้งระบบ</td></tr>
+        <tr><td>Slow test</td><td>suite ใช้เวลาเป็นชั่วโมง</td><td>คนเลิกรันบนเครื่องตัวเอง → feedback ช้าลง</td></tr>
+        <tr><td>Duplicate test</td><td>เทสเรื่องเดียวกันหลายที่</td><td>ต้นทุน maintain คูณ</td></tr>
+        <tr><td>Obsolete test</td><td>เทสฟีเจอร์ที่ไม่มีแล้ว</td><td>noise + ทำให้กลัวลบ</td></tr>
+        <tr><td>Over-mocked test</td><td>mock จนไม่ได้เทสของจริง</td><td><strong>false negative โดยธรรมชาติ</strong></td></tr>
+        <tr><td>Assertion-less test</td><td>รันแต่ไม่ตรวจ</td><td>coverage สวย แต่ไม่มีค่า</td></tr>
+        <tr><td>Brittle test</td><td>พังทุกครั้งที่แก้ UI นิดเดียว</td><td>ต้นทุน maintain สูงกว่าคุณค่า</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>ลบได้เมื่อ</th><th>ห้ามลบเมื่อ</th></tr></thead>
+      <tbody>
+        <tr><td>เทสฟีเจอร์ที่ถูกถอดออกแล้ว</td><td>แค่เพราะมันแดงและแก้ยาก ← สัญญาณว่าของอาจพังจริง</td></tr>
+        <tr><td>ซ้ำกับเทสอื่นที่ครอบคลุมกว่า</td><td>แค่เพราะมันช้า ← ให้ย้ายไป suite แยก ไม่ใช่ลบ</td></tr>
+        <tr><td>ไม่เคยแดงเลย 12 เดือน และไม่ผูกกับความเสี่ยงสำคัญ</td><td></td></tr>
+        <tr><td>ต้นทุน maintain &gt; คุณค่าที่ให้</td><td></td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">นโยบาย flaky test</span>
+      <p>quarantine ภายใน 24 ชม. → แก้หรือลบภายใน 1 สัปดาห์ <strong>ห้ามปล่อยไว้เกิน 1 สัปดาห์เด็ดขาด</strong></p>
+      <p>เพราะพอทีมเริ่มเชื่อว่า "แดงแล้วรันใหม่ก็เขียว" ปุ่ม re-run จะกลายเป็นปฏิกิริยาอัตโนมัติ และวันที่ของพังจริง จะไม่มีใครดู — ดอกเบี้ยของมันคือความเชื่อถือในทั้งระบบ ซึ่งกู้คืนยากที่สุด</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t9-4">
+    <div class="t-head"><span class="t-num">9.4</span><h3>Documentation</h3><span class="ref">0.34</span></div>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Test Strategy</th><th>Test Plan</th></tr></thead>
+      <tbody>
+        <tr><td>ระดับ</td><td>องค์กร / ผลิตภัณฑ์</td><td>โปรเจกต์ / release / sprint</td></tr>
+        <tr><td>อายุ</td><td>ยาว (ปี)</td><td>สั้น (สัปดาห์–เดือน)</td></tr>
+        <tr><td>ตอบว่า</td><td><em>เราเทสแบบไหน โดยหลักการ</em></td><td><em>รอบนี้เทสอะไร ใครทำ เมื่อไหร่</em></td></tr>
+      </tbody>
+    </table></div>
+    <p>มาตรฐานอย่าง ISO 29119 / IEEE 829 กำหนดเอกสารไว้เยอะมาก — <strong>อย่าทำตามทั้งหมด</strong> ในทีมเล็ก มันจะกลายเป็นหนี้เอกสารทันที</p>
+    <div class="tw"><table>
+      <thead><tr><th>เอกสาร</th><th>ความยาว</th><th>อยู่ที่ไหน</th></tr></thead>
+      <tbody>
+        <tr><td>Test Strategy</td><td>1–2 หน้า</td><td>repo, แก้ไม่บ่อย</td></tr>
+        <tr><td>Risk Register</td><td>ตาราง</td><td>อัปเดตทุก sprint</td></tr>
+        <tr><td>Traceability Matrix</td><td>generate อัตโนมัติ</td><td>จาก annotation ในโค้ด</td></tr>
+        <tr><td>Test Summary / Release Report</td><td>1 หน้า</td><td>ต่อ release</td></tr>
+        <tr><td>Test cases</td><td><strong>เป็นโค้ด</strong></td><td>ไม่ต้องมีเอกสารแยก</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">หลักการ</span>
+      <p>เอกสารที่ไม่ถูกอ่าน คือหนี้ที่จ่ายดอกทุกครั้งที่มีคนต้องอัปเดตมัน — <strong>เอกสารที่ generate ได้จากของจริงเสมอ &gt; เอกสารที่เขียนมือ</strong></p>
+    </div>
+  </article>
+
+  <article class="topic" id="t9-5">
+    <div class="t-head"><span class="t-num">9.5</span><h3>Credible Reporting — 3 เรื่องที่ต้องเล่า</h3><span class="ref">0.62</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>เรื่อง</th><th>ตอบคำถาม</th><th>เนื้อหา</th></tr></thead>
+      <tbody>
+        <tr><td>1. Product Story</td><td><em>ผลิตภัณฑ์เป็นยังไง</em></td><td>สถานะ, อะไรทำงาน, อะไรไม่, ความเสี่ยงที่เหลือ</td></tr>
+        <tr><td>2. Testing Story</td><td><em>เราทดสอบยังไง</em></td><td>ครอบคลุมอะไร, ใช้ oracle อะไร, <strong>อะไรที่ไม่ได้ทดสอบและจะไม่ทดสอบ</strong></td></tr>
+        <tr><td>3. <strong>Quality-of-Testing Story</strong></td><td><em>การทดสอบของเราดีแค่ไหน</em></td><td>อะไรขัดขวาง, testability ที่ขาด, หลักฐานเชื่อถือได้แค่ไหน, ต้องการอะไรเพิ่ม</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">ทำไมเรื่องที่ 3 สำคัญที่สุด</span>
+      <p><strong>ถ้าไม่เล่าเรื่องที่ 3 ผู้อ่านจะสมมติเองว่าการทดสอบสมบูรณ์แบบ</strong> แล้วตีความคำว่า "ผ่าน" แรงเกินกว่าที่หลักฐานรองรับ</p>
+      <p>รายงานที่บอกว่า "ผ่าน 847 เคส" โดยไม่บอกว่า <em>"แต่เราไม่มีทางบังคับให้ API error ได้เลย ดังนั้น error path ทั้งหมดไม่เคยถูกทดสอบ"</em> — <strong>คือการหลอกโดยไม่ได้โกหก</strong></p>
+    </div>
+    <div class="code"><button class="copy">copy</button>
+<pre># Release Report — v1.14.0
+Build: a3f9c21 | Date: 2026-07-24
+
+## สรุปผู้บริหาร (3 บรรทัด)
+ผ่านเกณฑ์ปล่อยได้ มีความเสี่ยงคงเหลือ 2 ข้อที่ระบุด้านล่าง
+ไม่มี blocker หรือ critical defect ค้าง
+
+## ขอบเขตที่ทดสอบ
+- ครอบคลุม: withdraw flow, promotion list, auth refresh
+- ไม่ครอบคลุม: payment gateway sandbox (ระบบภายนอกดาวน์)
+
+## ⚠️ ความเสี่ยงคงเหลือ
+1. Payment gateway ยังไม่ได้ทดสอบ integration จริง (โอกาสต่ำ/ผลกระทบสูง)
+2. ยังไม่ได้ทดสอบภายใต้ concurrency สูง (ไม่มี load test ในระบบ)
+
+## คุณภาพของการทดสอบรอบนี้
+- ขัดขวาง: ไม่มี fault injection → ไม่ได้ทดสอบ error path เลย
+- หลักฐาน: E2E รันบน preview ที่ข้อมูล seed ต่างจาก prod มาก
+           (prod มี account ที่มีรายการ &gt;5,000 แต่ seed มีสูงสุด 20)
+- ความมั่นใจ: สูงกับ happy path / ต่ำกับ error และ scale
+- ต้องการ: test seed endpoint + fault injection flag
+           จะทำให้ครอบคลุมเพิ่มประมาณ 30 เคส
+
+## ข้อเสนอแนะ
+ปล่อยได้ พร้อม monitor error rate ของ /wallet 24 ชม.แรก</pre>
+    </div>
+    <p>สังเกตว่าเรื่องที่ 3 ทำสองอย่างพร้อมกัน: <strong>ป้องกันการตีความเกินจริง</strong> และเป็น<strong>ช่องทางขอทรัพยากรที่มีเหตุผลรองรับ</strong> (ต่อกับ 6.2 testability advocacy)</p>
+    <div class="note warn"><span class="lbl">หลักการเขียนรายงาน</span>
+      <p>ผู้บริหารอ่านแค่ 3 บรรทัดแรก — เอาข้อสรุปและความเสี่ยงไว้บนสุด ตัวเลขไว้ล่าง</p>
+      <p>และ<strong>ห้ามเขียน "ไม่พบข้อผิดพลาด"</strong> ให้เขียน "ความเสี่ยงคงเหลือคือ…" เสมอ</p>
+    </div>
+  </article>
+</section>
+
+<!-- ══════════════ CHAPTER 10 ══════════════ -->
+<section class="chapter" id="ch10">
+  <div class="ch-head">
+    <span class="ch-num">Chapter 10</span>
+    <h2>บริบทเฉพาะ</h2>
+    <p class="goal">ปรับทุกอย่างข้างบนให้เข้ากับงานจริงของตัวเอง</p>
+    <hr>
+  </div>
+
+  <article class="topic" id="t10-1">
+    <div class="t-head"><span class="t-num">10.1</span><h3>Thai Localization Defects</h3><span class="ref">0.12</span></div>
+    <p>หมวดที่ tester ไทยพลาดบ่อยที่สุด และ LLM reviewer แทบไม่เคยจับได้เลย</p>
+    <div class="tw"><table>
+      <thead><tr><th>ปัญหา</th><th>อาการ</th><th>เทสยังไง</th></tr></thead>
+      <tbody>
+        <tr><td><strong>พ.ศ. / ค.ศ.</strong></td><td>backend ส่ง ค.ศ. UI แสดง พ.ศ. → พลาด 543 ปี</td><td>เทส boundary รอบวันเกิดปี, ปีอธิกสุรทิน</td></tr>
+        <tr><td><strong>ไม่มีเว้นวรรค</strong></td><td>ไทยไม่ใช้ space แยกคำ → <code>word-break</code> ตัดกลางคำ, <code>text-overflow</code> พัง</td><td>ข้อความไทยยาว 200 ตัวอักษรในทุก container</td></tr>
+        <tr><td>สระ / วรรณยุกต์ลอย</td><td>ฟอนต์ไม่รองรับ → สระซ้อนกันมั่ว</td><td>คำที่มีสระบน+วรรณยุกต์ (<code>ที่ ปั๊ม เชี่ยว</code>)</td></tr>
+        <tr><td>การเรียงลำดับ</td><td><code>sort()</code> ธรรมดาเรียงภาษาไทยผิด</td><td>ใช้ <code>Intl.Collator("th")</code> + คำที่ขึ้นต้นด้วยสระนำ (เ แ โ ไ)</td></tr>
+        <tr><td>ความยาวข้อความ</td><td>ไทยยาวกว่าอังกฤษ ~30%</td><td>ปุ่มที่พอดีตอน EN จะล้นตอน TH</td></tr>
+        <tr><td>ตัวเลข</td><td>๐๑๒๓ vs 0123</td><td>input ต้องรับหรือ reject ให้ชัด</td></tr>
+        <tr><td>ชื่อ-นามสกุล</td><td>คนไทยชื่อยาวมาก มีคำนำหน้าหลากหลาย</td><td>เทสชื่อ 60 ตัวอักษร</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">Timezone</span>
+      <p>Asia/Bangkok = UTC+7 ทำให้ boundary ของคำว่า "วันนี้" เลื่อน 7 ชั่วโมง — เทส "รายการวันนี้" ตอนตี 1 จะพังถ้า backend ใช้ UTC (ย้อนกลับไป 6.6)</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t10-2">
+    <div class="t-head"><span class="t-num">10.2</span><h3>Test Data 5 ประเภทที่ทุกโปรเจกต์ต้องมี</h3><span class="ref">0.12</span></div>
+    <p><strong>Test data ที่แย่ = เทสที่แย่</strong> ไม่ว่า framework จะดีแค่ไหน</p>
+    <div class="tw"><table>
+      <thead><tr><th>ประเภท</th><th>คืออะไร</th><th>จับอะไร</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Zero state</strong></td><td>user ใหม่ที่ยังไม่มีอะไรเลย</td><td>null pointer — จับได้เยอะที่สุด</td></tr>
+        <tr><td><strong>Boundary state</strong></td><td>ยอด = 0, = 1, = limit, = limit+1</td><td>off-by-one, validation</td></tr>
+        <tr><td><strong>Massive state</strong></td><td>user ที่มีรายการ 10,000 อัน</td><td>performance + pagination</td></tr>
+        <tr><td><strong>Dirty state</strong></td><td>ข้อมูลที่เข้ามาตอนระบบยังไม่ validate</td><td>มีจริงใน production ทุกที่</td></tr>
+        <tr><td><strong>Adversarial state</strong></td><td>emoji, <code>&lt;script&gt;</code>, SQL keyword, unicode ขวาไปซ้าย</td><td>security, encoding</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note pipe"><span class="lbl">เชื่อมกับ controllability</span>
+      <p>ทั้ง 5 ประเภทนี้จะเขียนไม่ได้เลยถ้าไม่มี <strong>test seed endpoint</strong> — นี่คือเหตุผลที่ 6.2 บอกว่า controllability คือมิติที่ต้องแก้ก่อน</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t10-3">
+    <div class="t-head"><span class="t-num">10.3</span><h3>การเทสระบบ LLM / non-deterministic</h3><span class="ref">0.12</span></div>
+    <p>ถ้าระบบมี LLM component หลักการ L0 บางข้อจะพัง — ต้องรู้ว่าคำศัพท์ทั้งชั้นนี้มี<strong>ขอบเขตการใช้งาน</strong> ไม่ใช่กฎสากล</p>
+    <div class="tw"><table>
+      <thead><tr><th>สิ่งที่เปลี่ยน</th><th>ผลที่ตามมา</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Determinism หายไป</strong></td><td>เทสเดิม input เดิม ได้ผลไม่เหมือนกัน → <code>toBe()</code> ใช้ไม่ได้ ต้องเปลี่ยนเป็น <strong>property assertion</strong> (ผลลัพธ์ต้อง<em>มีคุณสมบัติ X</em> ไม่ใช่<em>เท่ากับ Y</em>)</td></tr>
+        <tr><td><strong>Oracle problem หนักขึ้น 10 เท่า</strong></td><td>"คำตอบที่ถูก" คืออะไร เมื่อคำตอบมีได้ 100 แบบ</td></tr>
+        <tr><td><strong>Pass/Fail กลายเป็น distribution</strong></td><td>ต้องคิดเป็น <strong>eval score + threshold</strong> ไม่ใช่ binary</td></tr>
+        <tr><td><strong>Regression วัดยาก</strong></td><td>เปลี่ยน prompt 1 คำ อาจพังอีก 20 เคสที่ไม่เกี่ยวกัน</td></tr>
+      </tbody>
+    </table></div>
+    <p>เจาะลึกอยู่ที่ <strong>L5</strong> (mutation testing, property-based, LLM-as-judge, eval harness) แต่ต้องรู้ตั้งแต่ตอนนี้ว่าคำศัพท์ L0 มีขอบเขต</p>
+  </article>
+
+  <article class="topic" id="t10-4">
+    <div class="t-head"><span class="t-num">10.4</span><h3>6 กับดักของคนใหม่</h3><span class="ref">0.11</span></div>
+    <p><strong>1. คิดว่า 100% coverage = ปลอดภัย</strong></p>
+    <div class="code"><button class="copy">copy</button>
+<pre>function calcBonus(amount: number) {
+  return amount * 0.1
+}
+
+test("calc bonus", () =&gt; {
+  expect(calcBonus(100)).toBe(10)
+})
+// ✅ 100% line coverage, 100% branch coverage</pre>
+    </div>
+    <p>แต่ไม่มีใครถามว่า: ถ้า <code>amount</code> ติดลบ? เป็น <code>NaN</code>? floating point? เกิน <code>MAX_SAFE_INTEGER</code>? เป็น <code>null</code> เพราะ API ส่งมาแบบนั้น?</p>
+    <div class="note key"><span class="lbl">Coverage วัดอะไรกันแน่</span>
+      <p><strong>Coverage วัดว่า "โค้ดถูกรันหรือยัง" ไม่ได้วัดว่า "โค้ดถูกทดสอบหรือยัง"</strong> — โค้ดถูกรันโดยไม่มี assert ที่มีความหมาย ก็ยังนับเป็น coverage เต็ม</p>
+      <p>มันเป็น metric ที่ดีเมื่อใช้<strong>หาช่องโหว่</strong> (ตรงไหนยังไม่ถูกแตะเลย) และพังทันทีเมื่อใช้เป็น<strong>เป้า</strong></p>
+    </div>
+    <p><strong>2. คิดว่าตัวเองคือ "ยามเฝ้าประตู"</strong> — จะได้รับ: dev ปิดข้อมูลไม่บอกว่าแก้อะไร, ความสัมพันธ์เป็นศัตรู, และสุดท้ายคุณภาพแย่ลงเพราะข้อมูลไม่ไหล</p>
+    <p><strong>3. สับสน "test case เยอะ = เทสดี"</strong> — 1,000 test case ที่ครอบคลุมแค่ happy path 1,000 แบบ <strong>แย่กว่า</strong> 50 test case ที่ออกแบบมาจากการวิเคราะห์ความเสี่ยง และยังแพงกว่าเพราะต้อง maintain</p>
+    <p><strong>4. ไม่แยก "เทสพัง" กับ "ของพัง"</strong> — ย้อนกลับไป 6.5 ทางแยก 3 ทาง</p>
+    <p><strong>5. เทสสิ่งที่ตัวเองควบคุมได้ ไม่ใช่สิ่งที่เสี่ยง</strong> — คนชอบเทสสิ่งที่เทสง่าย (pure function) แล้วปล่อยสิ่งที่เทสยาก (integration, async race, error path) ไว้ แต่ defect แพงๆ อยู่ในกลุ่มหลังทั้งหมด</p>
+    <p><strong>6. เชื่อ AI-generated test โดยไม่ตรวจ oracle</strong></p>
+    <div class="note warn"><span class="lbl">การ pass คือสิ่งที่ควรน่าสงสัย ไม่ใช่สิ่งที่น่าดีใจ</span>
+      <p>LLM เก่งมากในการเขียน test ที่ <em>อ่านดูดี</em> และ <em>pass</em> — คำถามที่ต้องถามทุกครั้ง: <strong>"ถ้าผม revert การแก้ไข test นี้จะแดงไหม"</strong></p>
+      <p>ถ้าตอบไม่ได้ = test นั้นไม่มีค่า</p>
+    </div>
+  </article>
+</section>
+
+<!-- ══════════════ APPENDIX ══════════════ -->
+<section class="chapter" id="appendix">
+  <div class="ch-head">
+    <span class="ch-num">Appendix</span>
+    <h2>ภาคผนวก</h2>
+    <p class="goal">เครื่องมือประเมินตัวเอง และสิ่งที่ควรอ่านต่อ</p>
+    <hr>
+  </div>
+
+  <article class="topic" id="t11-1">
+    <div class="t-head"><span class="t-num">A</span><h3>Readiness Checklist</h3><span class="ref">0.13</span></div>
+    <p>ให้คะแนนตัวเอง <strong>0</strong> = ไม่รู้เลย · <strong>1</strong> = พอรู้ · <strong>2</strong> = อธิบายให้คนอื่นฟังได้พร้อมตัวอย่างของตัวเอง</p>
+
+    <p><strong>หมวด 1 — คำศัพท์ (ต้องได้ 2 ทุกข้อ)</strong></p>
+    <ul>
+      <li>อธิบาย Root Cause → Error → Defect → Failure พร้อมยกตัวอย่างจากโค้ดตัวเองได้</li>
+      <li>อธิบายได้ว่าทำไม defect ถึงไม่กลายเป็น failure และมันอันตรายยังไง</li>
+      <li>แยก Verification vs Validation แล้วชี้ได้ว่า gate ไหนในงานตัวเองเป็นอะไร</li>
+      <li>แยก Static vs Dynamic และบอกได้ว่าแต่ละอันเจอ defect คนละประเภทกันยังไง</li>
+      <li>แยก Confirmation vs Regression testing ได้</li>
+      <li>แยก Severity vs Priority ได้ และรู้ว่าใครเป็นเจ้าของอันไหน</li>
+      <li>อธิบายคำว่า <strong>Test Oracle</strong> ได้ และรู้ว่าทำไมมันสำคัญที่สุด</li>
+      <li>แยก <strong>False Positive / False Negative</strong> ได้ และรู้ว่าแบบไหนอันตรายกว่า</li>
+    </ul>
+
+    <p><strong>หมวด 2 — Mental Model (ต้องได้ ≥1)</strong></p>
+    <ul>
+      <li>เชื่อจริงๆ ว่า exhaustive testing เป็นไปไม่ได้ และงานหลักคือ "เลือกไม่เทส"</li>
+      <li>อธิบาย pesticide paradox ได้ และรู้ว่าจะรับมือยังไง</li>
+      <li>อธิบายได้ว่าทำไม 100% coverage ≠ ปลอดภัย</li>
+      <li>เลิกใช้ประโยค "ไม่มีบั๊กแล้ว" และเปลี่ยนเป็นภาษาความเสี่ยง</li>
+      <li>เข้าใจว่า testing เป็น <strong>information service</strong> ไม่ใช่ <strong>gatekeeper</strong></li>
+      <li>รู้ว่าตัวเลข "แพงขึ้น 100 เท่า" ไม่มีหลักฐานแน่นหนา และรู้ว่าจะอ้างอะไรแทน</li>
+      <li>เข้าใจว่า<strong>ทุกอย่างในเอกสารนี้เป็น heuristic ไม่ใช่กฎ</strong> และบอกได้ว่าอันไหนผิดเมื่อไหร่</li>
+      <li>อธิบาย <strong>Testing vs Checking</strong> และบอกได้ว่าทำไม AI สร้าง check ได้แต่สร้าง testing ไม่ได้</li>
+    </ul>
+
+    <p><strong>หมวด 3 — ทำได้จริง (ต้องได้ 2)</strong></p>
+    <ul>
+      <li>เขียน bug report ตามเทมเพลต 7.2 ได้ครบทุกช่อง</li>
+      <li><strong>Isolate</strong> บั๊กได้ — ลดขั้นตอนให้เหลือน้อยที่สุดที่ยัง reproduce ได้</li>
+      <li>ชี้ได้ว่า test case ที่มีอยู่ใน repo ตัวเองอันไหนอยู่ level ไหน</li>
+      <li>ระบุ test basis ของงานที่ทำอยู่ได้</li>
+      <li>เขียน test data 5 ประเภท (10.2) สำหรับ 1 feature ได้</li>
+      <li>แปลง requirement คลุมเครือ 3 ข้อเป็น testable acceptance criteria ได้</li>
+      <li>เขียน Gherkin ครบ happy + negative + boundary สำหรับ 1 feature ได้</li>
+      <li>ใช้ <strong>testware review checklist 10 ข้อ</strong> (6.5) กับเทสจริงได้</li>
+      <li><strong>แยก observation ออกจาก inference</strong> ได้ในทุก bug report</li>
+      <li>ทำ 5 Whys กับ defect จริง 1 ตัว จนถึงระดับที่แก้แล้วป้องกันทั้งหมวดได้</li>
+      <li>เขียน <strong>Test Summary Report 1 หน้า</strong> ครบ 3 เรื่อง (9.5)</li>
+    </ul>
+
+    <p><strong>หมวด 4 — ประยุกต์กับงานตัวเอง (นี่คือของจริง)</strong></p>
+    <ul>
+      <li>วาดตารางได้ว่า <strong>แต่ละ stage ในไปป์ไลน์เป็น verification หรือ validation, static หรือ dynamic, test level ไหน</strong></li>
+      <li>ตอบได้ว่าไปป์ไลน์ตัวเองมี<strong>ช่องว่าง test level ไหนบ้าง</strong></li>
+      <li>ตอบได้ว่า test ที่ AI generate มี <strong>oracle ที่แข็งแรงหรือไม่</strong> และรู้ได้ยังไง</li>
+      <li>ประเมิน <strong>testability 5 มิติ</strong> ของระบบตัวเองได้ และรู้ว่ามิติไหนอ่อนสุด</li>
+      <li>วาง Agile Testing Quadrants ของตัวเอง ระบุ Q ที่ว่าง</li>
+      <li>ตอบได้ว่า <strong>"เทสบน build ไหน"</strong> สำหรับงานล่าสุด</li>
+      <li>ระบุ <strong>maintenance trigger</strong> ที่ไม่ผ่านไปป์ไลน์ตัวเองได้ครบ</li>
+      <li>เปิด repo แล้วนับสัดส่วน positive vs negative test ที่มีอยู่จริง</li>
+    </ul>
+
+    <div class="note key"><span class="lbl">เกณฑ์ผ่าน</span>
+      <p>หมวด 1 และ 3 ต้องเต็ม 2 ทุกข้อ · หมวด 2 ต้อง ≥1 ทุกข้อ · <strong>หมวด 4 ต้องทำจริงอย่างน้อย 3 ข้อ</strong></p>
+    </div>
+  </article>
+
+  <article class="topic" id="t11-2">
+    <div class="t-head"><span class="t-num">B</span><h3>แบบฝึกหัด</h3><span class="ref">0.14</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>โจทย์</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>ทีม dev บอกว่า "unit test ผ่าน 100% coverage แล้ว ไม่น่ามีปัญหา" แต่เจอบั๊กใน production 5 ตัวในสัปดาห์เดียว จงอธิบายด้วยหลักการจาก L0 ว่าเป็นไปได้ยังไง (อย่างน้อย 3 หลักการ)</td></tr>
+        <tr><td>2</td><td>ผู้ใช้แจ้งว่า "กดปุ่มแล้วไม่มีอะไรเกิดขึ้น" จงเขียนว่านี่คือ error, defect หรือ failure และจะทำอะไรต่อ 3 อย่างก่อนเปิด ticket</td></tr>
+        <tr><td>3</td><td>บั๊ก: หน้าแรกสะกดชื่อโปรโมชั่นผิด 1 ตัวอักษร ไม่กระทบฟังก์ชันใดๆ จงกำหนด severity และ priority พร้อมเหตุผล</td></tr>
+        <tr><td>4</td><td>ไปป์ไลน์ให้ agent เขียน test แล้วให้ reviewer อีกตัวตรวจ จงระบุว่ามี <strong>oracle problem</strong> ซ่อนอยู่ตรงไหน และจะออกแบบ gate อะไรมาปิด</td></tr>
+        <tr><td>5</td><td>ยกตัวอย่าง defect ที่ <strong>static testing เจอแต่ dynamic ไม่มีวันเจอ</strong> และตัวอย่างที่กลับกัน</td></tr>
+        <tr><td>6</td><td>ไปป์ไลน์ผลิต automated check ได้ 200 ตัวใน 1 สัปดาห์ จงอธิบายด้วย <strong>Testing vs Checking</strong> ว่าทำไมตัวเลขนี้อาจ<em>ไม่ได้</em>แปลว่าคุณภาพดีขึ้น และจะวัดอะไรแทน</td></tr>
+        <tr><td>7</td><td>Requirement เขียนว่า "ระบบต้องรองรับผู้ใช้จำนวนมากได้อย่างราบรื่น" จงระบุว่าละเมิดคุณสมบัติข้อไหนบ้างใน 7 ข้อ (4.5) แล้วเขียนใหม่ให้ testable</td></tr>
+        <tr><td>8</td><td>ทีมมี code coverage 95% แต่ไม่มีเทสใน Q3 และ Q4 เลย จงใช้ <strong>Quadrants + ISO 25010</strong> อธิบายว่าความเสี่ยงที่แท้จริงคืออะไร (ตอบเป็น characteristic ให้ชัด)</td></tr>
+        <tr><td>9</td><td>อัตราการอนุมัติแบบไม่เปิดตรวจขึ้นจาก 45% เป็น 90% ใน 3 เดือน จงเสนอ <strong>3 คำอธิบายที่เป็นไปได้</strong> โดย 1 ข้อเป็นข่าวดี 2 ข้อเป็นข่าวร้าย แล้วออกแบบวิธีแยกแยะ</td></tr>
+        <tr><td>10</td><td>บั๊กเกิดเฉพาะตอนกดปุ่มเร็วสองครั้งบนเน็ตช้า พอเปิด DevTools แล้วหายไป จงระบุ (ก) ชื่อประเภทบั๊ก (ข) สาเหตุที่เป็นไปได้ 3 อย่าง (ค) ทำไม LLM reviewer จับไม่ได้ (ง) จะออกแบบ deterministic gate ยังไง</td></tr>
+        <tr><td>11</td><td>จงจัดกิจกรรมในไปป์ไลน์ลง <strong>Cost of Quality 4 ถัง</strong> แล้วชี้ว่าถังไหนหนักเกินไป และควรย้ายอะไรไปถังไหน</td></tr>
+        <tr><td>12</td><td>ไปป์ไลน์มี gate 5 ชั้น แต่ยังมีบั๊กหลุดถึง production 3 ตัวในเดือนนี้ จงใช้ <strong>stage of detection + fishbone</strong> ออกแบบวิธีหาว่า gate ชั้นไหนมีช่องโหว่ และเสนอวิธีปิดที่<em>ไม่ใช่</em>การบอก LLM ให้ระวังมากขึ้น</td></tr>
+        <tr><td>13</td><td>จงอธิบายว่าทำไม metric ที่วัดแค่ false positive จะทำให้ระบบ <strong>optimize ไปในทางที่ผิดโดยอัตโนมัติ</strong> และออกแบบชุด metric 3 ตัวที่สมดุล</td></tr>
+        <tr><td>14</td><td>จะรู้ได้ยังไงว่า preview ที่ดูอยู่คือ build ที่ agent เพิ่งทำเสร็จจริง จงออกแบบกลไกที่<strong>ตรวจสอบได้ด้วยตาโดยไม่ต้องเชื่อระบบ</strong></td></tr>
+        <tr><td>15</td><td>จงเขียน <strong>Test Strategy 1 หน้า</strong> ของไปป์ไลน์ตัวเอง ครอบคลุม: test level ที่ใช้, coverage item ที่นับ, entry/exit criteria แต่ละ stage, metric ที่ติดตาม, และความเสี่ยงที่ยอมรับ</td></tr>
+      </tbody>
+    </table></div>
+  </article>
+
+  <article class="topic" id="t11-3">
+    <div class="t-head"><span class="t-num">C</span><h3>คำถามสัมภาษณ์ + สิ่งที่เขาวัดจริง</h3><span class="ref">0.40</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>คำถาม</th><th>สิ่งที่วัดจริง</th><th>คำตอบที่ควรให้</th></tr></thead>
+      <tbody>
+        <tr><td>"QA กับ Tester ต่างกันยังไง"</td><td>รู้ว่าตัวเองสมัครอะไร</td><td>process vs product (1.2)</td></tr>
+        <tr><td><strong>"เทสเสร็จเมื่อไหร่"</strong></td><td>เข้าใจว่า exhaustive เป็นไปไม่ได้</td><td>ภาษาความเสี่ยง (5.3)</td></tr>
+        <tr><td>"เจอบั๊กแต่ dev บอกว่า by design ทำไง"</td><td>การสื่อสาร + รู้ขอบเขตอำนาจ</td><td>กลับไปหา test basis · ถ้า spec ไม่ชัด = defect ใน spec (6.1)</td></tr>
+        <tr><td>"อธิบาย severity vs priority"</td><td>พื้นฐาน</td><td>4 ควอดแรนต์ (7.1)</td></tr>
+        <tr><td><strong>"ถ้ามีเวลาเทสแค่ 2 ชม. ก่อน release จะทำอะไร"</strong></td><td>risk-based thinking</td><td>smoke → สิ่งที่เปลี่ยน → high-risk → รายงานที่เหลือ (5.2)</td></tr>
+        <tr><td>"coverage เท่าไหร่ถึงพอ"</td><td>รู้จัก Goodhart</td><td>ย้อนถามว่า coverage ของอะไร (6.8)</td></tr>
+        <tr><td>"automate ทุกอย่างได้ไหม"</td><td>เข้าใจ testing vs checking</td><td>1.4</td></tr>
+        <tr><td>"เคยปล่อยบั๊กหลุดไหม ทำยังไง"</td><td>ความซื่อสัตย์ + RCA</td><td>เล่าจริง + สิ่งที่เปลี่ยนใน process หลังจากนั้น</td></tr>
+        <tr><td>"test case เขียนยังไงให้ดี"</td><td>รู้เรื่อง oracle</td><td>expected result ต้องชัด + มาจาก basis ที่ระบุได้</td></tr>
+        <tr><td>"flaky test ทำไง"</td><td>วินัยทางวิศวกรรม</td><td>quarantine → RCA → แก้/ลบ ห้ามปล่อย (9.3)</td></tr>
+        <tr><td><strong>"AI จะแทน tester ไหม"</strong></td><td>ความเข้าใจสายอาชีพ</td><td>checking แทนได้, testing แทนไม่ได้ + ยกตัวอย่างจริง</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">คำถามสุดท้ายคือโอกาสที่ใหญ่ที่สุด</span>
+      <p>ถ้าคุณมีไปป์ไลน์จริงที่รันอยู่ คุณตอบได้ด้วยประสบการณ์ ไม่ใช่ความเห็นลอยๆ — เตรียมตัวเลขจริงไว้ 3 ตัว (อัตรา blind approve, escaped defect, gate ไหนจับอะไรได้)</p>
+      <p><strong>ข้อมูลจริง 3 ตัวเลข มีน้ำหนักกว่าคำอธิบาย 10 นาที</strong></p>
+    </div>
+  </article>
+
+  <article class="topic" id="t11-4">
+    <div class="t-head"><span class="t-num">D</span><h3>แหล่งเรียนรู้</h3><span class="ref">0.50</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>หนังสือ</th><th>ผู้เขียน</th><th>ทำไมคุ้ม</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Explore It!</strong></td><td>Elisabeth Hendrickson</td><td><strong>เล่มที่ดีที่สุดสำหรับ test design ที่ใช้ได้จริง</strong> บาง อ่านจบใน 2 วัน เต็มไปด้วยเทคนิคที่ใช้ได้พรุ่งนี้</td></tr>
+        <tr><td>Lessons Learned in Software Testing</td><td>Kaner, Bach, Pettichord</td><td>293 บทเรียนสั้นๆ — เล่มที่สร้าง<strong>วิจารณญาณ</strong> ไม่ใช่ความรู้</td></tr>
+        <tr><td>Agile Testing / More Agile Testing</td><td>Crispin &amp; Gregory</td><td>quadrants, whole-team, การทำงานกับทีมจริง</td></tr>
+        <tr><td>Perfect Software</td><td>Weinberg</td><td>ด้านการเมือง/จิตวิทยาของการเทส บางและตรงมาก</td></tr>
+        <tr><td>The Leprechauns of Software Engineering</td><td>Bossavit</td><td>สอนให้<strong>ไม่เชื่อ</strong>ตัวเลขในวงการ</td></tr>
+        <tr><td>Accelerate</td><td>Forsgren, Humble, Kim</td><td>DORA metrics — สิ่งที่ควรอ้างแทน "100x"</td></tr>
+        <tr><td>Software Engineering at Google — ch.11</td><td>Adam Bender</td><td>hermeticity, test sizes, ทำไมเทสต้องตรวจด้วยตาได้</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>แหล่งออนไลน์</th><th>ใช้ทำอะไร</th></tr></thead>
+      <tbody>
+        <tr><td>Rapid Software Testing (Bolton / Bach)</td><td>testing vs checking เจาะลึกที่สุด</td></tr>
+        <tr><td>ISTQB CTFL syllabus (ฟรี)</td><td>vocabulary มาตรฐาน — <strong>อ่านครั้งเดียว อย่ายึดเป็นสัจธรรม</strong></td></tr>
+        <tr><td>Ministry of Testing</td><td>community, บทความ practitioner</td></tr>
+        <tr><td>Google Testing Blog</td><td>scale ใหญ่, flaky test, test sizes</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><span class="lbl">ที่แนะนำให้ข้าม</span>
+      <p>คอร์ส "QA Automation" ทั่วไปตามแพลตฟอร์มออนไลน์ — ส่วนใหญ่สอนแค่ syntax ของ tool ซึ่งอ่าน doc เอาเองได้ใน 1 วัน และไม่แตะ test design เลย</p>
+      <p>หนังสือที่ชื่อขึ้นต้นว่า "Complete Guide to…" — มักเป็นการรวบรวม syllabus โดยไม่มีวิจารณญาณ</p>
+      <p>Certification นอกจาก ISTQB Foundation — ROI ต่ำมาก</p>
+    </div>
+    <p><strong>ถ้าอ่านได้เล่มเดียว → Explore It!</strong> เพราะมันเติมช่องว่างที่ไปป์ไลน์อัตโนมัติมีมากที่สุด (Q3 exploratory) และเป็นทักษะที่ automate ไม่ได้</p>
+  </article>
+
+  <article class="topic" id="t11-5">
+    <div class="t-head"><span class="t-num">E</span><h3>Errata</h3><span class="ref">—</span></div>
+    <p>บันทึกไว้เพราะการรู้ว่าอะไรเคยผิด มีค่าเท่ากับการรู้ว่าอะไรถูก</p>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>สิ่งที่เคยเขียนผิด</th><th>สิ่งที่ถูก</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>สัดส่วน positive : negative : boundary = 30:40:20:10 ราวกับเป็นมาตรฐาน</td><td>เป็น heuristic ไม่มีมาตรฐานสากล — ใช้เป็นสัญญาณเตือน (positive &gt; 70% ให้สงสัย) ไม่ใช่เป้า → <strong>3.6</strong></td></tr>
+        <tr><td>2</td><td>หมายเลข Q1–Q4 ดูเหมือนบอกลำดับ</td><td>เป็นแค่ป้ายชื่อช่อง ให้จำเป็น 2 แกนแทน → <strong>3.8</strong></td></tr>
+        <tr><td>3</td><td>"static testing ถูกกว่า dynamic เสมอ"</td><td>ไม่จริง — human review เป็น static ที่แพงที่สุด หลักการที่ถูกคือเรียงตาม<strong>ต้นทุนต่อ defect</strong> → <strong>3.2</strong></td></tr>
+        <tr><td>4</td><td>เกณฑ์หยุดตรวจสอบเอกสาร: "ได้ ≤2 ข้อ = หยุด"</td><td>ผิด — ต้องหยุดเมื่อ <strong>เปลี่ยน oracle แล้วยังไม่เจอของใหม่</strong> ไม่ใช่เมื่อ oracle เดิมหมดฤทธิ์ (pesticide paradox)</td></tr>
+        <tr><td>5</td><td>Manifest รอบแรกตกหัวข้อเปิด (QA vs QC, generic skills)</td><td>ทำให้เกิด false positive 2 ข้อในการตรวจรอบ 1 — <strong>defect อยู่ในเครื่องมือตรวจ ไม่ใช่ในของที่ถูกตรวจ</strong></td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>บันทึกการตรวจสอบ</strong></p>
+    <div class="tw"><table>
+      <thead><tr><th>รอบ</th><th>Oracle ที่ใช้</th><th>ผลลัพธ์</th><th>บทเรียน</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>ISTQB CTFL</td><td>9 ข้อ → รับ 3 เต็ม + 3 บางส่วน, false positive 2, ตีตก 1</td><td>reviewer อ้าง ISTQB 8/9 = ครอบคลุมมิติเดียว</td></tr>
+        <tr><td>2</td><td>Context-Driven + Google Engineering</td><td>7 ข้อ → รับหมด (2 ตัดขอบ)</td><td><strong>เปลี่ยน oracle ทำให้ discovery rate พุ่งกลับ</strong></td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">ข้อสังเกตที่สำคัญที่สุด</span>
+      <p>รอบ 2 <strong>ไม่มีข้อไหนเป็นประเภท "ขาดทั้งหมด" เลย</strong> — ทั้งหมดเป็น "มีแต่ตื้น" ซึ่งเป็นสัญญาณว่าโครงสร้างครบแล้ว และสิ่งที่เหลือเริ่มทับซ้อนกับ L1</p>
+    </div>
+  </article>
+
+  <article class="topic" id="t11-6">
+    <div class="t-head"><span class="t-num">F</span><h3>Roadmap L0 → L5</h3><span class="ref">0.0d · 0.0e</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>ชั้น</th><th>ชื่อ</th><th>เนื้อหาหลัก</th></tr></thead>
+      <tbody>
+        <tr><td><strong>L0</strong></td><td>Foundation <em>(เอกสารนี้)</em></td><td>คำศัพท์ + mental model</td></tr>
+        <tr><td><strong>L1</strong></td><td>Test Design Craft</td><td>Equivalence Partitioning, Boundary Value Analysis, Decision Table, State Transition, Pairwise, Risk-based เชิงปริมาณ, Exploratory + HICCUPPS</td></tr>
+        <tr><td><strong>L2</strong></td><td>Automation &amp; CI</td><td>Test Pyramid vs Trophy, F.I.R.S.T + U, mocking strategy, test double, CI gate design, flaky triage, contract testing</td></tr>
+        <tr><td><strong>L3</strong></td><td>Non-functional</td><td>Performance (load/stress/soak/spike), Security (OWASP), Accessibility (WCAG), Compatibility, Localization เชิงลึก</td></tr>
+        <tr><td><strong>L4</strong></td><td>Quality Engineering</td><td>Shift-right, observability, testing in production, feature flag, canary, test strategy เต็มรูปแบบ, metric program</td></tr>
+        <tr><td><strong>L5</strong></td><td>ขั้นสูง</td><td>Mutation testing, property-based, model-based, LLM evaluation, non-deterministic system testing</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note key"><span class="lbl">จุดยืนเรื่อง certification</span>
+      <p><strong>ISTQB Foundation</strong> — เอาไว้ผ่าน HR และได้ vocabulary มาตรฐาน อ่าน syllabus 2–3 สัปดาห์ก็สอบได้ <strong>แต่มันไม่ได้ทำให้เทสเก่งขึ้นเลย</strong></p>
+      <p>ถ้าเป้าคือเปลี่ยนสาย → คุ้ม · ถ้าเป้าคือเก่งขึ้น → ไปอ่าน <em>Explore It!</em> แทน</p>
+    </div>
+    <div class="note quote"><span class="lbl">สรุป L0 ในประโยคเดียว</span>
+      <p>Testing คือการหาข้อมูลเรื่องความเสี่ยงให้คนตัดสินใจ — <strong>ไม่ใช่การพิสูจน์ว่าไม่มีบั๊ก เพราะพิสูจน์ไม่ได้ทางคณิตศาสตร์</strong></p>
+    </div>
+  </article>
+</section>
+
+<footer>
+  L0 — QA/Testing Foundation · 62 / 62 topics · 10 chapters + appendix · audited 2 rounds
+</footer>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // copy buttons
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var pre = btn.parentElement.querySelector('pre');
+      if(!pre) return;
+      navigator.clipboard.writeText(pre.innerText).then(function(){
+        var old = btn.textContent;
+        btn.textContent = 'copied';
+        btn.classList.add('done');
+        setTimeout(function(){ btn.textContent = old; btn.classList.remove('done'); }, 1600);
+      });
+    });
+  });
+
+  // scrollspy
+  var links = Array.prototype.slice.call(document.querySelectorAll('.rail-sub a'));
+  var map = {};
+  links.forEach(function(a){
+    var id = a.getAttribute('href').slice(1);
+    var el = document.getElementById(id);
+    if(el) map[id] = a;
+  });
+  var targets = Object.keys(map).map(function(id){ return document.getElementById(id); });
+
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        links.forEach(function(a){ a.classList.remove('on'); });
+        var a = map[e.target.id];
+        if(a){
+          a.classList.add('on');
+          var pl = a.parentElement.parentElement;
+          if(pl && pl.scrollHeight){
+            var top = a.offsetTop, railEl = document.getElementById('rail');
+            if(railEl && window.innerWidth > 940){
+              if(top < railEl.scrollTop || top > railEl.scrollTop + railEl.clientHeight - 60){
+                railEl.scrollTo({top: top - railEl.clientHeight/2, behavior:'smooth'});
+              }
+            }
+          }
+        }
+      }
+    });
+  }, {rootMargin:'-10% 0px -75% 0px', threshold:0});
+
+  targets.forEach(function(t){ obs.observe(t); });
+
+  // mobile toggle
+  var tg = document.getElementById('railToggle'), rail = document.getElementById('rail');
+  tg.addEventListener('click', function(){
+    var open = rail.classList.toggle('open');
+    tg.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tg.textContent = open ? '✕ ปิดสารบัญ' : '☰ สารบัญ';
+  });
+  rail.addEventListener('click', function(e){
+    if(e.target.tagName === 'A' && window.innerWidth <= 940){
+      rail.classList.remove('open');
+      tg.setAttribute('aria-expanded','false');
+      tg.textContent = '☰ สารบัญ';
+    }
+  });
+})();
+</script>
+</body>
+</html>
