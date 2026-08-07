@@ -1,0 +1,2161 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L2 — Automation &amp; CI | Testing &amp; QE Field Manual</title>
+<meta name="description" content="Test architecture, F.I.R.S.T+U, test doubles, contract testing, flaky taxonomy, gate design, 8 failure mode ของ agent, gate drill">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="prev" href="l1-design.html">
+<link rel="next" href="l3-nfr.html">
+</head>
+<body>
+
+<header class="hdr">
+  <button class="btn-ghost rail-toggle" id="railToggle" aria-expanded="false" aria-label="สลับสารบัญ">☰</button>
+  <div class="hdr-brand">pedpro <b>/</b> qe field manual</div>
+  <div class="hdr-crumb"><a href="index.html">index</a><span class="sep">/</span>L2 — automation &amp; CI</div>
+  <button class="btn-ghost" id="foldAll" aria-pressed="false">ยุบหัวข้อย่อย</button>
+  <div class="search-wrap">
+    <span class="search-ico">⌕</span>
+    <input class="search" id="search" type="search" placeholder="ค้นหัวข้อในหน้านี้" aria-label="ค้นหัวข้อ">
+    <span class="search-kbd">/</span>
+  </div>
+</header>
+
+<div class="shell">
+
+  <nav class="rail-col" aria-label="สารบัญ">
+    <p class="rail-label">gate chain</p>
+    <ul class="chain">
+      <li><a href="index.html"><span class="node">◆</span><span class="lbl">ภาพรวม<span class="sub">index</span></span></a></li>
+      <li><a href="l0-foundation.html"><span class="node">L0</span><span class="lbl">รากฐาน<span class="sub">foundation</span></span></a></li>
+      <li><a href="l1-design.html"><span class="node">L1</span><span class="lbl">ออกแบบเทส<span class="sub">test design</span></span></a></li>
+      <li><a href="l2-automation.html" aria-current="page"><span class="node">L2</span><span class="lbl">automation &amp; CI<span class="sub">gate design</span></span></a></li>
+      <li><a href="l3-nfr.html"><span class="node">L3</span><span class="lbl">non-functional<span class="sub">perf · sec · a11y · ไทย</span></span></a></li>
+      <li><a href="l4-qe.html"><span class="node">L4</span><span class="lbl">quality engineering<span class="sub">slo · learning loop</span></span></a></li>
+      <li><a href="l5-advanced.html"><span class="node">L5</span><span class="lbl">เทพ<span class="sub">mutation · llm eval</span></span></a></li>
+      <li><a href="appendix.html"><span class="node">◇</span><span class="lbl">ภาคผนวก<span class="sub">appendix</span></span></a></li>
+    </ul>
+    <p class="rail-label">ในหน้านี้</p>
+    <div class="toc" id="toc"></div>
+  </nav>
+
+  <main class="main">
+    <div class="wrap">
+
+      <div class="phead">
+        <p class="eyebrow">ชั้นที่ 2 · automation &amp; gate design</p>
+        <h1>Automation &amp; CI</h1>
+        <p class="lede">
+          L1 ตอบว่า “ต้องเทสอะไร” — ชั้นนี้ตอบว่า
+          <strong>“เอาไปวางไว้ตรงไหน ให้มันรันเร็ว ไม่โกหก และไม่มีใครอยากปิดมันทิ้ง”</strong>
+        </p>
+        <div class="meta">
+          <span class="meta-chip">เวลาที่ควรใช้ <b>3–6 เดือน</b></span>
+          <span class="meta-chip">เช็คลิสต์ <b>30 ข้อ</b></span>
+          <span class="meta-chip">แบบฝึกหัด <b>13 ข้อ</b></span>
+          <span class="meta-chip"><b>ตรงกับ pipeline ที่สุด</b></span>
+        </div>
+      </div>
+
+      <p class="lead-in">
+        ชั้นนี้มีทุนเดิมมากที่สุด (Playwright, Bruno, S6/S7 gate) แต่ก็เป็นชั้นที่
+        <strong>agentic pipeline สร้างความเสียหายได้มากที่สุด</strong> ถ้าไม่มี guard ที่ถูกต้อง —
+        <a href="#agent-failure-mode">L2.14</a> คือส่วนที่ต้องอ่านที่สุดในหน้านี้
+      </p>
+
+      <!-- ============================================================ -->
+      <h2 id="automation-คืออะไร"><span class="num">L2.0</span>Automation คืออะไรจริงๆ</h2>
+
+      <h3 id="automation-ไม่หาบั๊ก">Automation ไม่ได้ “หาบั๊ก”</h3>
+
+      <p>ย้อนกลับไป <a class="xref" href="l0-foundation.html#testing-vs-checking">L0.6</a>: <strong>automation = checking</strong></p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:42%">ความเชื่อ</th><th>ความจริง</th></tr></thead>
+          <tbody>
+            <tr><td>“เขียน automation ไว้จะได้หาบั๊กเจอเยอะ”</td><td>automated test หาบั๊ก <strong>ตอนเขียนครั้งแรก</strong> เท่านั้น หลังจากนั้นมันคือ <strong>change detector</strong></td></tr>
+            <tr><td>“automation แทน manual tester”</td><td>แทน <strong>manual regression checking</strong> — ไม่แทน testing</td></tr>
+            <tr><td>“coverage สูง = ปลอดภัย”</td><td>coverage สูง = เรารู้ว่าโค้ดถูกรัน ไม่ได้รู้ว่ามันถูก</td></tr>
+            <tr><td>“เทสเยอะ = ดี”</td><td>เทสเยอะ = ค่า maintenance สูง, feedback ช้า, flaky เยอะ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="roi">ROI ที่แท้จริงของ automated test</h3>
+
+      <div class="diagram">คุณค่า = (ความถี่ที่รัน × ต้นทุนถ้าบั๊กหลุด × โอกาสที่มันจะจับได้)
+       − (ต้นทุนเขียน + ต้นทุน maintain + ต้นทุนเวลาที่รอ + ต้นทุนความไม่เชื่อถือ)</div>
+
+      <div class="note imp">
+        <span class="note-t">“ต้นทุนความไม่เชื่อถือ” คือตัวที่คนลืมและมันแพงที่สุด</span>
+        <p style="margin-bottom:0">
+          เทสที่มีโอกาสพังปลอม 5% ต่อตัว ในสeuite 200 ตัว → โอกาสที่ build เขียวสะอาด = 0.95<sup>200</sup> ≈ <strong>0.003%</strong><br>
+          แปลว่า <strong>แทบทุก build จะแดง</strong> และเมื่อคนชินกับ build แดง
+          <strong>gate ทั้งหมดของคุณตายทันที</strong> ไม่ว่าจะออกแบบดีแค่ไหน<br>
+          นี่คือเหตุผลว่าทำไม <a href="#flaky">L2.7 (flaky)</a> ถึงสำคัญกว่า <a href="#e2e">L2.6 (Playwright)</a> —
+          <strong>เครื่องมือไม่มีค่าถ้าไม่มีใครเชื่อผลของมัน</strong>
+        </p>
+      </div>
+
+      <h3 id="ควร-automate">เทสอะไรควร/ไม่ควร automate</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:50%">ควร automate</th><th>ไม่ควร automate</th></tr></thead>
+          <tbody>
+            <tr><td>รันบ่อย (ทุก commit)</td><td>รันครั้งเดียวแล้วทิ้ง</td></tr>
+            <tr><td>ผลลัพธ์ตรวจได้ด้วยเครื่อง (oracle ชัด)</td><td>ต้องใช้วิจารณญาณ (“สวยมั้ย”, “เข้าใจง่ายมั้ย”)</td></tr>
+            <tr><td>ทำซ้ำแล้วได้ผลเดิม</td><td>ขึ้นกับสภาพแวดล้อมที่คุมไม่ได้</td></tr>
+            <tr><td>ทำด้วยมือแล้วน่าเบื่อ/ผิดพลาดง่าย</td><td>สำรวจ (exploratory)</td></tr>
+            <tr><td>ครอบคลุมพื้นที่ risk สูง</td><td>พื้นที่ risk ต่ำที่เปลี่ยนบ่อย (จะ maintain ไม่ไหว)</td></tr>
+            <tr><td>ต้องรันหลาย config</td><td>ทำครั้งเดียวเร็วกว่าเขียนสคริปต์</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="test-architecture"><span class="num">L2.1</span>Pyramid / Trophy / Honeycomb / Diamond</h2>
+
+      <div class="diagram">   PYRAMID (Cohn, 2009)      TROPHY (Kent C. Dodds)     HONEYCOMB (Spotify)
+
+        /\  E2E                   ▁▁  E2E                  ◇  Integrated (น้อย)
+       /  \ Integration        ▟██████▙ Integration      ▟████▙ Integration (เยอะ)
+      /    \                    ▐████▌  Unit               ◇  Unit (น้อย)
+     /______\ Unit              ▁▁▁▁▁▁  Static
+
+   สมมติฐาน: unit ถูก+เร็ว   สมมติฐาน: confidence      สมมติฐาน: microservice
+   integration แพง           มาจาก integration        unit เล็กเกินจะมีค่า</div>
+
+      <p>
+        <strong>สิ่งที่ทั้งหมดเห็นตรงกัน:</strong> เทสที่แพง/ช้า/เปราะ ต้องมีน้อย —
+        ต่างกันแค่ว่า “ชั้นไหนแพง” ซึ่งขึ้นกับ<strong>สแตกและยุคสมัย</strong>
+      </p>
+
+      <h3 id="ทำไม-trophy">ทำไม Trophy ถึงเหมาะกับ frontend ปี 2026</h3>
+      <ol>
+        <li>Static analysis ฟรีและแรงกว่าเมื่อก่อนมาก — TS strict จับ defect class ทั้งชนิดหายไปเลย</li>
+        <li>เครื่องมือ integration ถูกลงมาก (Testing Library + MSW เร็วเกือบเท่า unit)</li>
+        <li>unit test ของ UI component มักเทส implementation detail → เปราะโดยไม่ให้ confidence</li>
+      </ol>
+
+      <h3 id="รูปทรงต่อชนิดโค้ด">Pedpro ควรเป็นแบบไหน — คำตอบตรงๆ</h3>
+
+      <p><strong>ไม่ใช่รูปทรงเดียวทั้งระบบ — แบ่งตามชนิดของโค้ด</strong></p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:32%">ชนิดโค้ด</th><th style="width:28%">รูปทรงที่ถูก</th><th>เหตุผล</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Pure logic</strong> (<code>calcBonus</code>, <code>parseAmount</code>, <code>formatThaiDate</code>)</td><td><strong>Pyramid สุดโต่ง</strong> — unit เยอะมาก</td><td>ถูก เร็ว oracle ชัด และนี่คือที่ที่ L1 techniques ทั้งหมดลง</td></tr>
+            <tr><td><strong>Vue components</strong></td><td><strong>Trophy</strong> — integration เยอะ</td><td>เทส component เดี่ยวๆ ไม่ให้ confidence</td></tr>
+            <tr><td><strong>Pinia store + API layer</strong></td><td><strong>Trophy</strong> — integration</td><td>ต้องเห็นว่า store + API + error handling ทำงานร่วมกัน</td></tr>
+            <tr><td><strong>Flow ข้ามหน้า / เงิน</strong></td><td><strong>ยอดพีระมิด</strong> — E2E น้อยแต่มี</td><td>ไม่มีทางอื่น</td></tr>
+            <tr><td><strong>การคุยกับ backend</strong></td><td><strong>Contract layer แยก</strong></td><td>ดู <a href="#contract">L2.5</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="สถาปัตยกรรมที่แนะนำ">สถาปัตยกรรมที่แนะนำสำหรับ Pedpro</h3>
+
+      <div class="diagram">┌─────────────────────────────────────────────────────────┐
+│  L5  Exploratory (คน)                  1-2 session/sprint│  ← S8.6
+├─────────────────────────────────────────────────────────┤
+│  L4  E2E Playwright                    8-15 เทส/ฟีเจอร์   │  ช้า 30s-2min ต่อตัว
+│      เฉพาะ: money flow, auth, pairwise ที่ risk สูง       │
+├─────────────────────────────────────────────────────────┤
+│  L3  Contract (Bruno)                  ตาม endpoint      │  เร็ว จับ breaking change
+├─────────────────────────────────────────────────────────┤
+│  L2  Integration (Vitest + Testing Library + MSW)        │  ⭐ ชั้นที่ควรหนาที่สุด
+│      component + store + API mock         50-150 เทส     │  50-500ms ต่อตัว
+├─────────────────────────────────────────────────────────┤
+│  L1  Unit (Vitest)                     100-400 เทส       │  &lt;10ms ต่อตัว
+│      pure function, composable, util, validator          │
+├─────────────────────────────────────────────────────────┤
+│  L0  Static: tsc --noEmit, ESLint, vue-tsc, dep audit    │  ฟรี เร็วสุด gate แรก
+└─────────────────────────────────────────────────────────┘</div>
+
+      <p>
+        <strong>อัตราส่วนเวลารันที่ควรเป็น:</strong>
+        static 30s → unit 15s → integration 60s → contract 30s → E2E 5-8 นาที (แบบ shard)
+      </p>
+
+      <div class="note warn">
+        <span class="note-t">กฎ</span>
+        <p style="margin-bottom:0">
+          ถ้า E2E ใช้เวลา &gt; 50% ของ pipeline ทั้งหมด แปลว่าคุณเอาของที่ควรอยู่ชั้นล่างขึ้นมาไว้ชั้นบน
+        </p>
+      </div>
+
+      <h3 id="คำถาม-5-ข้อ">เกณฑ์ตัดสินว่าเทสตัวนี้ควรอยู่ชั้นไหน <span class="st">⭐</span></h3>
+
+      <div class="diagram">1. มันตรวจ "ผลลัพธ์ของการคำนวณ" มั้ย?           → Unit
+2. มันตรวจ "หลายส่วนคุยกันถูกมั้ย"?              → Integration
+3. มันตรวจ "shape ของ API"?                     → Contract
+4. มันตรวจ "ผู้ใช้ทำงานให้เสร็จได้มั้ย"?          → E2E
+5. มันตรวจ "มีอะไรที่เราไม่ได้คิดถึงมั้ย"?        → Exploratory (คน)</div>
+
+      <div class="note good">
+        <span class="note-t">กฎเดียว</span>
+        <p style="margin-bottom:0">
+          <strong>ถ้าเทสหนึ่งตัวตอบว่า “ใช่” มากกว่า 1 ข้อ → มันทำงานเยอะเกินไป แยกมัน</strong>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="first-u"><span class="num">L2.2</span>F.I.R.S.T + U เจาะลึก <span class="st">⭐</span></h2>
+
+      <p>ไม่ทวนนิยาม แต่เจาะว่า<strong>แต่ละข้อละเมิดยังไงในชีวิตจริง วัดยังไง และผูกกับ gate ไหน</strong></p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:18%">หลัก</th><th style="width:30%">คำถามตรวจสอบ</th><th style="width:28%">วัดด้วย</th><th>Gate</th></tr></thead>
+          <tbody>
+            <tr><td><strong>F</strong>ast</td><td>เทสนี้รันกี่ ms</td><td>timing report</td><td class="no">S6 (hard)</td></tr>
+            <tr><td><strong>I</strong>ndependent</td><td>รันเดี่ยวๆ / สลับลำดับ ยังผ่านมั้ย</td><td><code>--shuffle</code>, <code>--only</code></td><td class="no">S6 (hard)</td></tr>
+            <tr><td><strong>R</strong>epeatable</td><td>รัน 20 รอบ ผลเหมือนกันมั้ย</td><td>flake detector</td><td class="no">S6 (hard)</td></tr>
+            <tr><td><strong>S</strong>elf-validating</td><td>มี assert ที่มีความหมายมั้ย</td><td>assertion lint + mutation</td><td class="no">S6 + S7</td></tr>
+            <tr><td><strong>T</strong>imely</td><td>เทสเขียนก่อน/พร้อมโค้ด ไม่ใช่ตามหลัง</td><td>red-green proof</td><td class="no">S3/S4 (ordering)</td></tr>
+            <tr><td><strong>U</strong>nderstandable</td><td>อ่านชื่อเทสแล้วรู้ว่ามันคุ้มครองอะไร</td><td>S7 review</td><td class="mid">S7 (soft)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <span class="note-t">หมายเหตุเรื่อง U</span>
+        <p style="margin-bottom:0">
+          ตำราคนละสำนักขยาย U ต่างกัน — บางที่ <strong>Understandable</strong>, บางที่ <strong>Unique</strong>
+          (ไม่ซ้ำซ้อนกับเทสอื่น), บางที่ <strong>Useful</strong><br>
+          สำหรับ pipeline นี้: บังคับ <strong>Understandable</strong> เป็น gate และใช้ <strong>Unique</strong>
+          เป็น metric ตอน test completion
+        </p>
+      </div>
+
+      <h3 id="fast">F — Fast</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:24%">ชั้น</th><th>เป้า/เทส</th><th>เตือน</th><th>fail</th></tr></thead>
+          <tbody>
+            <tr><td>Unit</td><td class="yes">&lt; 10 ms</td><td class="mid">&gt; 50 ms</td><td class="no">&gt; 200 ms</td></tr>
+            <tr><td>Integration</td><td class="yes">&lt; 300 ms</td><td class="mid">&gt; 1 s</td><td class="no">&gt; 3 s</td></tr>
+            <tr><td>E2E</td><td class="yes">&lt; 30 s</td><td class="mid">&gt; 60 s</td><td class="no">&gt; 120 s</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>สาเหตุที่ unit test ช้าเกิน 50ms — ไล่ตามลำดับความน่าจะเป็น</strong></p>
+      <ol>
+        <li>มัน<strong>ไม่ใช่ unit test</strong> — มันแตะ network/DB/filesystem จริง</li>
+        <li><code>import</code> ลากทั้ง Naive UI / whole barrel file เข้ามา</li>
+        <li>มี <code>setTimeout</code> / <code>await sleep()</code> จริงแทนที่จะใช้ fake timer</li>
+        <li>สร้าง fixture หนักใน <code>beforeEach</code> แทนที่จะเป็น <code>beforeAll</code></li>
+        <li>mount component ทั้ง tree ทั้งที่เทสแค่ฟังก์ชัน</li>
+      </ol>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">vitest.config.ts</span></div>
+<pre><code>export default defineConfig({
+  test: {
+    slowTestThreshold: 50,          // รายงานตัวที่ช้า
+    testTimeout: 5000,
+    reporters: ["default", "json"],
+    outputFile: { json: "./reports/vitest.json" },
+  },
+})</code></pre>
+      </div>
+
+      <p>แล้วให้ S6 อ่าน JSON → <strong>reject ถ้ามี unit test ตัวไหนเกิน 200ms</strong> พร้อมชื่อเทส</p>
+
+      <div class="note">
+        <span class="note-t">ประสบการณ์</span>
+        <p style="margin-bottom:0">
+          ทีมส่วนใหญ่ไม่เคยดูว่าเทสตัวไหนช้า พอ suite ช้าก็ไปเพิ่ม CPU ให้ runner —
+          ความจริงคือ <strong>3% ของเทสกินเวลา 60% ของ suite เสมอ</strong> · <strong>วัดก่อนแก้</strong>
+        </p>
+      </div>
+
+      <h3 id="independent">I — Independent / Isolated</h3>
+
+      <p>ข้อที่<strong>ละเมิดบ่อยที่สุดและตรวจง่ายที่สุด</strong> — แต่แทบไม่มีใครตรวจ</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:28%">ระดับ</th><th style="width:32%">หมายความว่า</th><th>ทดสอบด้วย</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Order independence</strong></td><td>สลับลำดับแล้วยังผ่าน</td><td><code>vitest --sequence.shuffle</code></td></tr>
+            <tr><td><strong>Isolation independence</strong></td><td>รันตัวเดียวก็ผ่าน</td><td><code>vitest -t "ชื่อเทส"</code></td></tr>
+            <tr><td><strong>Parallel independence</strong></td><td>รันพร้อมกันแล้วไม่ชนกัน</td><td><code>--pool=threads</code> + worker เยอะ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>คุณรัน git worktree ขนานอยู่แล้ว → parallel independence คือข้อบังคับ ไม่ใช่ nice-to-have</strong></p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">รูปแบบการละเมิดที่เจอจริง</span></div>
+<pre><code>// ❌ 1. shared mutable state ระดับโมดูล
+let currentUser = null
+beforeAll(() =&gt; { currentUser = createUser() })
+it("A", () =&gt; { currentUser.balance = 500 })          // เปลี่ยน state
+it("B", () =&gt; { expect(currentUser.balance).toBe(0) }) // พังถ้า A รันก่อน
+
+// ❌ 2. พึ่ง Pinia store ที่ไม่ reset
+// ✅ ต้องมี
+beforeEach(() =&gt; { setActivePinia(createPinia()) })
+
+// ❌ 3. mock ที่ไม่ถูกล้าง
+// ✅ vitest.config: { restoreMocks: true, clearMocks: true, mockReset: true }
+
+// ❌ 4. เทส E2E ที่ใช้ user คนเดียวกันทุกตัว
+// ✅ ต้อง unique namespace ต่อ worker (ดู L2.8)
+
+// ❌ 5. เทสที่พึ่ง DB record ที่เทสก่อนหน้าสร้าง</code></pre>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">bash</span><span class="code-file">gate ที่ควรมีใน S6 — ทำได้เลยวันนี้</span></div>
+<pre><code># รัน 3 รอบด้วย seed ต่างกัน — ถ้าผลไม่เหมือนกัน = ไม่ independent
+pnpm vitest run --sequence.shuffle --sequence.seed=1 || exit 1
+pnpm vitest run --sequence.shuffle --sequence.seed=2 || exit 1
+pnpm vitest run --sequence.shuffle --sequence.seed=3 || exit 1
+
+# รันแบบนี้สัปดาห์ละครั้ง (nightly) ไม่ต้องทุก commit เพราะกิน 3 เท่า</code></pre>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ความเห็นตรงๆ</span>
+        <p style="margin-bottom:0">
+          ผมพนันได้เลยว่า suite ของคุณตอนนี้ถ้ารัน <code>--sequence.shuffle</code> จะมีอย่างน้อย 1-2 ตัวพัง
+          <strong>ลองก่อนอ่านต่อ</strong> — มันเป็นการทดลอง 30 วินาทีที่ให้ข้อมูลมากที่สุดในชั้นนี้
+        </p>
+      </div>
+
+      <h3 id="repeatable">R — Repeatable</h3>
+
+      <p><strong>ศัตรูของ repeatable มี 5 ตัวเท่านั้น จำให้ครบ</strong></p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:18%">ศัตรู</th><th style="width:40%">ตัวอย่าง</th><th>วิธีฆ่า</th></tr></thead>
+          <tbody>
+            <tr><td><strong>เวลา</strong></td><td><code>new Date()</code>, <code>Date.now()</code>, timezone</td><td><code>vi.setSystemTime()</code> + fix TZ</td></tr>
+            <tr><td><strong>สุ่ม</strong></td><td><code>Math.random()</code>, <code>crypto.randomUUID()</code>, faker</td><td>seed คงที่ / inject generator</td></tr>
+            <tr><td><strong>เครือข่าย</strong></td><td>API จริง, CDN, third-party</td><td>MSW / Playwright route intercept</td></tr>
+            <tr><td><strong>สภาพแวดล้อม</strong></td><td>เครื่อง dev vs CI, locale, ฟอนต์</td><td>Docker + fix locale/TZ</td></tr>
+            <tr><td><strong>ลำดับ/การขนาน</strong></td><td>ดู I ข้างบน</td><td>isolation</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4 id="time-control">Time — ของที่ต้องทำเป็นพิเศษ <span class="st">⭐</span></h4>
+
+      <p>Cloud Run = UTC, ผู้ใช้ = UTC+7 → <strong>เทสต้องรันด้วย timezone ที่ตั้งใจ ไม่ใช่ timezone ของเครื่อง</strong></p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">vitest.config.ts — บังคับให้เหมือนกันทุกเครื่อง</span></div>
+<pre><code>export default defineConfig({
+  test: {
+    env: { TZ: "UTC" },          // เลียนแบบ Cloud Run
+  },
+})</code></pre>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">เทสขอบ 07:00 น. ไทย — จาก L1.2</span></div>
+<pre><code>describe("โบนัสครั้งแรกของวัน (ขอบวันตามเวลาไทย)", () =&gt; {
+  beforeEach(() =&gt; vi.useFakeTimers())
+  afterEach(() =&gt; vi.useRealTimers())
+
+  it.each([
+    ["2026-07-25T06:59:59+07:00", "วันที่ 25"],
+    ["2026-07-25T07:00:00+07:00", "วันที่ 25"],
+    ["2026-07-25T00:00:00+07:00", "วันที่ 25"],
+    ["2026-07-24T23:59:59+07:00", "วันที่ 24"],
+  ])("%s → %s", (iso, expected) =&gt; {
+    vi.setSystemTime(new Date(iso))
+    expect(businessDayOf(new Date())).toBe(expected)
+  })
+})</code></pre>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">playwright.config.ts</span></div>
+<pre><code>use: {
+  timezoneId: "Asia/Bangkok",
+  locale: "th-TH",
+}</code></pre>
+      </div>
+
+      <div class="note warn">
+        <span class="note-t">ถ้าไม่ตั้ง locale ใน Playwright</span>
+        <p style="margin-bottom:0">
+          <code>toLocaleDateString()</code> บนเครื่องคุณกับบน Cloud Build จะให้ผลคนละแบบ →
+          เทสผ่านที่บ้าน แดงใน CI → <strong>คุณจะโทษ CI ทั้งที่ผิดที่เทส</strong>
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">Random ที่ควบคุมได้</span></div>
+<pre><code>// ❌ ไม่ repeatable
+const id = crypto.randomUUID()
+
+// ✅ inject ได้
+export function createDeposit(dep: { newId: () =&gt; string }) { /* ... */ }
+// ในเทส: { newId: () =&gt; "fixed-id-001" }</code></pre>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">เหตุผลจริงที่ dependency injection มีอยู่</span>
+        <p style="margin-bottom:0">
+          ไม่ใช่เพื่อ “ความสวยงามของสถาปัตยกรรม” แต่เพื่อ <strong>testability</strong>
+          ซึ่งเป็น sub-characteristic ของ Maintainability ใน ISO 25010
+          (<a class="xref" href="l0-foundation.html#iso-25010">L0.11</a>)
+        </p>
+      </div>
+
+      <h3 id="self-validating">S — Self-validating</h3>
+
+      <p>
+        <strong>นิยามที่คมกว่าตำรา:</strong> เทสต้องตอบ pass/fail ได้เอง
+        <strong>และการ fail ต้องบอกได้ว่าอะไรพัง โดยไม่ต้องเปิดโค้ดอ่าน</strong>
+      </p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">ระดับความห่วยของ assertion — ไล่จากแย่สุด</span></div>
+<pre><code>// ระดับ 0 — ไม่ใช่เทส
+it("ควรทำงานได้", async () =&gt; {
+  await calcBonus(500)              // ไม่มี assert เลย ← ผ่านเสมอ
+})
+
+// ระดับ 1 — assert ที่ไม่มีความหมาย
+expect(result).toBeDefined()
+expect(result).toBeTruthy()
+expect(res.status).toBeLessThan(500)
+
+// ระดับ 2 — assert ถูกแต่บอกอะไรไม่ได้ตอนพัง
+expect(result).toEqual(expected)     // expected คำนวณด้วยสูตรเดียวกับโค้ด ← tautology
+
+// ระดับ 3 — ใช้ได้
+expect(calcBonus(500)).toBe(50)
+
+// ระดับ 4 — ดี: บอกเจตนา
+expect(calcBonus(500), "ฝาก 500 ต้องได้โบนัส 10% = 50").toBe(50)
+
+// ระดับ 5 — ดีที่สุด: assert invariant ด้วย
+expect(calcBonus(20_000)).toBe(1_000)                  // cap ทำงาน
+expect(calcBonus(20_000)).toBeLessThanOrEqual(CAP)     // metamorphic (L1.11)</code></pre>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">bash</span><span class="code-file">Gate ที่ตรวจได้จริง — assertion density</span></div>
+<pre><code># นับเทสที่ไม่มี expect เลย — ควรเป็น 0
+grep -rn "it(\|test(" --include="*.spec.ts" src/ | wc -l    # จำนวนเทส
+grep -rn "expect(" --include="*.spec.ts" src/ | wc -l        # จำนวน assert
+
+# เกณฑ์ใน S6: assert : test ต้อง ≥ 1.5
+# และห้ามมีไฟล์ spec ที่มี it() แต่ไม่มี expect()</code></pre>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">javascript</span><span class="code-file">eslint.config.js — ตรงกว่า grep</span></div>
+<pre><code>"vitest/expect-expect": "error",
+"vitest/no-conditional-expect": "error",     // expect ใน if = อาจไม่ถูกรัน
+"vitest/no-disabled-tests": "error",         // .skip ที่ลืมเอาออก
+"vitest/no-focused-tests": "error",          // .only ที่หลุดเข้า main ← อันตรายมาก
+"vitest/valid-expect": "error",
+"vitest/prefer-strict-equal": "warn",</code></pre>
+      </div>
+
+      <div class="note warn">
+        <span class="note-t"><code>.only</code> ที่หลุดเข้า main คือหายนะเงียบ</span>
+        <p style="margin-bottom:0">
+          suite 300 ตัวจะรันแค่ 1 ตัว แล้วรายงานว่า “ผ่านทั้งหมด” นาน 3 เดือนกว่าจะมีคนสังเกต —
+          <strong>ต้องเป็น error ระดับ CI ไม่ใช่ warning</strong>
+        </p>
+      </div>
+
+      <h3 id="timely">T — Timely <span class="st">⭐⭐</span></h3>
+
+      <p>
+        <strong>ประเด็นจริงไม่ใช่ TDD หรือไม่ TDD</strong> — ประเด็นคือ
+        <strong>เทสต้องเคยเห็นสภาพ “แดง” อย่างน้อยหนึ่งครั้ง</strong><br>
+        เทสที่เขียนหลังโค้ดเสร็จและไม่เคยแดงเลย = คุณไม่มีหลักฐานว่ามันจับอะไรได้
+      </p>
+
+      <div class="note imp">
+        <span class="note-t">ปัญหาของ agentic pipeline</span>
+        <p style="margin-bottom:0">
+          agent เขียนโค้ด + เขียนเทส ในรอบเดียวกัน → เทสถูกเขียนให้ผ่านโค้ดที่เพิ่งเขียน →
+          <strong>ไม่มีทางรู้ว่ามันจับ regression ได้จริงมั้ย</strong>
+        </p>
+      </div>
+
+      <h4 id="red-proof">Red-Proof — วิธีแก้ที่บังคับได้ในระดับ pipeline</h4>
+
+      <div class="diagram">S3  agent เขียน "เทสเท่านั้น" (ห้ามแตะ src/)
+    → รันเทส → ต้องได้ RED  ← ถ้าเขียว = เทสไม่ได้ตรวจอะไรใหม่ → REJECT
+    → บันทึก red-proof.json (ชื่อเทสที่แดง + error message)
+
+S4  agent เขียน implementation (ห้ามแตะ *.spec.ts)  ← file-scope guard
+    → รันเทส → ต้องได้ GREEN
+
+S6  gate ตรวจ:
+    - red-proof.json มีอยู่จริง และเทสที่ระบุไว้ตอนนี้เขียว
+    - git diff ของ S4 ไม่มีไฟล์ *.spec.ts  ← ข้อนี้สำคัญที่สุด</div>
+
+      <div class="note good">
+        <span class="note-t">ถ้าเพิ่มแค่อย่างเดียวจาก L2 ทั้งหมด ให้เพิ่มข้อนี้</span>
+        <p style="margin-bottom:0">
+          ข้อ “S4 ห้ามแตะไฟล์เทส” คือ <strong>maker/checker split ในระดับไฟล์</strong>
+          และมันแก้ failure mode อันดับ 1 ของ agent coding ได้เลย ซึ่งคือ
+          <strong>agent แก้เทสให้ผ่านแทนที่จะแก้โค้ด</strong><br>
+          โค้ดเต็มอยู่ที่ <a href="#agent-failure-mode">L2.14</a>
+        </p>
+      </div>
+
+      <h3 id="understandable">U — Understandable</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">กฎการตั้งชื่อเทส</span></div>
+<pre><code>// ❌ ชื่อที่บอกอะไรไม่ได้
+it("test deposit")
+it("should work")
+it("case 1")
+
+// ❌ ชื่อที่บรรยาย implementation
+it("calls parseAmount then validates then posts")
+
+// ✅ รูปแบบ: [สถานการณ์] → [ผลที่คาด]
+it("ฝากเท่ากับขั้นต่ำพอดี (100) → ฝากสำเร็จ")
+it("ฝากต่ำกว่าขั้นต่ำ 1 บาท (99) → ปฏิเสธพร้อม error MIN_AMOUNT")
+it("webhook เดิมมาซ้ำ 3 ครั้ง → balance เพิ่มครั้งเดียว")
+
+// ✅ หรือแบบ Given-When-Then
+it("เมื่อ user ยังไม่ verified และฝาก 500 → ไม่ได้โบนัส แต่ฝากสำเร็จ")</code></pre>
+      </div>
+
+      <p>
+        <strong>เกณฑ์ตัดสิน:</strong> อ่านชื่อเทสที่แดงใน CI แล้ว
+        <strong>เดาได้มั้ยว่าโค้ดพังตรงไหน โดยไม่ต้องเปิดไฟล์</strong> — ถ้าไม่ได้ = ละเมิด U
+      </p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">โครงสร้างในเทส: AAA แบบเคร่งครัด</span></div>
+<pre><code>it("ฝาก 20,000 → โบนัสถูก cap ที่ 1,000", () =&gt; {
+  // Arrange
+  const user = aVerifiedUser({ balance: 0, bonusUsedThisMonth: false })
+
+  // Act
+  const result = calcBonus(user, 20_000)
+
+  // Assert
+  expect(result.bonus).toBe(1_000)
+  expect(result.reason).toBe("CAPPED")
+})</code></pre>
+      </div>
+
+      <p><strong>กฎที่ควรบังคับใน S7 review</strong></p>
+      <ul>
+        <li>1 เทส = 1 Act (ถ้ามี act 2 ครั้ง ให้ถามว่าทำไม — ยกเว้น state transition sequence ที่ตั้งใจ)</li>
+        <li>Arrange ต้องอ่านแล้วเห็นชัดว่า precondition คืออะไร → ใช้ <strong>builder pattern</strong> ไม่ใช่ object literal ยาว 30 บรรทัด</li>
+        <li>ห้ามมี <code>if</code> / <code>for</code> ในเทส (ถ้าต้องวน = ใช้ <code>it.each</code>)</li>
+      </ul>
+
+      <h3 id="เกณฑ์ปฏิเสธ">F.I.R.S.T+U → เกณฑ์ปฏิเสธของ S6/S7 <span class="st">⭐</span></h3>
+
+      <p>ตารางนี้เอาไปใช้ได้เลย</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:5%">#</th><th style="width:32%">เกณฑ์</th><th style="width:22%">ตรวจโดย</th><th style="width:16%">ชนิด</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">1</td><td>มี <code>it()</code> ที่ไม่มี <code>expect()</code></td><td>ESLint <code>expect-expect</code></td><td>deterministic</td><td class="no"><strong>REJECT</strong></td></tr>
+            <tr><td class="num-col">2</td><td>มี <code>.only</code> / <code>.skip</code> โดยไม่มีเหตุผลใน comment</td><td>ESLint</td><td>deterministic</td><td class="no"><strong>REJECT</strong></td></tr>
+            <tr><td class="num-col">3</td><td>unit test ตัวใดเกิน 200ms</td><td>vitest JSON report</td><td>deterministic</td><td class="no"><strong>REJECT</strong></td></tr>
+            <tr><td class="num-col">4</td><td>suite ทั้งหมดเกิน budget (unit 30s)</td><td>timing</td><td>deterministic</td><td class="no">REJECT</td></tr>
+            <tr><td class="num-col">5</td><td><code>git diff</code> ของ S4 แตะ <code>*.spec.ts</code></td><td>git</td><td>deterministic</td><td class="no"><strong>REJECT</strong> ⭐</td></tr>
+            <tr><td class="num-col">6</td><td>ไม่มี red-proof สำหรับเทสใหม่</td><td>pipeline state</td><td>deterministic</td><td class="no"><strong>REJECT</strong> ⭐</td></tr>
+            <tr><td class="num-col">7</td><td>assert ratio &lt; 1.5</td><td>grep/AST</td><td>deterministic</td><td class="mid">WARN → S7</td></tr>
+            <tr><td class="num-col">8</td><td>มี <code>waitForTimeout</code> / <code>sleep</code> ใน E2E</td><td>grep</td><td>deterministic</td><td class="no"><strong>REJECT</strong></td></tr>
+            <tr><td class="num-col">9</td><td>มี selector ที่ไม่ใช่ <code>data-test</code> ใน E2E</td><td>grep</td><td>deterministic</td><td class="no">REJECT</td></tr>
+            <tr><td class="num-col">10</td><td>เทสรัน shuffle 3 seed แล้วผลต่างกัน</td><td>nightly</td><td>deterministic</td><td class="no">REJECT + quarantine</td></tr>
+            <tr><td class="num-col">11</td><td>ชื่อเทสไม่บอกสถานการณ์+ผลลัพธ์</td><td>Codex S7</td><td class="mid">judgment</td><td class="mid">REQUEST CHANGES</td></tr>
+            <tr><td class="num-col">12</td><td>assert เป็น <code>toBeDefined</code>/<code>toBeTruthy</code> ล้วน</td><td>Codex S7</td><td class="mid">judgment</td><td class="mid">REQUEST CHANGES</td></tr>
+            <tr><td class="num-col">13</td><td>เทสซ้ำซ้อนกับเทสที่มีอยู่ (U = Unique)</td><td>Codex S7</td><td class="mid">judgment</td><td class="mid">COMMENT</td></tr>
+            <tr><td class="num-col">14</td><td>mock สิ่งที่กำลังเทสอยู่</td><td>Codex S7</td><td class="mid">judgment</td><td class="mid">REQUEST CHANGES</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ลำดับสำคัญ</span>
+        <p style="margin-bottom:0">
+          ข้อ 1-10 เป็น deterministic → ต้องรัน<strong>ก่อน</strong> Codex เสมอ
+          (หลักที่ล็อกไว้: “deterministic gates before LLM reviewers”) —
+          เพราะมัน<strong>ถูกกว่า 1000 เท่าและไม่มีทางตัดสินผิด</strong>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="unit-craft"><span class="num">L2.3</span>Unit Testing Craft (Vitest)</h2>
+
+      <h3 id="test-doubles">Test Doubles — taxonomy ที่ต้องแยกให้ออก (Meszaros)</h3>
+
+      <p>คนใช้คำว่า “mock” คลุมทั้งหมด ทำให้คุยกันไม่รู้เรื่อง</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:12%">ชนิด</th><th style="width:28%">ทำอะไร</th><th style="width:24%">ใช้เมื่อ</th><th>ตัวอย่าง</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Dummy</strong></td><td>ส่งไปเฉยๆ ไม่ถูกใช้</td><td>เติมพารามิเตอร์</td><td><code>null as User</code></td></tr>
+            <tr><td><strong>Stub</strong></td><td>คืนค่าที่กำหนดไว้</td><td>ควบคุม input ทางอ้อม</td><td><code>vi.fn(() =&gt; ({ Result: 1 }))</code></td></tr>
+            <tr><td><strong>Spy</strong></td><td>บันทึกว่าถูกเรียกยังไง</td><td>ตรวจ side effect</td><td><code>vi.spyOn(api, "post")</code></td></tr>
+            <tr><td><strong>Mock</strong></td><td>stub + ตั้งความคาดหวังล่วงหน้า</td><td>verify interaction</td><td><code>expect(spy).toHaveBeenCalledWith(...)</code></td></tr>
+            <tr><td><strong>Fake</strong></td><td>implementation จริงแต่ง่ายกว่า</td><td>แทน DB/storage</td><td>in-memory repository</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="stub-vs-verify">กฎเลือก: Stub ผลลัพธ์ ไม่ใช่ verify การเรียก <span class="st">⭐</span></h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span></div>
+<pre><code>// ❌ เทสที่ผูกกับ implementation — เปลี่ยนโค้ดนิดเดียวก็พัง
+expect(apiSpy).toHaveBeenCalledWith("/deposit",
+  { amount: 500, DoAdmin: 0, DoIp: "1.2.3.4" })
+
+// ✅ เทสที่ผูกกับ behavior — refactor ได้อิสระ
+const result = await store.deposit(500)
+expect(result.Result).toBe(1)
+expect(store.balance).toBe(500)</code></pre>
+      </div>
+
+      <p><strong>ข้อยกเว้นที่ควร verify การเรียกจริงๆ:</strong> เมื่อ<strong>การเรียกนั้นคือ behavior ที่ผู้ใช้แคร์</strong></p>
+      <ul>
+        <li>ส่ง audit log พร้อม <code>DoAdmin</code>/<code>DoIp</code> ← <strong>อันนี้ต้อง verify</strong> เพราะเป็น compliance requirement</li>
+        <li>ไม่ยิง API ซ้ำเมื่อกดปุ่มรัว → <code>expect(spy).toHaveBeenCalledTimes(1)</code></li>
+        <li>ไม่ส่งข้อมูลส่วนบุคคลไปที่ analytics</li>
+      </ul>
+
+      <h3 id="mock-boundary">Mock อะไร ไม่ mock อะไร</h3>
+
+      <div class="diagram">        ┌──────────────────────────────────────┐
+        │  โค้ดที่กำลังเทส (System Under Test) │  ← ห้าม mock เด็ดขาด
+        └──────────────────────────────────────┘
+                        │
+        ┌───────────────┴───────────────┐
+        ▼                               ▼
+  โค้ดของเราเอง                    ของนอก
+  (util, pure fn)                (network, time, random, storage)
+  → ไม่ต้อง mock                  → mock/fake
+  ใช้ของจริง เร็วอยู่แล้ว          ที่ boundary ต่ำสุดเท่าที่ทำได้</div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">“mock ที่ boundary ต่ำสุด” หมายความว่าอะไร</span></div>
+<pre><code>// ❌ mock สูงเกินไป — เทส store แต่ mock function ของ store เอง
+vi.mock("~/stores/deposit", () =&gt; ({
+  useDepositStore: () =&gt; ({ deposit: vi.fn() })
+}))
+// → เทสนี้เทสอะไร? ไม่เทสอะไรเลย
+
+// ⚠️ mock กลางๆ — mock API client layer
+vi.mock("~/utils/api", () =&gt; ({ post: vi.fn() }))
+// → ใช้ได้ แต่ไม่ได้เทส serialization / header / error mapping
+
+// ✅ mock ต่ำสุด — intercept ที่ network layer ด้วย MSW
+server.use(http.post("/api/deposit", () =&gt;
+  HttpResponse.json({ Result: 1, Data: { txnId: "TXN-001" } })))
+// → เทสผ่าน api client จริง, error handling จริง, res?.Result pattern จริง</code></pre>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">แนะนำ MSW เป็น default สำหรับสแตกนี้</span>
+        <ol style="margin-bottom:0">
+          <li>เทสผ่าน <code>res?.Result</code> pattern จริง — จับบั๊กตอน backend คืน <code>Result: 0</code> ได้</li>
+          <li>handler ชุดเดียวใช้ได้ทั้ง Vitest, Playwright (browser mode), และ dev server</li>
+          <li><strong>สร้าง handler จาก Bruno collection ได้</strong> → contract กับ mock เป็นแหล่งเดียวกัน ← คุ้มที่สุด</li>
+        </ol>
+      </div>
+
+      <h3 id="it-each">it.each — ท่าที่ควรใช้กับ L1 techniques</h3>
+
+      <p>
+        L1 บอกว่าช่องยอดเงินมี 12 partitions — เขียน 12 <code>it()</code> คือ noise
+        ใช้ <code>it.each</code> แล้วตารางในเทส <strong>จะกลายเป็นเอกสาร EP โดยตรง</strong>
+      </p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">parseAmount.spec.ts — ตาราง EP กลายเป็นโค้ด</span></div>
+<pre><code>describe("parseAmount — Equivalence Partitioning", () =&gt; {
+  it.each([
+    // [input,          expected,  partition]
+    ["500",             500,       "P-B1 จำนวนเต็ม valid"],
+    ["500.25",          500.25,    "P-B2 ทศนิยม 2 ตำแหน่ง"],
+    ["500.255",         null,      "P-B3 ทศนิยมเกิน 2"],
+    ["abc",             null,      "P-B4 ไม่ใช่ตัวเลข"],
+    ["",                null,      "P-B5 ว่าง"],
+    ["-500",            null,      "P-B6 ติดลบ"],
+    ["0",               null,      "P-B7 ศูนย์"],
+    ["5,000",           null,      "P-B8 มี separator"],
+    [" 500 ",           500,       "P-B9 มีช่องว่าง (trim)"],
+    ["๕๐๐",             null,      "P-B10 เลขไทย"],
+    ["5e3",             null,      "P-B11 scientific notation"],
+    ["9007199254740993",null,      "P-B12 เกิน MAX_SAFE_INTEGER"],
+  ])("%s → %s  [%s]", (input, expected) =&gt; {
+    expect(parseAmount(input)).toBe(expected)
+  })
+})
+
+describe("validateAmount — Boundary Value Analysis (3-value)", () =&gt; {
+  it.each([
+    [99,     false, "ต่ำกว่าขอบล่าง 1"],
+    [100,    true,  "ขอบล่างพอดี"],
+    [101,    true,  "เหนือขอบล่าง 1"],
+    [49_999, true,  "ต่ำกว่าขอบบน 1"],
+    [50_000, true,  "ขอบบนพอดี"],
+    [50_001, false, "เกินขอบบน 1"],
+  ])("%s → %s  [%s]", (amount, ok) =&gt; {
+    expect(validateAmount(amount).ok).toBe(ok)
+  })
+})</code></pre>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">จุดที่ L1 กับ L2 บรรจบกัน</span>
+        <p style="margin-bottom:0">
+          ตาราง EP/BVA ที่ออกแบบใน analysis กลายเป็นโค้ดโดยตรง <strong>ไม่มีข้อมูลหายระหว่างทาง</strong> —
+          และเมื่อ Codex อ่านที่ S7 มันเห็นชื่อ partition → รู้ได้ทันทีว่ามี partition ไหนหายไป
+        </p>
+      </div>
+
+      <h3 id="builder">Builder pattern สำหรับ test data</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">test/builders/user.ts — ปรับให้ตรง type จริง</span></div>
+<pre><code>export function aUser(overrides: Partial&lt;User&gt; = {}): User {
+  return {
+    id: "u-001",
+    isVerified: true,
+    balance: 0,
+    bonusUsedThisMonth: false,
+    status: "active",
+    ...overrides,
+  }
+}
+
+export const aVerifiedUser   = (o = {}) =&gt; aUser({ isVerified: true, ...o })
+export const anUnverifiedUser = (o = {}) =&gt; aUser({ isVerified: false, ...o })
+export const aBannedUser      = (o = {}) =&gt; aUser({ status: "banned", ...o })</code></pre>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">ทำไมสำคัญ</span>
+        <p style="margin-bottom:0">
+          เมื่อ <code>User</code> เพิ่ม field ใหม่ คุณแก้ที่เดียว ไม่ต้องไล่แก้ 200 เทส —
+          และเทสแต่ละตัว <strong>แสดงเฉพาะ field ที่มันแคร์</strong> ซึ่งคือ U (Understandable)<br>
+          <code>const user = aVerifiedUser({ bonusUsedThisMonth: true })</code> — อ่านแล้วรู้ทันทีว่าเทสนี้สนใจอะไร
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="integration"><span class="num">L2.4</span>Component / Integration Testing</h2>
+
+      <p>
+        ชั้นที่ควรหนาที่สุด และเป็นชั้นที่คนไทยเขียนน้อยที่สุด —
+        เพราะ unit test เขียนง่าย E2E เห็นภาพ ชั้นกลางไม่ชัดว่าจะเทสอะไร
+      </p>
+
+      <p>
+        <strong>ความจริง:</strong> บั๊ก frontend ส่วนใหญ่อยู่ตรงนี้ —
+        state ไม่อัปเดต, error ไม่แสดง, loading ค้าง, ปุ่มไม่ disable ตอนกำลังส่ง
+      </p>
+
+      <div class="note take">
+        <span class="note-t">กฎทองข้อเดียว</span>
+        <p style="margin-bottom:0;font-size:17px">
+          <strong>เทสเหมือนที่ผู้ใช้ใช้ ไม่ใช่เหมือนที่โค้ดทำงาน</strong>
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span></div>
+<pre><code>// ❌ เทส implementation
+expect(wrapper.vm.isLoading).toBe(true)
+expect(wrapper.vm.internalState.step).toBe(2)
+await wrapper.vm.handleSubmit()
+
+// ✅ เทส behavior ที่ผู้ใช้เห็น
+await user.click(screen.getByTestId("submit-deposit"))
+expect(screen.getByTestId("submit-deposit")).toBeDisabled()
+expect(screen.getByTestId("loading-spinner")).toBeVisible()</code></pre>
+      </div>
+
+      <p>
+        <strong>เกณฑ์ตัดสิน:</strong> ถ้า refactor ภายใน component (เปลี่ยน ref เป็น computed, แยก composable)
+        แล้วเทสพัง → <strong>เทสนั้นผิด ไม่ใช่โค้ดผิด</strong>
+      </p>
+
+      <h3 id="form-checklist">Checklist 12 ข้อต่อ 1 ฟอร์ม</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:5%">#</th><th style="width:52%">เทสอะไร</th><th>ทำไม</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">1</td><td>render ครั้งแรก → ปุ่ม submit disabled</td><td>ป้องกันส่งฟอร์มว่าง</td></tr>
+            <tr><td class="num-col">2</td><td>กรอกครบ → ปุ่มเปิด</td><td></td></tr>
+            <tr><td class="num-col">3</td><td>กรอกผิด (invalid partition แต่ละตัว<strong>แยกกัน</strong>) → error ข้อความถูก</td><td>1 เทส 1 invalid (<a class="xref" href="l1-design.html#fault-masking">L1.1</a>)</td></tr>
+            <tr><td class="num-col">4</td><td>กด submit → ปุ่ม disabled ระหว่างรอ</td><td>ป้องกัน double submit</td></tr>
+            <tr><td class="num-col">5</td><td class="no"><strong>กด submit รัว 3 ครั้ง → API ถูกเรียกครั้งเดียว</strong></td><td>⭐ บั๊กเงินซ้ำ</td></tr>
+            <tr><td class="num-col">6</td><td>API คืน <code>Result: 0</code> → แสดง error, ไม่ล้างฟอร์ม</td><td><code>res?.Result</code> pattern</td></tr>
+            <tr><td class="num-col">7</td><td>API timeout / network error → error ที่ต่างจาก validation error</td><td></td></tr>
+            <tr><td class="num-col">8</td><td>API 401 → redirect ไป login พร้อมเก็บ intent</td><td></td></tr>
+            <tr><td class="num-col">9</td><td>สำเร็จ → toast + reset + อัปเดต store</td><td></td></tr>
+            <tr><td class="num-col">10</td><td class="no"><strong>unmount ระหว่างรอ response → ไม่มี state update warning</strong></td><td>⭐ memory leak</td></tr>
+            <tr><td class="num-col">11</td><td>กด Enter ในช่อง input → submit</td><td>a11y</td></tr>
+            <tr><td class="num-col">12</td><td>ข้อความไทยยาวไม่มีเว้นวรรค → ไม่ทะลุ container</td><td>fault attack (<a class="xref" href="l1-design.html#fa-thai">L1.8</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ข้อ 5 กับ 10 คือข้อที่แทบไม่มีใครเขียน</span>
+        <p style="margin-bottom:0">และเป็นสองข้อที่ทำให้เงินหายจริง</p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">ตัวอย่างข้อ 5 — double submit</span></div>
+<pre><code>it("กด submit รัว 3 ครั้ง → ยิง API ครั้งเดียว", async () =&gt; {
+  let callCount = 0
+  server.use(http.post("/api/deposit", async () =&gt; {
+    callCount++
+    await delay(200)
+    return HttpResponse.json({ Result: 1 })
+  }))
+
+  render(DepositForm)
+  await user.type(screen.getByTestId("amount-input"), "500")
+
+  const btn = screen.getByTestId("submit-deposit")
+  // ยิงพร้อมกัน ไม่ await ทีละตัว — จำลอง double-click จริง
+  await Promise.all([user.click(btn), user.click(btn), user.click(btn)])
+
+  expect(callCount).toBe(1)
+})</code></pre>
+      </div>
+
+      <div class="note warn">
+        <span class="note-t">Naive UI — ข้อควรระวัง</span>
+        <p>
+          component library ที่ render ผ่าน teleport (modal, drawer, dropdown, message)
+          <strong>จะไม่อยู่ใน DOM tree ของ wrapper</strong>
+        </p>
+        <div class="code" style="margin:10px 0">
+          <div class="code-bar"><span class="code-lang">typescript</span></div>
+<pre><code>// ✅ ต้องหาใน document ไม่ใช่ใน container
+const modal = document.querySelector("[data-test='confirm-modal']")
+// หรือตั้ง global stub / ใช้ n-config-provider ใน wrapper</code></pre>
+        </div>
+        <p style="margin-bottom:0">
+          <strong>ผลกระทบ:</strong> เทสที่เขียนโดยไม่รู้เรื่องนี้จะได้ <code>null</code>
+          แล้ว agent จะ “แก้” ด้วยการเปลี่ยน assert เป็น <code>toBeDefined()</code> หรือลบ assert ทิ้ง —
+          ซึ่งคือ failure mode ที่พูดใน <a href="#agent-failure-mode">L2.14</a>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="contract"><span class="num">L2.5</span>Contract Testing — และ Bruno ทำอะไรไม่ได้</h2>
+
+      <h3 id="contract-3-ชนิด">3 อย่างที่คนเรียกว่า “contract test” แต่ต่างกันสิ้นเชิง</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:20%"></th><th>Schema validation</th><th>API test</th><th>Consumer-Driven Contract</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">ตรวจอะไร</td><td>response ตรง schema มั้ย</td><td>endpoint ทำงานถูกมั้ย</td><td>provider ทำให้ consumer พังมั้ย</td></tr>
+            <tr><td class="num-col">ต้องมี provider จริง</td><td>ใช่</td><td>ใช่</td><td><strong>ไม่</strong> (verify แยกกัน)</td></tr>
+            <tr><td class="num-col">จับ breaking change</td><td>เฉพาะที่ schema ครอบคลุม</td><td>เฉพาะที่เทสครอบคลุม</td><td><strong>ครบทุก field ที่ consumer ใช้จริง</strong></td></tr>
+            <tr><td class="num-col">เครื่องมือ</td><td>Zod, OpenAPI validator</td><td><strong>Bruno</strong>, Postman</td><td>Pact, Spring Cloud Contract</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="bruno-gap">Bruno ในสถาปัตยกรรมนี้ — ตรงไหนแข็ง ตรงไหนขาด</h3>
+
+      <p><strong>แข็ง:</strong> spec-as-code ใน git (diff/review ได้) · read-only เป็น source of truth (ไม่มีใครแอบแก้ให้ผ่าน) · รันใน CI ได้</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:28%">ช่องโหว่</th><th style="width:38%">อธิบาย</th><th>ผลที่เกิด</th></tr></thead>
+          <tbody>
+            <tr><td class="no"><strong>ตรวจ response ที่ระบุไว้ ไม่ได้ตรวจ field ที่ frontend ใช้จริง</strong></td><td>ถ้า backend ลบ field <code>bonusAmount</code> แต่ Bruno test ไม่ได้ assert field นั้น → เขียวผ่าน</td><td class="no"><strong>หน้าเว็บพัง production ทั้งที่ contract test เขียว</strong> ⭐</td></tr>
+            <tr><td>ไม่มี <strong>provider verification</strong></td><td>backend เปลี่ยนโดยไม่รู้ว่าใครใช้อยู่</td><td>breaking change หลุด</td></tr>
+            <tr><td>ไม่ครอบ <strong>side effect</strong></td><td>ยิง POST เดิม 2 ครั้ง → contract บอกแค่ response shape</td><td>idempotency bug หลุด (<a class="xref" href="l1-design.html#idempotency">L1.4</a>)</td></tr>
+            <tr><td>ไม่ครอบ <strong>error shape</strong> ครบ</td><td>มัก assert แค่ 200</td><td>error handling ของ frontend ไม่เคยถูกเทส</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="contract-fix">วิธีอุดช่องโหว่ที่ 1 — สำคัญที่สุด <span class="st">⭐</span></h3>
+
+      <p><strong>สร้าง type จาก Bruno collection แล้วให้ TypeScript เป็นคนจับ</strong></p>
+
+      <div class="diagram">bruno collection (source of truth)
+      │
+      ├─→ generate  types/api.d.ts     ← ใช้ใน frontend
+      └─→ generate  msw/handlers.ts    ← ใช้ใน integration test</div>
+
+      <div class="note good">
+        <span class="note-t">ผลที่ได้</span>
+        <ul style="margin-bottom:0">
+          <li>ถ้า backend ลบ field → regenerate → <code>vue-tsc</code> แดงทันทีที่ทุกจุดที่ใช้ field นั้น</li>
+          <li><strong>static analysis กลายเป็น contract gate ที่แข็งที่สุด โดยไม่ต้องรันอะไรเลย</strong></li>
+          <li>MSW handler ไม่มีทางเพี้ยนจาก contract</li>
+        </ul>
+      </div>
+
+      <p>
+        นี่คือการเปลี่ยน contract check จาก <em>“dynamic ที่ครอบคลุมไม่ครบ”</em>
+        เป็น <em>“static ที่ครอบคลุม 100%”</em> — และเข้ากับหลัก fail-closed
+      </p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">อุดช่องโหว่ที่ 3 (idempotency) — Bruno ทำไม่ได้ ต้องเขียนแยก</span></div>
+<pre><code>it("POST /deposit/callback ด้วย idempotency key เดิม 3 ครั้ง → ledger 1 แถว", async () =&gt; {
+  const payload = { txnId: "TXN-001", amount: 500, status: "success" }
+
+  await Promise.all([
+    postCallback(payload),
+    postCallback(payload),
+    postCallback(payload),
+  ])
+
+  const ledger = await getLedger("TXN-001")
+  expect(ledger).toHaveLength(1)
+  expect(await getBalance(userId)).toBe(500)
+  // metamorphic invariant จาก L1.11
+  expect(await getLedgerSum(userId)).toBe(await getBalance(userId))
+})</code></pre>
+      </div>
+
+      <div class="note warn">
+        <span class="note-t">ต้องยิง <code>Promise.all</code> ไม่ใช่ยิงทีละตัว</span>
+        <p style="margin-bottom:0">
+          ยิงทีละตัวจับได้แค่ replay <strong>ไม่จับ race condition</strong> —
+          harness ที่ถูกต้อง (มี barrier + pre-warm) อยู่ที่ <a class="xref" href="l3-nfr.html#security">L3.4</a>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="e2e"><span class="num">L2.6</span>E2E ด้วย Playwright</h2>
+
+      <div class="note take">
+        <span class="note-t">หลักการเดียวที่ต้องยึด</span>
+        <p style="margin-bottom:0">
+          <strong>E2E แต่ละตัวมีต้นทุน 30-100 เท่าของ unit test — ทุกตัวต้องพิสูจน์คุณค่าของตัวเอง</strong><br>
+          เกณฑ์: E2E ควรมีเฉพาะเมื่อ <em>“ถ้า flow นี้พัง ธุรกิจหยุด”</em><br>
+          สำหรับ Pedpro = สมัคร → login → ฝาก → เข้าเกม → ถอน + admin approve ถอน ประมาณ <strong>6-10 flow</strong> ไม่ใช่ 80
+        </p>
+      </div>
+
+      <h3 id="pw-config">Config ที่ต้องตั้ง — เฉพาะสำหรับสแตกนี้</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">playwright.config.ts</span></div>
+<pre><code>export default defineConfig({
+  testDir: "./e2e",
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,          // .only หลุดเข้า CI = fail ⭐
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 4 : undefined,
+  timeout: 60_000,
+  expect: { timeout: 10_000 },
+
+  use: {
+    testIdAttribute: "data-test",        // ⭐ ใช้ data-test ไม่ใช่ data-testid
+    baseURL: process.env.BASE_URL,
+    locale: "th-TH",
+    timezoneId: "Asia/Bangkok",
+    trace: "retain-on-failure",          // trace.zip เมื่อพัง
+    video: "retain-on-failure",
+    screenshot: "only-on-failure",
+    actionTimeout: 15_000,
+    reducedMotion: "reduce",             // ปิด animation ของ Naive UI
+  },
+
+  reporter: [
+    ["list"],
+    ["html", { open: "never" }],
+    ["json",  { outputFile: "reports/e2e.json" }],   // ให้ S6 อ่าน
+    ["junit", { outputFile: "reports/junit.xml" }],
+  ],
+
+  projects: [
+    { name: "setup", testMatch: /global\.setup\.ts/ },
+    { name: "chromium-desktop", use: { ...devices["Desktop Chrome"] }, dependencies: ["setup"] },
+    { name: "mobile-safari",    use: { ...devices["iPhone 13"] },      dependencies: ["setup"] },
+    // LINE in-app browser — จำลองด้วย UA (ไม่สมบูรณ์แต่ดีกว่าไม่มี)
+    { name: "line-inapp", use: {
+        ...devices["iPhone 13"],
+        userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) " +
+                   "AppleWebKit/605.1.15 Line/14.0.0",
+      }, dependencies: ["setup"] },
+  ],
+})</code></pre>
+      </div>
+
+      <div class="note warn">
+        <span class="note-t"><code>testIdAttribute: "data-test"</code></span>
+        <p style="margin-bottom:0">
+          ถ้าไม่ตั้ง <code>getByTestId()</code> จะหา <code>data-testid</code> แล้วไม่เจอ
+          แล้วคนจะหันไปใช้ <code>locator("[data-test=...]")</code> แบบดิบซึ่งเสีย auto-wait บางส่วนไป —
+          <strong>จุดนี้เล็กแต่กระทบทั้ง suite</strong>
+        </p>
+      </div>
+
+      <h3 id="selector">Selector strategy — ลำดับความชอบ</h3>
+
+      <div class="diagram">1. getByTestId("submit-deposit")      ← default ✓ เสถียรที่สุด
+2. getByRole("button", { name })      ← ดีต่อ a11y แต่ผูกกับข้อความไทย
+3. getByLabel("จำนวนเงิน")             ← ดีสำหรับฟอร์ม
+4. getByText("ฝากเงิน")                ← เปราะ (เปลี่ยนคำ = พัง, i18n = พัง)
+5. CSS class / nth-child               ← ห้าม
+6. XPath                               ← ห้ามเด็ดขาด</div>
+
+      <div class="note good">
+        <span class="note-t">ข้อยกเว้นที่ควรใช้ <code>getByRole</code></span>
+        <p style="margin-bottom:0">
+          เมื่อคุณ<em>ตั้งใจ</em>เทส accessibility — เช่นเทสว่าปุ่มเป็น <code>&lt;button&gt;</code> จริงไม่ใช่
+          <code>&lt;div onclick&gt;</code> การใช้ <code>getByRole("button")</code> แล้วมันหาไม่เจอ
+          <strong>คือการจับ a11y bug</strong> ซึ่ง <code>data-test</code> จับไม่ได้<br>
+          <strong>แนะนำ:</strong> ใช้ <code>data-test</code> เป็นหลัก + มี a11y test แยก 1-2 ตัวต่อหน้าที่ใช้ <code>getByRole</code>
+        </p>
+      </div>
+
+      <h3 id="waiting">Waiting — กฎเหล็ก</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span></div>
+<pre><code>// ❌ ห้ามเด็ดขาด — flaky บ่อยที่สุดในโลก
+await page.waitForTimeout(3000)
+
+// ❌ ไม่ควร — assert ที่ไม่ retry
+expect(await page.getByTestId("balance").textContent()).toBe("500")
+
+// ✅ web-first assertion — retry อัตโนมัติจนกว่าจะจริงหรือ timeout
+await expect(page.getByTestId("balance")).toHaveText("฿500.00")
+
+// ✅ รอ network ที่เจาะจง
+const resp = page.waitForResponse(r =&gt;
+  r.url().includes("/api/deposit") &amp;&amp; r.status() === 200)
+await page.getByTestId("submit-deposit").click()
+await resp
+
+// ✅ รอสถานะที่มีความหมาย ไม่ใช่รอเวลา
+await expect(page.getByTestId("loading")).toBeHidden()</code></pre>
+      </div>
+
+      <p>
+        <strong>ให้ <code>waitForTimeout</code> เป็น ESLint error ระดับ CI</strong> —
+        นี่คือ gate ข้อ 8 ในตาราง <a href="#เกณฑ์ปฏิเสธ">L2.2</a> และมันตัด flaky ได้มากที่สุดต่อแรงที่ลง
+      </p>
+
+      <h3 id="auth">Auth — อย่า login ผ่าน UI ทุกเทส</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">e2e/global.setup.ts</span></div>
+<pre><code>setup("authenticate", async ({ page }) =&gt; {
+  await page.goto("/login")
+  await page.getByTestId("phone").fill(process.env.E2E_PHONE!)
+  await page.getByTestId("otp").fill("000000")     // sandbox OTP
+  await page.getByTestId("login-submit").click()
+  await expect(page.getByTestId("user-menu")).toBeVisible()
+  await page.context().storageState({ path: "e2e/.auth/user.json" })
+})</code></pre>
+      </div>
+
+      <p>
+        <strong>ประหยัด 15-20 วินาทีต่อเทส × 10 เทส = 3 นาที ต่อ run</strong><br>
+        <strong>แต่ต้องมี 1 เทสที่ login ผ่าน UI จริง</strong> ไม่งั้น login flow ไม่เคยถูกเทส —
+        นี่คือ trade-off ที่ต้องตั้งใจ ไม่ใช่ลืม
+      </p>
+
+      <h3 id="fixture-pattern">Fixture pattern — แทน Page Object Model</h3>
+
+      <p>POM เป็นของยุค Selenium มันสร้าง abstraction ที่ซ่อนสิ่งที่เทสทำจริง สำหรับ Playwright ใช้ fixture ตรงกว่า</p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">e2e/fixtures.ts</span></div>
+<pre><code>export const test = base.extend&lt;{ depositPage: DepositPage; freshUser: User }&gt;({
+  freshUser: async ({ request }, use) =&gt; {
+    const runId = `e2e-${process.env.TEST_WORKER_INDEX}-${Date.now()}`
+    const user = await createUserViaApi(request, { username: runId, verified: true })
+    await use(user)
+    // ไม่ต้อง cleanup — ใช้ namespace แยก (ดู L2.8)
+  },
+  depositPage: async ({ page }, use) =&gt; {
+    await use(new DepositPage(page))
+  },
+})</code></pre>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">e2e/deposit.spec.ts</span></div>
+<pre><code>test("ฝาก 100 บาทพอดี (ขอบล่าง) → สำเร็จ + ledger ตรง", async ({ page, freshUser, depositPage }) =&gt; {
+  await depositPage.goto()
+  await depositPage.deposit(100)
+  await expect(page.getByTestId("balance")).toHaveText("฿100.00")
+
+  // metamorphic invariant — assert นี้ควรอยู่ทุกเทสการเงิน
+  const { balance, ledgerSum } = await fetchAccounting(freshUser.id)
+  expect(ledgerSum).toBe(balance)
+})</code></pre>
+      </div>
+
+      <h3 id="e2e-ห้าม">E2E ที่คุณ<em>ไม่ควร</em>เขียน</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:48%">อย่าเขียน E2E สำหรับ</th><th>เขียนที่ชั้นไหนแทน</th></tr></thead>
+          <tbody>
+            <tr><td>validation ทุก partition ของฟอร์ม</td><td>unit (<code>parseAmount</code>) + integration (แสดง error)</td></tr>
+            <tr><td>ทุก combination ของ pairwise 9 แถว</td><td>เอา 2-3 แถวที่ risk สูงสุด ที่เหลือลง integration</td></tr>
+            <tr><td>ทุก error message</td><td>integration</td></tr>
+            <tr><td>การคำนวณโบนัสทุกเคส</td><td>unit</td></tr>
+            <tr><td>responsive ทุก breakpoint</td><td>visual regression (<a href="#visual-a11y">L2.10</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="flaky"><span class="num">L2.7</span>Flaky Test — ศัตรูอันดับหนึ่ง <span class="st">⭐</span></h2>
+
+      <div class="diagram">เทสพัง    → คนแก้โค้ด → ดี
+เทส flaky → คนกด re-run → เขียว → merge
+          → คนเรียนรู้ว่า "แดง = กด re-run"
+          → วันที่เทสจับบั๊กจริงได้ คนก็กด re-run เหมือนเดิม → บั๊กหลุด</div>
+
+      <p>
+        <strong>flaky test ทำลายคุณค่าของ suite ทั้งชุด ไม่ใช่แค่ตัวมันเอง</strong> —
+        เทส flaky 1 ตัวในสิบ ทำให้อีก 9 ตัวไร้ความหมาย เพราะไม่มีใครอ่านผลอย่างจริงจังอีกต่อไป
+      </p>
+
+      <div class="note fix">
+        <span class="note-t">แก้ไขจากการทบทวน — คณิตศาสตร์ flaky ที่ถูกต้อง</span>
+        <p>
+          ฉบับแรกเขียนว่า “เทส flaky 5% ใน suite 200 ตัว → build เขียวสะอาด 0.003%”
+          ซึ่ง<strong>ปนสองความหมายเข้าด้วยกัน</strong> — “5% ของเทสเป็น flaky” (สัดส่วน)
+          กับ “เทสแต่ละตัวมีโอกาสพังปลอม 5%” (ความน่าจะเป็นต่อตัว)
+          สองอย่างนี้ให้ผลต่างกันมหาศาล ของที่ถูกคือแบบที่สอง
+        </p>
+        <div class="tbl">
+          <table>
+            <thead><tr><th style="width:28%">p (โอกาสพังปลอมต่อเทส)</th><th>n=50</th><th>n=200</th><th>n=500</th></tr></thead>
+            <tbody>
+              <tr><td class="num-col">0.1%</td><td class="yes">95%</td><td class="yes">82%</td><td class="mid">61%</td></tr>
+              <tr><td class="num-col">0.5%</td><td class="mid">78%</td><td class="no"><strong>37%</strong></td><td class="no">8%</td></tr>
+              <tr><td class="num-col">1%</td><td class="mid">61%</td><td class="no"><strong>13%</strong></td><td class="no">0.7%</td></tr>
+              <tr><td class="num-col">5%</td><td class="no">8%</td><td class="no"><strong>0.003%</strong></td><td class="no">~0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          <strong>อ่านตารางนี้ให้เป็น:</strong> ที่ n=200 แค่ p=0.5% (ครึ่งเปอร์เซ็นต์)
+          ก็ทำให้ <strong>build 63% แดงโดยไม่มีบั๊ก</strong> —
+          นี่คือเหตุผลเชิงตัวเลขว่าทำไมเป้า flake rate ต้อง <strong>&lt; 0.1% ต่อเทส</strong> ไม่ใช่ “1% ก็โอเค”
+        </p>
+        <p style="margin-bottom:0">
+          <strong>และนี่คือส่วนที่ควรเขียนตั้งแต่แรก:</strong> ถ้า retry 2 ครั้ง (รวม 3 attempt)
+          และความล้มเหลว<strong>เป็นอิสระต่อกัน</strong> → p ที่มีผลจริง = p³<br>
+          p=5% → 0.0125% → P(เขียว) ที่ n=200 = <strong>97.5%</strong><br>
+          <strong>นี่คือหลักฐานทางคณิตศาสตร์ว่า retry ทำให้ build เขียวสวยงามโดยที่ปัญหาไม่ได้ลดลงเลยแม้แต่นิดเดียว</strong> —
+          จาก 0.003% เป็น 97.5% ด้วยการไม่แก้อะไรสักอย่าง<br>
+          <strong>ดังนั้น flaky metric ต้องวัดที่ attempt แรกเสมอ ไม่ใช่ผลสุดท้าย</strong>
+        </p>
+      </div>
+
+      <div class="note fix">
+        <span class="note-t">แก้ไขที่สอง — สูตร p³ ทำให้เข้าใจผิดในทางที่อันตราย</span>
+        <p>
+          ในโลกจริง flaky ส่วนใหญ่ <strong>correlated</strong> — runner ที่ CPU แน่น, DB ที่กำลังช้า,
+          deploy ที่ยังไม่พร้อม ถ้าเหตุยังอยู่ตอน retry มันก็พังซ้ำ
+        </p>
+        <div class="diagram" style="margin:8px 0">p = p_independent + p_correlated
+
+p_independent  → retry ช่วย (กลายเป็น p_ind³)
+p_correlated   → retry ไม่ช่วยเลย (คงที่)
+
+p_effective = p_ind³ + p_corr</div>
+        <div class="tbl">
+          <table>
+            <thead><tr><th style="width:36%">กรณี</th><th>p_ind</th><th>p_corr</th><th>p_eff หลัง retry 2</th><th>ลดลงจริง</th></tr></thead>
+            <tbody>
+              <tr><td>flake จาก race ใน test เอง</td><td>5%</td><td>0%</td><td>0.0125%</td><td class="yes"><strong>99.75%</strong></td></tr>
+              <tr><td>flake จาก CI runner ช้า</td><td>1%</td><td>4%</td><td>4.0001%</td><td class="mid"><strong>20%</strong> เท่านั้น</td></tr>
+              <tr><td>flake จาก DB shared</td><td>0%</td><td>5%</td><td>5%</td><td class="no"><strong>0%</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-bottom:0">
+          <strong>วัด <code>p_corr</code> ได้ง่ายๆ:</strong>
+          นับว่าใน run ที่มีเทสพัง มีกี่ run ที่<strong>พังหลายตัวพร้อมกัน</strong><br>
+          พังเป็นกลุ่ม = correlated = <strong>retry แก้ไม่ได้ ต้องไปแก้ที่ environment</strong> ·
+          พังกระจัดกระจายทีละตัว = independent = retry ช่วยได้ (แต่ก็ยังควรแก้)
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">javascript</span><span class="code-file">scripts/flake-correlation.mjs</span></div>
+<pre><code>const runs = loadRuns("reports/run-*.json")
+const failedRuns = runs.filter(r =&gt; r.failures.length &gt; 0)
+const multiFailRuns = failedRuns.filter(r =&gt; r.failures.length &gt; 1)
+const correlationIndex = multiFailRuns.length / (failedRuns.length || 1)
+
+console.log(`correlation index = ${correlationIndex.toFixed(2)}`)
+console.log(correlationIndex &gt; 0.4
+  ? "⚠️  flake ส่วนใหญ่ correlated → แก้ที่ environment/shared state ไม่ใช่ที่เทส"
+  : "flake ส่วนใหญ่ independent → retry ช่วยได้ แต่ยังต้องแก้ทีละตัว")</code></pre>
+      </div>
+
+      <h3 id="flaky-9">Taxonomy — 9 สาเหตุ เรียงตามความถี่จริง</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:5%">#</th><th style="width:22%">สาเหตุ</th><th style="width:24%">อาการ</th><th style="width:22%">วิธีจับ</th><th>วิธีแก้</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">1</td><td><strong>Async / รอไม่ถูกจุด</strong></td><td>พังสุ่มใน CI ที่ช้ากว่าเครื่อง dev</td><td>รันบน CPU limit</td><td>web-first assertion, ห้าม <code>waitForTimeout</code></td></tr>
+            <tr><td class="num-col">2</td><td><strong>Test order dependency</strong></td><td>พังเมื่อ shuffle</td><td><code>--sequence.shuffle</code></td><td>reset state, unique data</td></tr>
+            <tr><td class="num-col">3</td><td><strong>Shared state / DB</strong></td><td>พังเมื่อรันขนาน</td><td>เพิ่ม worker</td><td>namespace ต่อ worker</td></tr>
+            <tr><td class="num-col">4</td><td><strong>เวลา</strong></td><td>พังตอนเที่ยงคืน / ต้นเดือน / 07:00</td><td>รัน suite ที่ <code>setSystemTime</code> หลายค่า</td><td>fake timer, fix TZ</td></tr>
+            <tr><td class="num-col">5</td><td><strong>Random</strong></td><td>พัง 1 ใน 50 รอบ</td><td>รันซ้ำ 100 รอบ</td><td>seed</td></tr>
+            <tr><td class="num-col">6</td><td><strong>Animation / transition</strong></td><td>ปุ่มยังขยับตอนคลิก</td><td>ปิด animation</td><td><code>reducedMotion: "reduce"</code></td></tr>
+            <tr><td class="num-col">7</td><td><strong>Network / third-party จริง</strong></td><td>พังตอน gateway ช้า</td><td>ดู network log</td><td>mock ที่ boundary</td></tr>
+            <tr><td class="num-col">8</td><td><strong>Resource leak</strong></td><td>พังหลังรันไปนานๆ</td><td>ดู memory graph</td><td>close context/server</td></tr>
+            <tr><td class="num-col">9</td><td><strong>ลำดับที่ไม่การันตี</strong></td><td>array/object key ไม่เรียง</td><td>เทียบ deep equal</td><td>sort ก่อน assert</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">ตัวที่ 6 — ปิด animation ให้หมด (Naive UI มี transition เยอะมาก)</span></div>
+<pre><code>// playwright.config.ts
+use: { reducedMotion: "reduce" }
+
+// หรือแรงกว่า
+await page.addStyleTag({ content: `
+  *, *::before, *::after {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+`})</code></pre>
+      </div>
+
+      <h3 id="flake-detect">Flake Detection — วัดก่อนแก้</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">bash</span><span class="code-file">nightly</span></div>
+<pre><code># รัน suite เดิม 10 รอบ นับว่าตัวไหนไม่คงที่
+for i in $(seq 1 10); do
+  pnpm vitest run --reporter=json --outputFile="reports/run-$i.json" || true
+done
+node scripts/flake-report.mjs reports/run-*.json</code></pre>
+      </div>
+
+      <div class="diagram">flake_rate ของเทส X = (จำนวนรอบที่ผลไม่ตรงกับ majority) / (รอบทั้งหมด)
+flake_rate ของ suite = จำนวนเทสที่ flake_rate &gt; 0 / จำนวนเทสทั้งหมด
+
+เป้า: suite flake rate &lt; 1%
+ถ้าเกิน 5% → suite ของคุณไม่ใช่ gate อีกต่อไป มันคือ noise generator</div>
+
+      <h3 id="quarantine">Quarantine Policy — นโยบายที่ต้องเขียนไว้ล่วงหน้า</h3>
+
+      <div class="diagram">1. เทสที่ flake ≥ 2 ครั้งใน 20 รอบ → ย้ายเข้า quarantine (tag @flaky)
+2. quarantine ยังรันอยู่ แต่ไม่บล็อก merge — รายงานแยก
+3. quarantine มี deadline 7 วัน + owner ที่ระบุชื่อ
+4. เกิน deadline → เลือก: แก้ / เขียนใหม่ที่ชั้นล่าง / ลบพร้อมบันทึกว่า risk ไหนไม่มีคนคุมแล้ว
+5. ห้าม quarantine เกิน 5% ของ suite — เกินแล้วต้องหยุด feature work
+6. ⭐ ห้ามลบเทสโดยไม่บันทึกว่า "risk item ไหนใน register หมดคนคุ้มครอง"</div>
+
+      <div class="note imp">
+        <span class="note-t">ข้อ 6 คือหัวใจ</span>
+        <p style="margin-bottom:0">
+          การลบเทสไม่ใช่การทำความสะอาด มันคือ <strong>การรับความเสี่ยงกลับมา</strong> ต้องมีคนเซ็นรับ<br>
+          <strong>สำหรับ pipeline:</strong> ให้ S6 ปฏิเสธ commit ที่ลบไฟล์ spec โดยไม่มี
+          <code>RISK-ACCEPT:</code> ใน commit message
+        </p>
+      </div>
+
+      <h3 id="retry">Retry — ใช้ยังไงให้ไม่โกหกตัวเอง</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:50%">ทำ</th><th>อย่าทำ</th></tr></thead>
+          <tbody>
+            <tr><td class="yes">นับ “ผ่านที่ retry 2” เป็น <strong>flaky</strong> ไม่ใช่ <strong>pass</strong></td><td class="no">ซ่อนตัวเลข retry ในรายงาน</td></tr>
+            <tr><td class="yes">แสดง flaky count ใน CI summary ทุกครั้ง</td><td class="no">ตั้ง retry สูงเพื่อให้ build เขียว</td></tr>
+            <tr><td class="yes">retry เฉพาะ E2E</td><td class="no">retry unit test</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note warn">
+        <span class="note-t">ถ้า unit test ต้อง retry</span>
+        <p style="margin-bottom:0">แปลว่า<strong>โค้ด production ของคุณ non-deterministic</strong> — นั่นคือบั๊ก ไม่ใช่ปัญหาเทส</p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="environment"><span class="num">L2.8</span>Test Environment &amp; Data Management</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:32%">Env</th><th style="width:14%">ความเร็ว</th><th style="width:16%">ความสมจริง</th><th>ใช้กับ</th></tr></thead>
+          <tbody>
+            <tr><td><strong>In-memory (MSW)</strong></td><td class="yes">ms</td><td class="no">ต่ำ</td><td>unit + integration ← 90% ของเทส</td></tr>
+            <tr><td><strong>Local docker-compose</strong></td><td class="mid">วินาที</td><td class="mid">กลาง</td><td>contract, บาง E2E</td></tr>
+            <tr><td><strong>Ephemeral preview (Cloud Run revision)</strong></td><td class="mid">นาที</td><td class="yes">สูง</td><td class="yes">E2E ต่อ PR ⭐</td></tr>
+            <tr><td><strong>Staging ร่วม</strong></td><td>—</td><td class="yes">สูงสุด</td><td>manual/exploratory, performance</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="ephemeral">Ephemeral preview — คุณมีของอยู่แล้ว ใช้ให้เต็ม <span class="st">⭐</span></h3>
+
+      <div class="diagram">Cloud Build:
+  1. build image  → tag ด้วย commit sha
+  2. deploy Cloud Run revision  --no-traffic --tag pr-{n}
+     → ได้ URL: https://pr-123---pedpro-xxx.run.app
+  3. รัน Playwright ชี้ BASE_URL ไป URL นั้น
+  4. เทสผ่าน → เก็บ revision ไว้ให้ S8.5 review
+  5. merge/close → ลบ revision</div>
+
+      <div class="note imp">
+        <span class="note-t">ข้อดีที่ใหญ่ที่สุด</span>
+        <p style="margin-bottom:0">
+          E2E รันบน<strong>สภาพแวดล้อมเดียวกับ production เป๊ะ</strong> —
+          จับบั๊กที่เกิดเฉพาะตอน build production ได้ (SSR/hydration mismatch, env var หาย, asset path ผิด)
+          ซึ่ง <code>vite dev</code> ไม่มีทางจับ<br>
+          <strong>บั๊กประเภทนี้คือบั๊กที่แพงที่สุดที่ frontend เจอ</strong> —
+          เขียวหมดทุก gate แล้วพัง production เพราะ <code>dev</code> กับ <code>build</code> ต่างกัน
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">Test data — 5 กฎที่ต้องบังคับ</span></div>
+<pre><code>// 1. namespace ต่อ worker — ไม่มีทางชนกันแม้รันขนาน 8 worker
+const ns = `e2e-w${process.env.TEST_WORKER_INDEX ?? 0}-${Date.now()}`
+
+// 2. ทุก entity ที่สร้างต้องมี prefix ที่ลบทีหลังได้
+await createUser({ username: `${ns}-user`, phone: `08${randomDigits(8)}` })
+
+// 3. seed ผ่าน API/script ไม่ใช่ผ่าน UI  ← ประหยัดเวลามหาศาล
+// 4. ไม่พึ่ง data ที่มีอยู่ก่อนใน env
+// 5. cleanup แบบ sweep (cron ลบทุกอย่างที่ prefix e2e- และเก่ากว่า 24 ชม.)
+//    ไม่ใช่ลบใน afterEach ← ลบใน afterEach จะ race กันเมื่อรันขนาน</code></pre>
+      </div>
+
+      <h3 id="pdpa">PDPA — ข้อที่ต้องระวังเป็นพิเศษ <span class="st">⭐</span></h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:28%">ความเสี่ยง</th><th style="width:34%">เกิดยังไง</th><th>ป้องกัน</th></tr></thead>
+          <tbody>
+            <tr><td>Screenshot มีข้อมูลจริง</td><td>Playwright เก็บ screenshot ตอนพัง</td><td>ใช้ synthetic data เท่านั้นใน E2E</td></tr>
+            <tr><td>Trace มี request body</td><td><code>trace.zip</code> เก็บ network ทั้งหมด</td><td>mask ด้วย <code>page.route</code> หรือใช้ data ปลอม</td></tr>
+            <tr><td>Log ใน Cloud Build</td><td>error log พ่น payload</td><td>redact field: <code>idCard</code>, <code>phone</code>, <code>token</code></td></tr>
+            <tr><td>Production copy ลงเครื่อง dev</td><td>“เอามาดูแป๊บนึง”</td><td class="no"><strong>ห้ามเด็ดขาด</strong> — ใช้ synthetic generator</td></tr>
+            <tr><td>Artifact เก็บนาน</td><td>trace/video ค้างใน bucket</td><td>retention 7-14 วัน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">เลขบัตรประชาชนปลอมที่ checksum ถูก — ต้องสร้างเอง ห้ามใช้ของจริง</span></div>
+<pre><code>export function fakeThaiId(): string {
+  const d = Array.from({ length: 12 }, () =&gt; Math.floor(Math.random() * 10))
+  const sum = d.reduce((acc, n, i) =&gt; acc + n * (13 - i), 0)
+  const check = (11 - (sum % 11)) % 10
+  return [...d, check].join("")
+}</code></pre>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="mocking"><span class="num">L2.9</span>Mocking Strategy</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:34%">สิ่งที่ต้องคุม</th><th style="width:34%">เครื่องมือ</th><th>ระดับ</th></tr></thead>
+          <tbody>
+            <tr><td>HTTP ขาออก</td><td><strong>MSW</strong></td><td class="yes">network layer ✓ ดีที่สุด</td></tr>
+            <tr><td>เวลา</td><td><code>vi.useFakeTimers</code> / <code>page.clock</code></td><td>runtime</td></tr>
+            <tr><td>สุ่ม</td><td>inject generator</td><td>design</td></tr>
+            <tr><td>localStorage / cookie</td><td>jsdom built-in / Playwright context</td><td>runtime</td></tr>
+            <tr><td>Third-party SDK (LINE, GA, gateway JS)</td><td>stub module</td><td>module</td></tr>
+            <tr><td>WebSocket / SSE</td><td>mock server</td><td>network</td></tr>
+            <tr><td>Geolocation / permission</td><td>Playwright context option</td><td>browser</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">test/msw/handlers.ts — generate จาก Bruno ถ้าทำได้ (L2.5)</span></div>
+<pre><code>export const handlers = [
+  http.post("/api/deposit", async ({ request }) =&gt; {
+    const body = await request.json()
+    if (body.amount &lt; 100)     return HttpResponse.json({ Result: 0, Error: "MIN_AMOUNT" })
+    if (body.amount &gt; 50_000)  return HttpResponse.json({ Result: 0, Error: "MAX_AMOUNT" })
+    return HttpResponse.json({
+      Result: 1,
+      Data: { txnId: "TXN-001", balance: body.amount },
+    })
+  }),
+]
+
+// test/setup.ts
+export const server = setupServer(...handlers)
+beforeAll(() =&gt; server.listen({ onUnhandledRequest: "error" }))  // ⭐ สำคัญ
+afterEach(() =&gt; server.resetHandlers())
+afterAll(() =&gt; server.close())</code></pre>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t"><code>onUnhandledRequest: "error"</code> คือ gate ที่ทรงพลังที่สุดของ MSW</span>
+        <p style="margin-bottom:0">
+          ถ้าโค้ดยิง API ที่คุณไม่รู้จัก เทสจะพังทันที ผลคือ
+          <strong>คุณจะรู้ทันทีเมื่อมีใคร (หรือ agent) เพิ่ม API call ใหม่โดยไม่บอก</strong> —
+          ซึ่งเป็น fail-closed ในระดับ network
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">Time ใน Playwright</span></div>
+<pre><code>await page.clock.install({ time: new Date("2026-07-25T06:59:59+07:00") })
+await page.goto("/deposit")
+// ทดสอบขอบวันตามเวลาไทย (L1.2)
+await page.clock.setFixedTime(new Date("2026-07-25T07:00:01+07:00"))</code></pre>
+      </div>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:44%">กฎที่ต้องบังคับใน review</th><th>เหตุผล</th></tr></thead>
+          <tbody>
+            <tr><td>ห้าม mock สิ่งที่กำลังเทส</td><td>เทสตัวเอง = ไม่เทสอะไร</td></tr>
+            <tr><td>ห้าม mock เกิน 3 ชั้นในเทสเดียว</td><td>ถ้าต้อง mock เยอะ = โค้ด coupling สูง (<strong>design feedback</strong> ไม่ใช่ปัญหาเทส)</td></tr>
+            <tr><td>Mock ต้องสมจริง (รวม error case)</td><td>mock ที่คืน success เสมอ = ไม่เคยเทส error path</td></tr>
+            <tr><td>Handler ต้องมาจาก contract</td><td class="no">mock ที่เพี้ยนจาก API จริง = เทสเขียวแต่ prod พัง ⭐</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">“ต้อง mock เยอะ = design feedback”</span>
+        <p style="margin-bottom:0">
+          นี่คือคุณค่าที่คนมองข้ามของ unit test — มันเป็น <strong>early warning system ของสถาปัตยกรรม</strong>
+          ถ้าเทสเขียนยาก โค้ดออกแบบไม่ดี ไม่ใช่ “เทสมันยุ่งยาก”
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="visual-a11y"><span class="num">L2.10</span>Visual Regression &amp; Accessibility Automation</h2>
+
+      <p><strong>คุ้มมั้ย — คำตอบตรงๆ:</strong> คุ้มเฉพาะเมื่อคุมความ deterministic ได้ ไม่งั้นมันคือเครื่องผลิต flaky ที่มีประสิทธิภาพสูงสุด</p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span></div>
+<pre><code>await expect(page).toHaveScreenshot("deposit-form.png", {
+  maxDiffPixelRatio: 0.01,
+  mask: [page.getByTestId("balance"), page.getByTestId("timestamp")],
+  animations: "disabled",
+})</code></pre>
+      </div>
+
+      <p><strong>สิ่งที่ต้องคุมก่อนใช้</strong></p>
+      <ol>
+        <li>รันใน <strong>Docker image เดียวกันเสมอ</strong> (ฟอนต์ต่างกัน = diff ทั้งหน้า) ← ตายกับฟอนต์ไทยแน่นอน</li>
+        <li>mask ทุกอย่างที่เป็น dynamic (เวลา, ยอดเงิน, ชื่อผู้ใช้)</li>
+        <li>ปิด animation</li>
+        <li>รอ font load เสร็จ: <code>await page.evaluate(() =&gt; document.fonts.ready)</code></li>
+      </ol>
+
+      <div class="note imp">
+        <span class="note-t">สำหรับภาษาไทยโดยเฉพาะ</span>
+        <p style="margin-bottom:0">
+          visual regression คือ<strong>เครื่องมือเดียว</strong>ที่จับ
+          <strong>สระลอย / วรรณยุกต์ทับกัน / บรรทัดล้น</strong> ได้อัตโนมัติ —
+          ปัญหาที่ไม่มี assertion แบบข้อความตัวไหนจับได้เลย<br>
+          <strong>คำแนะนำ:</strong> ใช้กับ <strong>หน้าหลัก 5-8 หน้า + component ที่มีข้อความไทยยาว</strong> เท่านั้น ไม่ใช่ทั้งเว็บ
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">a11y — automate ได้ 30-40% ที่เหลือต้องคน</span></div>
+<pre><code>import AxeBuilder from "@axe-core/playwright"
+
+test("หน้าฝากเงินผ่าน WCAG 2.1 AA", async ({ page }) =&gt; {
+  await page.goto("/deposit")
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze()
+  expect(results.violations).toEqual([])
+})</code></pre>
+      </div>
+
+      <p>
+        <strong>axe จับได้:</strong> contrast, alt ที่หายไป, label ที่ไม่ผูก, heading ข้ามลำดับ, ARIA ผิด, landmark<br>
+        <strong>axe จับไม่ได้:</strong> ลำดับ tab สมเหตุสมผลมั้ย, focus trap ใน modal, screen reader อ่านแล้วเข้าใจมั้ย, ข้อความ error สื่อความหมายมั้ย<br>
+        → <strong>จับคู่: axe ใน CI (gate) + a11y charter ใน exploratory session (คน)</strong> —
+        รายละเอียดเต็มที่ <a class="xref" href="l3-nfr.html#a11y">L3.5</a>
+      </p>
+
+      <!-- ============================================================ -->
+      <h2 id="gate-design"><span class="num">L2.11</span>CI/CD Gate Design <span class="st">⭐</span></h2>
+
+      <h3 id="gate-1">1. เรียงตาม signal-per-second</h3>
+
+      <div class="diagram">gate ที่ควรอยู่ก่อน = (โอกาสที่จะจับปัญหา) / (เวลาที่ใช้)</div>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:8%">ลำดับ</th><th style="width:30%">Gate</th><th style="width:16%">เวลา</th><th>จับอะไร</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">1</td><td><code>tsc --noEmit</code> + <code>vue-tsc</code></td><td>20-40s</td><td>type error, contract drift ⭐</td></tr>
+            <tr><td class="num-col">2</td><td>ESLint (รวมกฎเทสใน <a href="#เกณฑ์ปฏิเสธ">L2.2</a>)</td><td>10-20s</td><td><code>.only</code>, <code>expect-expect</code>, <code>waitForTimeout</code></td></tr>
+            <tr><td class="num-col">3</td><td>Unit (Vitest)</td><td>15-30s</td><td>logic</td></tr>
+            <tr><td class="num-col">4</td><td>Integration</td><td>40-90s</td><td>component + store</td></tr>
+            <tr><td class="num-col">5</td><td>Build</td><td>60-120s</td><td>build-time error, bundle budget</td></tr>
+            <tr><td class="num-col">6</td><td>Contract (Bruno)</td><td>30s</td><td>API drift</td></tr>
+            <tr><td class="num-col">7</td><td>Deploy preview</td><td>90-180s</td><td></td></tr>
+            <tr><td class="num-col">8</td><td>E2E (shard 4)</td><td>3-6 min</td><td>flow</td></tr>
+            <tr><td class="num-col">9</td><td>a11y + visual</td><td>60s</td><td></td></tr>
+            <tr><td class="num-col">10</td><td><strong>Codex S7</strong></td><td>1-3 min</td><td class="mid">judgment ← <strong>หลังสุดเสมอ</strong></td></tr>
+            <tr><td class="num-col">11</td><td>S8.5 human</td><td>—</td><td>validation</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">เหตุผลเชิงตัวเลข</span>
+        <p style="margin-bottom:0">
+          ถ้า <code>tsc</code> จับได้ใน 30 วินาที การปล่อยให้ Codex อ่าน 3 นาทีก่อน
+          คือ<strong>การเผาเวลา 6 เท่าเพื่อผลลัพธ์ที่ด้อยกว่า</strong> —
+          นี่คือรูปธรรมของหลัก “deterministic gates before LLM reviewers”<br>
+          และ <a href="#gate-drill">L2.16</a> มีวิธีวัดว่าลำดับนี้ถูกจริงมั้ยด้วยข้อมูล
+        </p>
+      </div>
+
+      <h3 id="gate-2">2. Fail fast แต่ report ครบ</h3>
+
+      <div class="diagram">❌ pipeline หยุดที่ error แรก → คนแก้ 1 อย่าง push → เจอ error ที่ 2 → วนไป 5 รอบ
+✅ รัน gate 1-3 ทั้งหมด แล้วรายงานพร้อมกัน → แก้รอบเดียว
+
+กลุ่ม A (static)      : tsc + eslint + prettier  → รันขนาน รายงานรวม
+กลุ่ม B (test)        : unit + integration       → รันขนาน รายงานรวม
+กลุ่ม C (build+deploy): build → deploy           → sequential
+กลุ่ม D (e2e)         : shard 1-4                → ขนาน รายงานรวม
+กลุ่ม E (judgment)    : Codex                    → หลังสุด</div>
+
+      <p><strong>สำคัญสำหรับ agent:</strong> รายงานรวมทำให้ agent แก้รอบเดียวจบ ประหยัด token และรอบ CI มหาศาล</p>
+
+      <h3 id="gate-3">3. Fail-closed เสมอ</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">bash</span></div>
+<pre><code>set -euo pipefail    # ← ต้องมีทุกสคริปต์
+
+# ❌ อันตราย: ถ้าไฟล์ไม่มี grep return 1 แต่ || true กลบไว้
+FLAKY=$(grep -c "flaky" report.json || true)
+
+# ✅ ถ้าอ่านผลไม่ได้ = ถือว่าไม่ผ่าน
+if [ ! -f reports/vitest.json ]; then
+  echo "GATE FAIL: ไม่พบ report — ถือว่าเทสไม่ได้รัน"
+  exit 1
+fi
+
+# ⭐ ป้องกันกับดักที่เจอบ่อยที่สุด: เทสไม่ได้รันเลย แต่ exit code = 0
+COUNT=$(jq '.numTotalTests' reports/vitest.json)
+[ "$COUNT" -ge "$MIN_EXPECTED_TESTS" ] || {
+  echo "GATE FAIL: รันแค่ $COUNT เทส (คาด ≥ $MIN_EXPECTED_TESTS)"; exit 1;
+}</code></pre>
+      </div>
+
+      <div class="note warn">
+        <span class="note-t">กับดักที่เจอบ่อยที่สุด</span>
+        <p style="margin-bottom:0">
+          เทสไม่ได้รันเลย (คำสั่งผิด / path ผิด) แต่ exit code = 0 → gate เขียว →
+          <strong>คุณมี gate ที่ไม่ตรวจอะไรเลยและไม่รู้ตัว</strong>
+        </p>
+      </div>
+
+      <h3 id="gate-4">4. Required vs Advisory — แยกให้ชัด</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:50%">Required (บล็อก merge)</th><th>Advisory (รายงานอย่างเดียว)</th></tr></thead>
+          <tbody>
+            <tr><td>type check, lint, unit, integration</td><td>mutation score</td></tr>
+            <tr><td>contract, build</td><td>bundle size trend</td></tr>
+            <tr><td>E2E ของ money flow</td><td>visual diff (ต้องมีคนดู)</td></tr>
+            <tr><td>a11y critical violations</td><td>performance budget (ระยะแรก)</td></tr>
+            <tr><td>red-proof, spec-file guard</td><td>flake rate</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        <strong>กฎ:</strong> advisory ที่นิ่งแล้ว 4 สัปดาห์ → เลื่อนขึ้นเป็น required (<strong>ratchet</strong>) ·
+        advisory ที่ไม่มีใครดู 8 สัปดาห์ → ลบทิ้ง (มันคือ noise)
+      </p>
+
+      <h3 id="gate-5">5. Cache ให้ถูกจุด</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:30%">ของ</th><th style="width:34%">key</th><th>ประหยัด</th></tr></thead>
+          <tbody>
+            <tr><td>pnpm store</td><td><code>pnpm-lock.yaml</code> hash</td><td>40-90s</td></tr>
+            <tr><td>Playwright browsers</td><td>version ของ <code>@playwright/test</code></td><td>60-120s</td></tr>
+            <tr><td>Docker layer (kaniko)</td><td>Dockerfile + lock</td><td>60-180s</td></tr>
+            <tr><td>Vite/Nuxt build cache</td><td>source hash</td><td>20-60s</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>อย่า cache:</strong> <code>node_modules</code> ตรงๆ (ใช้ store แทน), test artifacts, coverage</p>
+
+      <h3 id="gate-6">6. Artifact ที่ต้องเก็บทุกครั้งที่แดง</h3>
+
+      <div class="diagram">reports/
+├── junit.xml            ← ให้ระบบอ่าน (YouTrack integration)
+├── vitest.json          ← ให้ S6 อ่านเวลา/จำนวน
+├── e2e.json
+├── coverage/            ← ratchet comparison
+├── traces/*.zip         ← ⭐ ของที่มีค่าที่สุดตอน debug
+├── screenshots/
+└── flake-report.json</div>
+
+      <div class="note imp">
+        <span class="note-t"><code>trace.zip</code> คือสิ่งที่ทำให้ agent debug E2E ได้จริง</span>
+        <p style="margin-bottom:0">
+          ถ้าไม่มี agent จะเดาจาก error message แล้วแก้มั่ว (ปกติคือเพิ่ม timeout)
+          ถ้ามี trace agent เห็น DOM snapshot + network + console ทุกขั้น<br>
+          <strong>ข้อเสนอ:</strong> ให้ S6 แนบ path ของ trace + สรุป error ที่ structured
+          เข้าไปใน context ของ S4B เมื่อต้อง retry
+        </p>
+      </div>
+
+      <h3 id="gate-เพิ่ม">Gate ที่ควรเพิ่ม — เรียงตามผลตอบแทน</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:5%">#</th><th style="width:44%">Gate</th><th style="width:20%">ทำยากแค่ไหน</th><th>ผลตอบแทน</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">1</td><td><strong>S4 ห้ามแก้ <code>*.spec.ts</code></strong> (git diff guard)</td><td class="yes">ง่ายมาก</td><td class="yes"><strong>สูงสุด</strong> ⭐⭐⭐</td></tr>
+            <tr><td class="num-col">2</td><td><strong>Red-proof required</strong> สำหรับเทสใหม่</td><td class="mid">กลาง</td><td class="yes"><strong>สูงสุด</strong> ⭐⭐⭐</td></tr>
+            <tr><td class="num-col">3</td><td>ESLint: <code>expect-expect</code>, <code>no-focused-tests</code>, ห้าม <code>waitForTimeout</code></td><td class="yes">ง่ายมาก</td><td class="yes">สูง ⭐⭐</td></tr>
+            <tr><td class="num-col">4</td><td><code>onUnhandledRequest: "error"</code> ใน MSW</td><td class="yes">ง่ายมาก</td><td class="yes">สูง ⭐⭐</td></tr>
+            <tr><td class="num-col">5</td><td>ตรวจจำนวนเทสที่รันจริง ≥ baseline</td><td class="yes">ง่าย</td><td class="yes">สูง ⭐⭐</td></tr>
+            <tr><td class="num-col">6</td><td>Coverage ratchet (ห้ามลด)</td><td class="yes">ง่าย</td><td class="mid">กลาง</td></tr>
+            <tr><td class="num-col">7</td><td>Nightly shuffle 3 seeds</td><td class="yes">ง่าย</td><td class="mid">กลาง</td></tr>
+            <tr><td class="num-col">8</td><td>Nightly flake detection 10 รอบ</td><td class="mid">กลาง</td><td class="mid">กลาง</td></tr>
+            <tr><td class="num-col">9</td><td>Generate types จาก Bruno → tsc เป็น contract gate</td><td class="mid">กลาง-ยาก</td><td class="yes"><strong>สูง</strong> ⭐⭐</td></tr>
+            <tr><td class="num-col">10</td><td>Mutation testing เป็น advisory</td><td class="no">ยาก</td><td class="yes">สูง (<a class="xref" href="l5-advanced.html#mutation">L5</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">ข้อ 1 กับ 2 ใช้เวลาทำครึ่งวัน</span>
+        <p style="margin-bottom:0">
+          และแก้ปัญหาที่ใหญ่ที่สุดของ agentic pipeline —
+          <strong>ถ้าอ่าน L2 แล้วทำได้แค่อย่างเดียว ทำสองข้อนี้</strong>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="regression-selection"><span class="num">L2.12</span>Regression Test Selection</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:24%">กลยุทธ์</th><th style="width:38%">วิธี</th><th>เหมาะกับ</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Run all</strong></td><td>รันทั้งหมดทุกครั้ง</td><td class="yes">suite &lt; 3 นาที ← <strong>เป้าที่ควรรักษาไว้</strong></td></tr>
+            <tr><td><strong>Changed-related</strong></td><td><code>vitest --changed</code> (dependency graph)</td><td>PR ปกติ</td></tr>
+            <tr><td><strong>Tag-based</strong></td><td><code>@smoke</code>, <code>@money</code>, <code>@regression</code></td><td>E2E</td></tr>
+            <tr><td><strong>Risk-based</strong></td><td>รันตาม risk register (<a class="xref" href="l1-design.html#risk-based">L1.10</a>)</td><td>E2E ที่แพง</td></tr>
+            <tr><td><strong>History-based</strong></td><td>รันเทสที่เคยพังกับไฟล์นี้</td><td>ต้องมี data สะสม</td></tr>
+            <tr><td><strong>Predictive (ML)</strong></td><td>Facebook/Google ใช้</td><td class="no">ไม่คุ้มสำหรับคุณ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="diagram">ทุก commit (PR):
+  ├── static ทั้งหมด           (ไม่มีทางเลือก เร็วอยู่แล้ว)
+  ├── unit ทั้งหมด             (เร็วพอ — ถ้าเกิน 30s ให้ optimize ไม่ใช่ตัด)
+  ├── integration --changed    (ตาม dependency graph)
+  ├── contract ทั้งหมด          (เร็ว และ breaking change แพงมาก)
+  └── E2E @smoke + @money      (~6 เทส, 3 นาที)
+
+merge เข้า main:
+  └── E2E ทั้งหมด + a11y + visual
+
+nightly:
+  ├── E2E ทุก project (desktop/mobile/LINE)
+  ├── shuffle × 3 seeds
+  ├── flake detection × 10 รอบ
+  └── mutation testing (advisory)
+
+รายสัปดาห์:
+  ├── performance (k6)  ← L3
+  └── dependency audit + license check</div>
+
+      <div class="note warn">
+        <span class="note-t">กฎที่ต้องรักษา</span>
+        <p style="margin-bottom:0">
+          เวลารอของ PR <strong>ไม่ควรเกิน 10 นาที</strong> — เกินกว่านั้นคนจะเลิกรอ เริ่มทำอย่างอื่น
+          เสีย context และ<strong>จะเริ่มหาทางข้าม gate</strong><br>
+          gate ที่ช้าเกินไปไม่ได้เพิ่มคุณภาพ มันสร้างแรงจูงใจให้คนหลบเลี่ยง —
+          ซึ่งเป็นปัญหา socio-technical ไม่ใช่ปัญหาเทคนิค
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="ci-metric"><span class="num">L2.13</span>Metric ของ CI ที่ใช้ได้จริง</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:28%">Metric</th><th style="width:26%">สูตร</th><th style="width:16%">เป้า</th><th>บอกอะไร</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Pipeline duration p50/p95</strong></td><td></td><td>p95 &lt; 10 min</td><td>ความเจ็บของ dev</td></tr>
+            <tr><td><strong>Flake rate</strong></td><td>เทสที่ไม่คงที่ / ทั้งหมด</td><td>&lt; 1%</td><td>ความน่าเชื่อถือของ gate</td></tr>
+            <tr><td><strong>Gate rejection rate ต่อ stage</strong></td><td>reject / run</td><td>—</td><td>stage ไหนคือคอขวด</td></tr>
+            <tr><td><strong>First-pass rate</strong></td><td>PR ที่เขียวรอบแรก / ทั้งหมด</td><td>&gt; 70%</td><td>คุณภาพของงานก่อนเข้า CI</td></tr>
+            <tr><td><strong>Time-to-red</strong></td><td>เวลาจาก push ถึง fail แรก</td><td>&lt; 2 min</td><td>gate เรียงถูกมั้ย</td></tr>
+            <tr><td><strong>MTTR ของ main แดง</strong></td><td></td><td>&lt; 30 min</td><td>วินัยของทีม</td></tr>
+            <tr><td><strong>Escaped defect rate</strong></td><td>บั๊ก prod / บั๊กทั้งหมด</td><td>ลดลง</td><td class="yes">⭐ ประสิทธิผลจริงของ gate</td></tr>
+            <tr><td><code>blind_approve_rate</code></td><td>approve โดยไม่ดู / ทั้งหมด</td><td>ลดลง</td><td>คุณภาพของ output ก่อนถึงคน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="gate-efficacy">Gate Efficacy — metric ที่แนะนำให้เพิ่ม <span class="st">⭐</span></h3>
+
+      <div class="diagram">gate_efficacy(G) = จำนวนครั้งที่ G เป็นตัวแรกที่จับปัญหาจริง
+                   ─────────────────────────────────────────
+                   จำนวนครั้งที่ G รัน</div>
+
+      <p>มันบอกว่า gate ไหน<strong>คุ้มค่าที่จะมีอยู่</strong> — gate ที่ efficacy สูงแต่อยู่ท้าย ควรย้ายขึ้นหน้า</p>
+
+      <div class="note fix">
+        <span class="note-t">แก้ไขจากการทบทวน — “efficacy = 0 → ลบทิ้ง” ผิด</span>
+        <p>
+          ฉบับแรกเขียนว่า “gate ที่ efficacy = 0 นาน 3 เดือน → ลบทิ้ง”
+          <strong>นี่ผิด</strong> เพราะมันไม่แยกระหว่างสองสาเหตุที่ต่างกันสิ้นเชิง
+        </p>
+        <div class="tbl">
+          <table>
+            <thead><tr><th style="width:40%">efficacy = 0 เพราะ</th><th style="width:34%">ตัวอย่าง</th><th>ควรทำ</th></tr></thead>
+            <tbody>
+              <tr><td><strong>ไม่มีปัญหาชนิดนั้นเกิดขึ้นเลย</strong></td><td>gate ตรวจ SQL injection ในโปรเจกต์ที่ไม่มี raw SQL</td><td class="yes">ลบได้</td></tr>
+              <tr><td class="mid"><strong>มันป้องปรามไว้ตั้งแต่ต้น</strong> ⭐</td><td>gate ห้าม <code>.only</code> → ทุกคนรู้ว่ามี → ไม่มีใครส่ง <code>.only</code> เข้ามา</td><td class="no"><strong>ห้ามลบเด็ดขาด</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          ตัวที่สองคือ <strong>deterrence confound</strong> — gate ที่ทำงานได้ผลที่สุดคือ gate ที่ไม่เคยต้องทำงาน
+          เหมือนกล้องวงจรปิดที่ป้องกันขโมยได้ผลจนไม่เคยจับใครได้ แล้วเราสรุปว่า “ไม่มีประโยชน์”
+        </p>
+        <div class="diagram" style="margin:8px 0">ก่อนตัดสินว่า gate ไร้ค่า ต้องตอบให้ได้ว่า:
+  "ถ้าลบ gate นี้ทิ้ง จะมีใคร/agent ตัวไหน ทำสิ่งที่ gate นี้ห้ามหรือไม่?"
+
+ถ้าคำตอบคือ "มี"                          → gate นี้กำลังทำงานอยู่ ห้ามลบ
+ถ้าคำตอบคือ "ไม่มี เพราะเป็นไปไม่ได้"      → ลบได้</div>
+        <p style="margin-bottom:0">
+          <strong>metric ที่ปรับใหม่:</strong><br>
+          <code>gate_efficacy</code> = ครั้งที่จับได้จริง / ครั้งที่รัน — วัดผลงาน<br>
+          <code>gate_drill_pass</code> = ผ่าน drill ล่าสุดมั้ย (bool) — <strong>วัดว่ายังทำงานอยู่</strong> ⭐<br>
+          <code>gate_cost</code> = เวลาเฉลี่ย × ความถี่ — วัดต้นทุน<br>
+          <strong>ลบเมื่อ:</strong> efficacy = 0 <em>และ</em> drill บอกว่าไม่มีอะไรจะจับ <em>และ</em> cost &gt; 0
+        </p>
+      </div>
+
+      <h3 id="metric-ขยะ">Metric ขยะ — เลิกใช้</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:34%">ห้ามใช้เป็น target</th><th>ทำไม</th></tr></thead>
+          <tbody>
+            <tr><td>จำนวน test case</td><td>ยิ่งเยอะยิ่งช้า ไม่ได้แปลว่าดี</td></tr>
+            <tr><td>code coverage %</td><td>Goodhart's Law (<a class="xref" href="l0-foundation.html#goodhart">L0.7</a>)</td></tr>
+            <tr><td>จำนวนบั๊กที่หาเจอ</td><td>ให้แรงจูงใจผิด — tester อยากให้มีบั๊กเยอะ</td></tr>
+            <tr><td>pass rate</td><td>100% pass = อาจแปลว่าเทสอ่อนเกินไป</td></tr>
+            <tr><td>จำนวนบรรทัดเทส</td><td>55</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="agent-failure-mode"><span class="num">L2.14</span>Automation ในยุค Agent — 8 Failure Mode <span class="st">⭐⭐</span></h2>
+
+      <p><strong>ส่วนนี้ไม่มีในตำราเล่มไหน เพราะมันเพิ่งเกิดขึ้น — และมันเกี่ยวกับ pipeline คุณโดยตรงที่สุดในทั้ง L2</strong></p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:5%">#</th><th style="width:24%">Failure mode</th><th style="width:30%">อาการ</th><th>ยาแก้ (deterministic)</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">1</td><td><strong>แก้เทสแทนแก้โค้ด</strong></td><td>เทสแดง → agent เปลี่ยน expected value</td><td class="no"><strong>S4 ห้ามแตะ <code>*.spec.ts</code></strong> ⭐</td></tr>
+            <tr><td class="num-col">2</td><td><strong>ลบเทสที่แดง</strong></td><td>test count ลดลงเงียบๆ</td><td>ตรวจ test count ≥ baseline</td></tr>
+            <tr><td class="num-col">3</td><td><strong>เขียนเทสที่ผ่านเสมอ</strong></td><td><code>expect(result).toBeDefined()</code></td><td><code>expect-expect</code> + mutation + S7</td></tr>
+            <tr><td class="num-col">4</td><td><strong>Tautological test</strong></td><td>เทสคำนวณ expected ด้วยสูตรเดียวกับโค้ด</td><td>S7 rule + red-proof</td></tr>
+            <tr><td class="num-col">5</td><td><strong>Snapshot abuse</strong></td><td><code>--update-snapshots</code> เมื่อพัง</td><td>ห้าม flag นี้ใน agent env</td></tr>
+            <tr><td class="num-col">6</td><td><strong>เพิ่ม timeout เมื่อ flaky</strong></td><td><code>timeout: 30000</code> → <code>60000</code></td><td>ตรวจ diff ที่เพิ่ม timeout → REJECT</td></tr>
+            <tr><td class="num-col">7</td><td><strong>Over-mock จน mock ตัวเอง</strong></td><td>mock module ที่กำลังเทส</td><td>S7 rule + assertion บน behavior</td></tr>
+            <tr><td class="num-col">8</td><td><strong>Coverage theater</strong></td><td>เขียนเทสที่รันโค้ดแต่ไม่ assert</td><td>mutation score เป็น advisory</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="file-scope-guard">ยาที่แรงที่สุด 1 — File-scope guard (แก้ #1, #2, #5, #6 พร้อมกัน)</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">bash</span><span class="code-file">ci/s6-file-scope-guard.sh — ~30 บรรทัดที่ปิด failure mode แพงที่สุด 4 ตัว</span></div>
+<pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+CHANGED=$(git diff --name-only "$BASE_SHA".."$HEAD_SHA")
+
+# ── 1. S4 (implementation stage) ห้ามแตะไฟล์เทส ──
+if echo "$CHANGED" | grep -qE '\.(spec|test)\.(ts|js)$'; then
+  echo "GATE FAIL: S4 แก้ไฟล์เทส — implementation stage แก้เทสไม่ได้"
+  echo "$CHANGED" | grep -E '\.(spec|test)\.'
+  exit 1
+fi
+
+# ── 2. ห้ามลดจำนวนไฟล์เทส ──
+BASE_COUNT=$(git ls-tree -r "$BASE_SHA" --name-only | grep -cE '\.spec\.ts$')
+HEAD_COUNT=$(git ls-tree -r "$HEAD_SHA" --name-only | grep -cE '\.spec\.ts$')
+if [ "$HEAD_COUNT" -lt "$BASE_COUNT" ]; then
+  git log "$BASE_SHA".."$HEAD_SHA" --format=%B | grep -q "RISK-ACCEPT:" \
+    || { echo "GATE FAIL: ลบไฟล์เทสโดยไม่มี RISK-ACCEPT ใน commit message"; exit 1; }
+fi
+
+# ── 3. ห้ามเพิ่ม timeout ──
+if git diff "$BASE_SHA".."$HEAD_SHA" -- '*.spec.ts' '*.config.ts' \
+   | grep -E '^\+.*(timeout|waitForTimeout).*[0-9]{4,}'; then
+  echo "GATE FAIL: เพิ่ม timeout — ต้องหา root cause ไม่ใช่ยืดเวลา"
+  exit 1
+fi
+
+echo "✅ file-scope guard ผ่าน"</code></pre>
+      </div>
+
+      <h3 id="red-proof-impl">ยาที่แรงที่สุด 2 — Red-proof (แก้ #3, #4)</h3>
+
+      <div class="diagram">S3: agent เขียนเทส (scope: เฉพาะ *.spec.ts)
+    → pnpm vitest run --reporter=json &gt; red-proof.json
+    → ต้องมีเทสใหม่ที่ FAIL อย่างน้อย 1 ตัว
+    → ถ้าเทสใหม่ทั้งหมดเขียวตั้งแต่ยังไม่เขียนโค้ด → REJECT
+      เหตุผล: "เทสนี้ไม่ได้ตรวจอะไรที่ยังไม่มี"
+
+S4: implementation (scope: เฉพาะ src/)
+S6: เทียบ red-proof กับผลปัจจุบัน → เทสที่เคยแดงต้องเขียวครบ</div>
+
+      <div class="note good">
+        <span class="note-t">ผลข้างเคียงที่ดี</span>
+        <p style="margin-bottom:0">
+          มันบังคับ TDD โดยไม่ต้องขอความร่วมมือจากใคร —
+          เป็น<strong>ข้อบังคับของ pipeline ไม่ใช่วินัยของคน</strong>
+        </p>
+      </div>
+
+      <h3 id="fault-context">ยาที่แรงที่สุด 3 — Fault-attack context injection</h3>
+
+      <p>ให้ agent อ่าน <code>fault-attacks.md</code> (ที่สร้างใน <a class="xref" href="l1-design.html#fault-attack">L1.8</a>) ตอน S1/S3</p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">markdown</span><span class="code-file">pipeline-skill/fault-attacks.md</span></div>
+<pre><code>## ต้องพิจารณาทุกครั้งที่เขียนเทสของฟอร์ม
+- [ ] ค่าว่าง, whitespace only, zero-width space
+- [ ] ข้อความไทยไม่มีเว้นวรรค 60 ตัวอักษร → ทะลุ container มั้ย
+- [ ] สระ/วรรณยุกต์ซ้อน "กิิิ๊๊๊"
+- [ ] double submit (Promise.all 3 ครั้ง)
+- [ ] Number("") = 0 และ NaN &lt; 100 = false
+- [ ] token หมดอายุระหว่างกรอกฟอร์ม
+- [ ] LINE in-app: third-party cookie ถูกบล็อก
+
+## ต้องพิจารณาทุกครั้งที่แตะเงิน
+- [ ] idempotency: ยิงซ้ำ 3 ครั้งพร้อมกัน
+- [ ] invariant: sum(ledger) === balance ใน afterEach
+- [ ] ขอบวันตามเวลาไทย: 06:59:59 / 07:00:00 / 07:00:01
+- [ ] cap: ค่าก่อน/พอดี/หลัง cap</code></pre>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">agent เก่งขึ้นแต่ oracle ไม่ได้เก่งขึ้น</span>
+        <div class="diagram" style="margin:8px 0">คนเขียนเทส   : จาก spec + ความเข้าใจธุรกิจ → oracle มาจากภายนอกโค้ด
+agent เขียนเทส: จากโค้ดที่เห็น → oracle มาจากโค้ดเอง ← tautology</div>
+        <p style="margin-bottom:0">
+          <strong>นี่คือเหตุผลเชิงโครงสร้างว่าทำไม red-proof ถึงจำเป็น</strong> ไม่ใช่แค่ best practice —
+          มันคือ<strong>กลไกเดียวที่บังคับให้ oracle มาจากนอกโค้ด</strong><br>
+          และมันวนกลับไป <a class="xref" href="l0-foundation.html#testing-vs-checking">L0.6</a> พอดี:
+          agent ทำ checking ได้ดีเลิศ แต่ testing ต้องมีคนกำหนดว่าอะไรควร check<br>
+          ขยายเชิงทฤษฎีที่ <a class="xref" href="l4-qe.html#agentic-qe">L4 ส่วนขยาย A — oracle provenance</a>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="anti-patterns-2"><span class="num">L2.15</span>Anti-patterns ของ Automation</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:26%">Anti-pattern</th><th style="width:34%">อาการ</th><th>แก้</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Ice cream cone</strong></td><td>E2E เยอะ unit น้อย</td><td>ย้ายลงชั้นล่าง</td></tr>
+            <tr><td><strong>Cupcake</strong></td><td>manual เยอะ + E2E เยอะ + unit เยอะ ไม่มี integration</td><td>เติมชั้นกลาง</td></tr>
+            <tr><td><strong>Flaky tolerance</strong></td><td>ชิน re-run</td><td>quarantine policy</td></tr>
+            <tr><td><strong>Test the mock</strong></td><td>mock เยอะจน assert แค่ว่า mock ถูกเรียก</td><td>mock ที่ boundary ต่ำสุด</td></tr>
+            <tr><td><strong>Snapshot everything</strong></td><td><code>.snap</code> 500 ไฟล์ ไม่มีใครอ่าน</td><td>snapshot เฉพาะ output ที่ stable และเล็ก</td></tr>
+            <tr><td><strong>Shared fixture god object</strong></td><td><code>testData.ts</code> 2000 บรรทัด</td><td>builder pattern</td></tr>
+            <tr><td><strong>Sleep-driven testing</strong></td><td><code>waitForTimeout</code> เกลื่อน</td><td>web-first assertion</td></tr>
+            <tr><td><strong>Coverage chasing</strong></td><td>เขียนเทสเพื่อเลข</td><td>ratchet + mutation</td></tr>
+            <tr><td><strong>Zombie test</strong></td><td><code>.skip</code> มา 8 เดือน</td><td>skip ต้องมี issue link + วันหมดอายุ</td></tr>
+            <tr><td><strong>Test as doc ที่ไม่มีใครอ่าน</strong></td><td>ชื่อเทสไม่สื่อ</td><td>บังคับ U</td></tr>
+            <tr><td><strong>CI ที่ไม่มีใครเชื่อ</strong></td><td>main แดงตลอด</td><td>หยุด feature work จนกว่าจะเขียว</td></tr>
+            <tr><td class="no"><strong>Gate ที่ข้ามได้</strong></td><td>มีปุ่ม “force merge”</td><td class="no">⭐ <strong>ถ้าข้ามได้ = ไม่ใช่ gate</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ข้อสุดท้ายคือหลักการที่ล็อกไว้แล้ว</span>
+        <p style="margin-bottom:0">
+          รักษาไว้ให้ได้ เพราะแรงกดดันจะมาตอนใกล้ deadline เสมอ และ<strong>การยอมครั้งเดียวคือจุดจบของ gate นั้น</strong><br>
+          ข้อยกเว้นเดียวที่ยอมรับได้คือ <strong>emergency path ที่นิยามไว้ล่วงหน้าตอนหัวเย็น</strong>
+          — ดู <a class="xref" href="l4-qe.html#release">L4.8</a>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="gate-drill"><span class="num">L2.16</span>Gate Drill + Traceability <span class="st">⭐⭐</span></h2>
+
+      <div class="note fix">
+        <span class="note-t">เติมจากการทบทวน — ยกระดับจากแบบฝึกหัดเป็นหลักการ</span>
+        <p style="margin-bottom:0;font-size:17px">
+          <strong>Gate ที่ไม่เคยถูกทดสอบ = ไม่รู้ว่ามันเป็น gate หรือเป็นของประดับ</strong>
+        </p>
+      </div>
+
+      <p>
+        นี่คือ <strong>mutation testing ระดับ pipeline</strong> —
+        คุณจงใจใส่ defect ที่รู้จัก แล้วดูว่า gate จับได้มั้ย
+        (หลักการเดียวกับที่ร้อยทั้ง 6 ชั้น ดู <a class="xref" href="index.html#แนวคิดเดียว">แนวคิดเดียว</a>)
+      </p>
+
+      <h3 id="drill-suite">Gate Drill Suite — ทำเป็นสคริปต์รันเดือนละครั้ง</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:5%">#</th><th style="width:38%">ใส่ defect อะไร</th><th style="width:30%">gate ที่ควรจับ</th><th>ถ้าเขียว =</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">1</td><td>เพิ่ม <code>it.only</code> ใน spec</td><td>ESLint <code>no-focused-tests</code></td><td class="no">gate ตาย</td></tr>
+            <tr><td class="num-col">2</td><td>ลบ <code>expect()</code> ออกจากเทส 1 ตัว</td><td><code>expect-expect</code></td><td class="no">gate ตาย</td></tr>
+            <tr><td class="num-col">3</td><td>เปลี่ยน <code>&gt;=</code> เป็น <code>&gt;</code> ใน <code>validateAmount</code></td><td>unit test (BVA)</td><td class="no"><strong>เทสไม่ครอบขอบ</strong> ⭐</td></tr>
+            <tr><td class="num-col">4</td><td>ลบไฟล์ <code>reports/vitest.json</code></td><td>fail-closed check</td><td class="no">gate ปลอม</td></tr>
+            <tr><td class="num-col">5</td><td>ให้ agent แก้ <code>*.spec.ts</code> ใน S4</td><td>file-scope guard</td><td class="no">guard ไม่ทำงาน</td></tr>
+            <tr><td class="num-col">6</td><td>เพิ่ม <code>waitForTimeout(3000)</code></td><td>grep gate</td><td class="no">gate ตาย</td></tr>
+            <tr><td class="num-col">7</td><td>ลบ field จาก API response</td><td>contract / tsc</td><td class="no">ช่องโหว่ <a href="#contract">L2.5</a></td></tr>
+            <tr><td class="num-col">8</td><td>ลบไฟล์ spec 1 ไฟล์</td><td>test count baseline</td><td class="no">gate ตาย</td></tr>
+            <tr><td class="num-col">9</td><td>ยิง <code>fetch()</code> ไป API ที่ไม่มี handler</td><td>MSW <code>onUnhandledRequest</code></td><td class="no">gate ตาย</td></tr>
+            <tr><td class="num-col">10</td><td>ทำให้ unit test ตัวหนึ่งกิน 500ms</td><td>timing gate</td><td class="no">gate ตาย</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">bash</span><span class="code-file">scripts/gate-drill.sh — รันบน branch ทิ้ง ห้ามรันบน main</span></div>
+<pre><code>#!/usr/bin/env bash
+set -euo pipefail
+FAILED=0
+
+for drill in drills/*.patch; do
+  git stash push -q --include-untracked
+  git apply "$drill"
+
+  if ./ci/run-gates.sh &gt; /dev/null 2&gt;&amp;1; then
+    echo "❌ DRILL FAIL: $drill ผ่าน gate ทั้งที่ควรถูกจับ"
+    FAILED=1
+  else
+    echo "✅ $drill ถูกจับได้"
+  fi
+
+  git checkout -- . &amp;&amp; git stash pop -q
+done
+
+exit $FAILED</code></pre>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ความเห็นตรงๆ — ทำอันนี้ก่อน file-scope guard</span>
+        <p style="margin-bottom:0">
+          เดิมผมแนะนำให้ทำ file-scope guard ก่อน <strong>ขอแก้เป็น: ทำ gate drill ก่อน</strong>
+          เพราะมันจะบอกคุณว่า gate ที่มีอยู่แล้ว มีกี่ตัวที่เป็นของปลอม แล้วค่อยตัดสินใจว่าจะสร้างอะไรเพิ่ม<br>
+          <strong>การสร้าง gate ใหม่บนฐานที่ไม่รู้ว่า gate เก่าทำงานมั้ย
+          คือการสร้างความมั่นใจปลอมทับความมั่นใจปลอม</strong>
+        </p>
+      </div>
+
+      <h3 id="traceability">Traceability Matrix — ปิด loop ที่เปิดไว้ตั้งแต่ L0.8</h3>
+
+      <p>
+        <a class="xref" href="l0-foundation.html#traceability">L0.8</a> บอกว่าต้องตอบคำถาม
+        <em>“requirement ข้อนี้ถูกเทสด้วยอะไรบ้าง”</em> — นี่คือวิธีทำจริงกับ YouTrack
+      </p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">ผูก test → requirement ID ในชื่อเทส (machine-parsable)</span></div>
+<pre><code>describe("PED-1123 ฝากเงินขั้นต่ำ", () =&gt; {
+  it("[AC-1] ฝาก 100 พอดี → สำเร็จ", /* ... */)
+  it("[AC-1] ฝาก 99 → ปฏิเสธ MIN_AMOUNT", /* ... */)
+  it("[AC-3] โบนัส cap ที่ 1,000", /* ... */)
+})</code></pre>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">bash</span><span class="code-file">generate traceability matrix จาก JSON report</span></div>
+<pre><code>jq -r '.testResults[].assertionResults[].fullName' reports/vitest.json \
+  | grep -oE 'PED-[0-9]+|AC-[0-9]+' \
+  | sort | uniq -c</code></pre>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">Gate ที่ตั้งได้</span>
+        <p style="margin-bottom:0">
+          ทุก AC ใน YouTrack ticket ต้องมีเทสอย่างน้อย 1 ตัวอ้างถึง →
+          <strong>AC ที่ไม่มีเทสอ้างถึง = REJECT ที่ S6</strong><br>
+          นี่คือ <strong>requirement coverage</strong> ซึ่งแข็งกว่า code coverage มาก
+          (<a class="xref" href="l1-design.html#coverage-item">L1.0</a>)
+          และทำได้เพราะคุณมี YouTrack เป็น canonical state owner อยู่แล้ว
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="เช็คลิสต์-2"><span class="num">✓</span>เช็คลิสต์ความพร้อม L2</h2>
+
+      <h3 id="cl2-arch">สถาปัตยกรรม</h3>
+      <ul class="check">
+        <li>อธิบายความต่าง Pyramid/Trophy/Honeycomb และเลือกได้ว่าโค้ดชนิดไหนใช้อันไหน</li>
+        <li>ตอบได้ว่าเทสตัวหนึ่งควรอยู่ชั้นไหน ด้วยคำถาม 5 ข้อ</li>
+        <li class="key">อธิบายได้ว่าทำไมเทส 78 ตัวจาก L1.14 ไม่ควรอยู่ใน E2E ทั้งหมด</li>
+      </ul>
+
+      <h3 id="cl2-first">F.I.R.S.T + U</h3>
+      <ul class="check">
+        <li>ระบุการละเมิดแต่ละข้อในโค้ดจริงได้</li>
+        <li>รู้ว่าแต่ละข้อวัดด้วยเครื่องมืออะไร และเป็น deterministic gate หรือ judgment</li>
+        <li class="key">รัน <code>--sequence.shuffle</code> กับ suite ตัวเองแล้ว รู้ผลว่ามีตัวไหนพัง</li>
+        <li class="key">อธิบาย red-proof และเหตุผลเชิงโครงสร้างว่าทำไมมันจำเป็นในยุค agent</li>
+      </ul>
+
+      <h3 id="cl2-craft">Craft</h3>
+      <ul class="check">
+        <li>แยก dummy/stub/spy/mock/fake ได้</li>
+        <li>อธิบายกฎ “mock ที่ boundary ต่ำสุด” พร้อมตัวอย่าง 3 ระดับ</li>
+        <li>แปลงตาราง EP/BVA จาก L1 เป็น <code>it.each</code> ได้</li>
+        <li>เขียน builder pattern สำหรับ test data ได้</li>
+        <li class="key">เทส double-submit และ unmount-during-request ได้</li>
+      </ul>
+
+      <h3 id="cl2-e2e">E2E</h3>
+      <ul class="check">
+        <li>ตั้ง <code>testIdAttribute: "data-test"</code> แล้ว</li>
+        <li>ตั้ง <code>locale: "th-TH"</code> + <code>timezoneId: "Asia/Bangkok"</code> แล้ว</li>
+        <li>ไม่มี <code>waitForTimeout</code> เหลืออยู่ใน repo</li>
+        <li>ใช้ <code>storageState</code> แทนการ login ผ่าน UI ทุกเทส (แต่ยังมี 1 เทสที่ login จริง)</li>
+        <li>เก็บ trace on failure และรู้วิธีเปิดอ่าน</li>
+      </ul>
+
+      <h3 id="cl2-flaky">Flaky</h3>
+      <ul class="check">
+        <li>ระบุ 9 สาเหตุของ flaky ได้</li>
+        <li class="key">วัด flake rate ของ suite ตัวเองได้เป็นตัวเลข</li>
+        <li class="key">วัด correlation index ได้ และรู้ว่า retry ช่วยหรือไม่ช่วย</li>
+        <li>มี quarantine policy เขียนไว้เป็นลายลักษณ์อักษร</li>
+        <li>แยกได้ว่า “ผ่านที่ retry 2” ≠ “pass”</li>
+      </ul>
+
+      <h3 id="cl2-contract">Contract &amp; Data</h3>
+      <ul class="check">
+        <li class="key">อธิบายได้ว่า Bruno ตรวจอะไรไม่ได้ (3 ข้อ)</li>
+        <li>เข้าใจว่าทำไม generate type จาก contract ถึงแข็งกว่า runtime check</li>
+        <li>มี unique namespace ต่อ worker ใน E2E</li>
+        <li class="key">ไม่มี production data ในเทสหรือ artifact ใดๆ (PDPA)</li>
+      </ul>
+
+      <h3 id="cl2-ci">CI</h3>
+      <ul class="check">
+        <li>เรียง gate ตาม signal-per-second ได้</li>
+        <li class="key">pipeline ตัวเอง fail-closed จริง (ทดสอบด้วยการทำให้ report หายแล้วดูว่า gate แดงมั้ย)</li>
+        <li>แยก required vs advisory ชัดเจน</li>
+        <li>วัด pipeline duration p95 ได้</li>
+        <li>รู้ว่า gate ไหน efficacy = 0 <strong>และแยกได้ว่าเป็น deterrence หรือไร้ค่า</strong></li>
+      </ul>
+
+      <h3 id="cl2-agent">Agent-specific <span class="st">⭐</span></h3>
+      <ul class="check">
+        <li class="key">มี file-scope guard: S4 แตะ <code>*.spec.ts</code> ไม่ได้</li>
+        <li class="key">มี red-proof requirement</li>
+        <li>ห้าม <code>--update-snapshots</code> ใน agent env</li>
+        <li>gate ตรวจการเพิ่ม timeout</li>
+        <li>gate ตรวจ test count ไม่ลดลง</li>
+        <li>มี <code>fault-attacks.md</code> ที่ agent อ่านตอน S1/S3</li>
+        <li class="key">มี gate drill suite และรู้ผลว่ามี gate กี่ตัวที่เป็นของปลอม</li>
+        <li>มี traceability matrix ที่ผูก AC → เทส</li>
+      </ul>
+
+      <!-- ============================================================ -->
+      <h2 id="แบบฝึกหัด-2"><span class="num">✎</span>แบบฝึกหัด L2 — ทำกับ Pedpro จริง</h2>
+
+      <ol>
+        <li>
+          <strong>Gate drill</strong> <span class="st">⭐⭐</span> — สร้าง drill 10 ตัวตามตาราง <a href="#drill-suite">L2.16</a>
+          → รัน → <strong>นับว่ามี gate กี่ตัวที่เป็นของปลอม</strong> · <em>ทำข้อนี้ก่อนข้ออื่น</em>
+        </li>
+        <li><strong>Shuffle test</strong> — รัน <code>pnpm vitest run --sequence.shuffle</code> 3 seed → บันทึกว่ามีกี่ตัวพัง → นี่คือหนี้ทางเทคนิคที่คุณไม่รู้ว่ามี (2 นาที)</li>
+        <li><strong>Timing audit</strong> — เปิด <code>slowTestThreshold: 50</code> → หา 10 เทสที่ช้าที่สุด → นับว่ากี่ตัวที่ “ไม่ใช่ unit test แต่อยู่ในโฟลเดอร์ unit”</li>
+        <li><strong>Grep audit</strong> — นับ <code>waitForTimeout</code>, <code>.only</code>, <code>.skip</code>, <code>toBeDefined()</code>, <code>toBeTruthy()</code> → ตั้ง baseline แล้วตั้ง ratchet ห้ามเพิ่ม</li>
+        <li><strong>File-scope guard</strong> <span class="st">⭐⭐</span> — implement → ทดสอบด้วยการให้ agent แก้เทสดู ว่ามันโดนบล็อกจริงมั้ย</li>
+        <li><strong>Red-proof</strong> <span class="st">⭐⭐</span> — implement ใน S3/S4 → รัน 5 task → นับว่ามีกี่ครั้งที่ agent เขียนเทสที่เขียวตั้งแต่แรก (= เทสที่ไร้ค่า)</li>
+        <li><strong>Fail-closed drill</strong> — ทำให้ <code>reports/vitest.json</code> หายไป แล้วดูว่า S6 แดงมั้ย — <strong>ถ้าเขียว คุณมี gate ปลอมอยู่</strong></li>
+        <li><strong>Contract gap</strong> — ลบ field หนึ่งออกจาก mock response แล้วดูว่ามี gate ไหนจับได้บ้าง → ถ้าไม่มีเลย = ช่องโหว่ <a href="#contract">L2.5</a></li>
+        <li><strong>Gate efficacy</strong> — เก็บข้อมูล 20 PR ย้อนหลัง → นับว่า gate ไหนเป็นตัวแรกที่จับปัญหา → หา gate ที่ efficacy = 0 → <strong>ถามคำถาม deterrence ก่อนตัดสินใจลบ</strong></li>
+        <li><strong>Codex efficacy</strong> — วัดว่า S7 จับอะไรได้บ้างที่ deterministic gate จับไม่ได้ → ถ้าน้อย ให้ลด scope ของ S7 ลงเหลือเฉพาะ judgment แล้ววัด <code>blind_approve_rate</code> เทียบก่อน/หลัง</li>
+        <li><strong>MSW strict</strong> — ตั้ง <code>onUnhandledRequest: "error"</code> → ดูว่ามีเทสไหนพังทันที (= มี API call ที่คุณไม่รู้ว่ามี)</li>
+        <li><strong>Flake correlation</strong> — รัน nightly 10 รอบ → คำนวณ correlation index → ตัดสินใจว่าจะแก้ที่เทสหรือที่ environment</li>
+        <li><strong>Thai visual regression</strong> — เอา <code>thaiEvilStrings</code> จาก <a class="xref" href="l1-design.html#thai-fixtures">L1.13</a> ใส่ในหน้าจริง → ถ่าย screenshot → ดูว่ามีสระลอย/ล้น container กี่จุด</li>
+      </ol>
+
+      <div class="note take">
+        <span class="note-t">สรุปที่ต้องติดหัวไป L3</span>
+        <div class="diagram" style="margin:8px 0 0">L2 ทำให้ระบบ "ทำงานถูก" และ gate เชื่อถือได้
+   ↓
+คำถามที่ L3 ต้องตอบ:
+   • มันทำงานถูก แต่มัน "ดีพอ" มั้ย (เร็ว/ปลอดภัย/ใช้ได้/ทน)
+   • NFR ที่เขียนแล้วเทสได้จริงหน้าตาเป็นยังไง
+   • ผู้ใช้ไทยบน LINE in-app browser เจออะไรที่ CI ไม่มีทางเจอ
+   • gate ที่สร้างไว้ ทำงานจริงมั้ย → gate drill (L2.16 ตอบไปแล้ว)</div>
+      </div>
+
+      <div class="pager">
+        <a href="l1-design.html"><span class="dir">← ก่อนหน้า</span><span class="ttl">L1 — ออกแบบเทส</span></a>
+        <a class="next" href="l3-nfr.html"><span class="dir">ชั้นถัดไป →</span><span class="ttl">L3 — Non-functional</span></a>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<button class="top" aria-label="กลับขึ้นบน">↑</button>
+<script src="assets/app.js"></script>
+</body>
+</html>

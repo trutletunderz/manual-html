@@ -1,0 +1,7 @@
+{
+  "_comment": "baseline ของ bundle — รัน `UPDATE_BASELINE=1 node scripts/bundle-budget.mjs` เพื่อเติม",
+  "_status": "ยังไม่ได้วัด",
+  "js": 0,
+  "css": 0,
+  "fonts": 0
+}

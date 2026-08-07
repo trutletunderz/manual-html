@@ -1,0 +1,3094 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L4 — Quality Engineering &amp; Strategy | Testing &amp; QE Field Manual</title>
+<meta name="description" content="Test policy/strategy, shift-left/right, production invariant monitor, SLO, error budget, approval drill, learning loop, agentic QE">
+<style>
+/* ============================================================
+   Pedpro Testing & QE Field Manual
+   ธีมมืด · IBM Plex Sans Thai + IBM Plex Mono
+   หลักการสี: ทุกสีมีความหมาย ไม่มีสีตกแต่ง
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ---- palette (6 named) ---- */
+  --void:    #0a0c0f;
+  --panel:   #131720;
+  --rail:    #1c2029;
+  --rail-2:  #242a35;
+  --line:    #2a3140;
+  --line-2:  #3a4354;
+
+  --fg:      #e4e8ef;
+  --fg-2:    #a6b0c0;
+  --fg-3:    #6f7a8c;
+
+  --jade:    #5fbfa4;   /* โครงสร้าง / ลิงก์ / active */
+  --jade-d:  #2f6d5d;
+  --jade-bg: rgba(95, 191, 164, .09);
+
+  --signal:  #e0a33f;   /* ⭐ ความสำคัญเท่านั้น */
+  --signal-bg: rgba(224, 163, 63, .09);
+
+  --alarm:   #e26a72;   /* fail / ห้าม */
+  --alarm-bg: rgba(226, 106, 114, .09);
+  --clear:   #74c48a;   /* pass / ควรทำ */
+  --clear-bg: rgba(116, 196, 138, .09);
+  --info:    #7aa7d8;
+  --info-bg: rgba(122, 167, 216, .09);
+
+  /* ---- type ---- */
+  --sans: "IBM Plex Sans Thai", "Noto Sans Thai", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", "SFMono-Regular", ui-monospace, Menlo, monospace;
+
+  /* ---- metrics ---- */
+  --rail-w: 292px;
+  --head-h: 56px;
+  --measure: 74ch;
+  --r: 6px;
+}
+
+/* ============================================================
+   base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--head-h) + 20px); }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: 16.5px;
+  font-weight: 400;
+  /* ไทยต้องการ leading มากกว่า latin เพราะสระบน/ล่าง + วรรณยุกต์ */
+  line-height: 1.85;
+  /* L3.7.3 — ห้าม break-all กับข้อความไทย */
+  word-break: normal;
+  overflow-wrap: normal;
+  line-break: auto;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--jade-d); color: #fff; }
+
+a { color: var(--jade); text-decoration: none; border-bottom: 1px solid transparent; }
+a:hover { border-bottom-color: var(--jade); }
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible {
+  outline: 2px solid var(--jade); outline-offset: 2px; border-radius: 3px;
+}
+
+/* ============================================================
+   header
+   ============================================================ */
+.hdr {
+  position: sticky; top: 0; z-index: 60;
+  height: var(--head-h);
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 18px;
+  background: rgba(10, 12, 15, .93);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.hdr-brand {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--fg-3);
+  white-space: nowrap;
+}
+.hdr-brand b { color: var(--jade); font-weight: 600; }
+.hdr-crumb {
+  font-family: var(--mono); font-size: 12.5px; color: var(--fg-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;
+}
+.hdr-crumb .sep { color: var(--fg-3); margin: 0 6px; }
+
+.search-wrap { position: relative; }
+.search {
+  width: 210px; height: 32px; padding: 0 10px 0 28px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--r); color: var(--fg);
+  font-family: var(--mono); font-size: 12.5px;
+}
+.search::placeholder { color: var(--fg-3); }
+.search:focus { border-color: var(--jade-d); }
+.search-ico {
+  position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+  color: var(--fg-3); font-size: 12px; pointer-events: none;
+}
+.search-kbd {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  font-family: var(--mono); font-size: 10px; color: var(--fg-3);
+  border: 1px solid var(--line-2); border-radius: 3px; padding: 0 4px;
+  pointer-events: none;
+}
+.search:focus + .search-kbd { display: none; }
+
+.btn-ghost {
+  height: 32px; padding: 0 11px; background: transparent;
+  border: 1px solid var(--line); border-radius: var(--r);
+  color: var(--fg-2); font-family: var(--mono); font-size: 11.5px;
+  cursor: pointer; white-space: nowrap;
+}
+.btn-ghost:hover { border-color: var(--line-2); color: var(--fg); }
+.btn-ghost[aria-pressed="true"] { border-color: var(--jade-d); color: var(--jade); background: var(--jade-bg); }
+
+.rail-toggle { display: none; }
+
+/* ============================================================
+   shell
+   ============================================================ */
+.shell { display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr); align-items: start; }
+
+/* ---- left rail ---- */
+.rail-col {
+  position: sticky; top: var(--head-h);
+  height: calc(100vh - var(--head-h));
+  overflow-y: auto; overscroll-behavior: contain;
+  border-right: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--panel), var(--void) 70%);
+  padding: 18px 0 60px;
+  scrollbar-width: thin; scrollbar-color: var(--line-2) transparent;
+}
+.rail-col::-webkit-scrollbar { width: 8px; }
+.rail-col::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
+
+.rail-label {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+  letter-spacing: .13em; text-transform: uppercase; color: var(--fg-3);
+  padding: 0 18px; margin: 0 0 10px;
+}
+
+/* ---- SIGNATURE: gate chain ---- */
+.chain { list-style: none; margin: 0 0 26px; padding: 0 14px; position: relative; }
+.chain::before {
+  content: ""; position: absolute; left: 27px; top: 16px; bottom: 16px;
+  width: 1px; background: linear-gradient(180deg, var(--line), var(--line-2), var(--line));
+}
+.chain li { position: relative; }
+.chain a {
+  display: grid; grid-template-columns: 26px 1fr; align-items: baseline; gap: 10px;
+  padding: 6px 8px; border-radius: var(--r); border-bottom: 0;
+  color: var(--fg-2); position: relative;
+}
+.chain a:hover { background: var(--rail); color: var(--fg); }
+.chain .node {
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  color: var(--fg-3); text-align: center;
+  background: var(--void); position: relative; z-index: 1;
+  padding: 2px 0; border-radius: 3px;
+}
+.chain .lbl { font-size: 13.5px; line-height: 1.45; }
+.chain .sub {
+  display: block; font-family: var(--mono); font-size: 10.5px;
+  color: var(--fg-3); letter-spacing: .02em;
+}
+.chain a[aria-current="page"] { background: var(--jade-bg); color: var(--fg); }
+.chain a[aria-current="page"] .node { color: var(--jade); box-shadow: 0 0 0 1px var(--jade-d); }
+.chain a[aria-current="page"]::before {
+  content: ""; position: absolute; left: -14px; top: 6px; bottom: 6px;
+  width: 2px; background: var(--jade); border-radius: 2px;
+}
+
+/* ---- page toc ---- */
+.toc { padding: 0 14px; }
+.toc ul { list-style: none; margin: 0; padding: 0; }
+.toc a {
+  display: block; padding: 3.5px 10px; border-radius: 4px; border-bottom: 0;
+  color: var(--fg-2); font-size: 13px; line-height: 1.5;
+  border-left: 2px solid transparent;
+}
+.toc a:hover { background: var(--rail); color: var(--fg); }
+.toc a.on { color: var(--jade); border-left-color: var(--jade); background: var(--jade-bg); }
+.toc .lv3 { padding-left: 22px; font-size: 12.5px; color: var(--fg-3); }
+.toc .lv4 { padding-left: 34px; font-size: 12px; color: var(--fg-3); }
+.toc .star::after { content: "★"; color: var(--signal); font-size: 9px; margin-left: 5px; vertical-align: 1px; }
+.toc li.hide { display: none; }
+.toc-empty {
+  display: none; padding: 10px; font-size: 12.5px; color: var(--fg-3);
+  font-family: var(--mono);
+}
+.toc.filtered .toc-empty:only-child { display: block; }
+
+/* ---- main ---- */
+.main { min-width: 0; padding: 0 40px 140px; }
+.wrap { max-width: 960px; margin: 0 auto; }
+
+/* ============================================================
+   page head
+   ============================================================ */
+.phead { padding: 46px 0 34px; border-bottom: 1px solid var(--line); margin-bottom: 34px; }
+.eyebrow {
+  font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--jade);
+  margin: 0 0 12px;
+}
+.phead h1 {
+  margin: 0 0 14px; font-size: clamp(30px, 4.2vw, 44px);
+  font-weight: 700; line-height: 1.28; letter-spacing: -.015em;
+}
+.phead .lede { margin: 0; font-size: 17.5px; color: var(--fg-2); max-width: var(--measure); }
+.phead .meta {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px;
+  font-family: var(--mono); font-size: 11.5px;
+}
+.meta-chip {
+  padding: 3px 9px; border: 1px solid var(--line); border-radius: 100px;
+  color: var(--fg-3); background: var(--panel);
+}
+.meta-chip b { color: var(--fg-2); font-weight: 500; }
+
+/* ============================================================
+   typography
+   ============================================================ */
+.main h2, .main h3, .main h4 { scroll-margin-top: calc(var(--head-h) + 20px); }
+
+.main h2 {
+  margin: 58px 0 18px; padding-top: 22px;
+  border-top: 1px solid var(--line);
+  font-size: 27px; font-weight: 700; line-height: 1.35; letter-spacing: -.01em;
+}
+.main h2 .num {
+  font-family: var(--mono); font-size: 15px; font-weight: 600;
+  color: var(--jade); margin-right: 11px;
+}
+.main h3 {
+  margin: 38px 0 12px; font-size: 20px; font-weight: 600; line-height: 1.45;
+}
+.main h3 .num { font-family: var(--mono); font-size: 13.5px; color: var(--fg-3); margin-right: 9px; }
+.main h4 { margin: 26px 0 8px; font-size: 16.5px; font-weight: 600; color: var(--fg); }
+
+.main p { margin: 0 0 16px; max-width: var(--measure); }
+.main > .wrap > p, .sec > p { max-width: var(--measure); }
+
+.main ul, .main ol { margin: 0 0 16px; padding-left: 22px; max-width: var(--measure); }
+.main li { margin-bottom: 7px; }
+.main li::marker { color: var(--fg-3); }
+
+strong, b { font-weight: 600; color: #f2f5f9; }
+em { font-style: italic; color: var(--fg-2); }
+
+hr { border: 0; border-top: 1px solid var(--line); margin: 40px 0; }
+
+/* ⭐ = สัญญาณความสำคัญ ไม่ใช่ของตกแต่ง */
+.st { color: var(--signal); font-style: normal; letter-spacing: -.05em; }
+h2.imp, h3.imp { position: relative; }
+h2.imp::before, h3.imp::before {
+  content: ""; position: absolute; left: -18px; top: .35em; bottom: .2em;
+  width: 3px; background: var(--signal); border-radius: 2px;
+}
+
+/* ============================================================
+   MONO = ภาษาเครื่อง (กฎเหล็กของหน้านี้)
+   ============================================================ */
+code, kbd, samp, .mono { font-family: var(--mono); font-size: .875em; }
+
+:not(pre) > code {
+  background: var(--rail); border: 1px solid var(--line);
+  padding: 1px 5px; border-radius: 4px; color: #b8e0d2;
+  word-break: break-word;
+}
+
+kbd {
+  background: var(--rail-2); border: 1px solid var(--line-2);
+  border-bottom-width: 2px; padding: 1px 5px; border-radius: 4px;
+  font-size: 11.5px; color: var(--fg-2);
+}
+
+/* ---- code block ---- */
+.code {
+  position: relative; margin: 20px 0;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+  overflow: hidden;
+}
+.code-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 12px; background: var(--rail);
+  border-bottom: 1px solid var(--line);
+}
+.code-lang {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--fg-3);
+}
+.code-file { font-family: var(--mono); font-size: 11px; color: var(--fg-2); }
+.code-copy {
+  background: transparent; border: 1px solid var(--line-2); border-radius: 4px;
+  color: var(--fg-3); font-family: var(--mono); font-size: 10.5px;
+  padding: 2px 8px; cursor: pointer; white-space: nowrap;
+}
+.code-copy:hover { color: var(--jade); border-color: var(--jade-d); }
+.code-copy.done { color: var(--clear); border-color: var(--clear); }
+.code pre {
+  margin: 0; padding: 14px 16px; overflow-x: auto;
+  font-family: var(--mono); font-size: 13px; line-height: 1.72;
+  color: #cfd8e3; tab-size: 2;
+}
+.code pre::-webkit-scrollbar { height: 9px; }
+.code pre::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
+.code pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* ---- diagram / ascii ---- */
+.diagram {
+  margin: 20px 0; padding: 16px 18px; overflow-x: auto;
+  background: var(--panel); border: 1px solid var(--line);
+  border-left: 3px solid var(--jade-d); border-radius: var(--r);
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.62;
+  color: var(--fg-2); white-space: pre;
+}
+
+/* ============================================================
+   tables
+   ============================================================ */
+.tbl { margin: 20px 0; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); }
+.tbl table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.tbl th {
+  background: var(--rail); text-align: left; padding: 9px 13px;
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  letter-spacing: .07em; text-transform: uppercase; color: var(--fg-2);
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.tbl td { padding: 10px 13px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.65; }
+.tbl tbody tr:last-child td { border-bottom: 0; }
+.tbl tbody tr:hover { background: rgba(255,255,255,.017); }
+.tbl code { font-size: 12.5px; }
+.tbl .num-col { font-family: var(--mono); font-size: 12.5px; color: var(--fg-3); white-space: nowrap; }
+.tbl .yes { color: var(--clear); }
+.tbl .no { color: var(--alarm); }
+.tbl .mid { color: var(--signal); }
+
+/* ============================================================
+   callouts — สีบอกชนิด ไม่ใช่บอกอารมณ์
+   ============================================================ */
+.note {
+  margin: 20px 0; padding: 13px 16px 13px 17px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-left: 3px solid var(--fg-3); border-radius: var(--r);
+  font-size: 15.5px;
+}
+.note > :first-child { margin-top: 0; }
+.note > :last-child { margin-bottom: 0; }
+.note p { max-width: none; }
+.note-t {
+  display: block; font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; color: var(--fg-3);
+}
+.note.imp   { border-left-color: var(--signal); background: var(--signal-bg); }
+.note.imp .note-t { color: var(--signal); }
+.note.warn  { border-left-color: var(--alarm); background: var(--alarm-bg); }
+.note.warn .note-t { color: var(--alarm); }
+.note.good  { border-left-color: var(--clear); background: var(--clear-bg); }
+.note.good .note-t { color: var(--clear); }
+.note.fix   { border-left-color: var(--info); background: var(--info-bg); }
+.note.fix .note-t { color: var(--info); }
+.note.take  { border-left-color: var(--jade); background: var(--jade-bg); }
+.note.take .note-t { color: var(--jade); }
+
+/* ============================================================
+   checklist
+   ============================================================ */
+.check { list-style: none; margin: 18px 0; padding: 0; max-width: var(--measure); }
+.check li {
+  position: relative; padding: 5px 0 5px 30px; margin: 0;
+  border-bottom: 1px solid rgba(42,49,64,.55); font-size: 15.5px; line-height: 1.7;
+}
+.check li:last-child { border-bottom: 0; }
+.check li::before {
+  content: ""; position: absolute; left: 4px; top: 12px;
+  width: 13px; height: 13px; border: 1.5px solid var(--line-2); border-radius: 3px;
+}
+.check li.key::before { border-color: var(--signal); }
+
+/* ============================================================
+   layer cards (index)
+   ============================================================ */
+.cards { display: grid; gap: 14px; margin: 26px 0; }
+@media (min-width: 900px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+
+.card {
+  display: block; padding: 18px 20px; border-bottom: 0;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+  color: inherit; position: relative; overflow: hidden;
+  transition: border-color .16s ease, transform .16s ease;
+}
+.card::after {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--jade-d); transition: background .16s ease;
+}
+.card:hover { border-color: var(--line-2); transform: translateY(-1px); }
+.card:hover::after { background: var(--jade); }
+.card-id {
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  letter-spacing: .12em; color: var(--jade); margin-bottom: 7px;
+}
+.card h3 { margin: 0 0 7px; font-size: 18px; font-weight: 600; }
+.card p { margin: 0 0 12px; font-size: 14.5px; color: var(--fg-2); max-width: none; }
+.card-q {
+  font-size: 14px; color: var(--fg-2); font-style: italic;
+  padding-left: 11px; border-left: 2px solid var(--line-2); margin: 0 0 12px;
+}
+.card-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag {
+  font-family: var(--mono); font-size: 10.5px; color: var(--fg-3);
+  border: 1px solid var(--line); border-radius: 100px; padding: 2px 8px;
+}
+.card-stat {
+  display: flex; gap: 14px; margin-top: 12px; padding-top: 11px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono); font-size: 11px; color: var(--fg-3);
+}
+.card-stat b { color: var(--fg-2); font-weight: 500; }
+
+/* ============================================================
+   collapsible sections
+   ============================================================ */
+.fold-h { cursor: pointer; user-select: none; position: relative; padding-left: 20px; }
+.fold-h::after {
+  content: "▾"; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  font-size: 12px; color: var(--fg-3); transition: transform .16s ease;
+}
+.fold-h[aria-expanded="false"]::after { transform: translateY(-50%) rotate(-90deg); }
+.fold-h:hover::after { color: var(--jade); }
+.fold-b[hidden] { display: none; }
+.fold-h[aria-expanded="false"] + .fold-b { display: none; }
+
+/* ============================================================
+   cross-reference
+   ============================================================ */
+.xref {
+  font-family: var(--mono); font-size: 12px;
+  border-bottom: 1px dotted var(--jade-d); color: var(--jade);
+  white-space: nowrap;
+}
+.xref:hover { border-bottom-style: solid; }
+.xref::before { content: "↗ "; opacity: .6; }
+
+.pager {
+  display: flex; gap: 12px; justify-content: space-between; margin-top: 66px;
+  padding-top: 22px; border-top: 1px solid var(--line);
+}
+.pager a {
+  flex: 1; padding: 14px 16px; border-bottom: 0; border-radius: var(--r);
+  background: var(--panel); border: 1px solid var(--line); color: inherit;
+}
+.pager a:hover { border-color: var(--jade-d); }
+.pager .dir {
+  display: block; font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--fg-3); margin-bottom: 4px;
+}
+.pager .ttl { font-weight: 600; font-size: 15px; }
+.pager .next { text-align: right; }
+
+/* ============================================================
+   misc
+   ============================================================ */
+.lead-in {
+  font-size: 17px; color: var(--fg-2); max-width: var(--measure);
+  padding-left: 15px; border-left: 2px solid var(--jade-d); margin: 0 0 26px;
+}
+.kv { display: grid; gap: 2px; margin: 18px 0; max-width: var(--measure); }
+.kv > div { display: grid; grid-template-columns: 190px 1fr; gap: 14px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.kv dt, .kv .k { font-family: var(--mono); font-size: 12.5px; color: var(--fg-3); }
+.kv dd, .kv .v { margin: 0; font-size: 15px; }
+
+.mark { background: var(--signal-bg); box-shadow: 0 0 0 2px var(--signal-bg); border-radius: 2px; }
+
+.top {
+  position: fixed; right: 22px; bottom: 22px; z-index: 50;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--rail); border: 1px solid var(--line-2); color: var(--fg-2);
+  font-size: 15px; cursor: pointer; opacity: 0; pointer-events: none;
+  transition: opacity .2s ease;
+}
+.top.on { opacity: 1; pointer-events: auto; }
+.top:hover { color: var(--jade); border-color: var(--jade-d); }
+
+/* ============================================================
+   responsive
+   ============================================================ */
+@media (max-width: 1080px) {
+  :root { --rail-w: 250px; }
+  .main { padding: 0 26px 120px; }
+}
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+  .rail-toggle { display: inline-block; }
+  .rail-col {
+    position: fixed; top: var(--head-h); left: 0; bottom: 0; width: 300px; z-index: 55;
+    transform: translateX(-102%); transition: transform .2s ease;
+    box-shadow: 12px 0 34px rgba(0,0,0,.55);
+    background: var(--panel);
+  }
+  .rail-col.open { transform: none; }
+  .main { padding: 0 18px 100px; }
+  .search { width: 130px; }
+  .hdr-brand { display: none; }
+  .phead { padding: 32px 0 26px; }
+  .kv > div { grid-template-columns: 1fr; gap: 2px; }
+  .pager { flex-direction: column; }
+  .pager .next { text-align: left; }
+}
+
+/* ============================================================
+   print
+   ============================================================ */
+@media print {
+  :root { --void: #fff; --panel: #fff; --fg: #111; --fg-2: #333; --fg-3: #666; --line: #ccc; }
+  body { background: #fff; color: #111; font-size: 11pt; line-height: 1.6; }
+  .hdr, .rail-col, .top, .code-copy, .pager { display: none !important; }
+  .shell { display: block; }
+  .main { padding: 0; }
+  .fold-b { display: block !important; }
+  .fold-h::after { display: none; }
+  .code, .tbl, .note, .diagram { break-inside: avoid; border-color: #ccc; }
+  .code pre { color: #111; }
+  a { color: #111; border: 0; }
+  .xref::after { content: " (" attr(href) ")"; font-size: 9pt; color: #666; }
+  h2 { break-after: avoid; }
+}
+
+</style>
+<link rel="prev" href="l3-nfr.html">
+<link rel="next" href="l5-advanced.html">
+</head>
+<body>
+
+<header class="hdr">
+  <button class="btn-ghost rail-toggle" id="railToggle" aria-expanded="false" aria-label="สลับสารบัญ">☰</button>
+  <div class="hdr-brand">pedpro <b>/</b> qe field manual</div>
+  <div class="hdr-crumb"><a href="index.html">index</a><span class="sep">/</span>L4 — quality engineering</div>
+  <button class="btn-ghost" id="foldAll" aria-pressed="false">ยุบหัวข้อย่อย</button>
+  <div class="search-wrap">
+    <span class="search-ico">⌕</span>
+    <input class="search" id="search" type="search" placeholder="ค้นหัวข้อในหน้านี้" aria-label="ค้นหัวข้อ">
+    <span class="search-kbd">/</span>
+  </div>
+</header>
+
+<div class="shell">
+
+  <nav class="rail-col" aria-label="สารบัญ">
+    <p class="rail-label">gate chain</p>
+    <ul class="chain">
+      <li><a href="index.html"><span class="node">◆</span><span class="lbl">ภาพรวม<span class="sub">index</span></span></a></li>
+      <li><a href="l0-foundation.html"><span class="node">L0</span><span class="lbl">รากฐาน<span class="sub">foundation</span></span></a></li>
+      <li><a href="l1-design.html"><span class="node">L1</span><span class="lbl">ออกแบบเทส<span class="sub">test design</span></span></a></li>
+      <li><a href="l2-automation.html"><span class="node">L2</span><span class="lbl">automation &amp; CI<span class="sub">gate design</span></span></a></li>
+      <li><a href="l3-nfr.html"><span class="node">L3</span><span class="lbl">non-functional<span class="sub">perf · sec · a11y · ไทย</span></span></a></li>
+      <li><a href="l4-qe.html" aria-current="page"><span class="node">L4</span><span class="lbl">quality engineering<span class="sub">slo · learning loop</span></span></a></li>
+      <li><a href="l5-advanced.html"><span class="node">L5</span><span class="lbl">เทพ<span class="sub">mutation · llm eval</span></span></a></li>
+      <li><a href="appendix.html"><span class="node">◇</span><span class="lbl">ภาคผนวก<span class="sub">appendix</span></span></a></li>
+    </ul>
+    <p class="rail-label">ในหน้านี้</p>
+    <div class="toc" id="toc"></div>
+  </nav>
+
+  <main class="main">
+    <div class="wrap">
+
+      <div class="phead">
+        <p class="eyebrow">ชั้นที่ 4 · quality engineering</p>
+        <h1>Quality Engineering<br>&amp; Strategy</h1>
+        <p class="lede">
+          L0–L3 = ทำให้ระบบมีคุณภาพ ·
+          <strong>L4 = ทำให้ “การมีคุณภาพ” เป็นสิ่งที่เกิดขึ้นซ้ำได้
+          โดยไม่ต้องอาศัยว่าคุณจำได้ ขยันพอ หรืออารมณ์ดี</strong>
+        </p>
+        <div class="meta">
+          <span class="meta-chip">ไม่มีเทคนิคใหม่</span>
+          <span class="meta-chip">เช็คลิสต์ <b>38 ข้อ</b></span>
+          <span class="meta-chip">แบบฝึกหัด <b>15 ข้อ</b></span>
+          <span class="meta-chip"><b>จัดวางสิ่งที่มีอยู่แล้ว</b></span>
+        </div>
+      </div>
+
+      <p class="lead-in">
+        หน่วยของงานที่ต่างกันคือทั้งหมดของชั้นนี้:
+        Tester ทำงานกับ <em>build นี้</em> · QC ทำงานกับ <em>release นี้</em> ·
+        <strong>QE ทำงานกับ ระบบที่ผลิต release</strong> —
+        คุณทำงาน QE อยู่แล้วโดยไม่ได้เรียกชื่อมัน
+      </p>
+
+      <!-- ============================================================ -->
+      <h2 id="qc-to-qe"><span class="num">L4.0</span>QC → QE: อะไรเปลี่ยนจริง</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:16%"></th><th>QC (ชั้น L0–L3)</th><th>QE (ชั้นนี้)</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">หน่วยงาน</td><td>release นี้</td><td><strong>ระบบที่ผลิต release</strong></td></tr>
+            <tr><td class="num-col">คำถาม</td><td>“มันพังตรงไหน”</td><td>“ทำไมบั๊กชนิดนี้ถึงหลุดมาได้ และจะทำให้หลุดไม่ได้อีกยังไง”</td></tr>
+            <tr><td class="num-col">ผลลัพธ์</td><td>รายงานบั๊ก</td><td><strong>gate ใหม่ / constraint ใหม่ / ความรู้ที่ถูกเข้ารหัส</strong></td></tr>
+            <tr><td class="num-col">วัดที่</td><td>บั๊กที่หาเจอ</td><td>บั๊กที่<strong>ไม่หลุด</strong> และเวลาที่ประหยัด</td></tr>
+            <tr><td class="num-col">ขอบเขต</td><td>ก่อน release</td><td><strong>ตลอด lifecycle รวม production</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="ช่องที่ปิด">แผนที่ว่าช่องที่ L0–L3 เปิดค้างไว้ ถูกปิดที่ไหนในชั้นนี้</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:22%">ช่องที่เปิดไว้</th><th style="width:32%">ปัญหา</th><th>ปิดที่</th></tr></thead>
+          <tbody>
+            <tr><td><a class="xref" href="l0-foundation.html#verification-validation">L0.2</a> validation gap</td><td>pipeline แข็ง verification อ่อน validation — แขวนอยู่กับสายตาคุณคนเดียวที่ S8.5</td><td><a href="#shift-right">L4.3</a> shift-right + <a href="#invariant-monitor">production invariant monitor</a></td></tr>
+            <tr><td><a class="xref" href="l0-foundation.html#test-process">L0.8</a> test completion</td><td>ความรู้ว่า “บั๊กชนิดไหนหลุดบ่อย” ไม่เคยถูกแปลงเป็น gate</td><td><a href="#learning-loop">L4.9</a> learning loop</td></tr>
+            <tr><td><a class="xref" href="l1-design.html#risk-based">L1.10</a> risk register</td><td>มีตารางความเสี่ยงแต่ไม่ได้ผูกกับกระบวนการ</td><td><a href="#portfolio-risk">L4.6</a> + <a href="#tiered-dod">L4.7</a> tiered DoD</td></tr>
+            <tr><td><a class="xref" href="l2-automation.html#ci-metric">L2.13</a> gate efficacy</td><td>รู้ว่า gate ไหนคุ้ม แต่ไม่รู้ว่าคนที่อยู่ปลาย gate ยังทำงานอยู่มั้ย</td><td><a href="#approval-drill">L4.5</a> approval drill ⭐⭐</td></tr>
+            <tr><td><a class="xref" href="l3-nfr.html#sec-triage">L3.4K</a> hotfix path</td><td>ขัดกับหลัก “S8.5 ห้ามข้าม”</td><td><a href="#release">L4.8</a> emergency path</td></tr>
+            <tr><td><a class="xref" href="l3-nfr.html#nfr-schedule">L3.10</a> gate เยอะเกินไป</td><td>gate ~20 ตัว + drill 4 ตัว — จะรันทุกอันทุกครั้งไม่ไหว</td><td><a href="#tiered-dod">L4.7</a> gate set ตาม tier</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">3 การเปลี่ยนแปลงที่นิยาม QE</span>
+        <ol style="margin-bottom:0">
+          <li><strong>จากตรวจของ → ออกแบบระบบที่ทำให้ของเสียเกิดยาก</strong> — เทียบกับ L2.14: การกัน agent แก้เทสด้วย file-scope guard คือ QE ส่วนการไล่ตรวจว่า agent แก้เทสมั้ยคือ QC</li>
+          <li><strong>จากเหตุการณ์เดี่ยว → รูปแบบ</strong> — บั๊ก 1 ตัวคือข้อมูล บั๊ก 10 ตัวที่มี root cause เดียวกันคือ<strong>ข้อบกพร่องของกระบวนการ</strong></li>
+          <li><strong>จากความรู้ในหัว → ความรู้ในระบบ</strong> — สิ่งที่คุณ “รู้ว่าต้องระวัง” ต้องกลายเป็นไฟล์ที่ agent อ่านได้ ไม่งั้นมันหายไปพร้อมกับความจำของคุณ</li>
+        </ol>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="policy-strategy-plan"><span class="num">L4.1</span>เอกสาร 3 ชั้น: Policy / Strategy / Plan</h2>
+
+      <div class="note take">
+        <span class="note-t">สำหรับคนทำคนเดียว เอกสารพวกนี้ไม่ได้มีไว้สื่อสารกับคนอื่น</span>
+        <p style="margin-bottom:0;font-size:17px">
+          <strong>มันมีไว้สื่อสารกับตัวคุณเองในวันที่เหนื่อยและใกล้ deadline</strong> —
+          วันนั้นคุณจะอยากข้าม gate และคุณจะมีเหตุผลดีๆ เตรียมไว้แล้ว
+        </p>
+      </div>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:16%">ระดับ</th><th style="width:24%">ตอบคำถาม</th><th style="width:18%">อายุ</th><th>ตัวอย่าง</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Policy</strong></td><td>เรา<strong>เชื่อ</strong>อะไรเรื่องคุณภาพ</td><td>ปีละครั้ง</td><td>“ความถูกต้องของเงินไม่มี error budget”</td></tr>
+            <tr><td><strong>Strategy</strong></td><td>เรา<strong>จะทำ</strong>ยังไงโดยรวม</td><td>ไตรมาสละครั้ง</td><td>“deterministic gate มาก่อน LLM reviewer เสมอ”</td></tr>
+            <tr><td><strong>Plan</strong></td><td>รอบนี้<strong>ทำอะไรบ้าง</strong></td><td>ทุก release</td><td>“sprint นี้เพิ่ม race harness 6 เคส”</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="test-policy">Test Policy 1 หน้าที่เอาไปใช้ได้เลย</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">markdown</span><span class="code-file">docs/quality/policy.md</span></div>
+<pre><code># Pedpro Quality Policy
+แก้ไขล่าสุด: 2026-07-25 · ทบทวนครั้งถัดไป: 2027-07
+
+## 1. สิ่งที่เราไม่ยอมให้เกิดเด็ดขาด (ไม่มี error budget)
+- เงินของผู้ใช้ผิดพลาด แม้ 1 สตางค์
+- ผู้ใช้เห็น/แก้ข้อมูลของผู้ใช้คนอื่น
+- ข้อมูลส่วนบุคคลรั่วออกนอกระบบ (PDPA)
+- ผู้ที่อายุไม่ถึงเกณฑ์เข้าใช้ระบบได้
+
+→ ทั้ง 4 ข้อนี้ วัดด้วย invariant ที่ทำงานใน production ตลอดเวลา
+  ไม่ใช่ด้วยเทสที่รันเฉพาะตอน CI
+
+## 2. ค่าเริ่มต้นของระบบ
+- fail-closed: ถ้าตรวจไม่ได้ = ไม่ผ่าน
+- deterministic ก่อน judgment: gate ที่ตัดสินผิดไม่ได้ ต้องรันก่อนเสมอ
+- ไม่มี gate ที่ข้ามได้ ยกเว้น emergency path ที่นิยามไว้ล่วงหน้า (§L4.8)
+
+## 3. ลำดับความสำคัญเมื่อขัดแย้งกัน
+   ความถูกต้องของเงิน  &gt;  ความปลอดภัย  &gt;  ความพร้อมใช้งาน
+   &gt;  ความเร็ว  &gt;  ความสวยงาม
+
+   ตัวอย่างการใช้: ถ้าต้องเลือกระหว่าง "ระบบช้าลง 300ms"
+   กับ "มีโอกาส 0.1% ที่ยอดเงินจะเพี้ยน" → เลือกช้าลง ไม่ต้องคิด
+
+## 4. Metric ที่เราใช้ตัดสินใจ (ไม่ใช่ทุกตัวที่วัดได้)
+- escaped_defect_rate         — ประสิทธิผลรวมของระบบ
+- approval_drill_pass_rate    — human gate ยังทำงานอยู่มั้ย  ⭐
+- blind_approve_rate          — คุณภาพของสิ่งที่ถึงมือคน
+- repeat_incident_rate        — เราเรียนรู้จริงมั้ย
+- CFR / MTTR                  — ความเร็วในการฟื้นตัว
+
+## 5. เรื่อง agent
+- agent รับผิดชอบไม่ได้ → accountability อยู่ที่คนเสมอ
+- ข้อจำกัดที่สำคัญต้องเป็น structural ไม่ใช่ prompt (§L4.12)
+- ทุกอย่างที่ agent ผลิต ถือว่ายังไม่ถูกตรวจสอบจนกว่าจะผ่าน gate ที่คนออกแบบ
+
+## 6. สิ่งที่เราจงใจไม่ทำ (พร้อมเงื่อนไขเปลี่ยนใจ)
+| ไม่ทำ | เหตุผล | จะเริ่มทำเมื่อ |
+|---|---|---|
+| unit test ของ UI component รายตัว | เปราะ ไม่ให้ confidence | — |
+| E2E ทุก browser ทุก commit | ช้า ไม่คุ้ม | มีผู้ใช้ Firefox &gt; 5% |
+| pentest ภายนอก | ยังไม่ถึงขนาด | ผู้ใช้ &gt; 50k หรือมีเงินหมุน &gt; 10M/เดือน |
+| Pact / consumer-driven contract | มี consumer เดียว | มี frontend ตัวที่ 2 |
+| load test ทุก PR | 15 นาที ไม่คุ้ม | p95 เข้าใกล้ SLO ที่ 80% |</code></pre>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">§6 คือส่วนที่มีค่าที่สุดในเอกสารทั้งฉบับ</span>
+        <p style="margin-bottom:0">
+          เพราะมันเปลี่ยน <em>“เรายังไม่ได้ทำ”</em> (ซึ่งฟังเหมือนความประมาท) เป็น
+          <strong>“เราตัดสินใจไม่ทำ ด้วยเหตุผลนี้ และนี่คือสัญญาณที่จะทำให้เราเปลี่ยนใจ”</strong><br>
+          และมันคือสิ่งที่ป้องกันคุณได้จริงเมื่อบั๊กหลุด — ต่อยอดจาก
+          <a class="xref" href="l1-design.html#risk-based">L1.10</a>
+        </p>
+      </div>
+
+      <h3 id="test-strategy">Test Strategy — 10 หัวข้อที่ต้องมี</h3>
+
+      <div class="diagram">1.  ขอบเขต — ระบบไหนบ้าง อะไรอยู่นอกขอบเขต
+2.  Risk register + เกณฑ์การจัดระดับ                    (L1.10)
+3.  Test architecture — รูปทรงต่อชนิดโค้ด               (L2.1)
+4.  เกณฑ์ปฏิเสธของแต่ละ gate                            (L2.2, L3.10)
+5.  ลำดับ gate + required/advisory                       (L2.11)
+6.  Environment strategy                                 (L2.8)
+7.  Test data strategy + PDPA                            (L1.13, L2.8)
+8.  NFR targets + SLO                                    (L3.1, L4.4)
+9.  Metric ที่ติดตาม + เกณฑ์ที่ต้องลงมือ                 (L4.5)
+10. ⭐ สิ่งที่จงใจไม่ทำ + เงื่อนไขเปลี่ยนใจ</div>
+
+      <div class="note warn">
+        <span class="note-t">ความเห็นตรงๆ เรื่องความยาว</span>
+        <p style="margin-bottom:0">
+          Strategy ที่ยาวเกิน 3 หน้า <strong>จะไม่มีใครอ่าน รวมทั้งตัวคุณเอง</strong> —
+          ถ้าเขียนไปแล้วยาว ให้ย้ายรายละเอียดไปเป็นลิงก์ไปหาไฟล์ config จริง
+          (<code>slo.js</code>, <code>matrix.ts</code>, <code>fault-attacks.md</code>)
+          เพราะ<strong>ไฟล์ config ที่รันได้จะไม่มีวันล้าสมัย ต่างจากเอกสารที่บรรยาย</strong>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="shift-left"><span class="num">L4.2</span>Shift-Left: ความหมายที่ถูกต้อง</h2>
+
+      <div class="note take">
+        <span class="note-t">shift-left ≠ เทสให้เร็วขึ้น</span>
+        <p style="margin-bottom:0;font-size:17px">
+          <strong>มันคือการย้าย <em>อำนาจตัดสินใจเรื่องคุณภาพ</em> ไปอยู่ใกล้จุดที่สร้างของ</strong>
+        </p>
+      </div>
+
+      <h3 id="shift-left-5">5 ระดับ + การวินิจฉัย pipeline นี้</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:10%">ระดับ</th><th style="width:26%">อยู่ตรงไหน</th><th style="width:32%">ทำอะไรได้</th><th>สถานะของคุณ</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col"><strong>L-4</strong></td><td>ตอนคิดฟีเจอร์</td><td>ถามว่า “จะรู้ได้ยังไงว่าฟีเจอร์นี้สำเร็จ”</td><td class="no"><strong>อ่อนที่สุด</strong> ⭐</td></tr>
+            <tr><td class="num-col"><strong>L-3</strong></td><td>ตอนเขียน requirement</td><td>ambiguity review, risk poker</td><td class="no"><strong>อ่อน</strong> ⭐</td></tr>
+            <tr><td class="num-col"><strong>L-2</strong></td><td>ตอนออกแบบ</td><td>testability review, threat model</td><td class="mid">มีบ้าง (S4B plan)</td></tr>
+            <tr><td class="num-col"><strong>L-1</strong></td><td>ตอนเขียนโค้ด</td><td>TDD, red-proof, type system</td><td class="yes">แข็งมาก</td></tr>
+            <tr><td class="num-col"><strong>L0</strong></td><td>ตอน commit</td><td>gate ทั้งหมด</td><td class="yes">แข็งมาก</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">การวินิจฉัย</span>
+        <p style="margin-bottom:0">
+          pipeline ของคุณ<strong>แข็งที่สุดตรงที่ automation แข็งที่สุด และอ่อนที่สุดตรงที่ต้องใช้การตัดสินใจของมนุษย์</strong> —
+          ซึ่งเป็นรูปแบบที่คาดเดาได้ เพราะคุณลงทุนไปกับสิ่งที่ automate ได้<br>
+          <strong>ผลตอบแทนสูงสุดตอนนี้จึงอยู่ที่ L-3 และ L-4 ไม่ใช่ที่การเพิ่ม gate อีกตัว</strong>
+        </p>
+      </div>
+
+      <h3 id="spec-gate">Spec Quality Gate — ใช้ agent 2 ตัวเทียบกัน <span class="st">⭐</span></h3>
+
+      <p>
+        <a class="xref" href="l0-foundation.html#ambiguity-review">L0.5</a> ให้ตารางธงแดงไปแล้ว
+        ตรงนี้คือวิธีทำให้มันเป็น <strong>gate ที่รันอัตโนมัติ</strong>
+      </p>
+
+      <div class="diagram">S1  รับ ticket จาก YouTrack
+     ↓
+S1a ⭐ Agent A (Claude) อ่าน AC → ระบุจุดกำกวมเป็น JSON
+S1b ⭐ Agent B (Codex)  อ่าน AC → ระบุจุดกำกวมเป็น JSON   ← แยกกัน ไม่เห็นผลของอีกตัว
+     ↓
+S1c เทียบผลลัพธ์:
+     • ทั้งคู่เห็นตรงกัน  → ambiguity ที่ชัดเจน → ต้องแก้ spec ก่อนไปต่อ
+     • เห็นไม่ตรงกัน      → ⭐ ตรงนี้แหละคือ ambiguity ที่แท้จริง
+                            เพราะระบบสองระบบตีความ spec เดียวกันคนละแบบ
+     • ทั้งคู่ไม่เห็นอะไร → spec น่าจะชัดพอ (ยังไม่การันตี)
+     ↓
+S1d ถ้าคะแนนความกำกวม &gt; threshold → บล็อก ส่งคำถามกลับทาง Telegram</div>
+
+      <div class="note imp">
+        <span class="note-t">ทำไมการที่ agent สองตัวเห็นไม่ตรงกันถึงมีค่ากว่าการที่เห็นตรงกัน</span>
+        <p style="margin-bottom:0">
+          เพราะมันคือ <strong>หลักฐานเชิงประจักษ์ว่า spec ตีความได้หลายแบบ</strong> —
+          ไม่ใช่ความเห็นของใครคนใดคนหนึ่ง<br>
+          และมันคือ <a class="xref" href="l1-design.html#risk-poker">risk poker</a> ที่ทำงานอัตโนมัติ:
+          คุณค่าอยู่ที่จุดที่คะแนนต่างกัน ไม่ใช่ที่ตัวคะแนน
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">pipeline/stages/s1-spec-gate.ts</span></div>
+<pre><code>const AMBIGUITY_SCHEMA = z.object({
+  findings: z.array(z.object({
+    quote: z.string(),                       // ข้อความจาก AC ที่กำกวม
+    category: z.enum([
+      "unmeasurable",      // "เร็ว", "เหมาะสม"
+      "boundary_unclear",  // "ขั้นต่ำ 100" — inclusive?
+      "and_or",            // "และ/หรือ"
+      "passive",           // "ข้อมูลจะถูกบันทึก" — ใครบันทึก
+      "etc",               // "ฯลฯ"
+      "no_negative_path",  // ไม่มีกรณีล้มเหลว
+      "missing_actor",     // ไม่บอกว่าใครทำ
+    ]),
+    question: z.string(),                    // คำถามที่ต้องถามกลับ
+    severity: z.enum(["blocker", "major", "minor"]),
+  })),
+})
+
+export async function specQualityGate(ticket: Ticket) {
+  const prompt = buildAmbiguityPrompt(ticket.acceptanceCriteria)
+
+  // ⭐ รันแยกกัน ไม่ให้เห็นผลของกันและกัน
+  const [a, b] = await Promise.all([
+    runClaude(prompt, AMBIGUITY_SCHEMA),
+    runCodex(prompt, AMBIGUITY_SCHEMA),
+  ])
+
+  // จับคู่ finding ที่อ้างข้อความเดียวกัน
+  const agreed = a.findings.filter((fa) =&gt;
+    b.findings.some((fb) =&gt; overlaps(fa.quote, fb.quote)))
+  const disputed = [
+    ...a.findings.filter((fa) =&gt; !b.findings.some((fb) =&gt; overlaps(fa.quote, fb.quote))),
+    ...b.findings.filter((fb) =&gt; !a.findings.some((fa) =&gt; overlaps(fa.quote, fb.quote))),
+  ]
+
+  const blockers = agreed.filter((f) =&gt; f.severity === "blocker")
+
+  return {
+    // ⭐ disputed มีน้ำหนักเท่า agreed เพราะมันคือหลักฐานว่าตีความได้หลายแบบ
+    score: agreed.length * 2 + disputed.length * 2 + blockers.length * 5,
+    agreed, disputed, blockers,
+    verdict: blockers.length &gt; 0 || agreed.length + disputed.length &gt;= 4
+      ? "BLOCK" : "PROCEED",
+  }
+}</code></pre>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">markdown</span><span class="code-file">ตัวอย่าง output ที่ส่งกลับทาง Telegram</span></div>
+<pre><code>🔴 PED-1123 — spec ยังไม่พร้อมเริ่ม (score 14)
+
+ทั้งสอง agent เห็นตรงกัน (2):
+  • "ฝากขั้นต่ำ 100 บาท"
+    → 100 บาทพอดี ฝากได้หรือไม่ได้?  [blocker]
+  • "ระบบจะแจ้งเตือนผู้ใช้"
+    → แจ้งทางไหน? ทันทีหรือ batch?  [major]
+
+⭐ เห็นไม่ตรงกัน (2) — ตรงนี้คือจุดที่ spec ตีความได้หลายแบบ:
+  • Claude: "โบนัส 10%" → คิดจากยอดฝากหรือยอดคงเหลือ?
+  • Codex:  "ครั้งแรกของวัน" → วันตาม timezone ไหน?
+
+ตอบคำถามเหล่านี้แล้วอัปเดต AC ก่อนสั่งรันใหม่</code></pre>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="shift-right"><span class="num">L4.3</span>Shift-Right <span class="st">⭐⭐</span></h2>
+
+      <p>
+        ส่วนที่ขาดมากที่สุดในระบบของคุณ และเป็นส่วนที่ปิดช่องโหว่
+        <a class="xref" href="l0-foundation.html#verification-validation">L0.2 validation gap</a> โดยตรง
+      </p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:5%">#</th><th style="width:26%">เทคนิค</th><th style="width:16%">แรงที่ต้องลง</th><th>จับอะไรที่ CI จับไม่ได้</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">1</td><td class="no"><strong>Production invariant monitor</strong></td><td class="yes">3 ชม.</td><td class="no"><strong>ข้อมูลจริงทั้งหมด ไม่ใช่เคสที่มีคนคิดถึง</strong> ⭐⭐</td></tr>
+            <tr><td class="num-col">2</td><td>Synthetic monitoring</td><td class="yes">2 ชม.</td><td>ระบบพังตอนไม่มีใครใช้ (ตี 3)</td></tr>
+            <tr><td class="num-col">3</td><td>Feature flag + kill switch</td><td class="mid">1 วัน</td><td>ความสามารถในการหยุดเลือดโดยไม่ deploy</td></tr>
+            <tr><td class="num-col">4</td><td>Canary release</td><td class="mid">2 วัน</td><td>ปัญหาที่โผล่เฉพาะกับ traffic จริง</td></tr>
+            <tr><td class="num-col">5</td><td>RUM (field data)</td><td class="yes">3 ชม.</td><td>ผู้ใช้จริงบนเครื่องจริงบนเน็ตจริง</td></tr>
+            <tr><td class="num-col">6</td><td>Error tracking + grouping</td><td class="yes">2 ชม.</td><td>error ที่เกิดกับผู้ใช้แต่ไม่มีใครแจ้ง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="invariant-monitor">L4.3.1 — Production Invariant Monitor <span class="st">⭐⭐</span></h3>
+
+      <div class="note take">
+        <span class="note-t">ทำไมตัวนี้คุ้มที่สุดในทั้งชั้น</span>
+        <p style="margin-bottom:0">
+          เทสทุกตัวใน L1–L3 ตรวจ<strong>เคสที่มีคนคิดถึง</strong> —
+          invariant monitor ตรวจ<strong>ข้อมูลจริงทั้งหมด ทุก 10 นาที ตลอดไป</strong><br>
+          มันคือ oracle ตัวเดียวที่ไม่ต้องมีใครเดาว่าจะเกิดอะไรขึ้น
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">monitors/invariants.ts — 5 invariant ที่ต้องมี</span></div>
+<pre><code>export type Invariant = {
+  id: string
+  description: string
+  severity: "critical" | "high" | "medium"
+  /** คืนรายการที่ละเมิด — array ว่าง = ผ่าน */
+  check: () =&gt; Promise&lt;{ id: string; detail: string }[]&gt;
+}
+
+export const INVARIANTS: Invariant[] = [
+  {
+    id: "INV-1",
+    description: "ยอดคงเหลือของทุกบัญชีต้องเท่ากับผลรวม ledger",
+    severity: "critical",
+    check: async () =&gt; {
+      // ⭐ ตรวจทุกบัญชี ไม่ใช่สุ่ม — นี่คือความต่างจาก sampling
+      const rows = await db.query(`
+        SELECT u.id, u.balance, COALESCE(SUM(l.amount), 0) AS ledger_sum
+        FROM users u LEFT JOIN ledger l ON l.user_id = u.id
+        GROUP BY u.id, u.balance
+        HAVING u.balance &lt;&gt; COALESCE(SUM(l.amount), 0)
+      `)
+      return rows.map((r) =&gt; ({
+        id: r.id,
+        detail: `balance=${r.balance} ledger_sum=${r.ledger_sum} diff=${r.balance - r.ledger_sum}`,
+      }))
+    },
+  },
+  {
+    id: "INV-2",
+    description: "ไม่มีบัญชีที่ยอดติดลบ",
+    severity: "critical",
+    check: async () =&gt; (await db.query(`SELECT id, balance FROM users WHERE balance &lt; 0`))
+      .map((r) =&gt; ({ id: r.id, detail: `balance=${r.balance}` })),
+  },
+  {
+    id: "INV-3",
+    description: "ไม่มี transaction ที่ค้างสถานะกลางทางเกิน 30 นาที",
+    severity: "high",
+    check: async () =&gt; (await db.query(`
+      SELECT id, status, created_at FROM transactions
+      WHERE status IN ('PENDING','REVIEWING','APPROVED')
+        AND created_at &lt; NOW() - INTERVAL '30 minutes'
+    `)).map((r) =&gt; ({ id: r.id, detail: `status=${r.status} since=${r.created_at}` })),
+  },
+  {
+    id: "INV-4",
+    description: "ทุก mutation มี audit log ที่มี DoAdmin/DoIp",
+    severity: "high",
+    check: async () =&gt; (await db.query(`
+      SELECT t.id FROM transactions t
+      LEFT JOIN audit_logs a ON a.ref_id = t.id
+      WHERE t.created_at &gt; NOW() - INTERVAL '1 hour'
+        AND (a.id IS NULL OR a.do_ip IS NULL OR a.do_ip = '')
+    `)).map((r) =&gt; ({ id: r.id, detail: "ไม่มี audit log หรือ DoIp ว่าง" })),
+  },
+  {
+    id: "INV-5",
+    description: "ไม่มีผู้ใช้ที่อายุต่ำกว่าเกณฑ์ผ่าน KYC",
+    severity: "critical",
+    check: async () =&gt; (await db.query(`
+      SELECT id, birth_date FROM users
+      WHERE kyc_status = 'approved'
+        AND birth_date &gt; NOW() - INTERVAL '20 years'
+    `)).map((r) =&gt; ({ id: r.id, detail: `birth_date=${r.birth_date}` })),
+  },
+]</code></pre>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">monitors/run.ts — Cloud Scheduler เรียกทุก 10 นาที</span></div>
+<pre><code>export default defineEventHandler(async (event) =&gt; {
+  requireInternalToken(event)
+
+  const results = []
+  for (const inv of INVARIANTS) {
+    const started = Date.now()
+    try {
+      const violations = await inv.check()
+      results.push({
+        id: inv.id, ok: violations.length === 0,
+        count: violations.length,
+        sample: violations.slice(0, 5),      // ⭐ ไม่ส่งทั้งหมด กัน log ระเบิด
+        ms: Date.now() - started,
+      })
+
+      if (violations.length &gt; 0) {
+        await alertTelegram({
+          severity: inv.severity,
+          title: `⚠️ INVARIANT ละเมิด: ${inv.id}`,
+          body: `${inv.description}\nพบ ${violations.length} รายการ\n` +
+                violations.slice(0, 3).map((v) =&gt; `  ${v.id}: ${v.detail}`).join("\n"),
+        })
+      }
+    } catch (err) {
+      // ⭐ fail-closed: ตรวจไม่ได้ = ถือว่าไม่ผ่าน ต้องแจ้งเตือน
+      results.push({ id: inv.id, ok: false, error: String(err) })
+      await alertTelegram({
+        severity: "high",
+        title: `❌ INVARIANT ตรวจไม่ได้: ${inv.id}`,
+        body: String(err),
+      })
+    }
+  }
+
+  await recordMetric("invariant_run", { results, ts: Date.now() })
+  return { results }
+})</code></pre>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ความสัมพันธ์กับ L1.11</span>
+        <p style="margin-bottom:0">
+          <code>sum(ledger) === balance</code> ที่ใส่ไว้ใน <code>afterEach</code> ของเทส
+          (<a class="xref" href="l1-design.html#metamorphic">L1.11 MR6</a>) —
+          <strong>invariant เดียวกันนี้ไม่ควรหยุดอยู่แค่ในเทส</strong><br>
+          ในเทสมันตรวจข้อมูลที่คุณสร้าง · ใน production มันตรวจข้อมูลทั้งหมดที่มีอยู่จริง
+        </p>
+      </div>
+
+      <h3 id="synthetic">L4.3.2 — Synthetic Monitoring (ใช้ Playwright ที่มีอยู่แล้ว)</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">synthetic/critical-flows.spec.ts — รันทุก 5 นาทีจาก Cloud Scheduler</span></div>
+<pre><code>// ⭐ ใช้บัญชี synthetic เฉพาะ ไม่แตะเงินจริง
+const SYNTHETIC_USER = process.env.SYNTHETIC_USER!
+
+test.describe("@synthetic เส้นทางวิกฤต", () =&gt; {
+  test("login สำเร็จ", async ({ page }) =&gt; {
+    const t0 = Date.now()
+    await page.goto("/login")
+    await page.getByTestId("phone").fill(SYNTHETIC_USER)
+    await page.getByTestId("otp").fill(await fetchSyntheticOtp())
+    await page.getByTestId("login-submit").click()
+    await expect(page.getByTestId("user-menu")).toBeVisible({ timeout: 15_000 })
+    await reportMetric("synthetic_login_ms", Date.now() - t0)
+  })
+
+  test("หน้าฝากเงินโหลดและแสดงยอดคงเหลือ", async ({ page }) =&gt; {
+    await loginAsSynthetic(page)
+    await page.goto("/deposit")
+    await expect(page.getByTestId("balance")).toHaveText(/฿[\d,]+\.\d{2}/)
+  })
+
+  test("ฝากเงินจำนวนน้อยสุดสำเร็จ (ใช้ sandbox gateway)", async ({ page }) =&gt; {
+    await loginAsSynthetic(page)
+    const before = await getSyntheticBalance()
+    await page.goto("/deposit")
+    await page.getByTestId("amount-input").fill("100")
+    await page.getByTestId("submit-deposit").click()
+    await expect(page.getByTestId("deposit-success")).toBeVisible({ timeout: 30_000 })
+    expect(await getSyntheticBalance()).toBe(before + 100)
+    await resetSyntheticBalance()
+  })
+})</code></pre>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">ทำไมมันจับสิ่งที่ CI จับไม่ได้</span>
+        <p style="margin-bottom:0">
+          CI รันตอนคุณ push · synthetic รันตอน<strong>ไม่มีใครดู</strong> —
+          certificate หมดอายุ · DNS เปลี่ยน · gateway ปิดปรับปรุง · quota เต็ม ·
+          revision ถูก scale เหลือ 0 แล้ว cold start นานเกิน<br>
+          พวกนี้ไม่มีอันไหนเกี่ยวกับโค้ดคุณเลย และไม่มีอันไหนที่ CI จับได้
+        </p>
+      </div>
+
+      <h3 id="feature-flag">L4.3.3 — Feature Flag ที่ต้องเทส</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:22%">ชนิด</th><th style="width:28%">ใช้ทำอะไร</th><th style="width:18%">อายุ</th><th>ต้องเทสอะไร</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Release flag</strong></td><td>ซ่อนฟีเจอร์ที่ยังไม่พร้อม</td><td>สัปดาห์–เดือน</td><td>ทั้ง 2 สถานะ</td></tr>
+            <tr><td><strong>Experiment flag</strong></td><td>A/B test</td><td>สัปดาห์</td><td>ทั้ง 2 สถานะ + การแบ่งกลุ่ม</td></tr>
+            <tr><td><strong>Ops flag</strong></td><td>ปรับพฤติกรรมตอนโหลดสูง</td><td>ถาวร</td><td>สถานะฉุกเฉิน</td></tr>
+            <tr><td class="no"><strong>Kill switch</strong></td><td class="no">ปิดฟีเจอร์ทันทีเมื่อมีปัญหา</td><td>ถาวร</td><td class="no">⭐ <strong>ต้องเทสว่ามันปิดได้จริง</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">test/flags/hygiene.spec.ts</span></div>
+<pre><code>import { FLAGS } from "~/config/flags"
+
+describe("Feature flag hygiene", () =&gt; {
+  it("ทุก flag มีวันหมดอายุและเจ้าของ", () =&gt; {
+    const bad = Object.entries(FLAGS).filter(([, f]) =&gt; !f.expiresAt || !f.owner)
+    expect(bad.map(([k]) =&gt; k), "flag ที่ไม่มี expiry/owner").toEqual([])
+  })
+
+  it("⭐ ไม่มี flag ที่หมดอายุแล้วยังอยู่ในโค้ด", () =&gt; {
+    const expired = Object.entries(FLAGS)
+      .filter(([, f]) =&gt; f.kind !== "ops" &amp;&amp; f.kind !== "kill" )
+      .filter(([, f]) =&gt; new Date(f.expiresAt) &lt; new Date())
+    expect(expired.map(([k]) =&gt; k),
+      "flag หมดอายุ = หนี้ทางเทคนิค ต้องลบพร้อมโค้ดสาขาที่ไม่ใช้").toEqual([])
+  })
+
+  it("จำนวน flag ที่ active ไม่เกิน 10", () =&gt; {
+    // ⭐ n flags = 2^n สถานะที่เป็นไปได้ — เทสไม่ไหวถ้าเยอะเกิน
+    const active = Object.values(FLAGS).filter((f) =&gt; f.kind === "release").length
+    expect(active).toBeLessThanOrEqual(10)
+  })
+})
+
+describe("Kill switch ต้องทำงานจริง", () =&gt; {
+  it.each(Object.entries(FLAGS).filter(([, f]) =&gt; f.kind === "kill"))(
+    "%s ปิดแล้วฟีเจอร์หยุดทำงานทันที",
+    async (name) =&gt; {
+      await setFlag(name, false)
+      const res = await api.post(FLAGS[name].guardedEndpoint, {}, userToken)
+      expect(res.status, `kill switch ${name} ปิดแล้วยังเรียกได้`).toBe(503)
+      await setFlag(name, true)
+    }
+  )
+})</code></pre>
+      </div>
+
+      <div class="note warn">
+        <span class="note-t">Kill switch ที่ไม่เคยถูกทดสอบ = ไม่มี kill switch</span>
+        <p style="margin-bottom:0">
+          และคุณจะรู้ตอนที่ต้องใช้มันจริงๆ ซึ่งเป็นเวลาที่แย่ที่สุดที่จะรู้ —
+          เหมือน rollback drill ที่ <a class="xref" href="l3-nfr.html#rollback-drill">L3.8.1</a>
+        </p>
+      </div>
+
+      <h3 id="canary">L4.3.4 — Canary ที่เทียบกับ stable ไม่ใช่ threshold</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">deploy/canary-analysis.ts</span></div>
+<pre><code>// ❌ วิธีที่คนทำกัน: เทียบกับตัวเลขตายตัว
+//    if (canaryErrorRate &gt; 0.01) rollback()
+//    ปัญหา: ถ้าวันนั้น gateway ล่ม stable ก็ error 5% เหมือนกัน → rollback ผิด
+
+// ✅ เทียบ canary กับ stable ที่รันอยู่พร้อมกัน
+export async function analyzeCanary(opts: {
+  canaryRevision: string; stableRevision: string; windowMinutes: number
+}) {
+  const [c, s] = await Promise.all([
+    getMetrics(opts.canaryRevision, opts.windowMinutes),
+    getMetrics(opts.stableRevision, opts.windowMinutes),
+  ])
+
+  // ⭐ ต้องมี sample พอ ไม่งั้นตัดสินจาก noise
+  const MIN_REQUESTS = 500
+  if (c.requests &lt; MIN_REQUESTS)
+    return { verdict: "WAIT", reason: `canary มีแค่ ${c.requests} req (ต้องการ ${MIN_REQUESTS})` }
+
+  const problems: string[] = []
+
+  // error rate: canary ห้ามแย่กว่า stable เกิน 50% เชิงสัมพัทธ์
+  if (c.errorRate &gt; s.errorRate * 1.5 + 0.001)
+    problems.push(`error rate ${(c.errorRate*100).toFixed(2)}% vs stable ${(s.errorRate*100).toFixed(2)}%`)
+
+  // latency: p95 ห้ามแย่กว่า 20%
+  if (c.p95 &gt; s.p95 * 1.2)
+    problems.push(`p95 ${c.p95.toFixed(0)}ms vs stable ${s.p95.toFixed(0)}ms`)
+
+  // ⭐ business metric สำคัญกว่า technical metric
+  if (c.depositSuccessRate &lt; s.depositSuccessRate * 0.95)
+    problems.push(`อัตราฝากสำเร็จ ${(c.depositSuccessRate*100).toFixed(1)}% ` +
+                  `vs stable ${(s.depositSuccessRate*100).toFixed(1)}%`)
+
+  return problems.length
+    ? { verdict: "ROLLBACK", reason: problems.join(" · ") }
+    : { verdict: "PROMOTE", reason: `ผ่านการเทียบกับ stable (${c.requests} req)` }
+}</code></pre>
+      </div>
+
+      <h3 id="rum">L4.3.5 — RUM ที่แยก LINE in-app ออกมาดู</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">plugins/rum.client.ts</span></div>
+<pre><code>import { onLCP, onINP, onCLS, onTTFB } from "web-vitals"
+
+function environment() {
+  const ua = navigator.userAgent
+  if (/Line\//.test(ua)) return "line-inapp"          // ⭐ แยกออกมาดูต่างหาก
+  if (/FBAN|FBAV/.test(ua)) return "facebook-inapp"
+  if (/CriOS/.test(ua)) return "chrome-ios"
+  if (/Safari/.test(ua) &amp;&amp; !/Chrome/.test(ua)) return "safari"
+  return "other"
+}
+
+function send(metric: { name: string; value: number; rating: string }) {
+  const body = JSON.stringify({
+    ...metric,
+    env: environment(),
+    connection: (navigator as any).connection?.effectiveType ?? "unknown",
+    deviceMemory: (navigator as any).deviceMemory ?? null,
+    path: location.pathname,
+    release: useRuntimeConfig().public.gitSha,
+  })
+  // sendBeacon ไม่ถูกยกเลิกตอนผู้ใช้ปิดหน้า
+  navigator.sendBeacon?.("/api/rum", body)
+}
+
+export default defineNuxtPlugin(() =&gt; {
+  onLCP(send); onINP(send); onCLS(send); onTTFB(send)
+})</code></pre>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">สิ่งที่จะเห็นทันทีที่เปิด RUM</span>
+        <p style="margin-bottom:0">
+          <strong>ตัวเลขของ LINE in-app จะแย่กว่ากลุ่มอื่นอย่างมีนัยสำคัญ</strong> —
+          และนั่นคือกลุ่มผู้ใช้ที่ใหญ่ที่สุดกลุ่มหนึ่งของคุณ<br>
+          ถ้าไม่แยก environment คุณจะเห็นแค่ค่าเฉลี่ยรวมที่ดูโอเค แล้วไม่รู้ว่ามีคนกลุ่มใหญ่กำลังเจอปัญหาอยู่
+          (ต่อจาก <a class="xref" href="l3-nfr.html#line-inapp">L3.6</a>)
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="slo"><span class="num">L4.4</span>SLO / SLI / Error Budget <span class="st">⭐⭐</span></h2>
+
+      <div class="note take">
+        <span class="note-t">SLO คือเครื่องมือเจรจากับตัวเองในอนาคต</span>
+        <p style="margin-bottom:0">
+          มันเปลี่ยนความขัดแย้งระหว่าง <em>“อยากปล่อยเร็ว”</em> กับ <em>“ไม่อยากตื่นตี 3”</em>
+          จาก<strong>อารมณ์</strong>เป็น<strong>เลขคณิต</strong> —
+          และสำหรับคนทำคนเดียว คู่เจรจาคือตัวคุณเองเมื่อสองเดือนก่อน
+        </p>
+      </div>
+
+      <div class="kv">
+        <div><span class="k">SLI</span><span class="v">ตัวชี้วัด — “สัดส่วน request ที่สำเร็จภายใน 800ms”</span></div>
+        <div><span class="k">SLO</span><span class="v">เป้าที่ตั้งไว้ — “99.5% ใน 28 วัน”</span></div>
+        <div><span class="k">Error budget</span><span class="v">ส่วนที่ยอมให้พลาดได้ — 0.5%</span></div>
+        <div><span class="k">SLA</span><span class="v">สัญญาที่มีบทลงโทษ — คุณยังไม่ต้องมี</span></div>
+      </div>
+
+      <h3 id="event-vs-time">L4.4.1 — Event-based vs Time-based <span class="st">⭐⭐</span></h3>
+
+      <div class="note fix">
+        <span class="note-t">แก้ไขจากการทบทวน — ฉบับแรกแปลง budget สลับกันไปมา</span>
+        <p>
+          ฉบับแรกเขียนว่า “SLO 99.5% ใน 30 วัน → budget = 216 นาที” แล้วต่อมาคำนวณ burn rate
+          จาก<strong>สัดส่วนของ request ที่ล้มเหลว</strong> — <strong>สองอย่างนี้เป็นคนละหน่วยและแปลงกันไม่ได้</strong>
+        </p>
+        <div class="tbl">
+          <table>
+            <thead><tr><th style="width:18%"></th><th>Event-based (request)</th><th>Time-based (นาที)</th></tr></thead>
+            <tbody>
+              <tr><td class="num-col">SLI</td><td>good requests / total requests</td><td>good minutes / total minutes</td></tr>
+              <tr><td class="num-col">Budget</td><td><strong>จำนวน bad request</strong></td><td><strong>จำนวน bad minute</strong></td></tr>
+              <tr><td class="num-col">เหมาะกับ</td><td class="yes">latency, error rate ⭐ ใช้ตัวนี้</td><td>availability ของทั้งระบบ</td></tr>
+              <tr><td class="num-col">จุดอ่อน</td><td>เวลาที่ไม่มี traffic ไม่ถูกนับ</td><td class="no">ล่ม 1 นาทีตอนมี 10 req = ล่ม 1 นาทีตอนมี 10,000 req</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-bottom:0">
+          <strong>เลือกอันเดียวแล้วอยู่กับมัน — ห้ามแปลงข้ามกัน</strong><br>
+          สำหรับ Pedpro: <strong>event-based</strong> ทั้งหมด เพราะ traffic ไม่สม่ำเสมอ
+          (ตอนกลางคืนน้อยมาก) และ time-based จะทำให้ปัญหาตอน peak ดูเล็กกว่าความจริง
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">javascript</span><span class="code-file">การคำนวณที่ถูกต้อง — event-based</span></div>
+<pre><code>SLO   = 99.5% ของ request ที่ /api/deposit ต้องสำเร็จภายใน 800ms
+หน้าต่าง = 28 วัน (ไม่ใช่ 30 — ให้ตรงกับสัปดาห์พอดี 4 สัปดาห์)
+
+สมมติ traffic = 20 RPS เฉลี่ย
+  total requests ใน 28 วัน = 20 × 86400 × 28 = 48,384,000
+  error budget = 0.5% = 241,920 requests
+
+ถ้าวันนี้มี bad request 15,000 ตัว
+  → ใช้ budget ไป 15,000 / 241,920 = 6.2%
+  → เหลือ 93.8%</code></pre>
+      </div>
+
+      <h3 id="burn-rate">L4.4.2 — Burn Rate Alert (2 หน้าต่างซ้อน)</h3>
+
+      <div class="note fix">
+        <span class="note-t">แก้ไข — ตัวเลข 14.4 / 6 / 1 คำนวณจาก 30 วัน ไม่ใช่ 28</span>
+        <p>ตัวเลขมาตรฐานที่คนคัดลอกกันมาจาก Google SRE Workbook ซึ่งใช้หน้าต่าง 30 วัน ถ้าใช้ 28 วันต้องคำนวณใหม่</p>
+        <div class="diagram" style="margin:8px 0">burn_rate = (อัตราการใช้ budget ปัจจุบัน) / (อัตราที่จะใช้พอดีทั้งหน้าต่าง)
+
+burn_rate = 1  →  ใช้ budget หมดพอดีเมื่อครบหน้าต่าง
+burn_rate = 2  →  หมดในครึ่งเวลา
+
+สูตร threshold: burn = (ส่วนของ budget ที่ยอมให้ใช้) / (ส่วนของหน้าต่างที่ผ่านไป)</div>
+        <div class="tbl">
+          <table>
+            <thead><tr><th style="width:20%">ระดับ</th><th>ใช้ budget</th><th>ในเวลา</th><th>burn (30d)</th><th>burn (28d) ⭐</th><th>ตอบสนอง</th></tr></thead>
+            <tbody>
+              <tr><td class="no"><strong>Page</strong></td><td>2%</td><td>1 ชม.</td><td>14.4</td><td class="no"><strong>13.44</strong></td><td>ปลุกทันที</td></tr>
+              <tr><td class="mid"><strong>Ticket</strong></td><td>5%</td><td>6 ชม.</td><td>6</td><td class="mid"><strong>5.6</strong></td><td>ดูภายในวันทำการ</td></tr>
+              <tr><td><strong>Trend</strong></td><td>10%</td><td>3 วัน</td><td>1</td><td><strong>0.93</strong></td><td>ทบทวนใน retro</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="diagram" style="margin:8px 0 0">การคำนวณ 28 วัน:
+  Page   = 0.02 / (1/(28×24))   = 0.02 × 672 = 13.44
+  Ticket = 0.05 / (6/(28×24))   = 0.05 × 112 = 5.60
+  Trend  = 0.10 / (72/(28×24))  = 0.10 × 9.33 = 0.93</div>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">monitors/burn-rate.ts — ต้องใช้ AND ของ 2 หน้าต่าง</span></div>
+<pre><code>const WINDOW_DAYS = 28
+const WINDOW_HOURS = WINDOW_DAYS * 24
+
+const ALERTS = [
+  { name: "page",   budgetFraction: 0.02, hours: 1,  longWindowH: 1,  shortWindowM: 5 },
+  { name: "ticket", budgetFraction: 0.05, hours: 6,  longWindowH: 6,  shortWindowM: 30 },
+  { name: "trend",  budgetFraction: 0.10, hours: 72, longWindowH: 72, shortWindowM: 360 },
+].map((a) =&gt; ({ ...a, threshold: a.budgetFraction / (a.hours / WINDOW_HOURS) }))
+
+export async function checkBurnRate(sloName: string) {
+  const slo = SLO_CONFIG[sloName]
+  const fired = []
+
+  for (const alert of ALERTS) {
+    const long  = await errorRateOver(sloName, `${alert.longWindowH}h`)
+    const short = await errorRateOver(sloName, `${alert.shortWindowM}m`)
+
+    const burnLong  = long  / (1 - slo.target)
+    const burnShort = short / (1 - slo.target)
+
+    // ⭐ ต้องเกินทั้งสองหน้าต่าง — หน้าต่างสั้นทำหน้าที่ "reset" เมื่อปัญหาหายแล้ว
+    //    ถ้าใช้แค่หน้าต่างยาว alert จะดังต่อไปอีกหลายชั่วโมงหลังแก้เสร็จ
+    if (burnLong &gt; alert.threshold &amp;&amp; burnShort &gt; alert.threshold) {
+      fired.push({
+        level: alert.name,
+        burnRate: burnLong.toFixed(2),
+        threshold: alert.threshold.toFixed(2),
+        message: `${sloName}: burn rate ${burnLong.toFixed(1)}× ` +
+                 `(จะใช้ budget หมดใน ${(WINDOW_HOURS / burnLong).toFixed(1)} ชม.)`,
+      })
+    }
+  }
+  return fired
+}</code></pre>
+      </div>
+
+      <h3 id="journey-slo">L4.4.3 — Journey SLO — เลขที่จะทำให้ตกใจ <span class="st">⭐</span></h3>
+
+      <div class="diagram">flow "ฝากเงิน" ต้องผ่าน 5 ขั้น แต่ละขั้นมี SLO 99.5%
+
+ความสำเร็จของทั้ง journey = 0.995^5 = 97.5%
+→ error budget ของ journey = 2.5% ไม่ใช่ 0.5%
+→ ผู้ใช้ 1 ใน 40 คน จะเจอปัญหาอย่างน้อยหนึ่งจุด
+
+ถ้าอยากให้ journey อยู่ที่ 99.5% แต่ละขั้นต้องอยู่ที่ 0.995^(1/5) = 99.9%</div>
+
+      <div class="note imp">
+        <span class="note-t">ผลทางปฏิบัติ</span>
+        <p style="margin-bottom:0">
+          <strong>ตั้ง SLO ที่ journey ไม่ใช่ที่ endpoint</strong> —
+          เพราะสิ่งที่ผู้ใช้แคร์คือ “ฝากเงินสำเร็จมั้ย” ไม่ใช่ “<code>/api/balance</code> ตอบ 200 มั้ย”<br>
+          แล้วค่อยกระจายลงเป็น SLO ต่อ endpoint (budget attribution)<br>
+          ตรงนี้เชื่อมกับ <a class="xref" href="l3-nfr.html#percentile">L3.2.2 tail latency ทบต้น</a> พอดี
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">config/slo-journey.ts</span></div>
+<pre><code>export const JOURNEYS = {
+  deposit: {
+    target: 0.995,
+    steps: ["auth_check", "create_txn", "gateway_redirect", "webhook_receive", "balance_update"],
+    // ⭐ ต้องวัดจาก event log ว่าผู้ใช้เดินจบ journey มั้ย ไม่ใช่รวม SLO ของแต่ละขั้น
+    measure: async (windowDays = 28) =&gt; {
+      const rows = await db.query(`
+        SELECT COUNT(*) FILTER (WHERE completed_at IS NOT NULL) AS good,
+               COUNT(*) AS total
+        FROM journey_traces
+        WHERE journey = 'deposit' AND started_at &gt; NOW() - INTERVAL '${windowDays} days'
+      `)
+      return rows[0].good / rows[0].total
+    },
+  },
+}
+
+// budget attribution — ขั้นไหนกิน budget เยอะสุด
+export async function attributeBudget(journey: string, windowDays = 28) {
+  const rows = await db.query(`
+    SELECT failed_step, COUNT(*) AS n
+    FROM journey_traces
+    WHERE journey = $1 AND completed_at IS NULL
+      AND started_at &gt; NOW() - INTERVAL '${windowDays} days'
+    GROUP BY failed_step ORDER BY n DESC
+  `, [journey])
+  const total = rows.reduce((s, r) =&gt; s + Number(r.n), 0)
+  return rows.map((r) =&gt; ({
+    step: r.failed_step,
+    share: Number(r.n) / total,      // ⭐ บอกว่าควรไปแก้ตรงไหนก่อน
+  }))
+}</code></pre>
+      </div>
+
+      <h3 id="budget-policy">L4.4.4 — Error Budget Policy ที่บังคับได้จริง</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:22%">Budget เหลือ</th><th style="width:32%">สิ่งที่ทำได้</th><th>บังคับด้วยอะไร</th></tr></thead>
+          <tbody>
+            <tr><td class="yes">&gt; 50%</td><td>ปล่อยฟีเจอร์ได้ตามปกติ · ทดลองได้</td><td>—</td></tr>
+            <tr><td class="yes">25–50%</td><td>ปล่อยได้ แต่ต้อง canary ทุกครั้ง</td><td>gate บังคับ canary</td></tr>
+            <tr><td class="mid">10–25%</td><td>เฉพาะ bug fix + งานที่ลด risk</td><td class="mid">⭐ gate บล็อก PR ที่ label = feature</td></tr>
+            <tr><td class="no">&lt; 10%</td><td>หยุด feature work ทั้งหมด · แก้ reliability อย่างเดียว</td><td class="no">gate บล็อก merge ยกเว้น label = reliability</td></tr>
+            <tr><td class="no">หมด</td><td>freeze · postmortem ก่อนปล่อยอะไรอีก</td><td class="no">gate บล็อก deploy ทั้งหมด</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">javascript</span><span class="code-file">ci/budget-enforcer.mjs — ทำให้ policy ไม่ใช่แค่คำพูด</span></div>
+<pre><code>#!/usr/bin/env node
+const remaining = await fetchBudgetRemaining("deposit_journey")   // 0.0–1.0
+const labels = JSON.parse(process.env.PR_LABELS || "[]")
+
+const isFeature     = labels.includes("feature")
+const isReliability = labels.includes("reliability") || labels.includes("bugfix")
+
+console.log(`error budget เหลือ ${(remaining * 100).toFixed(1)}%`)
+
+if (remaining &lt;= 0) {
+  console.error("❌ budget หมด — freeze ทั้งหมด ต้องทำ postmortem ก่อน")
+  process.exit(1)
+}
+if (remaining &lt; 0.10 &amp;&amp; !isReliability) {
+  console.error("❌ budget &lt; 10% — merge ได้เฉพาะงาน reliability/bugfix")
+  console.error("   ถ้าจำเป็นจริง ใช้ emergency path (§L4.8) ซึ่งต้องบันทึกเหตุผล")
+  process.exit(1)
+}
+if (remaining &lt; 0.25 &amp;&amp; isFeature) {
+  console.error("❌ budget &lt; 25% — ฟีเจอร์ใหม่ต้องรอ")
+  process.exit(1)
+}
+if (remaining &lt; 0.50) {
+  console.log("⚠️  budget &lt; 50% — บังคับ canary release")
+  writeFileSync("deploy/force-canary", "1")
+}
+console.log("✅ budget เพียงพอ")</code></pre>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">ทำไมต้องเขียนเป็นโค้ด ไม่ใช่เขียนในเอกสาร</span>
+        <p style="margin-bottom:0">
+          เพราะตอน budget เหลือ 8% คุณจะมีเหตุผลดีๆ ว่าทำไมฟีเจอร์นี้ต้องปล่อย —
+          <strong>policy ที่บังคับด้วยตัวเองได้ผลแค่ตอนที่ไม่จำเป็นต้องใช้มัน</strong>
+        </p>
+      </div>
+
+      <h3 id="slo-no-budget">L4.4.5 — SLO ที่ไม่มี budget</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:40%">สิ่งที่ต้องเป็น 100%</th><th>วัดด้วย</th></tr></thead>
+          <tbody>
+            <tr><td>ความถูกต้องของยอดเงิน</td><td><a href="#invariant-monitor">INV-1</a> — ทุก 10 นาที</td></tr>
+            <tr><td>ไม่มีการเข้าถึงข้อมูลข้ามผู้ใช้</td><td>authz gate + audit anomaly detection</td></tr>
+            <tr><td>ไม่มี PII รั่ว</td><td>PII scanner (<a class="xref" href="l3-nfr.html#audit-pii">L3.4H</a>)</td></tr>
+            <tr><td>ผู้ใช้อายุถึงเกณฑ์เท่านั้น</td><td><a href="#invariant-monitor">INV-5</a></td></tr>
+            <tr><td class="mid"><strong>gate ทำงานถูกต้อง</strong></td><td class="mid">gate drill (<a class="xref" href="l2-automation.html#gate-drill">L2.16</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note warn">
+        <span class="note-t">อย่าตั้ง SLO 100% กับทุกอย่าง</span>
+        <p style="margin-bottom:0">
+          SLO 100% <strong>แพงเกินไปแบบทวีคูณ</strong> — 99.9% → 99.99% มักต้องลงทุนเพิ่ม 10 เท่า<br>
+          ใช้ 100% เฉพาะกับสิ่งที่<strong>ความเสียหายกู้คืนไม่ได้</strong> เท่านั้น
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="metric"><span class="num">L4.5</span>Metric System</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:20%">ชนิด</th><th style="width:30%">ใช้ทำอะไร</th><th>ตั้งเป็น target ได้มั้ย</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Health</strong></td><td>บอกว่าระบบดีมั้ย</td><td class="yes">ได้ — escaped defect rate, CFR, MTTR</td></tr>
+            <tr><td><strong>Diagnostic</strong></td><td>บอกว่าปัญหาอยู่ตรงไหน</td><td class="no"><strong>ห้าม</strong> — coverage, จำนวนบั๊ก, gate efficacy</td></tr>
+            <tr><td><strong>Improvement</strong></td><td>บอกว่าดีขึ้นมั้ย</td><td class="mid">ได้ ถ้าเป็น trend ไม่ใช่ค่าสัมบูรณ์</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Goodhart's Law เกิดเมื่อเอา diagnostic metric ไปตั้งเป็น target</strong> (<a class="xref" href="l0-foundation.html#goodhart">L0.7</a>)</p>
+
+      <h3 id="metric-หลัก">Metric หลักที่ควรติดตาม</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:26%">Metric</th><th style="width:30%">สูตร</th><th style="width:14%">เป้า</th><th>บอกอะไร</th></tr></thead>
+          <tbody>
+            <tr><td class="no"><strong>escaped_defect_rate</strong></td><td>บั๊กที่เจอใน prod / บั๊กทั้งหมด</td><td>ลดลง</td><td class="no">⭐ ประสิทธิผลรวมของทั้งระบบ</td></tr>
+            <tr><td><strong>DDP</strong> (Defect Detection %)</td><td>บั๊กที่ gate จับ / บั๊กทั้งหมด</td><td>&gt; 90%</td><td>เหมือนข้างบนแต่มองอีกด้าน</td></tr>
+            <tr><td class="no"><strong>approval_drill_pass_rate</strong></td><td>drill ที่คุณจับได้ / drill ทั้งหมด</td><td>&gt; 80%</td><td class="no">⭐⭐ human gate ยังทำงานอยู่มั้ย</td></tr>
+            <tr><td><code>blind_approve_rate</code></td><td>approve โดยไม่ดู / ทั้งหมด</td><td>ตีความคู่กับข้างบน</td><td>คุณภาพของสิ่งที่ถึงมือคน</td></tr>
+            <tr><td><strong>repeat_incident_rate</strong></td><td>incident ที่มี root cause ซ้ำ / ทั้งหมด</td><td>&lt; 10%</td><td class="no">⭐ เราเรียนรู้จริงมั้ย</td></tr>
+            <tr><td><strong>CFR</strong> (Change Failure Rate)</td><td>deploy ที่ต้องแก้ตาม / deploy ทั้งหมด</td><td>&lt; 15%</td><td>DORA — สำคัญที่สุดสำหรับ solo</td></tr>
+            <tr><td><strong>MTTR</strong></td><td>เวลาเฉลี่ยจากพบถึงแก้เสร็จ</td><td>&lt; 1 ชม.</td><td>DORA — ความเร็วฟื้นตัว</td></tr>
+            <tr><td><strong>judgment_items_per_run</strong></td><td>สิ่งที่ต้องใช้วิจารณญาณ / run</td><td>ลดลง</td><td>ต้นทุนของมนุษย์ต่อ 1 งาน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">สำหรับ solo developer — DORA 2 ตัวที่สำคัญที่สุด</span>
+        <p style="margin-bottom:0">
+          <strong>CFR</strong> กับ <strong>MTTR</strong> ไม่ใช่ deployment frequency หรือ lead time —
+          เพราะ 2 ตัวหลังคุณคุมได้อยู่แล้ว (คุณคนเดียวตัดสิน)
+          แต่ 2 ตัวแรกบอกว่า<strong>ระบบของคุณพร้อมรับความผิดพลาดของคุณเองแค่ไหน</strong>
+        </p>
+      </div>
+
+      <h3 id="approval-drill">Approval Drill <span class="st">⭐⭐</span></h3>
+
+      <div class="note take">
+        <span class="note-t">คำถามที่ยังไม่มีใครตอบให้คุณได้</span>
+        <p style="margin-bottom:0;font-size:18px">
+          <strong>S8.5 ของคุณยังเป็น gate อยู่มั้ย หรือกลายเป็นตรายางไปแล้ว?</strong>
+        </p>
+      </div>
+
+      <p>
+        นี่คือ <a class="xref" href="l2-automation.html#gate-drill">gate drill</a> ที่เลื่อนขึ้นมาอีกชั้น —
+        คราวนี้ระบบที่ถูกทดสอบคือ <strong>ตัวคุณเอง</strong>
+      </p>
+
+      <div class="note fix">
+        <span class="note-t">แก้ไขจากการทบทวน — drill ต้องผ่าน automated gate ก่อน</span>
+        <p>
+          ฉบับแรกเสนอให้ inject defect เช่น “เปลี่ยน <code>&gt;=</code> เป็น <code>&gt;</code>”
+          <strong>แต่ defect แบบนั้นจะถูก unit test จับตั้งแต่ S6</strong> →
+          มันไม่มีวันไปถึง S8.5 → <strong>นั่นคือ gate drill ไม่ใช่ approval drill</strong>
+        </p>
+        <div class="diagram" style="margin:8px 0">เงื่อนไขที่ทำให้ drill เป็น approval drill ที่ถูกต้อง:
+
+  1. defect ต้อง "ผ่าน automated gate ทั้งหมด" ได้จริง
+     → ถ้าถูก S6/S7 จับ = drill นี้ไม่ valid ต้องเปลี่ยนเคส
+  2. defect ต้องเป็นสิ่งที่ "คนเห็นแล้วควรรู้ว่าผิด"
+  3. defect ต้อง revert ได้ทันทีเมื่อคุณ reject</div>
+        <p style="margin-bottom:0">
+          <strong>ข้อสังเกตที่สำคัญ:</strong> ยิ่ง automation เก่งขึ้น
+          <strong>ชุด defect ที่ใช้ทำ approval drill ได้จะยิ่งหดลง</strong> —
+          และนั่นคือ<strong>สิ่งที่ดี</strong> มันคือแผนที่ของสิ่งที่ automation ยังจับไม่ได้
+          ซึ่งควรถูกใช้เป็นรายการงานว่าจะสร้าง gate อะไรต่อ
+        </p>
+      </div>
+
+      <h4 id="drill-catalog">Catalog ของ defect ที่ automation จับไม่ได้ — 8 ตัว</h4>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:6%">#</th><th style="width:20%">ชนิด</th><th style="width:36%">ตัวอย่างที่ inject ได้</th><th>ทำไม gate จับไม่ได้</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">D1</td><td><strong>Semantic</strong></td><td>เปลี่ยนข้อความ error จาก “ยอดไม่ถึงขั้นต่ำ” เป็น “เกิดข้อผิดพลาด”</td><td>เทสเช็ค error code ไม่ได้เช็คความหมาย</td></tr>
+            <tr><td class="num-col">D2</td><td><strong>UX regression</strong></td><td>ย้ายปุ่มยืนยันไปอยู่ใต้ fold บนมือถือ</td><td>ปุ่มยังมีอยู่ · <code>data-test</code> ยังหาเจอ</td></tr>
+            <tr><td class="num-col">D3</td><td><strong>Spec gap</strong></td><td>implement AC ครบทุกข้อ แต่ flow รวมใช้จริงไม่ได้</td><td>ทุก AC ผ่าน · ไม่มี AC ที่บอกเรื่อง flow</td></tr>
+            <tr><td class="num-col">D4</td><td class="no"><strong>ภาษาไทย</strong></td><td class="no">ใช้ “ท่าน” ปนกับ “คุณ” ในหน้าเดียว · สะกด “ธุรกรรม” ผิด</td><td class="no">⭐ ไม่มีเทสไหนตรวจโทนภาษา</td></tr>
+            <tr><td class="num-col">D5</td><td><strong>Over-engineering</strong></td><td>เพิ่ม abstraction 3 ชั้นสำหรับสิ่งที่ใช้ที่เดียว</td><td>เทสผ่านหมด · coverage สูงขึ้นด้วยซ้ำ</td></tr>
+            <tr><td class="num-col">D6</td><td><strong>Scope creep</strong></td><td>แก้เกินที่ ticket ขอ — refactor ไฟล์ที่ไม่เกี่ยว</td><td>เทสผ่าน · diff ใหญ่แต่ไม่ผิด</td></tr>
+            <tr><td class="num-col">D7</td><td><strong>Silent behavior change</strong></td><td>เปลี่ยนการปัดเศษจาก round เป็น floor</td><td>ถ้าเทสไม่ได้ครอบเคสทศนิยมพอดี จะไม่จับ</td></tr>
+            <tr><td class="num-col">D8</td><td><strong>Missing negative path</strong></td><td>ลบการจัดการ error ของ gateway timeout ออก</td><td>ไม่มีเทสของ path นั้นอยู่แล้ว</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">pipeline/drills/approval-drill.ts</span></div>
+<pre><code>type Drill = {
+  id: string
+  kind: "semantic" | "ux" | "spec_gap" | "thai" | "over_eng" | "scope" | "silent" | "negative"
+  patch: string                 // path ไปยัง .patch
+  expectedVerdict: "reject"
+  hint: string                  // สิ่งที่คุณควรสังเกตเห็น
+}
+
+export async function runApprovalDrill(drill: Drill, runId: string) {
+  // ═══ ขั้นที่ 1: ยืนยันว่า drill นี้ valid ═══
+  // ⭐ ถ้า automated gate จับได้ = ไม่ใช่ approval drill
+  await applyPatch(drill.patch)
+  const gateResult = await runAllAutomatedGates()
+
+  if (!gateResult.passed) {
+    await revertPatch(drill.patch)
+    return {
+      status: "INVALID_DRILL",
+      reason: `automated gate จับได้ที่ ${gateResult.failedGate} — ` +
+              `นี่คือ gate drill ไม่ใช่ approval drill`,
+      // ⭐ นี่เป็นข่าวดี: automation เก่งขึ้นจนเคสนี้ไม่ต้องพึ่งคนแล้ว
+      action: "ย้าย drill นี้ไปเป็น gate drill แล้วหาเคสใหม่",
+    }
+  }
+
+  // ═══ ขั้นที่ 2: ส่งเข้า S8.5 เหมือนงานปกติ ═══
+  const approval = await sendToHumanGate({
+    runId,
+    // ⭐ ห้ามมีอะไรบอกว่านี่คือ drill
+    presentation: await buildNormalPresentation(runId),
+  })
+
+  // ═══ ขั้นที่ 3: revert ทันทีไม่ว่าผลจะเป็นยังไง ═══
+  await revertPatch(drill.patch)
+
+  // ═══ ขั้นที่ 4: บันทึกผล ═══
+  return {
+    status: approval.verdict === "reject" ? "PASS" : "FAIL",
+    drill: drill.id,
+    kind: drill.kind,
+    verdict: approval.verdict,
+    timeToDecisionMs: approval.decisionMs,
+    reasonGiven: approval.reason,
+    // ⭐ ถ้า reject แต่ให้เหตุผลผิด = INCONCLUSIVE ไม่ใช่ PASS
+    conclusive: approval.verdict === "reject"
+      ? mentionsRealIssue(approval.reason, drill.hint)
+      : true,
+  }
+}</code></pre>
+      </div>
+
+      <div class="note warn">
+        <span class="note-t">ทำไมต้องแยก INCONCLUSIVE ออกจาก PASS</span>
+        <p style="margin-bottom:0">
+          ถ้าคุณ reject เพราะ “ดูแปลกๆ” แต่ไม่ได้เห็นปัญหาจริง →
+          นั่นไม่ใช่การจับได้ นั่นคือความบังเอิญ<br>
+          ถ้านับเป็น PASS ตัวเลข <code>approval_drill_pass_rate</code>
+          จะสูงกว่าความเป็นจริงและคุณจะไว้ใจ gate มากเกินไป
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">bash</span><span class="code-file">ตารางการรัน drill</span></div>
+<pre><code># รันสัปดาห์ละ 1 ครั้ง สุ่มวันและเวลา
+# ⭐ ห้ามรันวันเดิมเวลาเดิม ไม่งั้นคุณจะรู้ตัวและตั้งใจดูเป็นพิเศษ
+# ⭐ สัดส่วน drill ควรอยู่ที่ 3-5% ของงานทั้งหมด
+#    น้อยกว่านั้น = สถิติไม่พอ / มากกว่านั้น = เสียเวลาและสร้างความหวาดระแวง
+
+0 * * * 1-5  /opt/pipeline/maybe-drill.sh   # สุ่ม 2% ต่อชั่วโมงในวันทำการ</code></pre>
+      </div>
+
+      <h3 id="blind-approve">ตีความ <code>blind_approve_rate</code> คู่กับ drill pass rate <span class="st">⭐</span></h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:22%"></th><th>drill pass สูง (&gt; 80%)</th><th>drill pass ต่ำ (&lt; 50%)</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="num-col"><strong>blind approve สูง</strong></td>
+              <td class="yes"><strong>สถานะที่ดีที่สุด</strong><br>ระบบดีจนไม่ต้องดูละเอียด และคุณยังจับได้เมื่อมีปัญหาจริง</td>
+              <td class="no"><strong>อันตรายที่สุด</strong> ⭐<br>คุณกลายเป็นตรายางไปแล้ว — และตัวเลข blind approve สูงกำลังหลอกคุณว่าระบบดี</td>
+            </tr>
+            <tr>
+              <td class="num-col"><strong>blind approve ต่ำ</strong></td>
+              <td class="mid"><strong>ปลอดภัยแต่แพง</strong><br>คุณตรวจละเอียดทุกครั้ง — ควรลงทุนกับ gate อัตโนมัติเพิ่ม</td>
+              <td class="mid"><strong>สับสน</strong><br>ดูเยอะแต่จับไม่ได้ → การนำเสนอที่ S8.5 อาจแย่ ดู <a href="#agentic-qe">L4.12</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ประเด็นสำคัญ</span>
+        <p style="margin-bottom:0">
+          <code>blind_approve_rate</code> <strong>ตีความคนเดียวไม่ได้</strong> —
+          มันสูงได้ทั้งเพราะระบบดี และเพราะคนหมดความสนใจ
+          ต้องมี drill pass rate มาแยกสองกรณีนี้ออกจากกัน<br>
+          <strong>นี่คือเหตุผลที่ approval drill สำคัญ ไม่ใช่แค่ของเล่น</strong>
+        </p>
+      </div>
+
+      <h3 id="metric-ขยะ">Metric ขยะ — เลิกใช้</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:32%">ห้ามใช้เป็น target</th><th>ทำไม</th></tr></thead>
+          <tbody>
+            <tr><td>จำนวนบั๊กที่หาเจอ</td><td>ให้แรงจูงใจให้อยากมีบั๊กเยอะ · ทีมที่ป้องกันเก่งจะดูแย่</td></tr>
+            <tr><td>code coverage %</td><td>Goodhart's Law · 100% ได้โดยลบ assertion</td></tr>
+            <tr><td>จำนวน test case</td><td>ยิ่งเยอะยิ่งช้า</td></tr>
+            <tr><td>pass rate</td><td>100% อาจแปลว่าเทสอ่อนเกินไป</td></tr>
+            <tr><td>เวลาที่ใช้เทส</td><td>วัดความพยายาม ไม่ใช่ผลลัพธ์</td></tr>
+            <tr><td>จำนวน gate</td><td>gate ที่ไม่จับอะไรคือต้นทุนล้วนๆ</td></tr>
+            <tr><td class="mid">gate_efficacy เดี่ยวๆ</td><td class="mid">deterrence confound (<a class="xref" href="l2-automation.html#gate-efficacy">L2.13</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="portfolio-risk"><span class="num">L4.6</span>Portfolio Risk Management</h2>
+
+      <p>
+        <a class="xref" href="l1-design.html#risk-based">L1.10</a> ให้ risk register ระดับฟีเจอร์ —
+        ตรงนี้คือระดับ<strong>ทั้งระบบ</strong> รวมความเสี่ยงที่ไม่ใช่โค้ด
+      </p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:8%">ID</th><th style="width:26%">ความเสี่ยง</th><th style="width:6%">L</th><th style="width:6%">I</th><th style="width:8%">Score</th><th>สิ่งที่ทำอยู่ + residual risk</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="num-col">R1</td><td>เงินผู้ใช้ผิดพลาด</td>
+              <td class="num-col">2</td><td class="num-col">5</td><td class="num-col">10</td>
+              <td>invariant monitor + race harness + ledger test<br>
+                  <em>residual: bug ในสูตรที่ invariant ไม่ครอบ</em></td>
+            </tr>
+            <tr>
+              <td class="num-col">R2</td><td>ข้อมูลส่วนบุคคลรั่ว</td>
+              <td class="num-col">2</td><td class="num-col">5</td><td class="num-col">10</td>
+              <td>PII scanner + authz matrix + artifact scan<br>
+                  <em>residual: log ของ third-party ที่เราคุมไม่ได้</em></td>
+            </tr>
+            <tr>
+              <td class="num-col">R3</td><td>ระบบล่มตอนโปรออก</td>
+              <td class="num-col">3</td><td class="num-col">4</td><td class="num-col">12</td>
+              <td>spike test + min-instances + kill switch<br>
+                  <em>residual: gateway ของคนอื่นล่ม</em></td>
+            </tr>
+            <tr>
+              <td class="num-col">R4</td><td>agent เขียนโค้ดที่ผ่าน gate แต่ผิดเจตนา</td>
+              <td class="num-col">3</td><td class="num-col">3</td><td class="num-col">9</td>
+              <td>red-proof + file-scope guard + S8.5<br>
+                  <em>residual: semantic defect ที่คนต้องจับ → วัดด้วย approval drill</em></td>
+            </tr>
+            <tr>
+              <td class="num-col"><strong>R5</strong></td><td class="no"><strong>Bus factor = 1</strong> ⭐</td>
+              <td class="num-col">5</td><td class="num-col">5</td><td class="num-col no"><strong>25</strong></td>
+              <td class="no">เอกสาร + skill ที่ git-versioned + runbook<br>
+                  <em>residual: ความรู้โดยนัยที่ยังไม่ได้เขียน</em></td>
+            </tr>
+            <tr>
+              <td class="num-col">R6</td><td>พึ่ง LLM provider เจ้าเดียว</td>
+              <td class="num-col">3</td><td class="num-col">3</td><td class="num-col">9</td>
+              <td>Claude + Codex สองเจ้า + pin version<br>
+                  <em>residual: ทั้งคู่เปลี่ยนพฤติกรรมพร้อมกัน</em></td>
+            </tr>
+            <tr>
+              <td class="num-col">R7</td><td>Supply chain (npm)</td>
+              <td class="num-col">2</td><td class="num-col">4</td><td class="num-col">8</td>
+              <td>new-deps gate + ignore-scripts + audit<br>
+                  <em>residual: dependency ที่มีอยู่แล้วถูกยึดภายหลัง</em></td>
+            </tr>
+            <tr>
+              <td class="num-col">R8</td><td>ผู้ใช้ LINE in-app ใช้งานไม่ได้</td>
+              <td class="num-col">4</td><td class="num-col">3</td><td class="num-col">12</td>
+              <td>manual checklist + RUM แยก environment<br>
+                  <em>residual: LINE อัปเดต WebView โดยไม่แจ้ง</em></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">R5 คือความเสี่ยงที่สูงที่สุด และไม่ใช่ปัญหาทางเทคนิค</span>
+        <p>
+          ระบบทั้งหมดที่คุณสร้างมา — pipeline, gate, skill, invariant —
+          <strong>ทำงานได้เพราะมีคนคนเดียวที่เข้าใจมัน</strong>
+        </p>
+        <p style="margin-bottom:0">
+          และนี่คือเหตุผลเชิงกลยุทธ์ที่แท้จริงว่าทำไมคู่มือนี้ถึงคุ้มค่าที่จะเขียน:
+          <strong>มันคือการแปลงความรู้จาก R5 ให้เป็นสินทรัพย์ที่ถ่ายโอนได้</strong> —
+          ไม่ใช่แค่เพื่อคนอื่น แต่เพื่อตัวคุณเองในอีก 8 เดือนที่จำไม่ได้แล้วว่าทำไมถึงตัดสินใจแบบนี้
+        </p>
+      </div>
+
+      <h3 id="residual">Residual risk — ช่องที่สำคัญที่สุดและคนไม่เขียน</h3>
+
+      <div class="note good">
+        <span class="note-t">ทำไมต้องเขียน</span>
+        <p style="margin-bottom:0">
+          <strong>ความเสี่ยงที่เหลืออยู่หลังทำมาตรการแล้ว คือสิ่งที่จะกัดคุณจริงๆ</strong> —
+          เพราะสิ่งที่คุณคุมแล้วคุณคุมไปแล้ว<br>
+          และเมื่อ incident เกิดขึ้น การมี residual risk เขียนไว้ล่วงหน้าเปลี่ยนคำถามจาก
+          “ทำไมไม่คิดถึงเรื่องนี้” เป็น “เรารู้ว่ามีช่องนี้ ตอนนี้ถึงเวลาปิดแล้ว”
+        </p>
+      </div>
+
+      <h3 id="adr">Decision log (ADR) — เบาแต่ได้ผล</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">markdown</span><span class="code-file">docs/decisions/0012-auto-approve-t0.md</span></div>
+<pre><code># ADR-0012: อนุญาต auto-approve สำหรับงาน T0
+
+วันที่: 2026-07-25 · สถานะ: ยอมรับแล้ว · ผู้ตัดสิน: trutletunder
+
+## บริบท
+หลักเดิมคือ "S8.5 human gate ข้ามไม่ได้" ทุกงาน
+แต่ human judgment เป็นทรัพยากรที่หายากที่สุดใน pipeline (§L4.12)
+การใช้มันกับการแก้ typo คือการเผาทรัพยากรที่แพงที่สุดกับงานที่ถูกที่สุด
+และที่แย่กว่าคือมันสร้าง habituation ซึ่งไปลดคุณภาพการตัดสินใจใน T3
+
+## การตัดสินใจ
+งานระดับ T0 (risk score 1-3) auto-approve ได้ ภายใต้เงื่อนไข 4 ข้อ:
+1. T0 นิยามแคบมาก — ไม่แตะเงิน/auth/webhook, ไม่เปลี่ยนพฤติกรรมที่ผู้ใช้เห็น
+2. audit sampling 10% — สุ่มตรวจย้อนหลังจริง ไม่ใช่ตั้งไว้เฉยๆ
+3. เกิด incident จาก T0 ครั้งเดียว → ยกเลิกทันที กลับไป required
+4. วัด escaped_defect_rate ของงาน T0 แยกต่างหาก
+
+## ผลที่ตามมา
++ judgment budget เหลือไปใช้กับ T2/T3 มากขึ้น
++ ลด habituation ที่ทำลาย approval drill pass rate
+− มีความเสี่ยงที่ T0 ถูกจัดประเภทผิด → บรรเทาด้วยเงื่อนไข 2 และ 3
+
+## ทางเลือกที่พิจารณาแล้วไม่เลือก
+- คงไว้ว่า required ทุกงาน → habituation ทำลาย gate ในระยะยาว
+- auto-approve ถึง T1 → T1 แตะพฤติกรรมที่ผู้ใช้เห็น ความเสี่ยงสูงเกิน</code></pre>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="tiered-dod"><span class="num">L4.7</span>Definition of Done ที่เป็นกลไก <span class="st">⭐</span></h2>
+
+      <p>
+        <a class="xref" href="l3-nfr.html#nfr-schedule">L3.10</a> ให้ gate ~27 ตัว —
+        รันทุกตัวกับทุกงานไม่ไหวและไม่คุ้ม <strong>DoD ต้องแปรผันตาม risk</strong>
+      </p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:8%">Tier</th><th style="width:12%">Risk</th><th style="width:30%">ตัวอย่างงาน</th><th>Gate set</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="num-col"><strong>T0</strong></td><td>1–3</td>
+              <td>แก้ typo · เปลี่ยนสี · อัปเดต copy ที่ไม่ใช่ error message · เพิ่ม comment</td>
+              <td>static + unit + build<br><span class="yes">✅ <strong>auto-approve ได้</strong> (ADR-0012)</span></td>
+            </tr>
+            <tr>
+              <td class="num-col"><strong>T1</strong></td><td>4–8</td>
+              <td>ปรับ layout · เพิ่มฟิลด์ที่ไม่กระทบ logic · แก้ข้อความ error</td>
+              <td>T0 + integration + a11y + i18n + visual<br><span class="mid">S8.5 required (ดูสรุป)</span></td>
+            </tr>
+            <tr>
+              <td class="num-col"><strong>T2</strong></td><td>9–15</td>
+              <td>แก้ business logic · เพิ่ม endpoint · เปลี่ยน state machine</td>
+              <td>T1 + contract + authz + E2E + N+1 + mutation(advisory)<br><span class="mid">S8.5 required (ดูละเอียด)</span></td>
+            </tr>
+            <tr>
+              <td class="num-col no"><strong>T3</strong></td><td class="no">16–25</td>
+              <td class="no">แตะเงิน · auth · webhook · migration · ลบข้อมูล</td>
+              <td class="no">T2 + race + webhook sig + load + canary + rollback plan<br>
+                  <span class="no">S8.5 required + ต้องมี exploratory session</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="tier-classify">การจัดระดับต้องเป็นอัตโนมัติ ไม่ใช่ให้ agent เดา</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">pipeline/classify-tier.ts — fail-closed: ไม่แน่ใจ = tier สูงกว่า</span></div>
+<pre><code>const HIGH_RISK_PATHS = [
+  /server\/api\/(deposit|withdraw|webhooks|auth)/,
+  /server\/api\/admin\//,
+  /utils\/(money|ledger|bonus|balance)/,
+  /migrations\//,
+  /security\//,
+]
+
+const MEDIUM_RISK_PATHS = [
+  /server\/api\//,
+  /stores\//,
+  /composables\/use(Auth|Payment|Balance)/,
+]
+
+export function classifyTier(diff: FileDiff[], ticket: Ticket): Tier {
+  const paths = diff.map((d) =&gt; d.path)
+
+  // ⭐ T3: แตะพื้นที่ความเสี่ยงสูง — ไม่มีข้อยกเว้น
+  if (paths.some((p) =&gt; HIGH_RISK_PATHS.some((re) =&gt; re.test(p)))) return "T3"
+
+  // ⭐ T3: ticket ถูกติดป้ายว่าเกี่ยวกับเงิน/ความปลอดภัย
+  if (ticket.labels.some((l) =&gt; ["money", "security", "auth", "pdpa"].includes(l))) return "T3"
+
+  // T2: แตะ API หรือ state
+  if (paths.some((p) =&gt; MEDIUM_RISK_PATHS.some((re) =&gt; re.test(p)))) return "T2"
+
+  // T2: diff ใหญ่ = ความเสี่ยงจากความซับซ้อน
+  const totalLines = diff.reduce((s, d) =&gt; s + d.additions + d.deletions, 0)
+  if (totalLines &gt; 300 || diff.length &gt; 15) return "T2"
+
+  // ⭐ T0 ต้องผ่านเกณฑ์ครบทุกข้อ ไม่ใช่ default
+  const isT0 =
+    totalLines &lt;= 30 &amp;&amp;
+    diff.length &lt;= 3 &amp;&amp;
+    paths.every((p) =&gt; /\.(md|css|scss)$/.test(p) || /components\/.*\.vue$/.test(p)) &amp;&amp;
+    // ⭐ ห้ามแตะ error message — ผู้ใช้เห็นและอาจกระทบความเข้าใจ
+    !diff.some((d) =&gt; /Error|error|ผิดพลาด|ไม่สำเร็จ/.test(d.addedContent)) &amp;&amp;
+    !ticket.labels.includes("user-facing-behavior")
+
+  return isT0 ? "T0" : "T1"
+}</code></pre>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">การตัดสินใจที่รับแล้ว — auto-approve T0</span>
+        <p>
+          บันทึกเต็มอยู่ที่ <a href="#adr">ADR-0012</a> ด้านบน · สรุปเงื่อนไขที่ต้องมีครบ 4 ข้อ:
+        </p>
+        <ol style="margin-bottom:10px">
+          <li><strong>นิยาม T0 แคบมาก</strong> — ตามโค้ด <code>classifyTier</code> ข้างบน ซึ่ง fail-closed (ไม่เข้าเกณฑ์ = T1)</li>
+          <li><strong>audit sampling 10%</strong> — สุ่มงาน T0 มาตรวจย้อนหลังจริง</li>
+          <li><strong>incident ครั้งเดียวจาก T0 → ยกเลิกทันที</strong> กลับไป required ทุกงาน</li>
+          <li><strong>วัด <code>escaped_defect_rate</code> ของ T0 แยก</strong> — ถ้าสูงกว่า T1 แปลว่านิยามผิด</li>
+        </ol>
+        <div class="code" style="margin:0">
+          <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">pipeline/t0-audit.ts</span></div>
+<pre><code>// สุ่ม 10% ของงาน T0 มาให้คนตรวจย้อนหลัง (ไม่บล็อก merge)
+export async function maybeAuditT0(run: Run) {
+  if (run.tier !== "T0") return
+  if (Math.random() &gt; 0.10) return
+
+  await sendToTelegram({
+    title: "🔍 T0 audit (ย้อนหลัง — ไม่บล็อกอะไร)",
+    body: `${run.ticketId}: ${run.summary}\n\n` +
+          `ตรวจว่า: (1) จัดเป็น T0 ถูกต้องมั้ย (2) ผลลัพธ์โอเคมั้ย`,
+    actions: ["ถูกต้อง", "จัดระดับผิด", "มีปัญหา"],
+  })
+}
+
+// ⭐ ถ้าตอบ "จัดระดับผิด" เกิน 5% ของ sample → นิยาม T0 กว้างเกินไป
+// ⭐ ถ้าตอบ "มีปัญหา" แม้ครั้งเดียว → ปิด auto-approve ทันที</code></pre>
+        </div>
+      </div>
+
+      <h3 id="dor">Definition of Ready — บล็อกตั้งแต่ต้นน้ำ</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">markdown</span><span class="code-file">DoR — ticket ที่ไม่ผ่านข้อนี้ห้ามเข้า S2</span></div>
+<pre><code>- [ ] มี acceptance criteria ที่ผ่าน spec quality gate (§L4.2)
+- [ ] มี risk score พร้อมเหตุผล → กำหนด tier
+- [ ] ระบุว่า "รู้ได้ยังไงว่าสำเร็จ" (ไม่ใช่แค่ "ทำอะไร")   ← L-4 shift-left
+- [ ] ถ้าแตะเงิน: ระบุ invariant ที่ต้องยังคงจริง
+- [ ] ถ้าเป็น T3: ระบุแผน rollback ล่วงหน้า
+- [ ] ระบุสิ่งที่อยู่นอกขอบเขตของ ticket นี้             ← กัน scope creep (D6)</code></pre>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="release"><span class="num">L4.8</span>Release Strategy &amp; Emergency Path</h2>
+
+      <h3 id="progressive">Progressive delivery — deploy ≠ release</h3>
+
+      <div class="diagram">1. Deploy (--no-traffic)     → โค้ดอยู่บน production แต่ไม่มีผู้ใช้แตะ
+2. Smoke on revision         → ยิงเทสตรงไปที่ revision URL
+3. Canary 5%                 → เทียบกับ stable (§L4.3.4)
+4. Ramp 25% → 50% → 100%     → หยุดได้ทุกขั้น
+5. Flag on                   → เปิดฟีเจอร์ให้ผู้ใช้เห็น  ← นี่คือ "release" จริง
+
+⭐ ขั้น 1-4 ย้อนกลับได้ใน &lt; 1 นาที (traffic shift)
+⭐ ขั้น 5 ย้อนกลับได้ทันที (flag off) โดยไม่ต้อง deploy</div>
+
+      <h3 id="emergency">Emergency Path — ต้องนิยามตอนหัวเย็น <span class="st">⭐</span></h3>
+
+      <div class="note warn">
+        <span class="note-t">นี่คือข้อยกเว้นเดียวของ “ไม่มี gate ที่ข้ามได้”</span>
+        <p style="margin-bottom:0">
+          และมันจะเป็นข้อยกเว้นที่ปลอดภัยได้ก็ต่อเมื่อ<strong>เขียนไว้ล่วงหน้าตอนที่ยังไม่มีอะไรพัง</strong> —
+          ถ้าไปคิดตอนไฟไหม้ คุณจะข้าม gate ที่ไม่ควรข้าม
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">markdown</span><span class="code-file">docs/quality/emergency-path.md</span></div>
+<pre><code># Emergency Path
+
+## ลำดับการหยุดเลือด — ทำจากบนลงล่าง หยุดเมื่อเลือดหยุด
+1. **Feature flag off**       (~10 วินาที · ไม่ต้อง deploy · ไม่มีความเสี่ยงใหม่)
+2. **Rate limit ที่ edge**    (~1 นาที · ลดความเสียหายโดยไม่ปิดทั้งหมด)
+3. **Traffic shift ไป revision เก่า** (~1 นาที · §L3.8.1)
+4. **Hotfix ข้าม gate**       (~15 นาที · ⭐ ทางเลือกสุดท้าย)
+
+⭐ ห้ามเริ่มที่ข้อ 4 — 90% ของเหตุการณ์จบที่ข้อ 1-3
+   และข้อ 4 คือทางเดียวที่เพิ่มความเสี่ยงใหม่เข้าไปตอนที่ระบบไม่มั่นคงอยู่แล้ว
+
+## Hotfix: gate ที่ข้ามได้ / ข้ามไม่ได้
+ข้ามได้:   E2E ทั้งหมด · visual · a11y · load · Codex S7 · mutation
+ข้ามไม่ได้: ⭐ type check · unit test ที่เกี่ยวข้อง · red-proof ·
+           authz enforcement · race test · invariant check
+
+เหตุผล: gate ที่ข้ามไม่ได้คือกลุ่มที่ "ป้องกันไม่ให้ hotfix สร้างปัญหาใหม่"
+        การข้ามมันตอนฉุกเฉินคือการเพิ่มความเสี่ยงตอนที่รับความเสี่ยงไม่ไหวแล้ว
+
+## หลังจบเหตุการณ์ — บังคับ ไม่ใช่ทางเลือก
+- [ ] ภายใน 24 ชม.: เขียน postmortem (§L4.9)
+- [ ] ภายใน 48 ชม.: เพิ่มเทสที่จับเหตุการณ์นี้ได้ (ต้องแดงก่อนแก้)
+- [ ] ภายใน 1 สัปดาห์: รัน gate ที่ข้ามไปทั้งหมดย้อนหลัง
+- [ ] อัปเดต fault-attacks.md
+- [ ] ทบทวน error budget policy ถ้าใช้ budget ไปเยอะ</code></pre>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">bash</span><span class="code-file">scripts/emergency-deploy.sh — บังคับให้บันทึกเหตุผล</span></div>
+<pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+[ -n "${EMERGENCY_REASON:-}" ] || {
+  echo "❌ ต้องระบุ EMERGENCY_REASON"; exit 1; }
+[ -n "${INCIDENT_ID:-}" ] || {
+  echo "❌ ต้องมี INCIDENT_ID (สร้าง ticket ก่อน)"; exit 1; }
+
+echo "⚠️  EMERGENCY DEPLOY"
+echo "   เหตุผล: $EMERGENCY_REASON"
+echo "   incident: $INCIDENT_ID"
+read -p "   ยืนยันว่าลองข้อ 1-3 ในลำดับหยุดเลือดแล้ว? (yes) " ok
+[ "$ok" = "yes" ] || exit 1
+
+# ⭐ gate ที่ข้ามไม่ได้ — รันเสมอแม้ฉุกเฉิน
+pnpm vue-tsc --noEmit
+pnpm vitest run --changed
+pnpm vitest run security/authz security/race
+node monitors/check-invariants.mjs
+
+# บันทึกลง audit trail
+cat &gt;&gt; docs/emergency-log.md &lt;&lt;EOF
+
+## $(date -Iseconds) · $INCIDENT_ID
+- เหตุผล: $EMERGENCY_REASON
+- commit: $(git rev-parse HEAD)
+- gate ที่ข้าม: e2e, visual, a11y, load, codex
+- ผู้อนุมัติ: $(git config user.name)
+- TODO: รัน gate ที่ข้ามภายใน 7 วัน
+EOF
+
+gcloud run deploy pedpro-ui --source . --region asia-southeast1
+echo "✅ deployed — อย่าลืม postmortem ภายใน 24 ชม."</code></pre>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="learning-loop"><span class="num">L4.9</span>Learning Loop <span class="st">⭐⭐</span></h2>
+
+      <p>
+        ปิดช่องที่เปิดไว้ตั้งแต่ <a class="xref" href="l0-foundation.html#test-process">L0.8 (test completion)</a> —
+        ส่วนที่ทีมส่วนใหญ่ข้ามและเป็นสาเหตุที่บั๊กชนิดเดิมกลับมาซ้ำ
+      </p>
+
+      <h3 id="escape-taxonomy">Escape Taxonomy — จำแนกก่อนแก้</h3>
+
+      <div class="note take">
+        <span class="note-t">คำถามที่ต้องตอบทุกครั้งที่บั๊กหลุด</span>
+        <p style="margin-bottom:0;font-size:17px">
+          ไม่ใช่ <em>“บั๊กนี้เกิดจากอะไร”</em> แต่คือ
+          <strong>“ทำไม gate ทั้ง 27 ตัวถึงปล่อยมันผ่าน”</strong>
+        </p>
+      </div>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:8%">ID</th><th style="width:24%">ชนิดของการหลุด</th><th style="width:30%">แปลว่า</th><th>การแก้ที่ถูกต้อง</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col"><strong>E1</strong></td><td>ไม่มีเทสของพื้นที่นี้เลย</td><td>ช่องว่างของ test design</td><td>เพิ่มเทส + ทบทวนว่าทำไม L1 technique ไม่ครอบ</td></tr>
+            <tr><td class="num-col"><strong>E2</strong></td><td>มีเทส แต่ oracle อ่อน</td><td>เทสรันโค้ดแต่ไม่ตรวจสิ่งที่ผิด</td><td class="mid">⭐ mutation testing (<a class="xref" href="l5-advanced.html#mutation">L5.1</a>)</td></tr>
+            <tr><td class="num-col"><strong>E3</strong></td><td>มีเทสที่ถูก แต่ไม่ได้รัน</td><td>ปัญหา test selection / gate config</td><td>ตรวจ gate config + test count baseline</td></tr>
+            <tr><td class="num-col"><strong>E4</strong></td><td>gate จับได้ แต่ถูกข้าม</td><td>ปัญหาวินัย/กระบวนการ</td><td>ทำให้ข้ามไม่ได้ หรือทำ emergency path ให้ชัด</td></tr>
+            <tr><td class="num-col"><strong>E5</strong></td><td>เป็นสิ่งที่ automation จับไม่ได้ และคนก็พลาด</td><td class="no">⭐ ปัญหาที่ S8.5</td><td class="no">เพิ่มใน approval drill catalog · ปรับการนำเสนอที่ S8.5</td></tr>
+            <tr><td class="num-col"><strong>E6</strong></td><td>spec ผิดตั้งแต่ต้น</td><td>ปัญหา shift-left</td><td>ปรับ spec quality gate · เพิ่ม ambiguity pattern</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ทำไมการจำแนกสำคัญกว่าการแก้</span>
+        <p style="margin-bottom:0">
+          <strong>บั๊ก 10 ตัวที่เป็น E2 ทั้งหมด = ปัญหาเดียว ไม่ใช่ 10 ปัญหา</strong> —
+          และการแก้ทีละตัวคือการเสียเวลา 10 ครั้งกับอาการ ไม่ใช่กับโรค<br>
+          <strong>ถ้า E2 เยอะ → ลงทุนกับ mutation testing<br>
+          ถ้า E5 เยอะ → ปัญหาอยู่ที่การนำเสนอที่ S8.5 ไม่ใช่ที่ตัวคุณ</strong>
+        </p>
+      </div>
+
+      <h3 id="postmortem">Postmortem Template</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">markdown</span><span class="code-file">docs/postmortems/2026-07-25-double-payout.md</span></div>
+<pre><code># Postmortem: จ่ายเงินซ้ำ 2 ครั้ง
+
+วันที่เกิด: 2026-07-25 · ตรวจพบ: 2026-07-25 14:20 · แก้เสร็จ: 15:05
+ผลกระทบ: ผู้ใช้ 12 คน · ยอดรวม 47,300 บาท · MTTR 45 นาที
+
+## ⭐ ไม่มีการหาคนผิด (blameless)
+เป้าหมายคือหาว่า "ระบบอนุญาตให้เกิดขึ้นได้ยังไง" ไม่ใช่ "ใครทำ"
+
+## Timeline
+14:20 invariant monitor INV-1 แจ้งเตือน ledger mismatch  ← ⭐ ระบบจับได้เอง
+14:23 ยืนยันว่าเป็นเรื่องจริง ไม่ใช่ false positive
+14:26 ปิด feature flag `payout_v2`                        ← หยุดเลือด (ขั้นที่ 1)
+14:40 ระบุสาเหตุ: webhook retry ไม่ผ่าน idempotency check
+14:52 hotfix ผ่าน emergency path
+15:05 ยืนยัน INV-1 กลับมาเขียว
+15:30 คืนเงินส่วนเกินให้ผู้ใช้ 12 คน
+
+## Root cause (5 whys ที่หยุดถูกที่)
+1. ทำไมจ่ายซ้ำ?           → webhook เดิมถูกประมวลผล 2 ครั้ง
+2. ทำไมประมวลผล 2 ครั้ง?  → idempotency key ตรวจหลัง insert ledger
+3. ทำไมตรวจหลัง?          → refactor ย้ายลำดับโดยไม่ตั้งใจ
+4. ทำไม refactor ผ่าน?    → ⭐ ไม่มีเทสที่ยิง webhook พร้อมกัน (มีแต่ยิงตามลำดับ)
+5. ทำไมไม่มีเทสนั้น?      → ⭐⭐ race harness ยังไม่ได้ครอบ webhook path
+
+→ หยุดที่นี่ ไม่ต่อไปที่ "ทำไมถึงไม่ได้เขียน race test" เพราะจะไปจบที่
+  "เพราะคนลืม" ซึ่งไม่ actionable
+
+## ⭐ Escape analysis
+- ชนิด: E1 (ไม่มีเทสของพื้นที่นี้)
+- gate ที่ควรจับ: race condition harness → ยังไม่ครอบ webhook
+- gate ที่จับได้จริง: ไม่มี · production invariant monitor จับหลังเกิด
+- ทำไม S8.5 ไม่จับ: diff ดูเหมือน refactor ปกติ ไม่มีสัญญาณอะไรผิด
+  → ⭐ นี่คือ D7 (silent behavior change) ใน approval drill catalog
+
+## Action items (ต้องมีเจ้าของและวันที่ ไม่งั้นไม่นับ)
+| # | สิ่งที่ทำ | ประเภท | กำหนด |
+|---|---|---|---|
+| 1 | เพิ่ม race test ของ webhook path | ป้องกัน | 2026-07-26 ✅ |
+| 2 | เพิ่ม "ลำดับของ idempotency check" ใน fault-attacks.md | ป้องกัน | 2026-07-26 ✅ |
+| 3 | เพิ่ม D7 drill ที่สลับลำดับ idempotency | ตรวจจับ | 2026-07-28 |
+| 4 | ให้ S8.5 แสดง diff ที่สลับลำดับ statement เป็นพิเศษ | ตรวจจับ | 2026-08-02 |
+| 5 | ลด INV-1 จากทุก 10 นาที เป็นทุก 2 นาที | ลดผลกระทบ | 2026-07-27 ✅ |
+
+## ⭐ สิ่งที่ทำงานได้ดี (ต้องเขียนด้วย)
+- invariant monitor จับได้ใน 4 นาทีหลังเกิด โดยไม่มีผู้ใช้แจ้ง
+- feature flag ปิดได้ใน 3 นาทีหลังยืนยัน
+- emergency path ทำให้ hotfix ออกได้โดยไม่ข้าม gate ที่สำคัญ</code></pre>
+      </div>
+
+      <h3 id="learning-artifacts">Artifact 6 ชนิดที่ทำงานเองหลัง postmortem</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:26%">Artifact</th><th style="width:26%">อัปเดตเมื่อ</th><th>ใครใช้</th></tr></thead>
+          <tbody>
+            <tr><td><code>fault-attacks.md</code></td><td>ทุก escape</td><td>agent ที่ S1/S3 (<a class="xref" href="l2-automation.html#fault-context">L2.14</a>)</td></tr>
+            <tr><td>Test suite ใหม่</td><td>ทุก escape</td><td>CI</td></tr>
+            <tr><td>Gate ใหม่ / constraint ใหม่</td><td>เมื่อเป็น E3/E4</td><td>CI</td></tr>
+            <tr><td>Approval drill catalog</td><td class="mid">เมื่อเป็น E5 ⭐</td><td>drill runner</td></tr>
+            <tr><td>Ambiguity pattern</td><td>เมื่อเป็น E6</td><td>spec quality gate</td></tr>
+            <tr><td>ADR</td><td>เมื่อเปลี่ยนแนวทาง</td><td>ตัวคุณในอนาคต</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="knowledge-lifecycle">Knowledge Lifecycle — ความรู้ก็เสื่อมสภาพ <span class="st">⭐</span></h3>
+
+      <div class="note warn">
+        <span class="note-t">ปัญหาที่จะเกิดใน 12 เดือน</span>
+        <p style="margin-bottom:0">
+          <code>fault-attacks.md</code> ที่โตขึ้นทุกครั้งที่มีบั๊ก จะกลายเป็นไฟล์ 400 บรรทัด
+          ที่ agent ต้องอ่านทุกครั้ง → <strong>context กว้างจนไม่มีอะไรโดดเด่น</strong>
+          และหลายข้อในนั้นอ้างถึงโค้ดที่ถูกลบไปแล้ว
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">yaml</span><span class="code-file">fault-attacks.yaml — โครงสร้างที่มี provenance และ lifecycle</span></div>
+<pre><code>- id: FA-023
+  rule: "ยิง webhook เดิมพร้อมกัน 3 ครั้ง ต้องได้ ledger 1 แถว"
+  scope: [webhook, money]
+  status: ACTIVE            # ACTIVE | DORMANT | RETIRED
+  provenance:
+    source: incident        # incident | drill | review | external
+    ref: "2026-07-25-double-payout"
+  added: 2026-07-26
+  lastTriggered: 2026-07-26  # ครั้งสุดท้ายที่กฎนี้ทำให้เจอปัญหา
+  supersededBy: null         # ถ้ามี gate อัตโนมัติแทนแล้ว
+  automatedBy: "security/race/business-logic.spec.ts"   # ⭐ สำคัญ</code></pre>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">javascript</span><span class="code-file">scripts/knowledge-gc.mjs — รันทุกไตรมาส</span></div>
+<pre><code>#!/usr/bin/env node
+const rules = parseYaml(readFileSync("pipeline-skill/fault-attacks.yaml", "utf8"))
+const now = Date.now()
+const YEAR = 365 * 864e5
+
+for (const r of rules) {
+  // ⭐ 1. ถ้ามี automated gate ครอบแล้ว → ไม่ต้องให้ agent อ่านอีก
+  if (r.automatedBy &amp;&amp; existsSync(r.automatedBy)) {
+    r.status = "RETIRED"
+    r.retiredReason = `ครอบด้วย ${r.automatedBy} แล้ว`
+    continue
+  }
+
+  // 2. ไม่เคยทำให้เจอปัญหาเลยใน 1 ปี → พักไว้ก่อน
+  const age = now - new Date(r.lastTriggered ?? r.added).getTime()
+  if (age &gt; YEAR &amp;&amp; r.status === "ACTIVE") {
+    r.status = "DORMANT"
+    r.dormantSince = new Date().toISOString().slice(0, 10)
+  }
+
+  // 3. อ้างถึงโค้ดที่ไม่มีแล้ว → ต้องมีคนตัดสิน
+  if (r.codeRef &amp;&amp; !existsSync(r.codeRef)) r.status = "NEEDS_REVIEW"
+}
+
+const active = rules.filter((r) =&gt; r.status === "ACTIVE")
+console.log(`ACTIVE ${active.length} · DORMANT ${rules.filter(r =&gt; r.status==="DORMANT").length} · ` +
+            `RETIRED ${rules.filter(r =&gt; r.status==="RETIRED").length}`)
+
+// ⭐ metric: consolidation ratio — สัดส่วนความรู้ที่กลายเป็น gate อัตโนมัติแล้ว
+const consolidated = rules.filter((r) =&gt; r.automatedBy).length / rules.length
+console.log(`consolidation ratio = ${(consolidated * 100).toFixed(0)}%`)
+console.log(consolidated &lt; 0.5
+  ? "⚠️  ความรู้ส่วนใหญ่ยังอยู่ในรูปคำแนะนำ ไม่ใช่ gate — เสี่ยงต่อการถูกเมิน"
+  : "✅ ความรู้ส่วนใหญ่ถูกแปลงเป็น gate แล้ว")
+
+// เขียนเฉพาะ ACTIVE ลงไฟล์ที่ agent อ่าน
+writeFileSync("pipeline-skill/fault-attacks-active.md", renderMarkdown(active))</code></pre>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">Consolidation ratio คือ metric ที่บอกว่าคุณกำลังเรียนรู้จริงมั้ย</span>
+        <p style="margin-bottom:0">
+          <strong>ความรู้ที่อยู่ในรูป “คำแนะนำให้ agent อ่าน” จะถูกเมินไปเรื่อยๆ เมื่อไฟล์โตขึ้น ·
+          ความรู้ที่กลายเป็น gate จะทำงานตลอดไปโดยไม่ต้องมีใครจำ</strong><br>
+          เป้าหมายของ learning loop ไม่ใช่การสะสมความรู้ แต่คือ<strong>การแปลงความรู้เป็นข้อจำกัดเชิงโครงสร้าง</strong>
+        </p>
+      </div>
+
+      <h3 id="near-miss">Near-miss harvesting — S8.5 rejection analysis</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">analyze/rejection-analysis.ts</span></div>
+<pre><code>// ⭐ ทุกครั้งที่คุณ reject ที่ S8.5 = automation พลาด 1 ครั้ง
+// นี่คือแหล่งข้อมูลที่ดีที่สุดและฟรี ว่าควรสร้าง gate อะไรต่อ
+
+export async function analyzeRejections(days = 90) {
+  const rejections = await db.query(`
+    SELECT reason_category, COUNT(*) AS n
+    FROM approvals
+    WHERE verdict = 'reject' AND created_at &gt; NOW() - INTERVAL '${days} days'
+    GROUP BY reason_category ORDER BY n DESC
+  `)
+
+  console.log("เหตุผลที่ปฏิเสธ (90 วัน):")
+  for (const r of rejections) {
+    const automatable = AUTOMATABLE_CATEGORIES.includes(r.reason_category)
+    console.log(`  ${r.n.toString().padStart(3)} × ${r.reason_category}` +
+                (automatable ? "  ← ⭐ ทำเป็น gate ได้" : "  (ต้องใช้คน)"))
+  }
+
+  // ⭐ ถ้าเหตุผลเดียวกันเกิดเกิน 3 ครั้ง = ควรเป็น gate แล้ว
+  const shouldAutomate = rejections.filter((r) =&gt;
+    r.n &gt;= 3 &amp;&amp; AUTOMATABLE_CATEGORIES.includes(r.reason_category))
+
+  if (shouldAutomate.length)
+    console.log(`\n⭐ ควรสร้าง gate สำหรับ: ${shouldAutomate.map(r =&gt; r.reason_category).join(", ")}`)
+
+  return { rejections, shouldAutomate }
+}</code></pre>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">การวัดที่สำคัญที่สุดของ learning loop</span>
+        <div class="diagram" style="margin:8px 0 0">repeat_incident_rate = incident ที่มี root cause ซ้ำกับที่เคยเกิด
+                       ────────────────────────────────────────
+                              incident ทั้งหมด
+
+เป้า: &lt; 10%
+
+ถ้าสูงกว่านั้น → postmortem ของคุณผลิตเอกสาร ไม่ได้ผลิตการเปลี่ยนแปลง
+                 (action item ที่ไม่มีเจ้าของและวันที่ = ไม่มีอยู่จริง)</div>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="economics"><span class="num">L4.10</span>Quality Economics — เมื่อไหร่ไม่ควรเทส <span class="st">⭐</span></h2>
+
+      <div class="note take">
+        <span class="note-t">คำถามที่แยก engineer ออกจาก zealot</span>
+        <p style="margin-bottom:0;font-size:17px">
+          <strong>“การเทสตรงนี้เพิ่มเติม ให้ผลตอบแทนมากกว่าการเอาเวลาไปทำอย่างอื่นมั้ย”</strong>
+        </p>
+      </div>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:32%">ทางเลือกแทนการเทส</th><th style="width:30%">ใช้เมื่อ</th><th>ตัวอย่างใน Pedpro</th></tr></thead>
+          <tbody>
+            <tr><td><strong>ทำให้ bug เป็นไปไม่ได้</strong></td><td>type system ทำได้</td><td>branded type <code>Money</code> ที่บวกกับ <code>number</code> ดิบไม่ได้</td></tr>
+            <tr><td><strong>ทำให้ตรวจจับเร็ว</strong></td><td>ป้องกันแพงกว่าตรวจจับ</td><td>invariant monitor แทนการเทสทุก path</td></tr>
+            <tr><td><strong>ทำให้กู้คืนเร็ว</strong></td><td>ความเสียหายย้อนกลับได้</td><td>feature flag + rollback drill</td></tr>
+            <tr><td><strong>ลดขอบเขต</strong></td><td>ฟีเจอร์ซับซ้อนเกินจำเป็น</td><td>รองรับ 2 payment method แทน 6</td></tr>
+            <tr><td><strong>ยอมรับความเสี่ยง</strong></td><td>ผลกระทบต่ำ + ความถี่ต่ำ</td><td>หน้า About สะกดผิด</td></tr>
+            <tr><td><strong>ให้ผู้ใช้บอก</strong></td><td>มี feedback loop เร็วอยู่แล้ว</td><td>ปุ่มแจ้งปัญหาในแอป + error tracking</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="diagram">ผลตอบแทนของการเทส (ต่อชั่วโมงที่ลง)
+
+  สูง │██████
+      │██████████
+      │████████████████
+      │██████████████████████
+      │████████████████████████████▄▄▄▄▄▄▄▄
+  ต่ำ │                                    ▔▔▔▔▔▔▔▔▔▔▔▔
+      └────────────────────────────────────────────────
+       เทสแรก    happy    edge    edge     เทสตัวที่
+                  path    case   case ลึก   200 ของ
+                                            พื้นที่เดิม
+
+⭐ จุดที่เส้นเริ่มแบน = จุดที่ควรย้ายไปเทสพื้นที่อื่น
+   ไม่ใช่จุดที่ควรเทสพื้นที่เดิมให้ลึกขึ้น</div>
+
+      <div class="note imp">
+        <span class="note-t">การประยุกต์กับ risk register</span>
+        <p style="margin-bottom:0">
+          พื้นที่ score 20 ที่มีเทส 78 ตัวแล้ว การเพิ่มตัวที่ 79 มีค่าน้อยกว่า
+          การเพิ่มเทสตัวแรกให้พื้นที่ score 12 ที่ยังไม่มีเทสเลย —
+          <strong>กระจายก่อน ลึกทีหลัง</strong>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="org"><span class="num">L4.11</span>โครงสร้างองค์กร (และทำไมมันเกี่ยวแม้ทำคนเดียว)</h2>
+
+      <div class="note take">
+        <span class="note-t">Conway's Law</span>
+        <p style="margin-bottom:0;font-size:17px">
+          <em>“ระบบที่องค์กรออกแบบ จะสะท้อนโครงสร้างการสื่อสารขององค์กรนั้น”</em><br>
+          <strong>pipeline architecture ของคุณ <em>คือ</em> org chart ของคุณ</strong>
+        </p>
+      </div>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:22%">บทบาทในองค์กรปกติ</th><th style="width:26%">ใน pipeline ของคุณ</th><th>ความเป็นอิสระ</th></tr></thead>
+          <tbody>
+            <tr><td>Developer</td><td>Claude CLI ที่ S2/S3/S4/S5</td><td>—</td></tr>
+            <tr><td>Code reviewer</td><td>Codex CLI ที่ S7</td><td class="yes">✅ คนละ vendor = อิสระจริง</td></tr>
+            <tr><td>QA gate</td><td>S6 deterministic gate</td><td class="yes">✅ ไม่มี judgment = ไม่มีอคติ</td></tr>
+            <tr><td>Release manager</td><td>คุณที่ S8.5</td><td class="mid">⚠️ คนเดียวกับ product owner</td></tr>
+            <tr><td>Product owner</td><td>คุณ</td><td class="no">❌ ไม่มีการถ่วงดุล</td></tr>
+            <tr><td>Ops / on-call</td><td>คุณ + invariant monitor</td><td class="mid">⚠️</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ทำไมต้องแยกบทบาทให้ชัดแม้เป็นคนเดียว</span>
+        <p>
+          เพราะ<strong>คุณตอน 10 โมงเช้า กับคุณตอน 5 ทุ่มก่อน deadline เป็นคนละคน</strong> —
+          บทบาทที่เขียนไว้ชัดคือวิธีให้คุณตอน 10 โมงเช้าคุมคุณตอน 5 ทุ่มได้
+        </p>
+        <p style="margin-bottom:0">
+          <strong>ข้อเสนอที่เป็นรูปธรรม:</strong> เวลาเข้า S8.5 ให้สวมหมวก
+          <em>“ผู้ตรวจสอบที่ไม่ได้เขียนโค้ดนี้”</em> —
+          และ approval drill (<a href="#approval-drill">L4.5</a>) คือเครื่องมือวัดว่าคุณสวมหมวกนั้นได้จริงมั้ย
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="agentic-qe"><span class="num">L4.12</span>QE ในองค์กรที่ทีมคือ Agent <span class="st">⭐⭐</span></h2>
+
+      <p>5 หลักการที่ไม่มีในตำราเล่มไหน เพราะมันเพิ่งมีอยู่จริงได้ไม่นาน</p>
+
+      <h3 id="oracle-provenance">1. Oracle provenance — ที่มาของ “ความถูกต้อง” <span class="st">⭐⭐</span></h3>
+
+      <p>
+        <a class="xref" href="l2-automation.html#fault-context">L2.14</a> ชี้ว่า agent เขียนเทสจากโค้ดที่เห็น →
+        oracle มาจากโค้ดเอง → tautology<br>
+        ตรงนี้คือการทำให้มันเป็น <strong>metric ที่วัดได้</strong>
+      </p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:8%">ระดับ</th><th style="width:24%">แหล่งของ oracle</th><th style="width:14%">ความน่าเชื่อถือ</th><th>ตัวอย่าง</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">P0</td><td><strong>มนุษย์กำหนดโดยตรง</strong></td><td class="yes">สูงสุด</td><td>AC ที่คนเขียน · invariant ที่คนตัดสิน</td></tr>
+            <tr><td class="num-col">P1</td><td><strong>ระบบภายนอกที่แก้ไม่ได้</strong></td><td class="yes">สูง</td><td>Bruno contract (read-only) · กฎหมาย · มาตรฐาน</td></tr>
+            <tr><td class="num-col">P2</td><td><strong>คุณสมบัติทางคณิตศาสตร์</strong></td><td class="yes">สูง</td><td><code>sum(ledger)==balance</code> · metamorphic relation</td></tr>
+            <tr><td class="num-col">P3</td><td><strong>ข้อมูล production จริง</strong></td><td class="yes">สูง</td><td>golden master จาก traffic จริง · shadow run</td></tr>
+            <tr><td class="num-col">P4</td><td class="mid"><strong>Red-proof</strong></td><td class="mid">กลาง</td><td>เทสที่พิสูจน์แล้วว่าเคยแดง</td></tr>
+            <tr><td class="num-col">P5</td><td class="no"><strong>agent อนุมานจากโค้ด</strong></td><td class="no">ต่ำ</td><td>เทสที่ agent เขียนจากการอ่าน implementation</td></tr>
+            <tr><td class="num-col">P6</td><td class="no"><strong>Snapshot ที่ยอมรับไปแล้ว</strong></td><td class="no">ต่ำสุด</td><td><code>.snap</code> ที่ไม่มีใครอ่าน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">analyze/oracle-provenance.ts</span></div>
+<pre><code>// ⭐ metric ที่ควรติดตาม: สัดส่วนของ assertion ที่มี oracle ระดับ P0-P3
+export async function measureOracleProvenance() {
+  const tests = await parseAllTests("**/*.spec.ts")
+  const dist: Record&lt;string, number&gt; = {}
+
+  for (const t of tests) {
+    const level =
+      t.tags.includes("@invariant")     ? "P2" :
+      t.tags.includes("@contract")      ? "P1" :
+      t.tags.includes("@golden-master") ? "P3" :
+      t.hasRedProof                     ? "P4" :
+      t.usesSnapshot                    ? "P6" :
+      t.authoredBy === "human"          ? "P0" : "P5"
+    dist[level] = (dist[level] ?? 0) + 1
+  }
+
+  const total = tests.length
+  const strong = (dist.P0 ?? 0) + (dist.P1 ?? 0) + (dist.P2 ?? 0) + (dist.P3 ?? 0)
+
+  console.log(`oracle strength = ${((strong / total) * 100).toFixed(0)}% (P0-P3)`)
+  console.log(dist)
+
+  // ⭐ เป้า: P0-P3 ≥ 40% และ P5+P6 &lt; 30%
+  return { dist, strongRatio: strong / total }
+}</code></pre>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">ทำไม metric นี้มีค่ากว่า coverage</span>
+        <p style="margin-bottom:0">
+          coverage บอกว่า “โค้ดถูกรัน” · oracle provenance บอกว่า
+          <strong>“เรารู้ได้ยังไงว่ามันถูก และความรู้นั้นมาจากไหน”</strong> —
+          suite ที่ coverage 90% แต่ P5+P6 = 80% คือ suite ที่ยืนยันว่า “โค้ดทำสิ่งที่โค้ดทำ”
+        </p>
+      </div>
+
+      <h3 id="context-artifact">2. Context เป็น artifact ที่ต้องมีวิศวกรรม</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:30%">Context ก็เหมือนโค้ด</th><th>หมายความว่า</th></tr></thead>
+          <tbody>
+            <tr><td>ต้อง version</td><td><code>CLAUDE.md</code>, skill, fault-attacks ต้องอยู่ใน git</td></tr>
+            <tr><td>ต้องมี test</td><td class="mid">⭐ <strong>context regression test</strong> — ดูด้านล่าง</td></tr>
+            <tr><td>ต้องมี review</td><td>เปลี่ยน context = เปลี่ยนพฤติกรรมของทั้ง pipeline</td></tr>
+            <tr><td>ต้องเสื่อมสภาพได้</td><td>knowledge lifecycle (<a href="#knowledge-lifecycle">L4.9</a>)</td></tr>
+            <tr><td>ต้องวัดผล</td><td>เพิ่มบรรทัดนี้แล้วดีขึ้นจริงมั้ย</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">eval/context-regression.ts</span></div>
+<pre><code>// ⭐ เมื่อแก้ CLAUDE.md หรือ skill ต้องพิสูจน์ว่าไม่ได้ทำให้แย่ลง
+const GOLDEN_TASKS = [
+  { id: "G1", ticket: "เพิ่ม validation ยอดฝากขั้นต่ำ",
+    mustProduce: ["BVA ที่ 99/100/101", "ไม่แตะ spec file ใน S4"] },
+  { id: "G2", ticket: "แก้บั๊ก webhook ซ้ำ",
+    mustProduce: ["idempotency test", "invariant assertion"] },
+  { id: "G3", ticket: "เพิ่มฟิลด์ในโปรไฟล์",
+    mustProduce: ["mass assignment test", "authz spec ของ endpoint"] },
+]
+
+export async function runContextRegression(contextSha: string) {
+  const results = []
+  for (const task of GOLDEN_TASKS) {
+    // รัน 5 ครั้งเพราะ output ไม่ deterministic
+    const runs = await Promise.all(
+      Array.from({ length: 5 }, () =&gt; runPipelineDryRun(task.ticket, contextSha)))
+    const passRate = runs.filter((r) =&gt;
+      task.mustProduce.every((m) =&gt; r.output.includes(m))).length / 5
+    results.push({ task: task.id, passRate })
+  }
+
+  const baseline = loadBaseline("eval/context-baseline.json")
+  const regressed = results.filter((r) =&gt; r.passRate &lt; (baseline[r.task] ?? 0) - 0.2)
+
+  if (regressed.length)
+    throw new Error(`⭐ context regression: ${regressed.map(r =&gt; r.task).join(", ")}`)
+
+  return results
+}</code></pre>
+      </div>
+
+      <h3 id="structural-constraint">3. Prompt constraint → Structural constraint <span class="st">⭐⭐</span></h3>
+
+      <div class="note take">
+        <span class="note-t">หลักการที่สำคัญที่สุดในหัวข้อนี้</span>
+        <p style="margin-bottom:0;font-size:17px">
+          <strong>ข้อจำกัดที่สำคัญต้องบังคับด้วยโครงสร้าง ไม่ใช่ด้วยการขอ</strong><br>
+          prompt คือคำขอ · structural constraint คือกำแพง
+        </p>
+      </div>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:34%">แทนที่จะเขียนใน prompt</th><th>ให้ใช้โครงสร้าง</th></tr></thead>
+          <tbody>
+            <tr><td>“อย่าแก้ไฟล์เทส”</td><td class="yes"><strong>sparse-checkout</strong> ไม่ให้ไฟล์เทสอยู่ใน worktree ของ S4</td></tr>
+            <tr><td>“อย่าลบเทส”</td><td class="yes">git diff gate + test count baseline</td></tr>
+            <tr><td>“ห้ามใช้ <code>--update-snapshots</code>”</td><td class="yes">ไม่ให้ flag นั้นอยู่ใน env ของ agent</td></tr>
+            <tr><td>“อย่ายิง API ภายนอก”</td><td class="yes">network policy + MSW <code>onUnhandledRequest: error</code></td></tr>
+            <tr><td>“ให้เขียนเทสก่อนโค้ด”</td><td class="yes">แยก stage + red-proof requirement</td></tr>
+            <tr><td>“อย่าอ่านไฟล์ eval”</td><td class="yes"><strong>เก็บ held-out ไว้คนละ repo</strong> (<a class="xref" href="l5-advanced.html#llm-eval">L5.7</a>)</td></tr>
+            <tr><td>“ให้ใส่ <code>data-test</code>”</td><td class="mid">ESLint rule (ยัง bypass ได้ แต่ต้องตั้งใจ)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">เกณฑ์ตัดสินว่าอะไรควรเป็น structural</span>
+        <p style="margin-bottom:0">
+          ถามว่า <em>“ถ้า agent ละเมิดข้อนี้ ความเสียหายกู้คืนได้มั้ย”</em><br>
+          <strong>กู้ไม่ได้ → ต้อง structural · กู้ได้ → prompt พอ</strong>
+        </p>
+      </div>
+
+      <h3 id="judgment-budget">4. Judgment budget — ทรัพยากรที่หายากที่สุด <span class="st">⭐⭐</span></h3>
+
+      <div class="diagram">ทรัพยากรใน pipeline นี้ เรียงตามความหายาก:
+
+  1. ⭐ human judgment ของคุณ    ← หายากที่สุด ฟื้นตัวช้า มีเพดานต่อวัน
+  2. wall-clock time
+  3. agent tokens                ← subscription-first: แทบไม่จำกัด
+
+ผลที่ตามมา: การออกแบบที่ถูกคือ
+  "ใช้ agent เยอะๆ เพื่อประหยัด judgment"
+  ไม่ใช่ "ประหยัด token"</div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">metrics/judgment-budget.ts</span></div>
+<pre><code>export type JudgmentEvent = {
+  runId: string
+  stage: "S1_spec" | "S4B_plan" | "S8.5_approve"
+  decisionMs: number
+  itemsPresented: number      // จำนวนสิ่งที่ต้องพิจารณา
+  itemsRequiringJudgment: number  // ⭐ ที่ต้องใช้วิจารณญาณจริง
+  verdict: string
+}
+
+export async function weeklyJudgmentReport() {
+  const events = await getJudgmentEvents(7)
+  const totalMinutes = events.reduce((s, e) =&gt; s + e.decisionMs, 0) / 60000
+  const perRun = totalMinutes / new Set(events.map((e) =&gt; e.runId)).size
+
+  // ⭐ signal-to-noise ของสิ่งที่นำเสนอที่ S8.5
+  const signalRatio = events.reduce((s, e) =&gt;
+    s + e.itemsRequiringJudgment / Math.max(e.itemsPresented, 1), 0) / events.length
+
+  console.log(`judgment ที่ใช้ไป: ${totalMinutes.toFixed(0)} นาที/สัปดาห์`)
+  console.log(`เฉลี่ยต่อ run: ${perRun.toFixed(1)} นาที`)
+  console.log(`signal ratio: ${(signalRatio * 100).toFixed(0)}%`)
+
+  if (signalRatio &lt; 0.3)
+    console.log("⚠️  S8.5 กำลังแสดงของที่ไม่ต้องตัดสินเยอะเกินไป → ทำให้เกิด habituation")
+
+  return { totalMinutes, perRun, signalRatio }
+}</code></pre>
+      </div>
+
+      <h3 id="s85-presentation">5. S8.5 ควรแสดง “สิ่งที่ judgment เท่านั้นตัดสินได้” <span class="st">⭐</span></h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:50%">❌ สิ่งที่ไม่ควรอยู่ใน S8.5</th><th>เพราะ</th></tr></thead>
+          <tbody>
+            <tr><td>รายการเทสที่ผ่านทั้งหมด</td><td>ถ้าไม่ผ่านมันจะไม่มาถึงคุณอยู่แล้ว</td></tr>
+            <tr><td>diff ทั้งหมดทุกบรรทัด</td><td>ส่วนใหญ่เป็น mechanical change</td></tr>
+            <tr><td>coverage %</td><td>ตัดสินอะไรไม่ได้</td></tr>
+            <tr><td>log ของทุก stage</td><td>noise</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">markdown</span><span class="code-file">รูปแบบที่ควรเป็น — S8.5 presentation</span></div>
+<pre><code>PED-1123 · T2 · ฝากเงินขั้นต่ำ
+
+⭐ ต้องใช้วิจารณญาณ (3 ข้อ)
+  1. ข้อความ error ใหม่: "ยอดเงินไม่ถึงขั้นต่ำที่กำหนด"
+     → โทนตรงกับข้อความอื่นในระบบมั้ย? อ่านแล้วรู้ว่าต้องทำอะไรต่อมั้ย?
+  2. AC-2 บอกว่า "แจ้งเตือนผู้ใช้" — implement เป็น toast 3 วินาที
+     → เพียงพอมั้ย หรือควรเป็น inline error ที่ค้างอยู่?
+  3. diff แตะ utils/format.ts ซึ่งอยู่นอกขอบเขต ticket
+     → ตั้งใจหรือ scope creep?
+
+📊 ข้อมูลประกอบ (ไม่ต้องตัดสิน)
+  gate ผ่านครบ 18/18 · เทสใหม่ 12 ตัว (red-proof ✓)
+  diff 4 ไฟล์ +87/−12 · oracle P0-P3 = 58%
+  preview: https://pr-123---pedpro.run.app
+
+🔗 ดูเพิ่ม: diff เต็ม · trace · plan ของ S4B</code></pre>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">ทำไมรูปแบบนี้ดีกว่า</span>
+        <p style="margin-bottom:0">
+          มันเปลี่ยนงานของคุณจาก <em>“หาว่ามีอะไรผิดมั้ย”</em> (ซึ่งเหนื่อยและพลาดง่าย)
+          เป็น <strong>“ตอบคำถาม 3 ข้อ”</strong> (ซึ่งทำได้ดีและวัดผลได้)<br>
+          และมันเพิ่ม signal ratio โดยตรง → ลด habituation → <strong>ยกระดับ approval drill pass rate</strong>
+        </p>
+      </div>
+
+      <h3 id="accountability">Accountability delegate ให้ agent ไม่ได้ <span class="st">⭐</span></h3>
+
+      <div class="note imp">
+        <span class="note-t">ต่อจาก <a class="xref" href="l0-foundation.html#review-types">L0.5</a></span>
+        <p>
+          S7 Codex คือ <strong>“static analysis ที่มี judgment แต่ไม่มี accountability”</strong> —
+          และความต่างนี้ไม่ใช่เรื่องเทคนิค มันคือเรื่องที่ว่า<strong>เมื่อของพัง ใครเป็นคนรับผล</strong>
+        </p>
+        <div class="tbl" style="margin:10px 0">
+          <table>
+            <thead><tr><th style="width:30%"></th><th>Reviewer มนุษย์</th><th>LLM reviewer</th></tr></thead>
+            <tbody>
+              <tr><td class="num-col">มี judgment</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+              <tr><td class="num-col">อธิบายเหตุผลได้</td><td class="yes">✓</td><td class="yes">✓ (แต่อาจไม่ตรงกับเหตุผลจริง)</td></tr>
+              <tr><td class="num-col">เรียนรู้จากความผิดพลาด</td><td class="yes">✓</td><td class="no">✗ (ไม่ข้าม session)</td></tr>
+              <tr><td class="num-col"><strong>รับผลของการปล่อยผ่าน</strong></td><td class="yes">✓</td><td class="no"><strong>✗</strong></td></tr>
+              <tr><td class="num-col">ถูกถามได้ว่า “ทำไมปล่อยผ่าน”</td><td class="yes">✓</td><td class="no">✗ (ตอบได้แต่ไม่ผูกพัน)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-bottom:0">
+          <strong>ผลทางปฏิบัติ 3 ข้อ:</strong><br>
+          1. อย่านับ S7 แทน code review ในเชิงกระบวนการ — นับเป็น <strong>filter ที่ลดภาระ S8.5</strong><br>
+          2. ทุกอย่างที่ agent ผลิต ถือว่ายังไม่ถูกตรวจสอบจนกว่าจะผ่าน gate ที่<strong>คนออกแบบ</strong><br>
+          3. เมื่อบั๊กหลุด คำตอบ “Codex บอกว่าโอเค” ไม่ใช่คำอธิบาย มันคือการระบุว่า gate ตัวไหนล้มเหลว
+        </p>
+      </div>
+
+      <h3 id="pipeline-slo">SLO ของ pipeline เอง</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:34%">SLI</th><th style="width:14%">เป้า</th><th>ถ้าไม่ถึง</th></tr></thead>
+          <tbody>
+            <tr><td><code>gate_correctness</code> — gate ตัดสินถูก</td><td class="no">100%</td><td>gate drill fail = หยุดใช้ gate นั้นจนแก้เสร็จ</td></tr>
+            <tr><td><code>human_gate_efficacy</code> — approval drill pass</td><td>≥ 80%</td><td>ลดปริมาณงานที่ผ่าน S8.5 · ปรับ presentation</td></tr>
+            <tr><td><code>first_pass_rate</code> — เขียวรอบแรก</td><td>≥ 70%</td><td>context หรือ spec quality มีปัญหา</td></tr>
+            <tr><td><code>pipeline_p95_duration</code></td><td>&lt; 25 นาที</td><td>ทบทวนลำดับ gate</td></tr>
+            <tr><td><code>judgment_minutes_per_run</code></td><td>&lt; 4 นาที</td><td>เพิ่ม gate อัตโนมัติ · ปรับ signal ratio</td></tr>
+            <tr><td><code>escaped_defect_rate</code></td><td>ลดลง qoq</td><td>ทบทวน escape taxonomy</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="positioning"><span class="num">L4.13</span>วางตัวเองให้ไม่เป็นยามเฝ้าประตู</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:44%">❌ ผู้ตัดสิน (gatekeeper)</th><th>✅ ผู้ให้ข้อมูลเรื่องความเสี่ยง</th></tr></thead>
+          <tbody>
+            <tr><td>“ปล่อยไม่ได้ เทสยังไม่ผ่าน”</td><td>“ถ้าปล่อยตอนนี้ ความเสี่ยงคือ A, B โอกาสเกิดประมาณนี้ ผลกระทบประมาณนี้ — คุณอยากรับมั้ย”</td></tr>
+            <tr><td>“คุณเขียนโค้ดผิด”</td><td>“พฤติกรรมนี้ต่างจาก spec ตรงนี้ — spec ผิดหรือโค้ดผิด”</td></tr>
+            <tr><td>“ต้องมี coverage 80%”</td><td>“พื้นที่ที่ risk 20 ยังไม่มีเทสเลย 3 จุด — จัดลำดับยังไงดี”</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">3 ประโยคที่เปลี่ยนการสัมภาษณ์งาน</span>
+        <ol style="margin-bottom:0">
+          <li>“ผมไม่ได้วัดว่าหาบั๊กได้กี่ตัว ผมวัด escaped defect rate และ repeat incident rate”</li>
+          <li>“ผมสร้าง gate ที่ทำให้บั๊กชนิดนั้นเกิดไม่ได้อีก แทนที่จะหาบั๊กชนิดนั้นซ้ำ”</li>
+          <li>“ผมทดสอบระบบตรวจสอบของตัวเองด้วย — ทั้ง gate drill และ approval drill”</li>
+        </ol>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="anti-patterns-4"><span class="num">L4.14</span>Anti-patterns ของ Quality Engineering</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:24%">Anti-pattern</th><th style="width:34%">อาการ</th><th>แก้</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Quality theater</strong></td><td>มีเอกสารครบแต่ไม่มีใครทำตาม</td><td>แปลงเป็น gate ที่รันได้</td></tr>
+            <tr><td><strong>Metric theater</strong></td><td>dashboard สวยที่ไม่เคยเปลี่ยนการตัดสินใจ</td><td>ทุก metric ต้องมี “ถ้าเกินเกณฑ์แล้วทำอะไร”</td></tr>
+            <tr><td class="no"><strong>Human gate ที่เป็นตรายาง</strong></td><td class="no">approve ทุกครั้งโดยไม่ดู</td><td class="no">⭐ approval drill</td></tr>
+            <tr><td><strong>SLO ที่ไม่มีผลอะไร</strong></td><td>ตั้งไว้แล้วละเมิดก็ไม่เกิดอะไร</td><td>budget enforcer ใน CI</td></tr>
+            <tr><td><strong>Postmortem ที่ผลิตเอกสาร</strong></td><td>action item ไม่มีเจ้าของ/วันที่</td><td>วัด repeat_incident_rate</td></tr>
+            <tr><td><strong>หา “คนผิด”</strong></td><td>RCA จบที่ “ใครสะเพร่า”</td><td>blameless + 5 whys ที่หยุดที่กระบวนการ</td></tr>
+            <tr><td><strong>เพิ่ม gate ทุกครั้งที่มีบั๊ก</strong></td><td>pipeline 45 นาที คนหาทางข้าม</td><td>ถามก่อนว่า E1–E6 ชนิดไหน</td></tr>
+            <tr><td><strong>DoD เดียวสำหรับทุกงาน</strong></td><td>แก้ typo ต้องผ่าน 27 gate</td><td>tiered DoD</td></tr>
+            <tr><td class="no"><strong>Prompt เป็นกลไกความปลอดภัย</strong></td><td class="no">“ผมเขียนใน CLAUDE.md แล้วว่าห้าม”</td><td class="no">⭐ structural constraint</td></tr>
+            <tr><td><strong>Context ที่โตไม่หยุด</strong></td><td>skill 400 บรรทัดที่ไม่มีอะไรโดดเด่น</td><td>knowledge lifecycle + GC</td></tr>
+            <tr><td><strong>วัด token แทนวัด judgment</strong></td><td>ประหยัดสิ่งที่ถูก เปลืองสิ่งที่แพง</td><td>judgment budget</td></tr>
+            <tr><td><strong>Shift-left จนลืม shift-right</strong></td><td>gate เยอะแต่ไม่รู้ว่า production เป็นไง</td><td>invariant monitor + RUM</td></tr>
+            <tr><td><strong>ไม่มี emergency path</strong></td><td>ตอนไฟไหม้ข้าม gate มั่ว</td><td>เขียนไว้ตอนหัวเย็น</td></tr>
+            <tr><td><strong>residual risk ไม่เคยเขียน</strong></td><td>“ทำไมไม่คิดถึงเรื่องนี้”</td><td>เขียนช่องนั้นทุกครั้ง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="เช็คลิสต์-4"><span class="num">✓</span>เช็คลิสต์ความพร้อม L4</h2>
+
+      <h3 id="cl4-doc">เอกสารและกลยุทธ์</h3>
+      <ul class="check">
+        <li>มี Test Policy 1 หน้าที่ระบุ “สิ่งที่ไม่ยอมให้เกิด” ชัดเจน</li>
+        <li class="key">มีหัวข้อ “สิ่งที่จงใจไม่ทำ” พร้อมเงื่อนไขเปลี่ยนใจ</li>
+        <li>มีลำดับความสำคัญเมื่อ NFR ขัดแย้งกัน</li>
+        <li>มี ADR สำหรับการตัดสินใจที่ย้อนกลับยาก</li>
+      </ul>
+
+      <h3 id="cl4-shift">Shift-left / right</h3>
+      <ul class="check">
+        <li>รู้ว่า pipeline ตัวเองอ่อนที่ระดับไหน (L-4 ถึง L0)</li>
+        <li class="key">มี spec quality gate ที่ใช้ agent 2 ตัวเทียบกัน</li>
+        <li>เข้าใจว่าทำไม “agent เห็นไม่ตรงกัน” มีค่ากว่า “เห็นตรงกัน”</li>
+        <li class="key">มี production invariant monitor ≥ 5 ตัว รันทุก 10 นาที</li>
+        <li>invariant ตรวจข้อมูล<strong>ทั้งหมด</strong> ไม่ใช่สุ่ม</li>
+        <li>invariant fail-closed (ตรวจไม่ได้ = แจ้งเตือน)</li>
+        <li>มี synthetic monitoring ของ 3 flow วิกฤต</li>
+        <li class="key">มี kill switch และ<strong>เคยทดสอบว่ามันปิดได้จริง</strong></li>
+        <li>flag ทุกตัวมี expiry + owner และไม่มีตัวหมดอายุค้าง</li>
+        <li>canary เทียบกับ stable ไม่ใช่กับ threshold</li>
+        <li class="key">RUM แยก LINE in-app ออกมาดูต่างหาก</li>
+      </ul>
+
+      <h3 id="cl4-slo">SLO</h3>
+      <ul class="check">
+        <li class="key">เลือก event-based หรือ time-based แล้ว และไม่แปลงข้ามกัน</li>
+        <li>burn rate threshold คำนวณจากหน้าต่างจริง (28 วัน = 13.44/5.6/0.93)</li>
+        <li>alert ใช้ AND ของ 2 หน้าต่าง</li>
+        <li class="key">มี journey SLO ไม่ใช่แค่ endpoint SLO</li>
+        <li>รู้ว่า 0.995⁵ = 97.5% และผลของมัน</li>
+        <li class="key">error budget policy บังคับได้จริงผ่าน CI</li>
+        <li>มี SLO ที่เป็น 100% เฉพาะสิ่งที่กู้คืนไม่ได้</li>
+      </ul>
+
+      <h3 id="cl4-metric">Metric</h3>
+      <ul class="check">
+        <li>แยก health / diagnostic / improvement ได้</li>
+        <li class="key">มี approval drill และรู้ค่า pass rate ของตัวเอง</li>
+        <li class="key">drill ทุกตัว<strong>ผ่าน automated gate ก่อน</strong> (ไม่งั้นเป็น gate drill)</li>
+        <li>แยก INCONCLUSIVE ออกจาก PASS</li>
+        <li class="key">ตีความ <code>blind_approve_rate</code> คู่กับ drill pass rate ได้ทั้ง 4 ช่อง</li>
+        <li>เลิกใช้ metric ขยะทั้ง 7 ตัว</li>
+        <li>วัด <code>repeat_incident_rate</code></li>
+      </ul>
+
+      <h3 id="cl4-loop">Learning loop</h3>
+      <ul class="check">
+        <li class="key">จำแนก escape เป็น E1–E6 ทุกครั้ง</li>
+        <li>postmortem blameless + 5 whys ที่หยุดที่กระบวนการ</li>
+        <li>action item ทุกข้อมีเจ้าของและวันที่</li>
+        <li class="key">มี knowledge lifecycle (ACTIVE/DORMANT/RETIRED)</li>
+        <li>วัด consolidation ratio</li>
+        <li>วิเคราะห์เหตุผลที่ reject ที่ S8.5 เพื่อหาว่าควรสร้าง gate อะไร</li>
+      </ul>
+
+      <h3 id="cl4-agentic">Agentic QE <span class="st">⭐</span></h3>
+      <ul class="check">
+        <li class="key">วัด oracle provenance และรู้สัดส่วน P0–P3</li>
+        <li>context อยู่ใน git + มี context regression test</li>
+        <li class="key">ข้อจำกัดที่กู้คืนไม่ได้ เป็น structural ไม่ใช่ prompt</li>
+        <li>วัด judgment budget + signal ratio</li>
+        <li class="key">S8.5 แสดง “สิ่งที่ต้องใช้วิจารณญาณ” ไม่ใช่ “ทุกอย่างที่พบ”</li>
+        <li>เข้าใจว่า accountability delegate ให้ agent ไม่ได้</li>
+        <li>มี tiered DoD + auto-approve T0 พร้อมเงื่อนไข 4 ข้อ</li>
+        <li>มี emergency path ที่เขียนไว้ล่วงหน้า</li>
+      </ul>
+
+      <!-- ============================================================ -->
+      <h2 id="แบบฝึกหัด-4"><span class="num">✎</span>แบบฝึกหัด L4</h2>
+
+      <ol>
+        <li><strong>Production invariant monitor</strong> <span class="st">⭐⭐</span> — implement 5 invariant → รันทุก 10 นาที → <strong>ดูว่าเจอปัญหาในข้อมูลที่มีอยู่แล้วกี่รายการ</strong> (มักจะเจอ)</li>
+        <li><strong>Approval drill ครั้งแรก</strong> <span class="st">⭐⭐</span> — สร้าง drill 3 ตัวจาก catalog D1/D4/D7 → ตรวจว่าผ่าน automated gate จริง → รัน → บันทึกผล</li>
+        <li><strong>Test Policy</strong> — เขียน 1 หน้า โดยเฉพาะ §6 “สิ่งที่จงใจไม่ทำ”</li>
+        <li><strong>Escape taxonomy ย้อนหลัง</strong> <span class="st">⭐</span> — หยิบบั๊ก production 10 ตัวล่าสุด → จำแนก E1–E6 → <strong>ดูว่าชนิดไหนเยอะสุด แล้วลงทุนตรงนั้น</strong></li>
+        <li><strong>Journey SLO</strong> — คำนวณ SLO ของ flow ฝากเงินจาก event log จริง → เทียบกับที่คิดว่าเป็น</li>
+        <li><strong>Budget enforcer</strong> — implement → ทดสอบด้วยการปลอมค่า budget ให้ต่ำ → ดูว่ามันบล็อกจริงมั้ย</li>
+        <li><strong>Tiered DoD</strong> — implement <code>classifyTier</code> → รันย้อนหลังกับ PR 20 อันล่าสุด → ดูว่าจัดระดับถูกกี่อัน</li>
+        <li><strong>T0 audit</strong> — เปิด auto-approve T0 พร้อม sampling 10% → รัน 2 สัปดาห์ → ทบทวน</li>
+        <li><strong>Emergency path</strong> — เขียนเอกสาร → <strong>ซ้อมจริง 1 ครั้งบน staging</strong> → จับเวลา</li>
+        <li><strong>Postmortem</strong> — เขียนย้อนหลังสำหรับ incident ล่าสุด → ดูว่า action item มีเจ้าของ+วันที่ครบมั้ย</li>
+        <li><strong>Knowledge GC</strong> — รัน <code>knowledge-gc.mjs</code> → ดู consolidation ratio → ถ้า &lt; 50% แปลว่าความรู้ยังไม่กลายเป็น gate</li>
+        <li><strong>Oracle provenance</strong> <span class="st">⭐</span> — วัดสัดส่วน P0–P6 ของ suite ตัวเอง → <strong>ถ้า P5+P6 &gt; 50% แปลว่าเทสส่วนใหญ่ยืนยันว่าโค้ดทำสิ่งที่โค้ดทำ</strong></li>
+        <li><strong>Structural constraint audit</strong> — ไล่ทุกข้อห้ามใน <code>CLAUDE.md</code> → ถามว่า “ถ้าละเมิด กู้คืนได้มั้ย” → ตัวที่กู้ไม่ได้ต้องแปลงเป็น structural</li>
+        <li><strong>Judgment budget</strong> — วัดว่าใช้เวลาที่ S8.5 กี่นาที/สัปดาห์ + signal ratio</li>
+        <li><strong>S8.5 presentation</strong> <span class="st">⭐</span> — เปลี่ยนรูปแบบเป็น “สิ่งที่ต้องใช้วิจารณญาณ” → วัด <code>blind_approve_rate</code> และ drill pass rate ก่อน/หลัง</li>
+      </ol>
+
+      <div class="note take">
+        <span class="note-t">สรุปที่ต้องติดหัวไป L5</span>
+        <div class="diagram" style="margin:8px 0 0">L4 จัดวางระบบทั้งหมดให้เรียนรู้และวัดผลตัวเองได้
+   ↓
+คำถามที่ L5 ต้องตอบ:
+   • เทสที่เรามีอยู่ "แข็งแรงพอมั้ย"          → mutation testing
+   • จะเทสสิ่งที่คิดเคสไม่หมดยังไง            → property / model-based
+   • จะเทสสิ่งที่ไม่มีคำตอบตายตัวยังไง        → LLM eval
+   • ระบบทั้งหมดนี้ถูกโจมตีได้ยังไง            → prompt injection
+   • oracle problem ที่ L0 เปิดไว้ ปิดยังไง    → oracle provenance ที่แข็งขึ้น</div>
+      </div>
+
+      <div class="pager">
+        <a href="l3-nfr.html"><span class="dir">← ก่อนหน้า</span><span class="ttl">L3 — Non-functional</span></a>
+        <a class="next" href="l5-advanced.html"><span class="dir">ชั้นถัดไป →</span><span class="ttl">L5 — เทพ</span></a>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<button class="top" aria-label="กลับขึ้นบน">↑</button>
+<script>
+/* ============================================================
+   Pedpro Testing & QE Field Manual — shared behaviour
+   ไม่ใช้ localStorage / sessionStorage โดยเจตนา
+   ============================================================ */
+(function () {
+  "use strict";
+
+  var main = document.querySelector(".main");
+  var tocEl = document.getElementById("toc");
+  var railCol = document.querySelector(".rail-col");
+
+  /* ---------------------------------------------------------
+     1. slug + heading prep
+     --------------------------------------------------------- */
+  function slug(txt) {
+    return txt
+      .trim()
+      .replace(/[⭐★]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9._-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "")
+      .toLowerCase();
+  }
+
+  var heads = main ? Array.prototype.slice.call(main.querySelectorAll("h2, h3, h4")) : [];
+  var used = {};
+
+  heads.forEach(function (h) {
+    if (!h.id) {
+      var base = slug(h.textContent) || "s";
+      used[base] = (used[base] || 0) + 1;
+      h.id = used[base] > 1 ? base + "-" + used[base] : base;
+    }
+    // ⭐ ในหัวข้อ = สัญญาณความสำคัญ → ขีดทองที่ขอบซ้าย
+    if (/[⭐★]/.test(h.textContent)) h.classList.add("imp");
+  });
+
+  /* ---------------------------------------------------------
+     2. build page TOC
+     --------------------------------------------------------- */
+  if (tocEl && heads.length) {
+    var ul = document.createElement("ul");
+    heads.forEach(function (h) {
+      var lv = +h.tagName.slice(1);
+      var li = document.createElement("li");
+      var a = document.createElement("a");
+      a.href = "#" + h.id;
+      a.className = lv === 3 ? "lv3" : lv === 4 ? "lv4" : "lv2";
+      if (/[⭐★]/.test(h.textContent)) a.classList.add("star");
+      a.textContent = h.textContent.replace(/[⭐★]/g, "").trim();
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    var empty = document.createElement("div");
+    empty.className = "toc-empty";
+    empty.textContent = "ไม่พบหัวข้อที่ตรงกัน";
+    tocEl.appendChild(ul);
+    tocEl.appendChild(empty);
+  }
+
+  /* ---------------------------------------------------------
+     3. scrollspy
+     --------------------------------------------------------- */
+  var links = tocEl ? Array.prototype.slice.call(tocEl.querySelectorAll("a")) : [];
+  var byId = {};
+  links.forEach(function (a) { byId[a.getAttribute("href").slice(1)] = a; });
+
+  var visible = new Set();
+
+  function paint() {
+    if (!links.length) return;
+    var best = null, bestTop = Infinity;
+    visible.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var t = el.getBoundingClientRect().top;
+      if (t < bestTop) { bestTop = t; best = id; }
+    });
+    if (!best) {
+      // ไม่มีหัวข้อในจอ → เลือกหัวข้อสุดท้ายที่ผ่านไปแล้ว
+      for (var i = heads.length - 1; i >= 0; i--) {
+        if (heads[i].getBoundingClientRect().top < 120) { best = heads[i].id; break; }
+      }
+    }
+    links.forEach(function (a) { a.classList.remove("on"); });
+    if (best && byId[best]) {
+      byId[best].classList.add("on");
+      var a = byId[best];
+      var rTop = railCol.scrollTop, rBot = rTop + railCol.clientHeight;
+      var aTop = a.offsetTop, aBot = aTop + a.offsetHeight;
+      if (aTop < rTop + 60 || aBot > rBot - 40) {
+        railCol.scrollTo({ top: aTop - railCol.clientHeight / 2, behavior: "auto" });
+      }
+    }
+  }
+
+  if ("IntersectionObserver" in window && heads.length) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) visible.add(e.target.id);
+        else visible.delete(e.target.id);
+      });
+      paint();
+    }, { rootMargin: "-" + (56 + 24) + "px 0px -70% 0px", threshold: 0 });
+    heads.forEach(function (h) { io.observe(h); });
+    window.addEventListener("scroll", function () {
+      clearTimeout(paint._t);
+      paint._t = setTimeout(paint, 90);
+    }, { passive: true });
+  }
+
+  /* ---------------------------------------------------------
+     4. copy buttons
+     --------------------------------------------------------- */
+  Array.prototype.forEach.call(document.querySelectorAll(".code"), function (box) {
+    var bar = box.querySelector(".code-bar");
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.className = "code-bar";
+      bar.innerHTML = '<span class="code-lang">code</span>';
+      box.insertBefore(bar, box.firstChild);
+    }
+    if (bar.querySelector(".code-copy")) return;
+    var btn = document.createElement("button");
+    btn.className = "code-copy";
+    btn.type = "button";
+    btn.textContent = "คัดลอก";
+    btn.addEventListener("click", function () {
+      var pre = box.querySelector("pre");
+      var txt = pre ? pre.innerText : "";
+      var done = function () {
+        btn.textContent = "คัดลอกแล้ว ✓";
+        btn.classList.add("done");
+        setTimeout(function () { btn.textContent = "คัดลอก"; btn.classList.remove("done"); }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(done, fallback);
+      } else fallback();
+      function fallback() {
+        var ta = document.createElement("textarea");
+        ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); done(); } catch (e) {}
+        document.body.removeChild(ta);
+      }
+    });
+    bar.appendChild(btn);
+  });
+
+  /* ---------------------------------------------------------
+     5. collapsible h3 sections
+     หมายเหตุ: default = กางไว้ เพื่อให้ Ctrl+F ของเบราว์เซอร์
+     ค้นเจอทั้งหน้า — reference guide ต้องค้นได้ก่อนต้องสวย
+     --------------------------------------------------------- */
+  var folds = [];
+  heads.filter(function (h) { return h.tagName === "H3"; }).forEach(function (h3) {
+    var body = document.createElement("div");
+    body.className = "fold-b";
+    var n = h3.nextSibling;
+    while (n) {
+      var next = n.nextSibling;
+      if (n.nodeType === 1 && (/^H[123]$/.test(n.tagName) || n.classList.contains("pager"))) break;
+      body.appendChild(n);
+      n = next;
+    }
+    h3.parentNode.insertBefore(body, h3.nextSibling);
+    h3.classList.add("fold-h");
+    h3.setAttribute("role", "button");
+    h3.setAttribute("tabindex", "0");
+    h3.setAttribute("aria-expanded", "true");
+    function toggle() {
+      var open = h3.getAttribute("aria-expanded") === "true";
+      h3.setAttribute("aria-expanded", open ? "false" : "true");
+    }
+    h3.addEventListener("click", function (e) {
+      if (e.target.tagName === "A") return;
+      toggle();
+    });
+    h3.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+    });
+    folds.push(h3);
+  });
+
+  var foldBtn = document.getElementById("foldAll");
+  if (foldBtn) {
+    foldBtn.addEventListener("click", function () {
+      var collapse = foldBtn.getAttribute("aria-pressed") !== "true";
+      folds.forEach(function (h) { h.setAttribute("aria-expanded", collapse ? "false" : "true"); });
+      foldBtn.setAttribute("aria-pressed", collapse ? "true" : "false");
+      foldBtn.textContent = collapse ? "กางทั้งหมด" : "ยุบหัวข้อย่อย";
+    });
+  }
+
+  /* ---------------------------------------------------------
+     6. search — กรอง TOC ของหน้าปัจจุบัน
+     --------------------------------------------------------- */
+  var search = document.getElementById("search");
+  if (search && tocEl) {
+    var items = Array.prototype.slice.call(tocEl.querySelectorAll("li"));
+    search.addEventListener("input", function () {
+      var q = search.value.trim().toLowerCase();
+      tocEl.classList.toggle("filtered", !!q);
+      var hits = 0;
+      items.forEach(function (li) {
+        var a = li.querySelector("a");
+        var hit = !q || a.textContent.toLowerCase().indexOf(q) > -1;
+        li.classList.toggle("hide", !hit);
+        if (hit) hits++;
+      });
+      var e = tocEl.querySelector(".toc-empty");
+      if (e) e.style.display = q && hits === 0 ? "block" : "none";
+    });
+    search.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        var first = tocEl.querySelector("li:not(.hide) a");
+        if (first) { first.click(); search.blur(); }
+      }
+      if (e.key === "Escape") { search.value = ""; search.dispatchEvent(new Event("input")); search.blur(); }
+    });
+  }
+
+  /* ---------------------------------------------------------
+     7. rail drawer (mobile)
+     --------------------------------------------------------- */
+  var railBtn = document.getElementById("railToggle");
+  if (railBtn && railCol) {
+    railBtn.addEventListener("click", function () {
+      railCol.classList.toggle("open");
+      railBtn.setAttribute("aria-expanded", railCol.classList.contains("open") ? "true" : "false");
+    });
+    railCol.addEventListener("click", function (e) {
+      if (e.target.tagName === "A" && window.innerWidth <= 860) railCol.classList.remove("open");
+    });
+  }
+
+  /* ---------------------------------------------------------
+     8. keyboard
+     --------------------------------------------------------- */
+  document.addEventListener("keydown", function (e) {
+    var tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea") return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+    if (e.key === "/") { e.preventDefault(); if (search) search.focus(); }
+    if (e.key === "t" && railCol) railCol.classList.toggle("open");
+
+    var prev = document.querySelector('link[rel="prev"]');
+    var next = document.querySelector('link[rel="next"]');
+    if (e.key === "[" && prev) location.href = prev.href;
+    if (e.key === "]" && next) location.href = next.href;
+  });
+
+  /* ---------------------------------------------------------
+     9. back to top
+     --------------------------------------------------------- */
+  var top = document.querySelector(".top");
+  if (top) {
+    top.addEventListener("click", function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    window.addEventListener("scroll", function () {
+      top.classList.toggle("on", window.scrollY > 700);
+    }, { passive: true });
+  }
+
+  /* ---------------------------------------------------------
+     10. deep-link highlight
+     --------------------------------------------------------- */
+  function flash() {
+    if (!location.hash) return;
+    var el = document.getElementById(location.hash.slice(1));
+    if (!el) return;
+    el.classList.add("mark");
+    setTimeout(function () { el.classList.remove("mark"); }, 1900);
+  }
+  window.addEventListener("hashchange", flash);
+  flash();
+})();
+
+</script>
+</body>
+</html>

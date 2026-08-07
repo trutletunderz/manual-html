@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>สามคำถาม · การ์ด</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c0f;--card:#131720;--line:#252b36;--ink:#e8eaed;--dim:#8b94a3;--faint:#5a6270;--jade:#5fbfa4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans Thai",system-ui,sans-serif;
+  display:flex;align-items:center;justify-content:center;min-height:100vh;padding:32px;
+  word-break:normal;line-break:auto}
+
+.card{
+  width:340px;background:var(--card);border:1px solid var(--line);border-radius:6px;
+  padding:32px 30px 26px;
+}
+
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--jade);margin-bottom:22px}
+
+.short{
+  font-family:"IBM Plex Mono",monospace;font-size:15px;color:var(--ink);
+  text-align:center;padding:16px 0;margin-bottom:26px;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  letter-spacing:.02em
+}
+.short .sep{color:var(--faint);margin:0 6px}
+
+.q{margin-bottom:20px}
+.q:last-of-type{margin-bottom:24px}
+.q .n{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--faint);
+  letter-spacing:.16em;margin-right:8px}
+.q .t{font-size:17px;font-weight:600;line-height:1.5;display:inline}
+.q .d{font-size:13px;line-height:1.7;color:var(--dim);margin-top:5px}
+
+.line{
+  border-top:1px solid var(--line);padding-top:18px;
+  font-size:14.5px;font-weight:600;line-height:1.6;text-align:center
+}
+.line .dim{display:block;font-weight:400;font-size:11.5px;color:var(--faint);
+  margin-top:8px;font-family:"IBM Plex Mono",monospace;letter-spacing:.04em}
+
+.print-hint{
+  position:fixed;bottom:20px;font-family:"IBM Plex Mono",monospace;
+  font-size:11px;color:var(--faint)
+}
+
+@media print{
+  body{background:#fff;color:#000;min-height:auto;padding:0;display:block}
+  .card{
+    background:#fff;border:1.5px solid #000;border-radius:0;
+    width:88mm;padding:14mm 12mm 11mm;margin:10mm
+  }
+  .eyebrow{color:#000}
+  .short{border-color:#000;color:#000}
+  .short .sep,.q .n,.line .dim{color:#555}
+  .q .d{color:#333}
+  .line{border-color:#000}
+  .print-hint{display:none}
+  @page{size:A6;margin:0}
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">สามคำถาม</p>
+
+  <p class="short">
+    มาจากไหน<span class="sep">·</span>อะไรกั้น<span class="sep">·</span>ลองรึยัง
+  </p>
+
+  <div class="q">
+    <span class="n">01</span><span class="t">ถูกต้อง มาจากไหน</span>
+    <p class="d">ถ้ามาจากของที่กำลังตรวจ = ถามคำตอบกับคนที่ตอบ</p>
+  </div>
+
+  <div class="q">
+    <span class="n">02</span><span class="t">ลืมแล้ว มีอะไรกั้น</span>
+    <p class="d">ขอไม่ให้ทำผิด ≠ ทำให้ทำผิดไม่ได้</p>
+  </div>
+
+  <div class="q">
+    <span class="n">03</span><span class="t">เคยลองรึยัง</span>
+    <p class="d">ด่านที่ไม่เคยถูกทดสอบ ไม่ใช่ด่าน เป็นความเชื่อ</p>
+  </div>
+
+  <p class="line">
+    รู้ให้ได้ว่าอะไรคือถูกต้อง<br>แล้วทำให้ผิดไม่ได้
+    <span class="dim">สูงสุดคืนสู่สามัญ</span>
+  </p>
+</div>
+
+<p class="print-hint">⌘P / Ctrl+P → พิมพ์ขนาด A6</p>
+
+</body>
+</html>

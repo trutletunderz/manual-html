@@ -1,0 +1,518 @@
+# ============================================================
+# fault-attacks.yaml — คู่มือ ภาคผนวก B
+#
+# ความรู้สะสมขององค์กรที่แปลงเป็นสินทรัพย์
+# agent อ่านไฟล์ที่ generate จากตัวนี้ (fault-attacks-active.md) ที่ S1/S3
+#
+# lifecycle:
+#   ACTIVE       → agent อ่าน
+#   DORMANT      → ไม่เคยจับอะไรได้ใน 1 ปี (ยังเก็บไว้)
+#   RETIRED      → มี automated gate ครอบแล้ว ไม่ต้องให้ agent อ่าน
+#   NEEDS_REVIEW → อ้างถึงโค้ดที่ไม่มีแล้ว
+#
+# ⭐ เป้าหมายคือย้ายกฎจาก ACTIVE → RETIRED ให้ได้มากที่สุด
+#    (วัดด้วย consolidation ratio ใน knowledge-gc.mjs)
+# ============================================================
+
+meta:
+  version: 1
+  lastGc: null
+  # ADAPT: ปรับ scope ให้ตรงกับโดเมนจริง
+  scopes: [form, money, webhook, auth, thai, time, browser, a11y]
+
+rules:
+
+# ──────────────────────────────────────────────────────────
+# กลุ่ม 1 — ฟอร์มและ input
+# ──────────────────────────────────────────────────────────
+
+- id: FA-001
+  rule: "ค่าว่าง, whitespace เท่านั้น, zero-width space (\\u200B) ที่ copy ติดมา"
+  scope: [form]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-002
+  rule: "Number('') = 0 — ค่าว่างกลายเป็นศูนย์เงียบๆ ถ้าใช้ if (!amount) จะแยกไม่ออก"
+  scope: [form, money]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null    # ADAPT: ใส่ path ของเทสเมื่อเขียนแล้ว
+
+- id: FA-003
+  rule: "NaN < 100 เป็น false — input ที่ไม่ใช่ตัวเลขจะผ่าน validation ไปหลังบ้าน"
+  scope: [form, money]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-004
+  rule: "parseInt('500abc') = 500 — ห้ามใช้ parseInt กับ input ของผู้ใช้"
+  scope: [form, money]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-005
+  rule: "Number('5e3') = 5000 — scientific notation ผ่าน validation ที่เช็คแค่ช่วงค่า"
+  scope: [form, money]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-006
+  rule: "ค่ายาวเกิน 10,000 ตัวอักษร — field limit ที่ backend กับ frontend ต้องตรงกัน"
+  scope: [form]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-007
+  rule: "double submit — กด 3 ครั้งพร้อมกันด้วย Promise.all ต้องยิง API ครั้งเดียว"
+  scope: [form, money]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-008
+  rule: "unmount ระหว่างรอ response — ต้องไม่มี state update warning หรือ memory leak"
+  scope: [form]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-009
+  rule: "กด Enter ในช่อง input ต้อง submit ได้"
+  scope: [form, a11y]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+# ──────────────────────────────────────────────────────────
+# กลุ่ม 2 — ภาษาไทย ⭐⭐ (ส่วนที่ tool ต่างชาติไม่มี)
+# ──────────────────────────────────────────────────────────
+
+- id: FA-101
+  rule: "ข้อความไทยไม่มีเว้นวรรค 60+ ตัวอักษร → ทะลุ container มั้ย (จอ 320px)"
+  scope: [thai, browser]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-102
+  rule: "ห้ามใช้ word-break: break-all กับข้อความไทย — มันแยกสระออกจากพยัญชนะ"
+  scope: [thai]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-103
+  rule: "สระ/วรรณยุกต์ซ้อน 'กิิิ๊๊๊๋๋๋' → สระลอย ทับบรรทัดบน layout เพี้ยน"
+  scope: [thai]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-104
+  rule: >
+    localeCompare(a,b,'th-TH') ต้องให้ผลเหมือน ORDER BY ... COLLATE ของ DB
+    ไม่งั้น pagination มีรายการหาย/ซ้ำระหว่างหน้า
+  scope: [thai]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-105
+  rule: >
+    พ.ศ./ค.ศ. — ตรวจ 8 จุด: KYC, date picker, ประวัติ, filter, export,
+    หมดอายุโปร, อายุขั้นต่ำ, ปีก่อน 2484
+  scope: [thai, time]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-106
+  rule: "แปลงปีซ้ำสองรอบ — beToCe(beToCe(2567)) ต้องไม่ได้ 1481"
+  scope: [thai, time]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-107
+  rule: "คำนำหน้าชื่อ 'นายสมชาย' vs 'นาย สมชาย' → KYC ไม่ตรงบัญชีธนาคาร"
+  scope: [thai, auth]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-108
+  rule: >
+    เบอร์โทร 5 รูปแบบ (0xx, +66, 66, มีขีด, มีเว้นวรรค) → normalize เป็นแบบเดียว
+    และ normalize ต้อง idempotent
+  scope: [thai, auth]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-109
+  rule: "เลขบัตรประชาชน 13 หลัก ต้องตรวจ checksum mod 11 ไม่ใช่แค่นับหลัก"
+  scope: [thai, auth]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-110
+  rule: "กรุงเทพฯ ใช้ แขวง/เขต — จังหวัดอื่นใช้ ตำบล/อำเภอ → label ต้องเปลี่ยนตามจังหวัด"
+  scope: [thai, form]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-111
+  rule: >
+    ลักษณนามไทยไม่มีพหูพจน์ — '5 รายการ' ไม่ใช่ '5 รายการs'
+    ห้ามใช้ pluralization ของ i18n lib ตรงๆ
+  scope: [thai]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-112
+  rule: "Thai numerals ๑๒๓ — ระบบตีเป็นตัวเลขมั้ย? screen reader อ่านได้มั้ย?"
+  scope: [thai, form, a11y]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-113
+  rule: "ตัวอักษรไทยต้อง >= 16px และ line-height >= 1.7 (Latin ใช้ 14px/1.5 พอ)"
+  scope: [thai, a11y]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-114
+  rule: "html lang=\"th\" ต้องมี ไม่งั้น screen reader อ่านผิดหมด"
+  scope: [thai, a11y]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-115
+  rule: "encoding TIS-620 — ไฟล์เก่าจากธนาคาร/ราชการยังใช้อยู่ ต้องตรวจ+แปลงตอน import"
+  scope: [thai]
+  status: DORMANT
+  provenance: { source: human }
+  added: 2026-01-15
+  lastTriggered: 2025-11-03
+  automatedBy: null
+
+# ──────────────────────────────────────────────────────────
+# กลุ่ม 3 — เวลาและ concurrency
+# ──────────────────────────────────────────────────────────
+
+- id: FA-201
+  rule: >
+    ขอบวันตามเวลาไทย: 06:59:59 / 07:00:00 / 07:00:01 (UTC+7 = เที่ยงคืน UTC)
+    Cloud Run รัน UTC → 'ครั้งแรกของวัน' อาจได้ 2 ครั้ง
+  scope: [time, money]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-202
+  rule: "Asia/Bangkok ไม่มี DST — แต่ถ้าโค้ดใช้ library ที่สมมติว่ามี จะเพี้ยน"
+  scope: [time]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-203
+  rule: "23:59:59, 00:00:00, วันสิ้นเดือน, 29 ก.พ."
+  scope: [time]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-204
+  rule: >
+    idempotency — ยิง webhook/request เดิม 3 ครั้งพร้อมกัน (Promise.all)
+    ต้องได้ ledger 1 แถว และ balance เปลี่ยนครั้งเดียว
+  scope: [webhook, money]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-205
+  rule: "ลำดับของ idempotency check — ต้องเช็คก่อน insert ledger ไม่ใช่หลัง"
+  scope: [webhook, money]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-206
+  rule: "webhook มาถึงก่อน response ของ API หลัก (race)"
+  scope: [webhook]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-207
+  rule: "admin 2 คนกด approve พร้อมกัน → จ่ายครั้งเดียว"
+  scope: [money, auth]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-208
+  rule: "token หมดอายุพอดีวินาทีที่กด submit"
+  scope: [auth, time]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-209
+  rule: "session หมดอายุระหว่างกรอกฟอร์มหลายขั้น"
+  scope: [auth, form]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-210
+  rule: >
+    Cloud Run ตัด CPU หลังส่ง response — งาน background (audit log, notification)
+    หลัง res.json() อาจไม่เสร็จ
+  scope: [money]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+# ──────────────────────────────────────────────────────────
+# กลุ่ม 4 — browser, state, environment
+# ──────────────────────────────────────────────────────────
+
+- id: FA-301
+  rule: >
+    LINE in-app browser: session หายหลัง redirect กลับจาก gateway
+    (third-party cookie ถูกบล็อก) — ต้องเทสด้วยมือบนเครื่องจริง
+  scope: [browser, auth]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null      # ⭐ automate ไม่ได้ — ต้องเป็น manual checklist
+
+- id: FA-302
+  rule: "window.open ไม่ทำงานใน LINE in-app — ห้ามใช้ในเส้นทางหลัก"
+  scope: [browser]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-303
+  rule: "100vh ถูก bottom bar ของ LINE ทับ — ใช้ 100dvh"
+  scope: [browser]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-304
+  rule: "file input ใน LINE in-app จำกัด — flow KYC อาจอัปโหลดไม่ได้"
+  scope: [browser]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-305
+  rule: "localStorage เต็ม (quota exceeded) / ถูกลบกลางคัน"
+  scope: [browser]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-306
+  rule: "refresh กลางคัน flow หลายขั้น / deep link เข้าขั้นที่ 3 ตรงๆ"
+  scope: [browser, form]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-307
+  rule: "back gesture บนมือถือ — ข้อมูลในฟอร์มหายมั้ย"
+  scope: [browser, form]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-308
+  rule: "จอ 320px (iPhone SE) + zoom 200% (a11y) + dark mode ของ OS"
+  scope: [browser, a11y]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-309
+  rule: "4G ช้ามาก / offline -> online / ตัดเน็ตตอนกำลัง submit"
+  scope: [browser]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+# ──────────────────────────────────────────────────────────
+# กลุ่ม 5 — ความปลอดภัยและข้อมูล
+# ──────────────────────────────────────────────────────────
+
+- id: FA-401
+  rule: "backend ห้ามเชื่อ DoAdmin/DoIp ที่ client ส่งมา — ต้องมาจาก session/socket"
+  scope: [auth, money]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-402
+  rule: "endpoint ใหม่ทุกตัวต้องมี authz spec — ไม่มี = CI แดง"
+  scope: [auth]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-403
+  rule: "error response ที่ถูกปฏิเสธ ห้ามหลุด amount/balance/idCard/phone"
+  scope: [auth]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-404
+  rule: "resource ที่มีอยู่กับไม่มี ต้องตอบ status เดียวกัน (enumeration)"
+  scope: [auth]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-405
+  rule: "webhook ต้องมี HMAC signature + timestamp window + timingSafeEqual"
+  scope: [webhook]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-406
+  rule: "จำนวนเงินติดลบ / เกิน MAX_SAFE_INTEGER / ทศนิยมเกิน 2 ตำแหน่ง"
+  scope: [money]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-407
+  rule: "invariant sum(ledger) === balance ต้องอยู่ใน afterEach ของทุกเทสการเงิน"
+  scope: [money]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-408
+  rule: "rate limit ต้องผูกกับเบอร์/บัญชี ไม่ใช่แค่ IP (เปลี่ยน proxy แล้ว bypass ได้)"
+  scope: [auth]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-409
+  rule: "OTP ใช้ซ้ำไม่ได้ + หมดอายุแล้วใช้ไม่ได้ + ไม่รั่วว่าเบอร์มีในระบบ (timing)"
+  scope: [auth]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-410
+  rule: "logout แล้ว token เดิมต้องใช้ไม่ได้ + เปลี่ยนรหัสผ่านต้องยกเลิก session อื่น"
+  scope: [auth]
+  status: ACTIVE
+  provenance: { source: human }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-411
+  rule: "PDPA: screenshot/trace/log ของ Playwright ห้ามมี PII จริง"
+  scope: [auth]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-412
+  rule: >
+    prompt injection: เนื้อหาที่ผู้ใช้กรอกอาจไหลเข้า context ของ agent
+    ผ่าน Playwright ที่อ่านหน้าเว็บ
+  scope: [auth]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-413
+  rule: "v-html ต้องผ่าน sanitize เสมอ"
+  scope: [browser]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null
+
+- id: FA-414
+  rule: "href ห้ามรับ javascript: / data: / vbscript: (รวมที่มี space/tab นำหน้า)"
+  scope: [browser]
+  status: ACTIVE
+  provenance: { source: review }
+  added: 2026-01-15
+  automatedBy: null

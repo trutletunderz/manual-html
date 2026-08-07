@@ -1,0 +1,5 @@
+{
+  "_comment": "baseline ของ load test — ยังว่าง รัน `pnpm perf:load` ครั้งแรกแล้ว copy reports/k6-summary.json มาทับ",
+  "_status": "ยังไม่ได้วัด",
+  "metrics": {}
+}

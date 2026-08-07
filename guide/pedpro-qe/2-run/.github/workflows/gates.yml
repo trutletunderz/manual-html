@@ -1,0 +1,159 @@
+# ============================================================
+# Gate chain — เรียงตาม signal-per-second (คู่มือ L2.11)
+#
+# ⭐ หลักการ: gate ที่เร็วและจับได้เยอะต้องรันก่อน
+#    tsc 30 วินาที ก่อน Codex 3 นาที = ประหยัด 6 เท่าเพื่อผลที่ดีกว่า
+# ============================================================
+name: gates
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  TZ: Asia/Bangkok
+
+jobs:
+  # ── กลุ่ม A: static (เร็วที่สุด) ───────────────────────
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+
+      - name: ปิด lifecycle script ของ dependency
+        run: pnpm config set ignore-scripts true
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: tsc
+        run: pnpm vue-tsc --noEmit
+
+      - name: eslint
+        run: pnpm eslint . --max-warnings=0
+
+      - name: secret scan
+        run: node security/secrets/scan.mjs
+
+      - name: dependency audit
+        run: pnpm audit --audit-level=high
+
+      - name: dependency ใหม่ใน PR
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node security/supply-chain/new-deps.mjs
+
+      # ⭐ file-scope guard — ปิด agent failure mode 4 ตัว
+      - name: file-scope guard
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PIPELINE_STAGE: S4
+        run: ./ci/s6-file-scope-guard.sh
+
+  # ── กลุ่ม B: unit + integration ───────────────────────
+  test:
+    runs-on: ubuntu-latest
+    needs: static
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+
+      - name: unit + integration
+        run: pnpm vitest run --coverage
+
+      # ⭐ fail-closed — ไม่มี report = ไม่ผ่าน
+      - name: ตรวจ report มีจริง
+        run: |
+          [ -f reports/vitest.json ] || { echo "::error::ไม่พบ reports/vitest.json"; exit 1; }
+          COUNT=$(jq '.numTotalTests // 0' reports/vitest.json)
+          MIN=${MIN_EXPECTED_TESTS:-1}
+          [ "$COUNT" -ge "$MIN" ] || { echo "::error::รันแค่ $COUNT เทส (คาด >= $MIN)"; exit 1; }
+          echo "รัน $COUNT เทส"
+
+      - name: ตรวจ Thai i18n
+        run: pnpm vitest run test/i18n
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: test-reports, path: reports/ }
+
+  # ── กลุ่ม C: security ⭐⭐ ─────────────────────────────
+  security:
+    runs-on: ubuntu-latest
+    needs: static
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: test, POSTGRES_DB: test }
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 10
+        ports: ["5432:5432"]
+    env:
+      ALLOW_INTERNAL_API: "1"
+      INTERNAL_TOKEN: ${{ secrets.TEST_INTERNAL_TOKEN }}
+      WEBHOOK_SECRET: ${{ secrets.TEST_WEBHOOK_SECRET }}
+      DATABASE_URL: postgres://postgres:test@localhost:5432/test
+      BASE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm migrate:deploy
+      - run: pnpm build && pnpm preview &
+      - run: npx wait-on http://localhost:3000 -t 60000
+
+      # ⭐ GATE 1 — completeness (ไม่ต้องต่อ DB รันเร็ว)
+      - name: authz completeness
+        run: pnpm vitest run security/authz -t completeness
+
+      # ⭐ GATE 2 — enforcement
+      - name: authz enforcement
+        run: pnpm vitest run security/authz
+
+      - name: race conditions
+        run: pnpm vitest run security/race
+
+      - name: webhook signature
+        run: pnpm vitest run security/webhook
+
+      - name: mass assignment
+        run: pnpm vitest run security/tampering
+
+  # ── กลุ่ม D: E2E + a11y ───────────────────────────────
+  e2e:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm build
+
+      - name: bundle budget
+        run: node scripts/bundle-budget.mjs
+
+      - name: e2e smoke
+        run: pnpm exec playwright test --grep @smoke
+
+      - name: xss suite
+        run: pnpm exec playwright test security/injection
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-report, path: playwright-report/ }

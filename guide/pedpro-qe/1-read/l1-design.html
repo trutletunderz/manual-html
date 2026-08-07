@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L1 — ออกแบบเทส | Testing &amp; QE Field Manual</title>
+<meta name="description" content="EP, BVA, Decision Table, State Transition, Pairwise, Classification Tree, MC-DC, Fault Attack, Exploratory + SBTM, Risk-Based Testing พร้อมตัวอย่างคำนวณจริง">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="prev" href="l0-foundation.html">
+<link rel="next" href="l2-automation.html">
+</head>
+<body>
+
+<header class="hdr">
+  <button class="btn-ghost rail-toggle" id="railToggle" aria-expanded="false" aria-label="สลับสารบัญ">☰</button>
+  <div class="hdr-brand">pedpro <b>/</b> qe field manual</div>
+  <div class="hdr-crumb"><a href="index.html">index</a><span class="sep">/</span>L1 — test design</div>
+  <button class="btn-ghost" id="foldAll" aria-pressed="false">ยุบหัวข้อย่อย</button>
+  <div class="search-wrap">
+    <span class="search-ico">⌕</span>
+    <input class="search" id="search" type="search" placeholder="ค้นหัวข้อในหน้านี้" aria-label="ค้นหัวข้อ">
+    <span class="search-kbd">/</span>
+  </div>
+</header>
+
+<div class="shell">
+
+  <nav class="rail-col" aria-label="สารบัญ">
+    <p class="rail-label">gate chain</p>
+    <ul class="chain">
+      <li><a href="index.html"><span class="node">◆</span><span class="lbl">ภาพรวม<span class="sub">index</span></span></a></li>
+      <li><a href="l0-foundation.html"><span class="node">L0</span><span class="lbl">รากฐาน<span class="sub">foundation</span></span></a></li>
+      <li><a href="l1-design.html" aria-current="page"><span class="node">L1</span><span class="lbl">ออกแบบเทส<span class="sub">test design</span></span></a></li>
+      <li><a href="l2-automation.html"><span class="node">L2</span><span class="lbl">automation &amp; CI<span class="sub">gate design</span></span></a></li>
+      <li><a href="l3-nfr.html"><span class="node">L3</span><span class="lbl">non-functional<span class="sub">perf · sec · a11y · ไทย</span></span></a></li>
+      <li><a href="l4-qe.html"><span class="node">L4</span><span class="lbl">quality engineering<span class="sub">slo · learning loop</span></span></a></li>
+      <li><a href="l5-advanced.html"><span class="node">L5</span><span class="lbl">เทพ<span class="sub">mutation · llm eval</span></span></a></li>
+      <li><a href="appendix.html"><span class="node">◇</span><span class="lbl">ภาคผนวก<span class="sub">appendix</span></span></a></li>
+    </ul>
+    <p class="rail-label">ในหน้านี้</p>
+    <div class="toc" id="toc"></div>
+  </nav>
+
+  <main class="main">
+    <div class="wrap">
+
+      <div class="phead">
+        <p class="eyebrow">ชั้นที่ 1 · test design craft</p>
+        <h1>ออกแบบเทส</h1>
+        <p class="lede">
+          ชั้นที่แยกคนที่ <strong>เทสเป็น</strong> กับคนที่ <strong>รันเทสได้</strong> —
+          คนส่วนใหญ่ข้ามชั้นนี้ไปเล่น Playwright เลย ผลคือได้ automation ที่ครอบคลุม happy path 100%
+          และ production ยังพังเหมือนเดิม
+        </p>
+        <div class="meta">
+          <span class="meta-chip">เวลาที่ควรใช้ <b>2–3 เดือน</b></span>
+          <span class="meta-chip">เช็คลิสต์ <b>22 ข้อ</b></span>
+          <span class="meta-chip">แบบฝึกหัด <b>9 ข้อ</b></span>
+          <span class="meta-chip"><b>คำนวณจริงทุกเทคนิค</b></span>
+        </div>
+      </div>
+
+      <p class="lead-in">
+        คำถามที่ชั้นนี้ตอบ: <em>“requirement แบบนี้ ใช้เทคนิคไหน ลึกแค่ไหน และรู้ได้ยังไงว่าครอบคลุมพอ”</em><br>
+        ทุกเทคนิคมาพร้อมตัวอย่างคำนวณจริงจากโดเมนการเงิน ไม่ใช่ตัวอย่าง calculator
+      </p>
+
+      <div class="note take">
+        <span class="note-t">ทำไมชั้นนี้ถึงสำคัญกว่าที่คิด</span>
+        <p style="margin-bottom:0">
+          <a class="xref" href="l0-foundation.html#testing-vs-checking">L0.6</a> บอกว่ามนุษย์ออกแบบเทสเพื่อ
+          <em>ยืนยัน</em> ว่ามันทำงาน ไม่ใช่เพื่อ <em>หักล้าง</em> —
+          <strong>เทคนิคทั้งหมดในชั้นนี้คือเครื่องมือบังคับให้สมองออกจาก confirmation bias
+          ไม่ใช่แค่ template ให้กรอก</strong>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="โครงความคิด"><span class="num">L1.0</span>โครงความคิดของชั้นนี้</h2>
+
+      <h3 id="analysis-design-impl">Analysis vs Design vs Implementation</h3>
+
+      <p>คนไทย 90% ใช้คำว่า “เขียน test case” คลุมทั้ง 3 อย่าง ทั้งที่มันคนละงาน</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:18%">ขั้น</th><th style="width:22%">ผลลัพธ์</th><th style="width:18%">คำถาม</th><th>ตัวอย่าง</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Analysis</strong></td><td>Test <strong>condition</strong></td><td>เทส<strong>อะไร</strong> (What)</td><td>“ยอดฝากที่ขอบเขตขั้นต่ำ”</td></tr>
+            <tr><td><strong>Design</strong></td><td>Test <strong>case</strong> + coverage item</td><td>เทส<strong>ยังไง</strong> (How)</td><td>amount=99 → ปฏิเสธ, amount=100 → ผ่าน</td></tr>
+            <tr><td><strong>Implementation</strong></td><td>Test <strong>procedure/script</strong> + data</td><td>รัน<strong>ด้วยอะไร</strong></td><td><code>deposit.spec.ts</code> + fixture</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ความเห็นตรงๆ</span>
+        <p style="margin-bottom:0">
+          ที่ automation ส่วนใหญ่แย่ เพราะคนกระโดดจาก requirement ไป implementation ตรงๆ
+          <strong>ไม่มีชั้น analysis เลย</strong> ผลคือ test suite ที่ตอบไม่ได้ว่า “ครอบคลุมอะไรบ้าง”
+          ตอบได้แค่ “มีเทส 340 ตัว” ซึ่งไม่ใช่ข้อมูล
+        </p>
+      </div>
+
+      <h3 id="coverage-item">Coverage item = หน่วยวัดจริงของ test design <span class="st">⭐</span></h3>
+
+      <p>แต่ละเทคนิคมี “หน่วยที่ต้องคลุม” ของตัวเอง และ <strong>coverage % ต้องผูกกับเทคนิค ไม่ใช่ผูกกับบรรทัดโค้ด</strong></p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:30%">เทคนิค</th><th style="width:26%">Coverage item</th><th>สูตร</th></tr></thead>
+          <tbody>
+            <tr><td>Equivalence Partitioning</td><td>partition</td><td>partition ที่แตะ / partition ทั้งหมด</td></tr>
+            <tr><td>Boundary Value Analysis</td><td>boundary value</td><td>boundary ที่แตะ / boundary ทั้งหมด</td></tr>
+            <tr><td>Decision Table</td><td>rule (คอลัมน์)</td><td>rule ที่รัน / rule ทั้งหมด</td></tr>
+            <tr><td>State Transition</td><td>transition</td><td>0-switch, 1-switch, N-switch</td></tr>
+            <tr><td>Pairwise</td><td>คู่ของค่า</td><td>คู่ที่คลุม / คู่ทั้งหมด</td></tr>
+            <tr><td>White-box</td><td>statement / branch / MC-DC pair</td><td>ตามชนิด</td></tr>
+            <tr><td>Risk-based</td><td>risk item</td><td>risk ที่มีเทสคุม / risk ใน register</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">ประโยคที่ทำให้คุณดูเป็น senior ทันที</span>
+        <p style="margin-bottom:0">
+          <em>“เรามี requirement coverage 100%, boundary coverage 100%, และ code coverage 61%”</em><br>
+          เพราะมันบอกว่าคุณรู้ว่า coverage มีหลายชนิด และ <strong>code coverage คือชนิดที่อ่อนที่สุด</strong>
+        </p>
+      </div>
+
+      <h3 id="แผนที่เทคนิค">แผนที่เทคนิคทั้งหมดใน L1</h3>
+
+      <div class="diagram">Black-box (จาก spec)
+├── EP ────────────┐  ใช้คู่กันเสมอ
+├── BVA ───────────┘
+├── Decision Table      → logic ที่มีหลายเงื่อนไข AND/OR
+├── State Transition    → ของที่มี "สถานะ" และลำดับเวลา
+├── Use Case / Scenario → flow end-to-end
+├── Classification Tree → EP หลายมิติ + วาดเป็นต้นไม้
+└── Pairwise            → config/combination ระเบิด
+
+White-box (จากโครงสร้าง)
+├── Statement / Branch
+├── Condition / Decision / MC-DC
+└── Path
+
+Experience-based (จากหัวคน)
+├── Error Guessing / Fault attack
+├── Checklist-based
+└── Exploratory + SBTM  ⭐
+
+ครอบทั้งหมด
+└── Risk-Based Testing  ⭐ (ตัวตัดสินว่าจะใช้เทคนิคไหน ลึกแค่ไหน)</div>
+
+      <!-- ============================================================ -->
+      <h2 id="ep"><span class="num">L1.1</span>Equivalence Partitioning (EP)</h2>
+
+      <p>
+        แบ่ง input domain เป็นกลุ่มที่ <strong>“ระบบน่าจะปฏิบัติเหมือนกัน”</strong> → เทสตัวแทนกลุ่มละ 1 ตัวก็พอ
+      </p>
+
+      <div class="note warn">
+        <span class="note-t">คำสำคัญคือ “น่าจะ”</span>
+        <p style="margin-bottom:0">
+          EP ตั้งอยู่บนสมมติฐานว่าโค้ดปฏิบัติต่อทั้งกลุ่มเหมือนกัน
+          <strong>ถ้าโค้ดจริงมี <code>if</code> ซ่อนอยู่ในกลุ่ม EP จะพลาด</strong> —
+          นี่คือข้อจำกัดที่ต้องรู้ ไม่ใช่จุดอ่อนที่ต้องปกปิด
+        </p>
+      </div>
+
+      <h3 id="ep-ตัวอย่าง">ขั้นที่ 1 — แบ่ง partition ให้ครบ<em>ทุกมิติ</em></h3>
+
+      <p><strong>Spec:</strong> ฝากขั้นต่ำ 100 บาท สูงสุด 50,000 บาท/ครั้ง ทศนิยม 2 ตำแหน่ง</p>
+
+      <p>คนส่วนใหญ่แบ่งแค่มิติเดียวแล้วจบ ซึ่งพลาดตั้งแต่ต้น</p>
+
+      <h4>มิติ A: ช่วงค่า (ordered)</h4>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:12%">P</th><th style="width:34%">ช่วง</th><th style="width:24%">ชนิด</th><th>ตัวแทน</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">A1</td><td><code>amount &lt; 100</code></td><td class="no">invalid</td><td><code>50</code></td></tr>
+            <tr><td class="num-col">A2</td><td><code>100 ≤ amount ≤ 50000</code></td><td class="yes">valid</td><td><code>5000</code></td></tr>
+            <tr><td class="num-col">A3</td><td><code>amount &gt; 50000</code></td><td class="no">invalid</td><td><code>99999</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>มิติ B: ชนิดข้อมูล (unordered)</h4>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:10%">P</th><th style="width:34%">กรณี</th><th style="width:20%">ชนิด</th><th>ตัวแทน</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">B1</td><td>จำนวนเต็ม</td><td class="yes">valid</td><td><code>500</code></td></tr>
+            <tr><td class="num-col">B2</td><td>ทศนิยม ≤ 2 ตำแหน่ง</td><td class="yes">valid</td><td><code>500.25</code></td></tr>
+            <tr><td class="num-col">B3</td><td>ทศนิยม &gt; 2 ตำแหน่ง</td><td class="no">invalid</td><td><code>500.255</code></td></tr>
+            <tr><td class="num-col">B4</td><td>ไม่ใช่ตัวเลข</td><td class="no">invalid</td><td><code>"abc"</code></td></tr>
+            <tr><td class="num-col">B5</td><td>ว่าง</td><td class="no">invalid</td><td><code>""</code></td></tr>
+            <tr><td class="num-col">B6</td><td>ติดลบ</td><td class="no">invalid</td><td><code>-500</code></td></tr>
+            <tr><td class="num-col">B7</td><td>ศูนย์</td><td class="no">invalid</td><td><code>0</code></td></tr>
+            <tr><td class="num-col">B8</td><td>มี separator</td><td class="mid">???</td><td><code>"5,000"</code></td></tr>
+            <tr><td class="num-col">B9</td><td>มีช่องว่าง</td><td class="mid">???</td><td><code>" 500 "</code></td></tr>
+            <tr><td class="num-col">B10</td><td>Thai numerals</td><td class="no">invalid</td><td><code>"๕๐๐"</code></td></tr>
+            <tr><td class="num-col">B11</td><td>Scientific notation</td><td class="no">invalid</td><td><code>"5e3"</code></td></tr>
+            <tr><td class="num-col">B12</td><td>เกิน <code>Number.MAX_SAFE_INTEGER</code></td><td class="no">invalid</td><td><code>"9007199254740993"</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">B8, B9 คือช่องที่ spec ไม่ได้พูดถึง</span>
+        <p style="margin-bottom:0">
+          <strong>= ambiguity ที่ต้องถามกลับ ไม่ใช่เดาเอง</strong> —
+          นี่คือ ambiguity review (<a class="xref" href="l0-foundation.html#ambiguity-review">L0.5</a>) ที่เกิดขึ้นระหว่างทำ EP
+        </p>
+      </div>
+
+      <h3 id="ep-javascript">ขั้นที่ 2 — เจาะลึกเฉพาะกับสแตกนี้ (ส่วนที่ ISTQB ไม่สอน) <span class="st">⭐</span></h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">javascript</span><span class="code-file">พฤติกรรมจริงที่ทำให้ EP บนกระดาษพลาด</span></div>
+<pre><code>Number("")        // 0        ← B5 กลายเป็น 0 เงียบๆ
+Number(" 500 ")   // 500      ← trim ให้อัตโนมัติ
+Number("5,000")   // NaN      ← comma พัง
+Number("5e3")     // 5000     ← ผ่าน! เกิน spec
+parseInt("500abc")// 500      ← อันตรายที่สุด
+0.1 + 0.2         // 0.30000000000000004</code></pre>
+      </div>
+
+      <div class="note warn">
+        <span class="note-t">Fault attack ที่ต้องมีติดตัว</span>
+        <p>
+          ถ้าโค้ดเขียน <code>const amount = Number(input.value)</code> แล้วเช็ค <code>if (!amount)</code> →
+          <strong><code>amount = 0</code> กับ input ว่าง จะได้ error เดียวกัน</strong>
+        </p>
+        <p style="margin-bottom:0">
+          และถ้าเช็ค <code>if (amount &lt; 100)</code> โดยที่ <code>NaN &lt; 100</code> เป็น <code>false</code> →
+          <strong><code>"abc"</code> จะผ่าน validation ไปหลังบ้าน</strong><br>
+          นี่คือบั๊กที่ EP บนกระดาษหาไม่เจอ แต่ EP + ความรู้ภาษาหาเจอ —
+          <strong>นี่คือความได้เปรียบของ dev-turned-tester ที่ต้องใช้ให้เต็มที่</strong>
+        </p>
+      </div>
+
+      <h3 id="fault-masking">ขั้นที่ 3 — กฎการรวมเทส (fault masking) <span class="st">⭐</span></h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:40%">กฎ</th><th>เหตุผล</th></tr></thead>
+          <tbody>
+            <tr><td class="yes"><strong>valid partition รวมกันได้</strong> ในเทสเดียว</td><td>ประหยัด และถ้าพัง เราหาสาเหตุได้จากบริบท</td></tr>
+            <tr><td class="no"><strong>invalid partition ห้ามรวม</strong> — 1 เทส 1 invalid</td><td><strong>fault masking</strong> — ถ้าใส่ <code>amount=-1</code> และ <code>name=""</code> พร้อมกัน ระบบเด้ง error แรกออกมา แล้วคุณ<strong>ไม่มีทางรู้เลยว่า validation ตัวที่สองทำงานมั้ย</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">กฎที่คนละเมิดมากที่สุดใน E2E test</span>
+        <p style="margin-bottom:0">
+          เขียนเทส “กรอกฟอร์มผิดทุกช่องแล้วดูว่า error ขึ้น” หนึ่งตัว แล้วคิดว่าคลุม validation หมดแล้ว —
+          <strong>ความจริงคือคลุมแค่ตัวแรก</strong>
+        </p>
+      </div>
+
+      <h3 id="ep-coverage">Coverage</h3>
+
+      <div class="diagram">EP coverage = partition ที่ถูกแตะ / partition ทั้งหมด
+
+มิติ A: 3 partitions  →  3 เทส (ขั้นต่ำ)
+มิติ B: 12 partitions →  valid 3 ตัวรวมได้บ้าง, invalid 9 ตัวแยก
+รวมขั้นต่ำ ≈ 12 test cases สำหรับ field เดียว</div>
+
+      <p>
+        <strong>ตัวเลขนี้สำคัญ</strong> — ถ้าใครบอกว่า “ฟอร์มฝากเงินมี 4 เทสก็พอ” คุณมีตัวเลขไปเถียงได้แล้ว
+      </p>
+
+      <!-- ============================================================ -->
+      <h2 id="bva"><span class="num">L1.2</span>Boundary Value Analysis (BVA)</h2>
+
+      <p>
+        บั๊กเกิดที่ขอบ ไม่ใช่กลาง — โปรแกรมเมอร์พิมพ์ <code>&gt;</code> แทน <code>&gt;=</code>,
+        ลืม <code>-1</code> ใน index, ตั้งลูป <code>i &lt;= n</code>
+      </p>
+
+      <p>
+        BVA <strong>ใช้ได้เฉพาะกับ partition ที่เรียงลำดับได้</strong> (ordered) —
+        เอาไปใช้กับ “ประเภทบัญชี: ออมทรัพย์/กระแสรายวัน” ไม่ได้
+      </p>
+
+      <h3 id="bva-2-vs-3">2-value vs 3-value</h3>
+
+      <p><strong>Spec:</strong> valid = <code>100 ≤ x ≤ 50000</code></p>
+
+      <div class="diagram">                  ↓99  ↓100 ↓101              ↓49999 ↓50000 ↓50001
+─────────────────[═════════ valid ══════════════════]──────────────
+    invalid                                                invalid</div>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:26%">แบบ</th><th>ค่าที่เทส</th><th style="width:12%">จำนวน</th></tr></thead>
+          <tbody>
+            <tr><td><strong>2-value</strong> (ISTQB)</td><td><code>99, 100, 50000, 50001</code></td><td class="num-col">4</td></tr>
+            <tr><td><strong>3-value</strong> (Jorgensen)</td><td><code>99, 100, 101, 49999, 50000, 50001</code></td><td class="num-col">6</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note fix">
+        <span class="note-t">แก้ไขจากการทบทวน — เหตุผลของ 3-value ที่ถูกต้อง</span>
+        <p>ฉบับแรกอธิบายพันกันจนอ่านไม่รู้เรื่อง นี่คือตารางที่พิสูจน์ได้จริงว่า 3-value เพิ่มอะไร</p>
+        <div class="tbl">
+          <table>
+            <thead><tr><th style="width:30%">bug ที่ฝังไว้</th><th>99</th><th>100</th><th>101</th><th>2-value</th><th>3-value</th></tr></thead>
+            <tbody>
+              <tr><td><code>x &gt; 100</code> (ควรเป็น <code>&gt;=</code>)</td><td class="yes">rej ✓</td><td class="no">rej ✗</td><td class="yes">acc ✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+              <tr><td><code>x &gt;= 99</code></td><td class="no">acc ✗</td><td class="yes">acc ✓</td><td class="yes">acc ✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+              <tr><td><code>x &gt;= 101</code></td><td class="yes">rej ✓</td><td class="no">rej ✗</td><td class="yes">acc ✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+              <tr><td><strong><code>x &gt;= 100 &amp;&amp; x != 101</code></strong></td><td class="yes">rej ✓</td><td class="yes">acc ✓</td><td class="no">rej ✗</td><td class="no"><strong>✗ พลาด</strong></td><td class="yes"><strong>✓ จับได้</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          <strong>ข้อสรุป:</strong> 2-value จับ off-by-one ที่ตัวดำเนินการได้ครบอยู่แล้ว
+          สิ่งที่ 3-value เพิ่มคือ <strong>การยืนยันว่าค่าที่อยู่ “ด้านในติดขอบ” ยังอยู่ใน partition เดียวกันจริง</strong>
+        </p>
+        <p style="margin-bottom:0">
+          bug แถวสุดท้ายเกิดยากใน business logic ปกติ แต่<strong>เกิดบ่อยมากใน pagination, index, และ array slicing</strong>
+          (<code>items.slice(0, 20)</code> vs <code>slice(1, 21)</code>)<br>
+          <strong>กฎที่ใช้ได้จริง:</strong> 3-value กับ index/offset/pagination และ risk ≥ 15 · 2-value กับที่เหลือ
+        </p>
+      </div>
+
+      <h3 id="ขอบที่คนลืม">ขอบที่คนลืม — ลิสต์นี้คือสิ่งที่แยกเทพ <span class="st">⭐</span></h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:30%">ประเภทขอบ</th><th>ตัวอย่าง Pedpro</th></tr></thead>
+          <tbody>
+            <tr><td>ขอบของ <strong>ความยาวสตริง</strong></td><td>ชื่อ 0, 1, max, max+1 ตัวอักษร</td></tr>
+            <tr><td>ขอบของ <strong>ขนาด collection</strong></td><td>รายการธุรกรรม 0 รายการ (empty state!), 1, 20 (หน้าละ 20), 21</td></tr>
+            <tr><td>ขอบของ <strong>เวลา</strong></td><td>23:59:59, 00:00:00, วันสิ้นเดือน, 29 ก.พ., เที่ยงคืนตาม UTC vs Asia/Bangkok</td></tr>
+            <tr><td>ขอบของ <strong>จำนวนสะสม</strong></td><td>ยอดฝากสะสม/วันชนเพดาน — ฝาก 30k แล้วฝากอีก 20k = 50k พอดี ผ่านมั้ย</td></tr>
+            <tr><td>ขอบของ <strong>ชนิดข้อมูล</strong></td><td><code>Number.MAX_SAFE_INTEGER</code>, <code>int32</code> overflow ที่ backend</td></tr>
+            <tr><td>ขอบของ <strong>สิทธิ์</strong></td><td>token หมดอายุพอดีวินาทีที่กด submit</td></tr>
+            <tr><td>ขอบของ <strong>การเงิน</strong></td><td>ยอดคงเหลือ = 0 พอดี, ถอนเท่ายอดคงเหลือพอดี</td></tr>
+            <tr><td>ขอบ <strong>rate limit</strong></td><td>ขอ OTP ครั้งที่ 3, 4, 5 (limit 5/ชม.)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="ขอบเวลา">เจาะลึก — ขอบเวลาที่จะทำให้คุณโดนเรียกตอนตี 3 <span class="st">⭐</span></h3>
+
+      <p>Cloud Run รันเป็น <strong>UTC</strong> ผู้ใช้อยู่ <strong>UTC+7</strong></p>
+
+      <p>โปรโมชั่น “ฝากครั้งแรกของวัน” → ถ้าเช็คด้วย <code>new Date().toISOString().slice(0,10)</code> บนเซิร์ฟเวอร์</p>
+
+      <div class="diagram">ผู้ใช้ฝากเวลา 06:59 น. (ไทย) = 23:59 UTC วันก่อน  → นับเป็น "เมื่อวาน"
+ผู้ใช้ฝากเวลา 07:01 น. (ไทย) = 00:01 UTC วันนี้   → นับเป็น "วันนี้"
+
+ผลคือ ผู้ใช้รับโบนัส "ครั้งแรกของวัน" ได้ 2 ครั้งในวันเดียว</div>
+
+      <div class="note warn">
+        <span class="note-t">Test case ที่ต้องมี</span>
+        <p style="margin-bottom:0">
+          <code>06:59:59</code> · <code>07:00:00</code> · <code>07:00:01</code> ตามเวลาไทย —
+          และนี่คือขอบที่ <strong>Playwright ไม่มีวันเจอเองถ้าคุณไม่ตั้งใจตั้ง clock</strong><br>
+          วิธี implement อยู่ที่ <a class="xref" href="l2-automation.html#first-u">L2.2 (Repeatable)</a>
+        </p>
+      </div>
+
+      <h3 id="bva-coverage">Coverage</h3>
+
+      <div class="diagram">Boundary coverage = boundary value ที่แตะ / boundary value ทั้งหมด</div>
+
+      <div class="note good">
+        <span class="note-t">หมายเหตุสำคัญ</span>
+        <p style="margin-bottom:0">
+          BVA <strong>ไม่แทน EP</strong> — BVA คลุมขอบ แต่ไม่คลุม invalid partition ที่ไม่มีขอบ (เช่น <code>"abc"</code>)
+          <strong>ใช้คู่กันเสมอ</strong>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="decision-table"><span class="num">L1.3</span>Decision Table Testing</h2>
+
+      <p>
+        ใช้เมื่อ business rule มีหลายเงื่อนไขที่<strong>รวมกันแล้วให้ผลต่างกัน</strong> —
+        ถ้าคุณเห็น <code>&amp;&amp;</code> และ <code>||</code> ซ้อนกันใน spec แปลว่าต้องใช้อันนี้
+      </p>
+
+      <h3 id="dt-ตัวอย่าง">ตัวอย่างจริง: โบนัสฝากครั้งแรกของวัน 10%</h3>
+
+      <div class="note">
+        <span class="note-t">Spec ตามที่ business เขียนมา</span>
+        <p style="margin-bottom:0">
+          ผู้ใช้ที่ยืนยันตัวตนแล้ว ฝากครั้งแรกของวัน ยอดตั้งแต่ 500 บาทขึ้นไป
+          และยังไม่เคยรับโปรนี้ในเดือนนี้ จะได้โบนัส 10% (สูงสุด 1,000 บาท)
+        </p>
+      </div>
+
+      <h4>ขั้นที่ 1 — Full table (ยังไม่ยุบ): 4 เงื่อนไข → 2⁴ = 16 rules</h4>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:8%"></th><th>C1 verified</th><th>C2 ครั้งแรกของวัน</th><th>C3 ≥500</th><th>C4 ยังไม่เคยรับเดือนนี้</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">R1</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td class="yes"><strong>ให้โบนัส 10%</strong></td></tr>
+            <tr><td class="num-col">R2</td><td>Y</td><td>Y</td><td>Y</td><td>N</td><td>ปฏิเสธ: รับไปแล้วเดือนนี้</td></tr>
+            <tr><td class="num-col">R3</td><td>Y</td><td>Y</td><td>N</td><td>Y</td><td>ปฏิเสธ: ยอดไม่ถึง</td></tr>
+            <tr><td class="num-col">R4</td><td>Y</td><td>Y</td><td>N</td><td>N</td><td class="mid">ปฏิเสธ: ?</td></tr>
+            <tr><td class="num-col">R5</td><td>Y</td><td>N</td><td>Y</td><td>Y</td><td>ปฏิเสธ: ไม่ใช่ครั้งแรกของวัน</td></tr>
+            <tr><td class="num-col">…</td><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+            <tr><td class="num-col">R16</td><td>N</td><td>N</td><td>N</td><td>N</td><td class="mid">ปฏิเสธ: ?</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>ขั้นที่ 2 — ยุบด้วย don't care (<code>–</code>)</h4>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:9%">Rule</th><th>C1 verified</th><th>C4 ยังไม่เคยรับ</th><th>C2 ครั้งแรก/วัน</th><th>C3 ≥500</th><th>Action</th><th style="width:12%">ครอบ rule เดิม</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col"><strong>R1'</strong></td><td>N</td><td>–</td><td>–</td><td>–</td><td>ปฏิเสธ: ยังไม่ยืนยันตัวตน</td><td class="num-col">8</td></tr>
+            <tr><td class="num-col"><strong>R2'</strong></td><td>Y</td><td>N</td><td>–</td><td>–</td><td>ปฏิเสธ: รับไปแล้วเดือนนี้</td><td class="num-col">4</td></tr>
+            <tr><td class="num-col"><strong>R3'</strong></td><td>Y</td><td>Y</td><td>N</td><td>–</td><td>ปฏิเสธ: ไม่ใช่ครั้งแรกของวัน</td><td class="num-col">2</td></tr>
+            <tr><td class="num-col"><strong>R4'</strong></td><td>Y</td><td>Y</td><td>Y</td><td>N</td><td>ปฏิเสธ: ยอดไม่ถึง 500</td><td class="num-col">1</td></tr>
+            <tr><td class="num-col"><strong>R5'</strong></td><td>Y</td><td>Y</td><td>Y</td><td>Y</td><td class="yes"><strong>ให้โบนัส 10% (cap 1,000)</strong></td><td class="num-col">1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>16 → 5 rules ✓</strong> (8+4+2+1+1 = 16 ครบ)</p>
+
+      <h3 id="dt-กับดัก">ขั้นที่ 3 — จุดที่คนพลาด (ส่วนสำคัญที่สุด) <span class="st">⭐</span></h3>
+
+      <div class="note warn">
+        <span class="note-t">การยุบตารางซ่อน “ลำดับความสำคัญของ error” ไว้</span>
+        <p>
+          สังเกตว่าผม <strong>เรียงคอลัมน์ใหม่</strong> — สมมติเองว่า verified มาก่อน duplicate
+          มาก่อน first-of-day มาก่อน amount แต่ <strong>spec ไม่ได้บอกไว้</strong>
+        </p>
+        <p>คำถามที่ต้องยิงกลับหา PO:</p>
+        <ol style="margin-bottom:8px">
+          <li>ถ้าผู้ใช้ไม่ verified <strong>และ</strong> ฝาก 300 บาท → ขึ้น error ตัวไหน? ตัวเดียวหรือทั้งคู่?</li>
+          <li>ถ้าขึ้นทีละตัว ผู้ใช้ต้องลองผิดลองถูก 4 รอบถึงจะรู้ว่าทำไมไม่ได้โบนัส → <strong>นั่นคือ usability defect ที่ decision table เผยออกมา</strong></li>
+        </ol>
+        <p style="margin-bottom:0">
+          <strong>คุณค่าจริงของ decision table:</strong> มันไม่ได้ให้แค่ test case
+          มันเป็น <strong>เครื่องมือหา requirement gap</strong> —
+          ตารางที่ทำเสร็จแล้วมีช่อง <code>?</code> เยอะแค่ไหน = สเปคห่วยแค่นั้น
+        </p>
+      </div>
+
+      <h3 id="dt-เงื่อนไขซ่อน">ขั้นที่ 4 — เงื่อนไขที่ซ่อนอยู่ (ไม่มีใน spec แต่มีในความจริง)</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:34%">เงื่อนไขซ่อน</th><th>ทำไมสำคัญ</th></tr></thead>
+          <tbody>
+            <tr><td>ฝากสำเร็จจริงมั้ย (gateway confirm)</td><td>โบนัสถูกให้ตอน “กดฝาก” หรือตอน “เงินเข้า”?</td></tr>
+            <tr><td>ฝาก 500 แล้วยกเลิก/refund</td><td>โบนัสถูกดึงคืนมั้ย?</td></tr>
+            <tr><td>บัญชีถูกระงับ</td><td><code>verified = true</code> แต่ <code>suspended</code></td></tr>
+            <tr><td>โปรฯ หมดอายุระหว่างทาง</td><td>user กดตอน 23:59:58 ระบบประมวลผลเสร็จ 00:00:01</td></tr>
+            <tr><td><strong>ฝาก 20,000 → โบนัส 2,000 แต่ cap 1,000</strong></td><td><strong>ขอบของ cap: 9,999 / 10,000 / 10,001</strong> ← BVA ในตัว action!</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ข้อสุดท้ายสำคัญมาก</span>
+        <p style="margin-bottom:0">
+          decision table บอก <em>ว่า</em> ให้โบนัส 10% แต่ <strong>ตัวเลขในผลลัพธ์เองก็มีขอบ</strong> —
+          ต้องเอา BVA ไปจับ <strong>action</strong> ด้วย ไม่ใช่จับแค่ condition
+          <strong>คนพลาดข้อนี้กันทั้งวงการ</strong>
+        </p>
+      </div>
+
+      <h3 id="dt-coverage">Coverage</h3>
+
+      <div class="diagram">Rule coverage = rule ที่รัน / rule ทั้งหมด
+
+ขั้นต่ำที่รับได้ = 100% ของตารางที่ยุบแล้ว (5 เทส)
+ถ้า risk สูง     = ไม่ยุบ รัน 16 เทสไปเลย (เพื่อจับ precedence bug)</div>
+
+      <!-- ============================================================ -->
+      <h2 id="state-transition"><span class="num">L1.4</span>State Transition Testing</h2>
+
+      <p>
+        ใช้เมื่อ <strong>“ทำอะไรได้” ขึ้นกับ “ตอนนี้อยู่สถานะไหน”</strong> และ <strong>ลำดับเหตุการณ์มีความหมาย</strong><br>
+        Pedpro มีเต็มไปหมด: คำขอถอนเงิน, session login, สถานะ KYC, ตะกร้าโปรโมชั่น, order เกม
+      </p>
+
+      <h3 id="st-diagram">State diagram — คำขอถอนเงิน</h3>
+
+      <div class="diagram">                    ┌──cancel/timeout──→ CANCELLED
+                    │
+ [submit] → PENDING ─┴──pickUp──→ REVIEWING ──reject──→ REJECTED
+                                     │                     ↑
+                                  approve                  │
+                                     ↓                     │
+                                 APPROVED ──payoutFail──→ FAILED
+                                     │                     │
+                              payoutSuccess           retry ┘
+                                     ↓
+                                   PAID  (terminal)</div>
+
+      <h3 id="st-table">State table — ของจริงที่ต้องเขียน</h3>
+
+      <p>
+        7 states × 9 events = <strong>63 ช่อง</strong> แต่มี valid transition แค่ <strong>9</strong><br>
+        → <strong>54 ช่องที่เหลือคือที่ที่บั๊กอาศัยอยู่</strong>
+      </p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:12%">Transition</th><th style="width:24%">จาก</th><th style="width:32%">Event</th><th>ไป</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">T0</td><td>(เริ่มต้น)</td><td><code>submit</code></td><td>PENDING</td></tr>
+            <tr><td class="num-col">T1</td><td>PENDING</td><td><code>pickUp</code></td><td>REVIEWING</td></tr>
+            <tr><td class="num-col">T2</td><td>PENDING</td><td><code>cancel</code></td><td>CANCELLED</td></tr>
+            <tr><td class="num-col">T3</td><td>PENDING</td><td><code>timeout(24h)</code></td><td>CANCELLED</td></tr>
+            <tr><td class="num-col">T4</td><td>REVIEWING</td><td><code>approve</code></td><td>APPROVED</td></tr>
+            <tr><td class="num-col">T5</td><td>REVIEWING</td><td><code>reject</code></td><td>REJECTED</td></tr>
+            <tr><td class="num-col">T6</td><td>APPROVED</td><td><code>payoutSuccess</code></td><td>PAID</td></tr>
+            <tr><td class="num-col">T7</td><td>APPROVED</td><td><code>payoutFail</code></td><td>FAILED</td></tr>
+            <tr><td class="num-col">T8</td><td>FAILED</td><td><code>retry</code></td><td>APPROVED</td></tr>
+            <tr><td class="num-col">T9</td><td>FAILED</td><td><code>reject</code></td><td>REJECTED</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="switch-coverage">Coverage: 0-switch / 1-switch / N-switch</h3>
+
+      <p><strong>0-switch (Chow's coverage)</strong> = ทุก valid transition อย่างน้อย 1 ครั้ง → <strong>9 test cases</strong> (ขั้นต่ำสุดที่ยอมรับได้)</p>
+
+      <div class="note fix">
+        <span class="note-t">แก้ไขจากการทบทวน — 1-switch นับได้ 8 ที่จริงคือ 11</span>
+        <p>
+          ฉบับแรก<strong>ลืม transition ขาเข้า</strong> <code>[submit] → PENDING</code> (T0)
+          ผลคือไม่ได้นับคู่ที่ออกจาก PENDING เลย
+        </p>
+        <div class="tbl">
+          <table>
+            <thead><tr><th style="width:34%">คู่ที่ลงท้ายด้วย</th><th>transition ที่ต่อได้</th><th style="width:16%">จำนวนคู่</th></tr></thead>
+            <tbody>
+              <tr><td><strong>T0 → PENDING</strong></td><td>T1, T2, T3</td><td class="num-col"><strong>3</strong> ← ที่ลืม</td></tr>
+              <tr><td>T1 → REVIEWING</td><td>T4, T5</td><td class="num-col">2</td></tr>
+              <tr><td>T4 → APPROVED</td><td>T6, T7</td><td class="num-col">2</td></tr>
+              <tr><td>T7 → FAILED</td><td>T8, T9</td><td class="num-col">2</td></tr>
+              <tr><td>T8 → APPROVED</td><td>T6, T7</td><td class="num-col">2</td></tr>
+              <tr><td>T2, T3, T5, T6, T9 → terminal</td><td>—</td><td class="num-col">0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>รวม 11 คู่ ไม่ใช่ 8</strong></p>
+        <p>
+          <strong>และประเด็นที่สำคัญกว่าตัวเลข:</strong> ถ้าไม่มี T0 อยู่ในโมเดล →
+          <strong>T2 กับ T3 จะไม่ปรากฏในคู่ไหนเลย</strong> (เพราะไม่มี transition ไหนวิ่งเข้า PENDING)
+          แปลว่า <strong>1-switch coverage 100% ไม่ subsume 0-switch โดยอัตโนมัติ</strong> ถ้าโมเดลไม่ปิด
+        </p>
+        <p style="margin-bottom:0">
+          <strong>บทเรียน:</strong> ต้องใส่ initial transition และ terminal state ลงในโมเดลเสมอ
+          ไม่งั้นตัวเลข coverage ที่คำนวณจะโกหกคุณ —
+          และให้ประกาศเสมอว่า <strong>“0-switch ∪ 1-switch”</strong> ไม่ใช่ “1-switch เฉยๆ”
+        </p>
+      </div>
+
+      <p>
+        ตัวอย่าง sequence ที่ครอบคลุมเยอะ: <code>T0→T1→T4→T7→T8→T6</code>
+        (submit → pickUp → approve → payoutFail → retry → success) ครอบ 5 คู่ในเทสเดียว
+      </p>
+
+      <h3 id="invalid-transition">ส่วนที่สำคัญกว่า: Invalid transition testing <span class="st">⭐</span></h3>
+
+      <p><strong>54 ช่องว่างในตาราง</strong> — นี่คือที่ที่บั๊กเงินหายอาศัยอยู่</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:16%">สถานะปัจจุบัน</th><th style="width:22%">Event ที่ไม่ควรได้</th><th style="width:22%">ต้องเกิดอะไร</th><th>บั๊กจริงที่เจอบ่อย</th></tr></thead>
+          <tbody>
+            <tr><td>PAID</td><td><code>payoutSuccess</code> (ซ้ำ)</td><td>ignore (idempotent)</td><td class="no"><strong>จ่ายซ้ำ 2 รอบ</strong> ← webhook retry ของ gateway</td></tr>
+            <tr><td>PAID</td><td><code>cancel</code></td><td>ปฏิเสธ</td><td>ยอดคืนเข้ากระเป๋าทั้งที่จ่ายไปแล้ว</td></tr>
+            <tr><td>APPROVED</td><td><code>approve</code> (ซ้ำ)</td><td>ปฏิเสธ</td><td>admin 2 คนกดพร้อมกัน → <strong>race condition</strong></td></tr>
+            <tr><td>CANCELLED</td><td><code>pickUp</code></td><td>ปฏิเสธ</td><td>คำขอที่ยกเลิกแล้วโผล่ในคิว admin</td></tr>
+            <tr><td>REJECTED</td><td><code>retry</code></td><td>ปฏิเสธ</td><td></td></tr>
+            <tr><td>PENDING</td><td><code>payoutSuccess</code></td><td>ปฏิเสธ</td><td class="no">เงินออกโดยไม่ผ่าน approve ← <strong>critical</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="idempotency">เจาะลึก — Idempotency คือหัวใจ <span class="st">⭐</span></h3>
+
+      <div class="diagram">Gateway ส่ง webhook payoutSuccess → เรารับ → ตอบช้าเกิน 5 วิ
+Gateway timeout → ส่งซ้ำ → เรารับอีกรอบ
+
+ถ้า handler ไม่เช็ค state ก่อน → จ่ายซ้ำ</div>
+
+      <div class="note warn">
+        <span class="note-t">Test case ที่ต้องมี</span>
+        <p style="margin-bottom:0">
+          ยิง webhook เดิม <strong>3 ครั้ง (พร้อมกันด้วย)</strong> แล้ว assert ว่า <code>balance</code>
+          เปลี่ยนครั้งเดียว และมี ledger entry 1 แถว<br>
+          <strong>นี่คือเทสที่ Bruno contract เช็คไม่ได้</strong> เพราะ contract บอกแค่ shape ของ response ไม่ได้บอก side effect
+          (ดู <a class="xref" href="l2-automation.html#contract">L2.5</a> และ harness เต็มที่
+          <a class="xref" href="l3-nfr.html#security">L3.4</a>)
+        </p>
+      </div>
+
+      <h3 id="guard-condition">เจาะลึก — Guard condition ≠ Event</h3>
+
+      <p>Transition จริงมักมีรูป <code>event [guard] / action</code></p>
+
+      <div class="diagram">APPROVED --payoutSuccess [amount ≤ dailyLimit] / credit----&gt; PAID
+APPROVED --payoutSuccess [amount &gt; dailyLimit] / hold-----&gt; MANUAL_REVIEW</div>
+
+      <p>
+        Event เดียวกัน สถานะเดียวกัน แต่ผลต่างกันเพราะ guard →
+        <strong>guard คือจุดที่ decision table กับ state transition มาบรรจบกัน</strong> ต้องใช้ 2 เทคนิคซ้อนกัน
+      </p>
+
+      <div class="note good">
+        <span class="note-t">ตารางที่ต้องส่งให้ dev</span>
+        <p style="margin-bottom:0">
+          ทำ state table เต็ม 7×9 แล้วเติมทุกช่องว่างด้วยคำว่า
+          <strong>“reject + log”</strong> หรือ <strong>“ignore (idempotent)”</strong> — <strong>ห้ามปล่อยว่าง</strong><br>
+          ช่องว่าง = พฤติกรรมไม่ได้นิยาม = โค้ดจะทำอะไรก็ได้ = บั๊ก<br>
+          วิธีทำ exhaustive 7×9 อัตโนมัติอยู่ที่ <a class="xref" href="l5-advanced.html#formal">L5.8</a>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="pairwise"><span class="num">L1.5</span>Pairwise / Combinatorial Testing</h2>
+
+      <p>การทดสอบเว็บบนทุก config = combination ระเบิด</p>
+
+      <div class="note">
+        <span class="note-t">สมมติฐานเชิงประจักษ์</span>
+        <p style="margin-bottom:0">
+          งานวิจัย NIST พบว่าบั๊กส่วนใหญ่เกิดจากปฏิสัมพันธ์ของ <strong>ปัจจัยเพียง 1–2 ตัว</strong>
+          และแทบไม่มีบั๊กที่ต้องใช้ปัจจัยเกิน 6 ตัวพร้อมกัน →
+          ถ้าคลุม <strong>ทุกคู่</strong> ได้ ก็จับบั๊กได้ส่วนใหญ่ด้วยเทสจำนวนน้อยมาก
+        </p>
+      </div>
+
+      <h3 id="pw-ตัวอย่าง">ตัวอย่างจริง: หน้าสมัครสมาชิก Pedpro</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:24%">ปัจจัย</th><th>ค่า</th></tr></thead>
+          <tbody>
+            <tr><td><strong>A. Browser</strong></td><td>Chrome / Safari iOS / <strong>LINE in-app</strong></td></tr>
+            <tr><td><strong>B. วิธียืนยัน</strong></td><td>OTP มือถือ / LINE login / Email</td></tr>
+            <tr><td><strong>C. ภาษา</strong></td><td>ไทย / อังกฤษ</td></tr>
+            <tr><td><strong>D. เครือข่าย</strong></td><td>4G / Wi-Fi</td></tr>
+            <tr><td><strong>E. Referral code</strong></td><td>มี / ไม่มี</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        <strong>Exhaustive</strong> = 3 × 3 × 2 × 2 × 2 = <strong>72 เทส</strong> ·
+        <strong>Pairwise</strong> = <strong>9 เทส</strong> (12.5%)
+      </p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:6%">#</th><th>Browser</th><th>ยืนยัน</th><th>ภาษา</th><th>เครือข่าย</th><th>Referral</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">1</td><td>Chrome</td><td>OTP</td><td>ไทย</td><td>4G</td><td>มี</td></tr>
+            <tr><td class="num-col">2</td><td>Chrome</td><td>LINE login</td><td>อังกฤษ</td><td>4G</td><td>ไม่มี</td></tr>
+            <tr><td class="num-col">3</td><td>Chrome</td><td>Email</td><td>ไทย</td><td>Wi-Fi</td><td>ไม่มี</td></tr>
+            <tr><td class="num-col">4</td><td>Safari iOS</td><td>OTP</td><td>อังกฤษ</td><td>Wi-Fi</td><td>ไม่มี</td></tr>
+            <tr><td class="num-col">5</td><td>Safari iOS</td><td>LINE login</td><td>ไทย</td><td>Wi-Fi</td><td>มี</td></tr>
+            <tr><td class="num-col">6</td><td>Safari iOS</td><td>Email</td><td>อังกฤษ</td><td>4G</td><td>มี</td></tr>
+            <tr><td class="num-col">7</td><td>LINE in-app</td><td>OTP</td><td>ไทย</td><td>Wi-Fi</td><td>ไม่มี</td></tr>
+            <tr><td class="num-col">8</td><td>LINE in-app</td><td>LINE login</td><td>อังกฤษ</td><td>4G</td><td>มี</td></tr>
+            <tr><td class="num-col">9</td><td>LINE in-app</td><td>Email</td><td>ไทย</td><td>4G</td><td>ไม่มี</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4 id="pw-ตรวจสอบ">ตรวจสอบว่าครบทุกคู่จริง</h4>
+
+      <p>คู่ที่ต้องคลุมทั้งหมด = A×B(9) + A×C(6) + A×D(6) + A×E(6) + B×C(6) + B×D(6) + B×E(6) + C×D(4) + C×E(4) + D×E(4) = <strong>57 คู่</strong></p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">verification</span><span class="code-file">ไล่ตรวจทีละกลุ่ม</span></div>
+<pre><code>A×B : 9 คู่ ครบพอดี (แถว 1-9 คือ 3×3 grid)                          ✓
+A×C : Chrome{ไทย,อังกฤษ} Safari{อังกฤษ,ไทย} LINE{ไทย,อังกฤษ}       = 6 ✓
+A×D : Chrome{4G,4G,WiFi} Safari{WiFi,WiFi,4G} LINE{WiFi,4G,4G}     = 6 ✓
+A×E : Chrome{มี,ไม่มี,ไม่มี} Safari{ไม่มี,มี,มี} LINE{ไม่มี,มี,ไม่มี}  = 6 ✓
+B×C : OTP(r1,4,7)={ไทย,อังกฤษ,ไทย}
+      LINE(r2,5,8)={อังกฤษ,ไทย,อังกฤษ}
+      Email(r3,6,9)={ไทย,อังกฤษ,ไทย}                                = 6 ✓
+B×D : OTP={4G,WiFi,WiFi} LINE={4G,WiFi,4G} Email={WiFi,4G,4G}      = 6 ✓
+B×E : OTP={มี,ไม่มี,ไม่มี} LINE={ไม่มี,มี,มี} Email={ไม่มี,มี,ไม่มี}  = 6 ✓
+C×D : (ไทย,4G)r1 (ไทย,WiFi)r3 (อังกฤษ,4G)r2 (อังกฤษ,WiFi)r4        = 4 ✓
+C×E : (ไทย,มี)r1 (ไทย,ไม่มี)r3 (อังกฤษ,มี)r6 (อังกฤษ,ไม่มี)r2       = 4 ✓
+D×E : (4G,มี)r1 (4G,ไม่มี)r2 (WiFi,มี)r5 (WiFi,ไม่มี)r3            = 4 ✓
+─────────────────────────────────────────────────────────────────────
+57/57 ครบ ใน 9 แถว
+และ 9 คือค่าต่ำสุดตามทฤษฎี (= 3×3 จากปัจจัยที่ใหญ่สุด 2 ตัว) → ตารางนี้ optimal</code></pre>
+      </div>
+
+      <h3 id="pw-กับดัก">4 กับดักที่ต้องรู้ ไม่งั้นจะใช้ผิด <span class="st">⭐</span></h3>
+
+      <div class="kv">
+        <div><span class="k">1. Constraint</span><span class="v">ต้องใส่ ไม่งั้นได้เทสที่รันไม่ได้ เช่น “Safari iOS + Android device” — ต้องประกาศ <code>IF [Browser]="Safari iOS" THEN [OS]="iOS"</code> ในเครื่องมือ (PICT/allpairs) ไม่ใช่มานั่งลบทีหลัง</span></div>
+        <div><span class="k">2. High-risk combo</span><span class="v">Pairwise ไม่แทน combination ที่ต้องเทสแน่ๆ — ถ้ารู้ว่า “LINE in-app + LINE login + ไม่มี referral” คือ flow ที่ผู้ใช้ 60% ใช้ <strong>ต้องใส่เป็น seed row บังคับ</strong> แล้วค่อยให้ tool เติมที่เหลือ (ในตารางข้างบน แถว 8 เป็น LINE+LINE login แต่ referral = มี ซึ่งไม่ตรง flow หลัก)</span></div>
+        <div><span class="k">3. เลือกปัจจัย</span><span class="v">อย่าเอาทุกอย่างมาใส่ เลือกเฉพาะปัจจัยที่<strong>มีเหตุผลให้เชื่อว่ามันโต้ตอบกัน</strong> — สีธีม dark/light ไม่น่าโต้ตอบกับวิธียืนยันตัวตน</span></div>
+        <div><span class="k">4. Oracle</span><span class="v">Pairwise สร้าง <strong>input combination</strong> เท่านั้น ไม่ได้บอกว่า expected result คืออะไร — oracle ยังเป็นงานคุณ</span></div>
+      </div>
+
+      <p>
+        <strong>เมื่อไหร่ต้องขึ้นเป็น 3-wise:</strong> เมื่อ risk สูงมากและมีหลักฐานว่าบั๊กเกิดจาก 3 ปัจจัย —
+        สำหรับ Pedpro: <strong>payment method × currency × promotion type</strong> น่าจะคุ้มที่ 3-wise เพราะเกี่ยวกับเงิน<br>
+        generator จริงที่รองรับ constraint + seed row อยู่ที่ <a class="xref" href="l5-advanced.html#covering-array">L5.14</a>
+      </p>
+
+      <!-- ============================================================ -->
+      <h2 id="classification-tree"><span class="num">L1.6</span>Classification Tree</h2>
+
+      <p>
+        เทคนิคที่คนไทยแทบไม่ใช้ แต่มีประโยชน์มากตอน <strong>วางแผน</strong>
+        เพราะมันบังคับให้เห็นมิติทั้งหมดพร้อมกัน
+      </p>
+
+      <div class="diagram">                        คำขอถอนเงิน
+        ┌──────────────┬──────────┴────────┬─────────────┐
+     ยอดเงิน        สถานะบัญชี         ช่องทาง       เวลาที่ขอ
+    ┌───┼───┐      ┌────┼────┐        ┌───┼───┐     ┌───┼────┐
+  &lt;min  ok  &gt;max  new verified banned bank promptpay  ในเวลา นอกเวลา วันหยุด</div>
+
+      <div class="note good">
+        <span class="note-t">ประโยชน์จริง</span>
+        <p style="margin-bottom:0">
+          พอวาดเสร็จ คุณจะเห็นทันทีว่า —
+          มิติ “เวลาที่ขอ” ที่ไม่มีใครพูดถึงใน spec เลย ·
+          combination <code>&gt;max × banned × วันหยุด</code> ที่ไม่มีใครเคยคิดถึง<br>
+          จากนั้นเอา leaf ทั้งหมดไปเข้า pairwise tool → ได้ชุดเทสที่คลุมทุกมิติ<br>
+          <strong>ใช้ตอนไหน:</strong> ตอน test analysis ก่อนเขียนเทสสักตัว — วาด 15 นาที ประหยัดการเดาไป 2 วัน
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="scenario"><span class="num">L1.6b</span>Use Case / Scenario Testing</h2>
+
+      <div class="note fix">
+        <span class="note-t">เติมจากการทบทวน — เทคนิคนี้อยู่ในแผนที่แต่ลืมอธิบาย</span>
+        <p style="margin-bottom:0">
+          เทคนิคนี้ต่างจากที่เหลือตรงที่ <strong>มันเทส “การใช้งาน” ไม่ใช่ “ฟังก์ชัน”</strong> —
+          และมันคือเทคนิคเดียวที่จับ <strong>integration defect ระหว่างฟีเจอร์ที่แต่ละตัวทำงานถูกหมด</strong>
+        </p>
+      </div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">use case</span><span class="code-file">ฝากเงินผ่านพร้อมเพย์</span></div>
+<pre><code>Actor       : ผู้ใช้ใหม่ที่เพิ่งสมัคร
+Precondition: ยืนยัน OTP แล้ว, ยังไม่ verified KYC, balance = 0
+
+Main flow   : 1. เข้าหน้าฝาก  2. เลือกพร้อมเพย์  3. กรอก 500
+              4. สแกน QR  5. รอ callback  6. เห็นยอด 500 + โบนัส 50
+
+Alternate   : 3a. กรอก 300 → ไม่ได้โบนัส แต่ฝากได้
+              4a. QR หมดอายุ (5 นาที) → ขอใหม่
+
+Exception   : 5a. callback ไม่มาใน 10 นาที → สถานะ "รอตรวจสอบ" + แจ้งเตือน
+              5b. callback มา 2 ครั้ง → ยอดเพิ่มครั้งเดียว
+
+Postcondition: ledger 2 แถว (deposit + bonus), sum = balance</code></pre>
+      </div>
+
+      <div class="diagram">Scenario coverage = (main + alternate + exception) ที่รัน / ทั้งหมด</div>
+
+      <div class="note warn">
+        <span class="note-t">ที่คนพลาด</span>
+        <p style="margin-bottom:0">
+          เขียนแต่ main flow แล้วเรียกว่า “E2E test” —
+          ของจริงคือ <strong>exception flow มีเยอะกว่า main flow 3–5 เท่า และนั่นคือที่ที่ผู้ใช้เจ็บ</strong><br>
+          อัตราส่วนที่ควรเป็น: <strong>1 main : 2 alternate : 4 exception</strong>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="mcdc"><span class="num">L1.7</span>White-box: Statement → Branch → MC-DC</h2>
+
+      <p>ถ้าคุณเป็น dev อยู่แล้วชั้นนี้จะเข้าใจเร็ว แต่ต้องรู้ให้ถูก เพราะ<strong>นี่คือรากของการเถียงเรื่อง coverage ในทีม</strong></p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">โค้ดตัวอย่าง</span></div>
+<pre><code>function canWithdraw(u: User, amount: number): boolean {
+  return u.isVerified &amp;&amp; (u.balance &gt;= amount || u.hasCredit)
+}
+
+// เงื่อนไข: A = isVerified, B = balance &gt;= amount, C = hasCredit
+// Decision: D = A &amp;&amp; (B || C)</code></pre>
+      </div>
+
+      <h3 id="coverage-5-ระดับ">ระดับ coverage ทั้ง 5</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:26%">ระดับ</th><th>ต้องการอะไร</th><th style="width:18%">จำนวนเทสขั้นต่ำ</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Statement</strong></td><td>ทุกบรรทัดถูกรัน</td><td class="num-col">1</td></tr>
+            <tr><td><strong>Decision / Branch</strong></td><td>decision ให้ผลทั้ง T และ F</td><td class="num-col">2</td></tr>
+            <tr><td><strong>Condition</strong></td><td>แต่ละ condition ย่อยเป็นทั้ง T และ F</td><td class="num-col">2</td></tr>
+            <tr><td><strong>Decision/Condition</strong></td><td>ทั้งสองอย่างข้างบน</td><td class="num-col">2–3</td></tr>
+            <tr><td><strong>MC-DC</strong></td><td>แต่ละ condition <strong>พิสูจน์ได้ว่ามีผลต่อผลลัพธ์โดยลำพัง</strong></td><td class="num-col"><strong>4</strong></td></tr>
+            <tr><td><strong>Multiple Condition</strong></td><td>ทุก combination</td><td class="num-col">8 (2³)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="condition-vs-decision">กับดักคลาสสิก: Condition 100% แต่ Decision ไม่ถึง 100%</h3>
+
+      <div class="note fix">
+        <span class="note-t">แก้ไขจากการทบทวน — ตัวอย่างเดิมงมอยู่ 2 รอบ นี่คือฉบับสะอาด</span>
+
+        <div class="code" style="margin-top:12px">
+          <div class="code-bar"><span class="code-lang">typescript</span></div>
+<pre><code>function canPayout(approved: boolean, hasBalance: boolean) {
+  return approved &amp;&amp; hasBalance     // D = A &amp;&amp; B
+}</code></pre>
+        </div>
+
+        <div class="tbl">
+          <table>
+            <thead><tr><th style="width:12%">#</th><th>A</th><th>B</th><th>D</th></tr></thead>
+            <tbody>
+              <tr><td class="num-col">1</td><td>T</td><td>F</td><td class="no"><strong>F</strong></td></tr>
+              <tr><td class="num-col">2</td><td>F</td><td>T</td><td class="no"><strong>F</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ul style="margin-bottom:10px">
+          <li><strong>Condition coverage:</strong> A ได้ทั้ง T,F ✓ · B ได้ทั้ง T,F ✓ → <strong>100%</strong></li>
+          <li><strong>Decision coverage:</strong> D ได้ F ทั้งสองเทส → <strong>50%</strong></li>
+        </ul>
+
+        <p style="margin-bottom:6px"><strong>สรุปกฎ subsumption ให้ครบ (ท่องไว้)</strong></p>
+        <div class="diagram" style="margin:0">Multiple Condition  ⊃  MC-DC  ⊃  Decision/Condition  ⊃  Decision  ⊃  Statement
+                                        │
+                                        └⊃  Condition   ← Condition อยู่ตรงนี้
+                                            (ไม่ subsume Decision)</div>
+        <p style="margin:10px 0 0">
+          <strong>Condition coverage เป็นตัวเดียวที่หลุดออกจากสายโซ่</strong> —
+          เครื่องมือที่รายงาน “branch coverage” บางตัวหมายถึง decision บางตัวหมายถึง condition
+          <strong>ต้องอ่าน docs ก่อนเชื่อ</strong>
+        </p>
+      </div>
+
+      <h3 id="mcdc-คำนวณ">MC-DC — คำนวณจริง</h3>
+
+      <p>
+        หลักการ: สำหรับแต่ละ condition ต้องหา <strong>คู่เทสที่ต่างกันแค่ condition นั้นตัวเดียว
+        แล้วผลลัพธ์ decision เปลี่ยน</strong>
+      </p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">derivation</span><span class="code-file">D = A &amp;&amp; (B || C)</span></div>
+<pre><code>สำหรับ A (ต้อง fix B||C = T):
+  (A=T, B=T, C=F) → D = T
+  (A=F, B=T, C=F) → D = F   ✓ คู่
+
+สำหรับ B (ต้อง A=T, C=F เพื่อไม่ให้ C มาบัง):
+  (T, T, F) → D = T
+  (T, F, F) → D = F         ✓ คู่
+
+สำหรับ C (ต้อง A=T, B=F):
+  (T, F, T) → D = T
+  (T, F, F) → D = F         ✓ คู่</code></pre>
+      </div>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:10%">#</th><th>A</th><th>B</th><th>C</th><th>D</th><th>ใช้พิสูจน์</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">1</td><td>T</td><td>T</td><td>F</td><td class="yes"><strong>T</strong></td><td>A, B</td></tr>
+            <tr><td class="num-col">2</td><td>F</td><td>T</td><td>F</td><td class="no"><strong>F</strong></td><td>A</td></tr>
+            <tr><td class="num-col">3</td><td>T</td><td>F</td><td>F</td><td class="no"><strong>F</strong></td><td>B, C</td></tr>
+            <tr><td class="num-col">4</td><td>T</td><td>F</td><td>T</td><td class="yes"><strong>T</strong></td><td>C</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        <strong>4 เทส แทน 8 เทส</strong> (multiple condition) — ประหยัด 50% แต่ยังพิสูจน์ได้ว่าทุกเงื่อนไขมีผลจริง
+        และ 4 = n+1 คือค่าต่ำสุดตามทฤษฎี
+      </p>
+
+      <p>
+        MC-DC เป็นมาตรฐานบังคับใน DO-178C (avionics) —
+        สำหรับ Pedpro <strong>ใช้เฉพาะฟังก์ชันที่แตะเงิน</strong> ก็พอ ไม่ต้องทั้งระบบ
+      </p>
+
+      <div class="note warn">
+        <span class="note-t">Short-circuit ใน JS/TS</span>
+        <p style="margin-bottom:0">
+          <code>A &amp;&amp; (B || C)</code> — ถ้า A = false → B, C <strong>ไม่ถูก evaluate เลย</strong>
+          เครื่องมือ coverage บางตัวจะรายงานว่า B, C ไม่ถูกคลุม บางตัวรายงานว่าคลุม →
+          <strong>ตัวเลข coverage เปรียบเทียบข้ามเครื่องมือไม่ได้</strong>
+        </p>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ความเห็นตรงๆ เรื่อง coverage target</span>
+        <p><strong>อย่าตั้ง code coverage เป็น KPI เด็ดขาด</strong> (Goodhart's Law ที่พูดใน <a class="xref" href="l0-foundation.html#goodhart">L0.7</a>) ใช้แบบนี้แทน</p>
+        <ul style="margin-bottom:0">
+          <li>coverage เป็น <strong>detector ไม่ใช่ target</strong> — ดูว่า <em>บรรทัดไหนไม่ถูกคลุม</em> แล้วถามว่า “ทำไม” ไม่ใช่ดูว่าเลขเท่าไหร่</li>
+          <li>ถ้าเจอบรรทัดที่ไม่คลุมและ <strong>อธิบายไม่ได้ว่าทำไมไม่ต้องเทส</strong> → นั่นคือช่องว่างจริง</li>
+          <li>ตั้ง <strong>coverage ratchet</strong> ใน CI: ห้ามลดลงจากเดิม แต่ไม่บังคับตัวเลขเป้า</li>
+        </ul>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="fault-attack"><span class="num">L1.8</span>Error Guessing &amp; Fault Attack</h2>
+
+      <p>
+        “เดา” ที่ดีไม่ใช่การเดาสุ่ม แต่คือ <strong>การมี catalog ของความล้มเหลวที่รู้จัก</strong>
+        (Whittaker: <em>How to Break Software</em>)
+      </p>
+
+      <h3 id="fa-input">กลุ่ม 1: Input</h3>
+      <ul>
+        <li>ค่าว่าง / <code>null</code> / <code>undefined</code> / whitespace only</li>
+        <li>ค่ายาวเกิน (10,000 ตัวอักษร)</li>
+        <li>ค่าเดียวกันส่ง 2 ครั้งพร้อมกัน</li>
+        <li>copy-paste ที่มี zero-width space (<code>\u200B</code>) ติดมา</li>
+        <li>emoji ในชื่อ / ในหมายเหตุ</li>
+        <li><code>&lt;script&gt;</code>, <code>'; DROP TABLE</code>, <code>{{7*7}}</code>, <code>../../etc/passwd</code></li>
+      </ul>
+
+      <h3 id="fa-thai">กลุ่ม 2: ภาษาไทยโดยเฉพาะ <span class="st">⭐</span></h3>
+
+      <p>นี่คือของที่ tool ต่างชาติไม่มี</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:22%">กรณี</th><th style="width:34%">ตัวอย่าง</th><th>สิ่งที่พัง</th></tr></thead>
+          <tbody>
+            <tr><td>ไม่มีเว้นวรรค</td><td><code>ประเทศไทยมีจังหวัดเชียงรายอยู่ทางเหนือ</code></td><td>line-break พังทะลุ container</td></tr>
+            <tr><td>สระ/วรรณยุกต์ซ้อน</td><td><code>กิิิ๊๊๊๋๋๋</code></td><td>สระลอย ทับบรรทัดบน layout เพี้ยน</td></tr>
+            <tr><td>การเรียงลำดับ</td><td><code>เกม</code> vs <code>กเม</code></td><td><code>localeCompare("th-TH")</code> vs sort ใน SQL ต่างกัน</td></tr>
+            <tr><td>Thai numerals</td><td><code>๑๒๓๔๕</code></td><td>ระบบตีเป็นตัวเลขมั้ย? ควรมั้ย?</td></tr>
+            <tr><td>พ.ศ. / ค.ศ.</td><td>2567 vs 2024</td><td>off-by-543 และ input date picker</td></tr>
+            <tr><td>คำนำหน้าชื่อ</td><td><code>นาย สมชาย</code> vs <code>นายสมชาย</code></td><td>KYC ชื่อไม่ตรงกับบัญชีธนาคาร</td></tr>
+            <tr><td>ความยาวชื่อจริง</td><td><code>นางสาวประภัสสรมณีวรรณเจริญรุ่งเรืองยิ่ง</code></td><td>field limit, UI overflow</td></tr>
+            <tr><td>เบอร์โทร</td><td><code>0812345678</code> / <code>+66812345678</code> / <code>081-234-5678</code></td><td>normalize มั้ย? ซ้ำกันมั้ย?</td></tr>
+            <tr><td>เลขบัตร ปชช.</td><td>13 หลัก + checksum mod 11</td><td>ระบบเช็ค checksum จริงหรือแค่นับหลัก</td></tr>
+            <tr><td>Timezone</td><td>Asia/Bangkok UTC+7 ไม่มี DST</td><td>เส้นแบ่งวันที่ 07:00 (ดู <a href="#ขอบเวลา">L1.2</a>)</td></tr>
+            <tr><td>ฟอนต์</td><td>สระบนหางตัวอักษร</td><td>บนบางฟอนต์/บาง browser ตัดกัน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="fa-timing">กลุ่ม 3: Timing &amp; Concurrency</h3>
+      <ul>
+        <li>กด submit 2 ครั้งรัวๆ (double-click) → double submit</li>
+        <li>กด back หลัง submit → resubmit</li>
+        <li>เปิด 2 tab ทำพร้อมกัน</li>
+        <li>ตัดเน็ตตอนกำลัง submit</li>
+        <li>session หมดอายุระหว่างกรอกฟอร์ม</li>
+        <li>webhook มาถึงก่อน response ของ API หลัก (race)</li>
+      </ul>
+
+      <h3 id="fa-state">กลุ่ม 4: State &amp; Storage</h3>
+      <ul>
+        <li>localStorage/cookie ถูกลบกลางคัน</li>
+        <li>localStorage เต็ม (quota exceeded)</li>
+        <li><strong>LINE in-app browser บล็อก third-party cookie</strong></li>
+        <li>refresh หน้ากลางคัน flow หลายขั้น</li>
+        <li>deep link เข้าขั้นที่ 3 ตรงๆ โดยไม่ผ่านขั้น 1-2</li>
+      </ul>
+
+      <h3 id="fa-env">กลุ่ม 5: Environment</h3>
+      <ul>
+        <li>4G ช้ามาก (throttle 3G ใน DevTools)</li>
+        <li>offline → online</li>
+        <li>หน้าจอ 320px (iPhone SE) กับ 430px</li>
+        <li>zoom 200% (a11y)</li>
+        <li>dark mode ของ OS</li>
+      </ul>
+
+      <div class="note imp">
+        <span class="note-t">ทำไม fault attack list มีค่ามากกว่าเทคนิคทางการ</span>
+        <p>
+          EP/BVA/DT ทำงานจาก <strong>spec ที่มี</strong> แต่บั๊กจริงส่วนใหญ่อยู่ในสิ่งที่ <strong>spec ไม่ได้พูดถึง</strong>
+        </p>
+        <p>
+          Fault attack list คือ <strong>ความรู้สะสมขององค์กรที่แปลงเป็นสินทรัพย์</strong> —
+          ทุกครั้งที่บั๊กหลุดถึง production ให้เพิ่ม 1 บรรทัดในลิสต์นี้
+          นี่คือ <strong>test completion activity</strong> ที่ขาดไปตาม <a class="xref" href="l0-foundation.html#test-process">L0.8</a>
+        </p>
+        <p style="margin-bottom:0">
+          <strong>Action:</strong> ทำไฟล์ <code>fault-attacks.md</code> ใน pipeline skill ให้ agent อ่านตอน S1 analysis →
+          นี่คือวิธีที่ LLM จะ “เดาเก่งขึ้น” โดยไม่ต้อง fine-tune<br>
+          โครงสร้างไฟล์ที่มี provenance + lifecycle อยู่ที่ <a class="xref" href="l4-qe.html#learning-loop">L4.9</a> ·
+          catalog เต็มที่ <a class="xref" href="appendix.html#fault-attacks">ภาคผนวก B</a>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="exploratory"><span class="num">L1.9</span>Exploratory Testing + SBTM <span class="st">⭐</span></h2>
+
+      <h3 id="exploratory-vs-adhoc">ก่อนอื่น: Exploratory ≠ Ad-hoc</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:20%"></th><th>Ad-hoc</th><th>Exploratory</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">การเตรียม</td><td class="no">ไม่มี</td><td class="yes">มี charter, มี model, มี heuristic</td></tr>
+            <tr><td class="num-col">การบันทึก</td><td class="no">ไม่มี</td><td class="yes">session sheet, บันทึกตลอด</td></tr>
+            <tr><td class="num-col">วัดผลได้</td><td class="no">ไม่ได้</td><td class="yes">ได้ (coverage vs charter, bug/hr)</td></tr>
+            <tr><td class="num-col">ทำซ้ำได้</td><td class="no">ไม่ได้</td><td class="yes">ได้ (จาก session note)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        <strong>Exploratory คือการทำ design + execution + learning พร้อมกันแบบวนซ้ำ</strong> —
+        และเป็นวิธีเดียวที่จับ <strong>unknown unknowns</strong> ได้
+      </p>
+
+      <h3 id="charter">SBTM — Charter</h3>
+
+      <div class="diagram">Explore &lt;พื้นที่&gt;
+with &lt;ทรัพยากร/เทคนิค&gt;
+to discover &lt;ข้อมูลอะไร&gt;</div>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">charter</span><span class="code-file">ตัวอย่างจริง 2 ใบ</span></div>
+<pre><code>Charter #1
+สำรวจ  : flow ฝากเงินผ่าน LINE in-app browser
+ด้วย   : iPhone SE (320px) + throttle 3G + บัญชียังไม่ verified
+เพื่อหา: จุดที่ผู้ใช้ติดค้างและไม่รู้ว่าต้องทำอะไรต่อ
+Timebox: 60 นาที
+
+Charter #2
+สำรวจ  : พฤติกรรมระบบเมื่อ webhook จาก gateway มาช้า/ซ้ำ/ไม่มา
+ด้วย   : Bruno + delay/replay ด้วยมือ
+เพื่อหา: ความไม่ตรงกันระหว่างสถานะที่ผู้ใช้เห็นกับสถานะจริงใน DB
+Timebox: 90 นาที</code></pre>
+      </div>
+
+      <h3 id="session-sheet">Session sheet (บันทึกระหว่างทำ)</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">markdown</span><span class="code-file">session-2026-07-25.md</span></div>
+<pre><code>## Session: 2026-07-25 14:00–15:00 (60 min)
+Charter: [ตามข้างบน]
+Tester: trutletunder
+Build: staging @ a1b2c3
+
+### Areas covered
+- deposit form, OTP verify, gateway redirect, callback
+
+### Test notes
+14:05 เปิด LINE in-app → หน้า login โหลด 8 วิ บน 3G
+14:12 กดฝาก 500 → redirect ออก LINE browser ไป external
+14:15 กลับมาแล้ว session หาย ต้อง login ใหม่  ← BUG-1
+...
+
+### Bugs
+BUG-1 session หายหลัง redirect กลับจาก gateway ใน LINE browser (High)
+
+### Issues (อุปสรรค ไม่ใช่บั๊ก)
+- ไม่มี sandbox ของ gateway ที่ simulate timeout ได้
+
+### Session breakdown
+Test design &amp; execution : 70%
+Bug investigation       : 20%
+Setup / env             : 10%</code></pre>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">ตัวเลข breakdown สำคัญมาก</span>
+        <p style="margin-bottom:0">
+          ถ้า setup กิน 60% ทุก session นั่นคือ<strong>หลักฐานเชิงตัวเลขว่าคุณต้องลงทุนกับ test environment
+          ไม่ใช่ขอ tester เพิ่ม</strong>
+        </p>
+      </div>
+
+      <h3 id="sfdipot">SFDIPOT — “ฉันสำรวจอะไรบ้าง”</h3>
+
+      <p>Bach's Heuristic Test Strategy Model</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:8%"></th><th style="width:26%">Product element</th><th>ถามกับ Pedpro</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col"><strong>S</strong></td><td>Structure — ของประกอบด้วยอะไร</td><td>Nuxt pages, components, Pinia store, API layer</td></tr>
+            <tr><td class="num-col"><strong>F</strong></td><td>Function — มันทำอะไรได้</td><td>ฝาก ถอน เล่น ดูประวัติ</td></tr>
+            <tr><td class="num-col"><strong>D</strong></td><td>Data — ข้อมูลอะไรเข้า/ออก/เก็บ</td><td>จำนวนเงิน, ชื่อไทย, timestamp</td></tr>
+            <tr><td class="num-col"><strong>I</strong></td><td>Interfaces — คุยกับอะไร</td><td>gateway, game provider, LINE, admin panel</td></tr>
+            <tr><td class="num-col"><strong>P</strong></td><td>Platform — พึ่งอะไรอยู่</td><td>Cloud Run, browser, มือถือ, เครือข่ายไทย</td></tr>
+            <tr><td class="num-col"><strong>O</strong></td><td>Operations — ใครใช้ ใช้ยังไง</td><td>ผู้ใช้ทั่วไป, admin, bot</td></tr>
+            <tr><td class="num-col"><strong>T</strong></td><td>Time — เวลาเกี่ยวยังไง</td><td>timeout, cron, timezone, ลำดับเหตุการณ์</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        <strong>ใช้ยังไง:</strong> ก่อนเริ่ม session ไล่ 7 ตัวนี้ →
+        คุณจะเห็นทันทีว่ามุมไหนไม่เคยแตะ (ปกติคือ <strong>T</strong> กับ <strong>I</strong>)
+      </p>
+
+      <h3 id="tours">Tours — วิธีเดินสำรวจ (Whittaker)</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:24%">Tour</th><th>ทำอะไร</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Money tour</strong></td><td>เดินตาม flow ที่ทำเงินให้ธุรกิจ (ฝาก→เล่น→ถอน)</td></tr>
+            <tr><td><strong>Landmark tour</strong></td><td>เลือก 5 ฟีเจอร์เด่น แล้วเดินสลับไปมาแบบสุ่มลำดับ</td></tr>
+            <tr><td><strong>Back alley tour</strong></td><td>เดินเฉพาะฟีเจอร์ที่<strong>คนใช้น้อยที่สุด</strong> (ที่ที่บั๊กสะสม)</td></tr>
+            <tr><td><strong>FedEx tour</strong></td><td>ตามรอย<strong>ข้อมูลหนึ่งชิ้น</strong>ตั้งแต่เกิดจนตาย (เช่น ยอด 500 บาท ผ่านกี่ระบบ)</td></tr>
+            <tr><td><strong>Prior version tour</strong></td><td>ทำสิ่งที่เคยทำได้ในเวอร์ชันก่อน (= regression ด้วยมือ)</td></tr>
+            <tr><td><strong>Supermodel tour</strong></td><td>ดูแต่ผิว: layout, animation, สระลอย, ปุ่มเบี้ยว</td></tr>
+            <tr><td><strong>All-nighter tour</strong></td><td>เปิดค้างไว้ 8 ชั่วโมงแล้วกลับมาใช้ (session, memory leak, token)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">FedEx tour คือสิ่งที่ควรลองก่อน</span>
+        <p style="margin-bottom:0">
+          ตามรอยยอดเงิน 1 ก้อนจาก UI → Nuxt store → API → DB → ledger → gateway → webhook → กลับมา UI
+          แล้วนับว่ามีกี่จุดที่ตัวเลขถูก transform โดยไม่มีใครยืนยัน
+        </p>
+      </div>
+
+      <h3 id="s86">ประเด็นที่สำคัญที่สุดสำหรับ agentic pipeline <span class="st">⭐</span></h3>
+
+      <div class="note imp">
+        <span class="note-t">pipeline ทำ checking ได้ระดับเทพ แต่ทำ testing ไม่ได้เลย</span>
+        <p>
+          Exploratory คือ <strong>สิ่งเดียวที่ agent ทำแทนไม่ได้</strong>
+          และเป็นสิ่งที่ควรจัดเวลาให้มันอย่างเป็นทางการ
+        </p>
+        <div class="diagram" style="margin:10px 0">S8.5  human approval gate (มีอยู่แล้ว)
+S8.6  exploratory session 30–60 นาที  ← เพิ่ม
+      → ผลลัพธ์: session sheet + bugs + fault-attack list ที่อัปเดต
+      → fault-attack ใหม่ ไหลกลับเข้า S1 analysis ของ sprint หน้า</div>
+        <p style="margin-bottom:0">
+          นี่คือ loop ที่ทำให้ระบบ <strong>เรียนรู้</strong> ไม่ใช่แค่ <strong>ตรวจซ้ำ</strong> —
+          และมันคือคำตอบของ pesticide paradox ในเชิงระบบ
+          (ขยายเต็มที่ <a class="xref" href="l4-qe.html#learning-loop">L4.9</a>)
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="risk-based"><span class="num">L1.10</span>Risk-Based Testing <span class="st">⭐</span></h2>
+
+      <p>
+        เพราะ exhaustive testing เป็นไปไม่ได้ (<a class="xref" href="l0-foundation.html#p2">principle #2</a>)
+        → คุณ<strong>ต้องเลือก</strong> → risk คือเกณฑ์การเลือกที่ป้องกันตัวเองได้เมื่อบั๊กหลุด
+      </p>
+
+      <div class="note good">
+        <span class="note-t">ประโยคที่ใช้ได้ตอนบั๊กหลุด production</span>
+        <p class="no" style="margin-bottom:6px">❌ “ผมเทสไม่ทัน”</p>
+        <p class="yes" style="margin-bottom:6px">✅ “เราจัดพื้นที่นี้เป็น risk ระดับ 6/25 จึงคุมด้วย smoke test เท่านั้น ตามที่ตกลงกันไว้ในแผน — ตอนนี้เกิดขึ้นจริงแล้ว ผมเสนอปรับเป็น 15 และเพิ่ม contract test”</p>
+        <p style="margin-bottom:0">อันแรกทำให้คุณโดนด่า อันที่สองทำให้คุณเป็น senior</p>
+      </div>
+
+      <h3 id="risk-formula">สูตร</h3>
+
+      <div class="diagram">Risk = Likelihood × Impact</div>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:50%">Likelihood (โอกาสที่จะมี defect)</th><th>Impact (ผลถ้าพังจริง)</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>
+                <ul style="margin:0;padding-left:18px">
+                  <li>ความซับซ้อนของโค้ด (cyclomatic complexity)</li>
+                  <li><strong>อัตราการเปลี่ยนแปลง (git churn)</strong> ⭐ ตัวชี้วัดที่ดีที่สุด</li>
+                  <li>ความใหม่ของเทคโนโลยี</li>
+                  <li>จำนวน integration point</li>
+                  <li>ประวัติ defect density (จาก YouTrack)</li>
+                  <li>ประสบการณ์ของคน / agent ที่เขียน</li>
+                </ul>
+              </td>
+              <td>
+                <ul style="margin:0;padding-left:18px">
+                  <li>ความถี่การใช้งาน (จาก analytics)</li>
+                  <li>ผลกระทบทางการเงินโดยตรง</li>
+                  <li>ผลทางกฎหมาย (PDPA, กฎการพนัน)</li>
+                  <li>ความเสียหายต่อแบรนด์</li>
+                  <li><strong>ย้อนกลับได้มั้ย</strong> ⭐ (บั๊กที่ย้อนไม่ได้ = impact สูงเสมอ)</li>
+                  <li>มี workaround มั้ย</li>
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="risk-register">Risk register จริงของ Pedpro (เอาไปใช้ได้เลย)</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:24%">พื้นที่</th><th style="width:6%">L</th><th style="width:6%">I</th><th style="width:9%">Score</th><th>เทคนิคที่ใช้</th><th style="width:20%">ความลึก</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Webhook เงินเข้า (idempotency)</strong></td><td class="num-col">4</td><td class="num-col">5</td><td class="num-col"><strong>20</strong></td><td>State Transition (invalid) + concurrency + contract</td><td>3-value BVA, replay test, chaos</td></tr>
+            <tr><td><strong>คำนวณโบนัส/cap</strong></td><td class="num-col">4</td><td class="num-col">4</td><td class="num-col"><strong>16</strong></td><td>Decision Table (ไม่ยุบ 16 rules) + BVA ที่ cap</td><td>property-based (L5)</td></tr>
+            <tr><td><strong>ถอนเงิน state machine</strong></td><td class="num-col">3</td><td class="num-col">5</td><td class="num-col"><strong>15</strong></td><td>State Transition 1-switch + invalid ทั้ง 54 ช่อง</td><td>full</td></tr>
+            <tr><td><strong>OTP / rate limit</strong></td><td class="num-col">3</td><td class="num-col">5</td><td class="num-col"><strong>15</strong></td><td>BVA (ครั้งที่ 5,6) + security</td><td>full</td></tr>
+            <tr><td>LINE in-app compatibility</td><td class="num-col">4</td><td class="num-col">3</td><td class="num-col">12</td><td>Pairwise + exploratory session</td><td>1 charter/sprint</td></tr>
+            <tr><td>แสดงประวัติธุรกรรม (pagination)</td><td class="num-col">3</td><td class="num-col">3</td><td class="num-col">9</td><td>EP + BVA (0,1,20,21 รายการ)</td><td>standard</td></tr>
+            <tr><td>หน้าโปรไฟล์แก้ชื่อ</td><td class="num-col">2</td><td class="num-col">2</td><td class="num-col">4</td><td>EP + Thai text attack</td><td>smoke</td></tr>
+            <tr><td>หน้า About / Terms</td><td class="num-col">1</td><td class="num-col">1</td><td class="num-col">1</td><td>ไม่เทสอัตโนมัติ</td><td>visual check ตอน release</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">สังเกตว่า score เป็นตัวกำหนดทั้ง “ใช้เทคนิคไหน” และ “ลึกแค่ไหน”</span>
+        <p style="margin-bottom:0">
+          นี่คือสิ่งที่ทำให้ test design เป็น<strong>วิศวกรรม ไม่ใช่ศิลปะ</strong> —
+          และเป็นฐานของ tiered DoD ที่ <a class="xref" href="l4-qe.html#tiered-dod">L4.7</a>
+        </p>
+      </div>
+
+      <h3 id="risk-poker">เจาะลึก — Risk Poker</h3>
+
+      <p>ทำแบบ planning poker แต่โหวต risk — dev, PO, tester โหวตพร้อมกัน</p>
+
+      <div class="diagram">Dev โหวต    L=1  "โค้ดง่ายมาก"
+Tester โหวต L=5  "มันแตะ 3 ระบบ"
+→ คุยกัน → พบว่า dev ไม่รู้ว่ามี legacy path ที่ยังเรียกอยู่
+→ นี่คือ defect ที่ถูกหาเจอ ก่อนเขียนโค้ดสักบรรทัด</div>
+
+      <p><strong>คุณค่าจริงไม่ได้อยู่ที่ตัวเลข</strong> แต่อยู่ที่<strong>ตอนที่คะแนนต่างกันมาก</strong></p>
+
+      <div class="note good">
+        <span class="note-t">สำหรับคนทำคนเดียว</span>
+        <p style="margin-bottom:0">
+          ใช้ agent 2 ตัวโหวตแยกกัน (Claude กับ Codex) แล้วดูจุดที่ต่างกัน —
+          นี่คือ <strong>maker/checker split ในระดับ risk assessment</strong>
+          ซึ่งเข้ากับหลัก “parallelize agents, serialize human judgment” พอดี
+          (ขยายที่ <a class="xref" href="l4-qe.html#shift-left">L4.2</a>)
+        </p>
+      </div>
+
+      <h3 id="risk-prioritization">Risk-based prioritization ในทางปฏิบัติ</h3>
+
+      <div class="diagram">Score 16-25 : เทสทุก commit + หลายเทคนิคซ้อน + exploratory + non-functional
+Score 9-15  : เทสทุก commit ด้วยเทคนิคหลัก 1-2 ตัว
+Score 4-8   : smoke ใน CI + regression รายสัปดาห์
+Score 1-3   : เทสตอน release เท่านั้น หรือไม่เทส (เขียนไว้ว่าไม่เทส!)</div>
+
+      <div class="note warn">
+        <span class="note-t">สำคัญ</span>
+        <p style="margin-bottom:0">
+          <strong>การตัดสินใจว่า “ไม่เทส” ต้องถูกบันทึก</strong> —
+          ถ้าไม่เขียนไว้ มันไม่ใช่การตัดสินใจ มันคือการลืม
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="metamorphic"><span class="num">L1.11</span>Test Oracle เชิงลึก</h2>
+
+      <p>
+        <a class="xref" href="l0-foundation.html#test-oracle">L0.10</a> ให้ HICCUPPS ไปแล้ว
+        ตรงนี้คือ <strong>กลยุทธ์ oracle เมื่อคุณไม่มีค่าที่คาดหวังที่ชัดเจน</strong>
+      </p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:24%">กลยุทธ์</th><th style="width:34%">คืออะไร</th><th>ใช้กับ Pedpro</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Specified oracle</strong></td><td>มี expected value ตรงๆ</td><td>Bruno contract, AC ที่เขียนชัด</td></tr>
+            <tr><td><strong>Consistency oracle</strong></td><td>เทียบกับตัวเอง/ของอื่น</td><td>HICCUPPS</td></tr>
+            <tr><td><strong>Heuristic oracle</strong></td><td>“มันควรจะประมาณนี้”</td><td>ยอดหลังฝากต้อง<strong>เพิ่มขึ้น</strong> (ไม่รู้เท่าไหร่แน่ แต่ต้องเพิ่ม)</td></tr>
+            <tr><td><strong>Differential / A-B</strong></td><td>รัน 2 ระบบเทียบกัน</td><td>เทียบผลของ v1 กับ v2 API, SSR กับ CSR</td></tr>
+            <tr><td><strong>Metamorphic</strong> <span class="st">⭐</span></td><td>รู้<strong>ความสัมพันธ์</strong>ระหว่าง input-output แม้ไม่รู้ค่าจริง</td><td>ดูข้างล่าง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="mr">Metamorphic relations</h3>
+
+      <p><strong>ปัญหา:</strong> คุณไม่รู้ว่าโบนัสที่ถูกต้องคือเท่าไหร่ (สูตรซับซ้อน) แต่คุณรู้<strong>ความสัมพันธ์</strong></p>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">relations</span><span class="code-file">metamorphic relations ของโดเมนการเงิน</span></div>
+<pre><code>MR1 (monotonic)  : bonus(500) ≤ bonus(1000)   ฝากมากกว่าต้องได้ไม่น้อยกว่า
+MR2 (cap)        : bonus(x) ≤ 1000 สำหรับทุก x
+MR3 (idempotent) : deposit(500) แล้ว rollback → balance เท่าเดิมเป๊ะ
+MR4 (commutative): ฝาก 300 แล้ว 200 กับ ฝาก 200 แล้ว 300 → ยอดสุดท้ายเท่ากัน
+MR5 (identity)   : bonus(0) = 0
+MR6 (invariant)  : sum(ledger) == balance เสมอ ทุกเวลา  ⭐ ทรงพลังที่สุด</code></pre>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">MR6 คือของขวัญ</span>
+        <p>
+          คุณสามารถ assert ข้อนี้ท้ายทุก E2E test <strong>โดยไม่ต้องรู้เลยว่าเทสนั้นทำอะไร</strong>
+          มันจับบั๊กเงินหายได้ทุกชนิด
+        </p>
+        <div class="code" style="margin:12px 0 10px">
+          <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">ใส่ไว้ใน afterEach ของทุก financial test · ปรับให้ตรงสแตกจริง</span></div>
+<pre><code>const ledgerSum = await getLedgerSum(userId)
+const balance = await getBalance(userId)
+expect(ledgerSum).toBe(balance)</code></pre>
+        </div>
+        <p style="margin-bottom:0">
+          <strong>นี่คือ oracle ที่แข็งแรงที่สุดที่คุณจะสร้างได้ด้วยโค้ด 3 บรรทัด</strong> —
+          และมันไม่ควรหยุดอยู่แค่ใน test มันควรทำงานตลอดเวลาใน production
+          (<a class="xref" href="l4-qe.html#invariant-monitor">L4.3 invariant monitor</a>)
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="rimgea"><span class="num">L1.12</span>Bug Report ระดับ craft — RIMGEA</h2>
+
+      <p>
+        <a class="xref" href="l0-foundation.html#bug-report">L0.9</a> ให้สูตรพื้นฐานไปแล้ว
+        ตรงนี้คือระดับที่ทำให้บั๊กของคุณ <strong>ถูกแก้จริง</strong> ไม่ใช่ถูกปิดว่า “Cannot reproduce”
+      </p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:10%"></th><th style="width:28%">ทำอะไร</th><th>ตัวอย่าง</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col"><strong>R</strong></td><td>Replicate — ทำซ้ำให้ได้ก่อน</td><td>ลอง 5 ครั้ง ได้ 5/5 หรือ 2/5? <strong>เขียนอัตราไว้</strong></td></tr>
+            <tr><td class="num-col"><strong>I</strong></td><td>Isolate — ตัดตัวแปรออกทีละตัว</td><td>เกิดทุก browser? ทุก user? ทุกยอด?</td></tr>
+            <tr><td class="num-col"><strong>M</strong></td><td>Maximize — หาผลกระทบที่รุนแรงที่สุด</td><td>“ฝาก 100 ไม่ได้” → ลองต่อ → “และถ้ากดซ้ำ ตัดเงินแต่ไม่เข้ายอด”</td></tr>
+            <tr><td class="num-col"><strong>G</strong></td><td>Generalize — หาว่ามันกว้างกว่าที่เห็นมั้ย</td><td>ไม่ใช่แค่หน้าฝาก แต่ทุกที่ที่ใช้ <code>parseAmount()</code></td></tr>
+            <tr><td class="num-col"><strong>E</strong></td><td>Externalize — แปลงเป็นภาษาผลกระทบต่อธุรกิจ</td><td>“ผู้ใช้ใหม่ 20% ที่ฝากขั้นต่ำจะฝากไม่ได้เลย”</td></tr>
+            <tr><td class="num-col"><strong>A</strong></td><td>And say it clearly &amp; dispassionately</td><td>เขียนสั้น ชัด ไม่ประชด</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">M กับ E คือสิ่งที่แยกมือใหม่กับมือเก๋า</span>
+        <p>
+          <strong>Maximize</strong> — บั๊กที่รายงานว่า “ปุ่มสีเพี้ยน” อาจถูกปิดเป็น Low
+          แต่ถ้าคุณขุดต่อจนเจอว่า “ปุ่มสีเพี้ยนเพราะ CSS class ไม่ถูก apply เพราะ hydration mismatch
+          ซึ่งทำให้ event handler ไม่ผูก ซึ่งทำให้ปุ่มกดไม่ได้บน Safari” →
+          <strong>บั๊กเดียวกัน แต่กลายเป็น Critical</strong>
+        </p>
+        <p>
+          <strong>Externalize</strong> — dev/PO ไม่ได้ตัดสินใจจากคำว่า “off-by-one”
+          แต่ตัดสินจากคำว่า “ผู้ใช้ใหม่ 20% ฝากไม่ได้”
+        </p>
+        <p style="margin-bottom:0">
+          <strong>ประสบการณ์:</strong> บั๊กที่ถูกปิดว่า “Won't fix” ส่วนใหญ่ไม่ได้ถูกปิดเพราะมันไม่สำคัญ
+          แต่เพราะ <strong>คนเขียนบั๊กไม่ได้ทำ M กับ E</strong>
+        </p>
+      </div>
+
+      <h3 id="sev-pri-matrix">Severity/Priority matrix ที่ใช้จริง</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:32%"></th><th>Priority: Now</th><th>Priority: Next</th><th>Priority: Later</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Sev Critical</strong> (ข้อมูล/เงินเสียหาย กู้ไม่ได้)</td><td class="no">🔴 หยุด release</td><td>หายาก</td><td class="mid">ผิดปกติ — ทบทวน</td></tr>
+            <tr><td><strong>Sev High</strong> (flow หลักพัง มี workaround)</td><td class="no">🔴</td><td class="mid">🟡</td><td class="mid">ผิดปกติ</td></tr>
+            <tr><td><strong>Sev Medium</strong> (flow รองพัง)</td><td class="mid">🟡 (เช่น หน้าแรก)</td><td class="mid">🟡</td><td class="yes">🟢</td></tr>
+            <tr><td><strong>Sev Low</strong> (cosmetic)</td><td class="mid">🟡 (เช่น สะกดชื่อบริษัทผิด)</td><td class="yes">🟢</td><td class="yes">🟢</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>ช่องที่ต้องอธิบายเสมอ:</strong> Sev Critical + Priority Later → ถ้าเกิดขึ้น ต้องมีเหตุผลบันทึกไว้ (เช่น “ฟีเจอร์นี้จะถูกลบเดือนหน้า”)</p>
+
+      <!-- ============================================================ -->
+      <h2 id="test-data"><span class="num">L1.13</span>Test Data Design</h2>
+
+      <p>เทคนิคดีแค่ไหน ถ้า data ห่วย เทสก็ flaky</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:26%">กลยุทธ์</th><th>ข้อดี</th><th>ข้อเสีย</th><th style="width:18%">ใช้เมื่อ</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Synthetic (สร้างเอง)</strong></td><td>ควบคุมได้ ไม่มีปัญหา PDPA</td><td>ไม่เหมือนของจริง</td><td>default</td></tr>
+            <tr><td><strong>Production copy + masking</strong></td><td>เหมือนจริง เจอ edge case จริง</td><td class="no">PDPA เสี่ยงมาก ช้า</td><td>performance test</td></tr>
+            <tr><td><strong>Fixture (ไฟล์ตายตัว)</strong></td><td>เร็ว ทำซ้ำได้</td><td>เน่าเมื่อ schema เปลี่ยน</td><td>unit test</td></tr>
+            <tr><td><strong>Factory/Builder</strong></td><td>ยืดหยุ่น self-documenting</td><td>เขียนเพิ่ม</td><td class="yes"><strong>E2E ควรใช้อันนี้</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="test-data-กฎ">5 หลักการที่เป็นรากของ flaky test</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">กฎ 1–5</span></div>
+<pre><code>// 1. Test ต้อง self-contained
+// ❌ พึ่ง data ที่มีอยู่ก่อน
+const user = await getUser("test@example.com")
+// ✅ สร้างของตัวเอง
+const user = await createUser({ verified: true, balance: 0 })
+
+// 2. ห้ามเทสพึ่งลำดับการรัน
+//    ถ้ารัน test #7 ตัวเดียวแล้วพัง แปลว่ามันพึ่ง test #6
+
+// 3. Random ต้อง seed ได้
+// ❌ faker.number.int()   → พังแบบสุ่ม ทำซ้ำไม่ได้
+// ✅ faker.seed(12345)    → พังซ้ำได้ตลอด
+
+// 4. Cleanup: ใช้ unique namespace ดีกว่าลบ
+const runId = `e2e-${Date.now()}-${process.pid}`
+// สร้าง user ชื่อ e2e-1721890000-1234@test.local
+//    เพราะการลบมัก race กันเมื่อรันขนาน (git worktree)
+
+// 5. PDPA: ห้ามเอา production data ที่มีเลขบัตร ปชช./เบอร์จริง
+//    ลงเครื่อง dev หรือ CI log เด็ดขาด
+//    ⭐ screenshot ใน Playwright report ก็นับเป็นการเก็บข้อมูลส่วนบุคคล</code></pre>
+      </div>
+
+      <h3 id="thai-fixtures">Test data ที่ต้องมีในทุกโปรเจกต์ไทย <span class="st">⭐</span></h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">typescript</span><span class="code-file">test/fixtures/thai.ts — ปรับให้ตรงสแตกจริงก่อนใช้</span></div>
+<pre><code>export const thaiEvilStrings = {
+  noSpace:      "ประเทศไทยมีจังหวัดเชียงรายอยู่ทางภาคเหนือติดกับพม่าและลาว",
+  stackedMarks: "กิิิ๊๊๊๋๋๋ำำำ",
+  longName:     "นางสาวประภัสสรมณีวรรณเจริญรุ่งเรืองยิ่งสถาพร",
+  thaiNumerals: "๑๒๓๔๕๖๗๘๙๐",
+  mixed:        "สมชาย Smith 王小明 🎮",
+  zeroWidth:    "สม\u200Bชาย",
+  sortTricky:   ["เกม", "แกม", "โกม", "ใกม", "ไกม", "กเม"],
+  phones:       ["0812345678", "+66812345678", "66812345678",
+                 "081-234-5678", "081 234 5678"],
+  thaiIdValid:  "1101700207366",   // ⭐ checksum ถูก (ตรวจแล้ว)
+  thaiIdBad:    "1101700207365",   // ผิดหลักเดียว
+}</code></pre>
+      </div>
+
+      <div class="note fix">
+        <span class="note-t">แก้ไขจากการทบทวน — เลขบัตร ปชช. ตัวอย่างเดิมผิด checksum</span>
+        <p>ฉบับแรกใช้ <code>1101700207364</code> ซึ่งผิด — ตรวจสอบใหม่</p>
+        <div class="diagram" style="margin:8px 0">หลัก    1   1   0   1   7   0   0   2   0   7   3   6
+น้ำหนัก 13  12  11  10   9   8   7   6   5   4   3   2
+ผลคูณ   13  12   0  10  63   0   0  12   0  28   9  12
+
+sum = 159
+159 mod 11 = 5
+check = (11 − 5) mod 10 = 6      ← ไม่ใช่ 4</div>
+        <p>
+          <strong>ตัวอย่างที่สองไว้เทียบ:</strong> <code>1234567890121</code> → sum = 352,
+          352 mod 11 = 0, check = 11 mod 10 = <strong>1</strong> ✓<br>
+          เคสนี้สำคัญเพราะมันพิสูจน์ว่า <code>% 10</code> ตัวท้ายจำเป็น — ถ้าไม่มี จะได้ 11 ซึ่งไม่ใช่หลักเดียว
+        </p>
+        <p style="margin-bottom:0">
+          <strong>บทเรียนที่แท้จริงไม่ใช่เรื่องเลข:</strong> การเอา “ค่าคงที่ที่อ้างว่าถูก” ใส่ fixture
+          โดยไม่คำนวณตรวจ คือ <strong>tautological fixture</strong> —
+          ถ้าโค้ด <code>validateThaiId()</code> ดันคำนวณผิดแบบเดียวกัน เทสจะเขียวทั้งที่ทั้งคู่ผิด<br>
+          <strong>กฎ: fixture ที่มี checksum/hash/signature ต้องถูก generate ด้วยอัลกอริทึมที่เขียนแยกจากโค้ด production เสมอ</strong>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="case-study"><span class="num">L1.14</span>Case Study — ประกอบทุกเทคนิคเข้าด้วยกัน</h2>
+
+      <p><strong>ฟีเจอร์:</strong> ฝากเงิน + โบนัสครั้งแรกของวัน (risk score 20 = ระดับสูงสุด)</p>
+
+      <h3 id="cs-analysis">ขั้นที่ 1 — Analysis (หา test condition)</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:26%">แหล่ง</th><th style="width:24%">เทคนิค</th><th>ผลลัพธ์</th></tr></thead>
+          <tbody>
+            <tr><td>Acceptance criteria</td><td>Ambiguity review</td><td>6 จุดกำกวม → ถาม PO</td></tr>
+            <tr><td>ISO 25010</td><td>Checklist</td><td>เห็นว่าลืม Compatibility (LINE) กับ Safety</td></tr>
+            <tr><td>SFDIPOT</td><td>Heuristic</td><td>เห็นมิติ <strong>Time</strong> ที่ไม่มีใน AC เลย</td></tr>
+            <tr><td>Classification tree</td><td>วาด</td><td>เห็นมิติ “เวลาที่ฝาก” เพิ่ม</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="cs-design">ขั้นที่ 2 — Design (เลือกเทคนิคตามลักษณะ)</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:24%">ส่วนของฟีเจอร์</th><th style="width:20%">ลักษณะ</th><th style="width:30%">เทคนิค</th><th>จำนวนเทส</th></tr></thead>
+          <tbody>
+            <tr><td>ช่องกรอกยอดเงิน</td><td>input range + type</td><td><strong>EP + BVA (3-value)</strong></td><td class="num-col">12 + 6 = <strong>18</strong></td></tr>
+            <tr><td>เงื่อนไขได้โบนัส</td><td>logic หลายเงื่อนไข</td><td><strong>Decision Table (ไม่ยุบ)</strong></td><td class="num-col"><strong>16</strong></td></tr>
+            <tr><td>Cap โบนัส 1,000</td><td>ขอบใน action</td><td><strong>BVA</strong> (9999/10000/10001)</td><td class="num-col"><strong>3</strong></td></tr>
+            <tr><td>สถานะรายการฝาก</td><td>มี state + ลำดับ</td><td><strong>State Transition</strong> 0-switch + invalid</td><td class="num-col">9 + 6 = <strong>15</strong></td></tr>
+            <tr><td>Config การใช้งาน</td><td>combination ระเบิด</td><td><strong>Pairwise</strong></td><td class="num-col"><strong>9</strong></td></tr>
+            <tr><td>ฟังก์ชัน <code>canDeposit()</code></td><td>logic ในโค้ด</td><td><strong>MC-DC</strong></td><td class="num-col"><strong>4</strong></td></tr>
+            <tr><td>ขอบเวลา/timezone</td><td>Time</td><td><strong>BVA + error guessing</strong></td><td class="num-col"><strong>5</strong></td></tr>
+            <tr><td>ภาษาไทย/UI</td><td>experience</td><td><strong>Fault attack list</strong></td><td class="num-col"><strong>8</strong></td></tr>
+            <tr><td>สิ่งที่ไม่รู้ว่าไม่รู้</td><td>unknown</td><td><strong>Exploratory 2 charter</strong></td><td class="num-col">2 sessions</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>รวม ≈ 78 automated checks + 2 exploratory sessions</strong> สำหรับฟีเจอร์เดียว</p>
+
+      <h3 id="cs-architecture">ขั้นที่ 3 — จัดวางตาม Testing Trophy</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:24%">ชั้น</th><th style="width:34%">อะไร</th><th>เทสจากข้างบนที่ลงชั้นนี้</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Static</strong></td><td>TS strict, ESLint, ambiguity review</td><td>(ฟรี)</td></tr>
+            <tr><td><strong>Unit (Vitest)</strong></td><td><code>parseAmount</code>, <code>calcBonus</code>, <code>canDeposit</code></td><td>EP 12 + BVA 9 + DT 16 + MC-DC 4 = <strong>41</strong></td></tr>
+            <tr><td><strong>Integration</strong></td><td>store + API mock, state machine</td><td>ST 15 + cap 3 = <strong>18</strong></td></tr>
+            <tr><td><strong>Contract (Bruno)</strong></td><td>shape + status code</td><td>ตาม contract</td></tr>
+            <tr><td><strong>E2E (Playwright)</strong></td><td>flow หลัก + pairwise ที่สำคัญ</td><td class="yes">~<strong>8</strong> (ไม่ใช่ 78!)</td></tr>
+            <tr><td><strong>Exploratory</strong></td><td>คน</td><td>2 sessions</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">บทเรียนที่แพงที่สุดในชั้นนี้</span>
+        <p>
+          <strong>เทส 78 ตัวไม่ได้แปลว่าต้องเขียน Playwright 78 ตัว</strong>
+        </p>
+        <p style="font-size:17px;margin-bottom:8px">
+          <strong>Test design บอกว่าต้องเทสอะไร — Test architecture บอกว่าเทสตรงชั้นไหน</strong>
+        </p>
+        <p style="margin-bottom:0">
+          คนที่ข้าม L1 จะเอา 78 ตัวไปยัด E2E หมด → suite ที่รัน 40 นาที flaky 15% และไม่มีใครกล้าแตะ<br>
+          วิธีตัดสินว่าเทสตัวไหนควรอยู่ชั้นไหนอยู่ที่ <a class="xref" href="l2-automation.html#test-architecture">L2.1</a>
+        </p>
+      </div>
+
+      <h3 id="cs-traceability">ขั้นที่ 4 — Traceability</h3>
+
+      <div class="diagram">AC-3 "โบนัส 10% cap 1000"
+  ├─ TC-BON-001..016  (decision table)   → calcBonus.spec.ts
+  ├─ TC-CAP-001..003  (BVA at cap)       → calcBonus.spec.ts
+  └─ TC-E2E-004       (happy path)       → deposit.e2e.ts</div>
+
+      <p>
+        ถ้า agent ใน pipeline generate ตารางนี้อัตโนมัติจาก YouTrack ID →
+        คุณตอบคำถาม <em>“AC ข้อนี้ถูกเทสด้วยอะไร”</em> ได้ทันที
+        ซึ่งเป็นสิ่งที่ทีมไทย 95% ตอบไม่ได้
+      </p>
+
+      <!-- ============================================================ -->
+      <h2 id="anti-patterns-1"><span class="num">L1.15</span>Anti-patterns ของ Test Design</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:26%">Anti-pattern</th><th style="width:32%">อาการ</th><th>แก้ยังไง</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Happy path only</strong></td><td>เทสมีแต่ทางที่ถูก</td><td>นับอัตราส่วน positive:negative ต้อง ≥ 1:2</td></tr>
+            <tr><td><strong>Spec-to-testcase 1:1</strong></td><td>AC 10 ข้อ → เทส 10 ตัว</td><td>นั่นคือ transcription ไม่ใช่ design — ต้องใช้เทคนิคแตก</td></tr>
+            <tr><td><strong>Expected result กำกวม</strong></td><td>“ตรวจสอบว่าถูกต้อง”</td><td>ต้องเป็นค่าที่เทียบได้ด้วยเครื่อง</td></tr>
+            <tr><td><strong>Assertion ยัดรวม</strong></td><td>เทสเดียว assert 20 อย่าง</td><td>fail แล้วไม่รู้อะไรพัง — แยกตาม concern</td></tr>
+            <tr><td><strong>Invalid หลายตัวในเทสเดียว</strong></td><td>fault masking</td><td>1 เทส 1 invalid</td></tr>
+            <tr><td><strong>ผูกกับ UI text</strong></td><td><code>getByText("ฝากเงิน")</code></td><td>ใช้ <code>data-test</code></td></tr>
+            <tr><td><strong>Coverage as target</strong></td><td>ไล่เขียนเทสให้ถึง 80%</td><td>ใช้ ratchet + ดูว่าบรรทัดไหนไม่คลุมและทำไม</td></tr>
+            <tr><td><strong>เทสตาม implementation</strong></td><td>mock ทุกอย่างจน assert แค่ว่า mock ถูกเรียก</td><td>เทส behavior ไม่ใช่ internal</td></tr>
+            <tr><td><strong>ไม่มี invalid state test</strong></td><td>เทสแค่ transition ที่ถูก</td><td>ตาราง state ต้องเติมครบทุกช่อง</td></tr>
+            <tr><td><strong>ไม่เคยลบเทส</strong></td><td>suite โต ช้า มีเทสที่ไม่มีความหมาย</td><td>ทบทวนที่ test completion</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="เช็คลิสต์-1"><span class="num">✓</span>เช็คลิสต์ความพร้อม L1</h2>
+
+      <h3 id="cl-ทฤษฎี">ทฤษฎี</h3>
+      <ul class="check">
+        <li>แยก test condition / test case / test procedure ได้</li>
+        <li>บอก coverage item ของแต่ละเทคนิคได้ครบ</li>
+        <li class="key">อธิบายได้ว่าทำไม invalid partition ห้ามรวมกันในเทสเดียว (fault masking)</li>
+        <li>อธิบายความต่าง 2-value vs 3-value BVA และเลือกได้ว่าใช้เมื่อไหร่</li>
+        <li class="key">อธิบายได้ว่าทำไมการยุบ decision table อาจซ่อนบั๊ก</li>
+        <li class="key">คำนวณจำนวน 1-switch coverage จาก state diagram ได้ (รวม initial transition)</li>
+        <li>อธิบายได้ว่าทำไม condition coverage ไม่ subsume decision coverage</li>
+        <li>สร้างชุด MC-DC จาก decision 3 ตัวแปรได้ด้วยมือ</li>
+        <li>อธิบายข้อจำกัดของ pairwise ได้ 3 ข้อ</li>
+        <li>แยก exploratory กับ ad-hoc ได้ และรู้ว่า SBTM ทำให้ต่างกันยังไง</li>
+      </ul>
+
+      <h3 id="cl-ปฏิบัติ">ปฏิบัติ</h3>
+      <ul class="check">
+        <li>ทำ EP+BVA กับ field ใดก็ได้ ให้ครบ ≥ 12 partition ใน 10 นาที</li>
+        <li>เขียน decision table 4 เงื่อนไข ยุบเสร็จ พร้อมระบุ 3 คำถามที่ต้องถาม PO</li>
+        <li class="key">วาด state diagram + state table เต็ม แล้วชี้ invalid transition ที่อันตรายที่สุด 3 ตัว</li>
+        <li>สร้างตาราง pairwise แล้ว<strong>ตรวจสอบเองได้ว่าครบทุกคู่</strong></li>
+        <li>เขียน charter 3 ใบ + รัน session 60 นาที + ส่ง session sheet</li>
+        <li class="key">ทำ risk register ของโปรเจกต์ตัวเอง ≥ 8 รายการ พร้อม L×I และเทคนิคที่จับคู่</li>
+        <li>เขียน bug report ที่ผ่าน RIMGEA ครบ 6 ข้อ</li>
+        <li class="key">ระบุ metamorphic relation ของฟีเจอร์ตัวเองได้ ≥ 3 ข้อ</li>
+        <li>มีไฟล์ <code>fault-attacks.md</code> ที่มีรายการภาษาไทยเฉพาะ ≥ 10 ข้อ</li>
+      </ul>
+
+      <h3 id="cl-เทพ">ระดับที่แยกเทพ</h3>
+      <ul class="check">
+        <li class="key">เมื่อได้ requirement ใหม่ <strong>เลือกเทคนิคได้ถูกภายใน 2 นาที</strong> โดยดูจากลักษณะของปัญหา</li>
+        <li class="key">อธิบายให้ dev เข้าใจได้ว่าทำไมเทส 78 ตัวไม่ควรอยู่ใน E2E ทั้งหมด</li>
+        <li class="key">ป้องกันการตัดสินใจ “ไม่เทสตรงนี้” ด้วย risk score ได้</li>
+      </ul>
+
+      <!-- ============================================================ -->
+      <h2 id="แบบฝึกหัด-1"><span class="num">✎</span>แบบฝึกหัด L1 — ทำกับ Pedpro จริง</h2>
+
+      <ol>
+        <li><strong>EP+BVA</strong> — เลือกฟอร์มที่ซับซ้อนที่สุด → ทำ EP ให้ครบทุกมิติ → นับว่าปัจจุบันมีเทสคลุมกี่ % ของ partition</li>
+        <li><strong>Decision Table</strong> — หา business rule ที่มี ≥3 เงื่อนไข → ทำตารางเต็ม → ยุบ → ส่งคำถามที่พบให้ PO → นับ requirement gap</li>
+        <li><strong>State Transition</strong> — วาด state ของคำขอถอน → ทำตารางเต็ม N×M → <strong>เติมทุกช่องว่าง</strong> → เทียบกับโค้ดจริงว่ามีกี่ช่องที่โค้ดไม่ได้ป้องกัน</li>
+        <li><strong>Pairwise</strong> — ลิสต์ config จริงที่รองรับ → คำนวณ exhaustive → สร้าง pairwise ด้วย PICT → เทียบตัวเลข</li>
+        <li><strong>MC-DC</strong> — หา boolean expression ที่ซับซ้อนที่สุดในโค้ดฝาก/ถอน → สร้างชุด MC-DC → เขียนเป็น Vitest</li>
+        <li><strong>Risk register</strong> — ทำตารางความเสี่ยงทั้งโปรเจกต์ → ให้ Claude กับ Codex โหวตแยกกัน → วิเคราะห์จุดที่ต่าง</li>
+        <li>
+          <strong>Exploratory</strong> <span class="st">⭐</span> — รัน 1 session 60 นาทีตาม charter
+          “LINE in-app + 3G + บัญชียังไม่ verified” → ส่ง session sheet →
+          เทียบว่าเจอบั๊กที่ pipeline ไม่เจอกี่ตัว<br>
+          <strong>ข้อนี้สำคัญที่สุด — มันคือหลักฐานเชิงตัวเลขว่า testing ≠ checking</strong>
+        </li>
+        <li><strong>Metamorphic</strong> — เขียน invariant <code>sum(ledger) == balance</code> ใส่ <code>afterEach</code> ของทุก financial test → ดูว่ามีเทสไหนพังทันทีมั้ย</li>
+        <li><strong>Fault attack</strong> — สร้าง <code>fault-attacks.md</code> ใน pipeline skill → ให้ agent อ่านที่ S1 → วัด <code>blind_approve_rate</code> ก่อน/หลัง</li>
+      </ol>
+
+      <div class="note take">
+        <span class="note-t">สรุปที่ต้องติดหัวไป L2</span>
+        <div class="diagram" style="margin:8px 0 0">L1 ให้เทส 78 ตัวต่อฟีเจอร์ risk สูง
+   ↓
+คำถามที่ L2 ต้องตอบ:
+   • 78 ตัวนี้วางที่ชั้นไหน (ไม่ใช่ E2E ทั้งหมดแน่นอน)
+   • เทสแต่ละตัวต้องมีคุณสมบัติอะไรถึงจะเชื่อถือได้ (F.I.R.S.T + U)
+   • gate เรียงยังไงให้รู้ผลเร็วที่สุด
+   • agent ทำอะไรพังได้บ้าง และกันยังไง</div>
+      </div>
+
+      <div class="pager">
+        <a href="l0-foundation.html"><span class="dir">← ก่อนหน้า</span><span class="ttl">L0 — รากฐาน</span></a>
+        <a class="next" href="l2-automation.html"><span class="dir">ชั้นถัดไป →</span><span class="ttl">L2 — Automation &amp; CI</span></a>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<button class="top" aria-label="กลับขึ้นบน">↑</button>
+<script src="assets/app.js"></script>
+</body>
+</html>

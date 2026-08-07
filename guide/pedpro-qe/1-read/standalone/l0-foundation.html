@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L0 — รากฐาน | Testing &amp; QE Field Manual</title>
+<meta name="description" content="Error→Defect→Failure, RIP model, verification vs validation, test level, static testing, testing vs checking, 7 principles, test oracle, HICCUPPS, ISO 25010">
+<style>
+/* ============================================================
+   Pedpro Testing & QE Field Manual
+   ธีมมืด · IBM Plex Sans Thai + IBM Plex Mono
+   หลักการสี: ทุกสีมีความหมาย ไม่มีสีตกแต่ง
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ---- palette (6 named) ---- */
+  --void:    #0a0c0f;
+  --panel:   #131720;
+  --rail:    #1c2029;
+  --rail-2:  #242a35;
+  --line:    #2a3140;
+  --line-2:  #3a4354;
+
+  --fg:      #e4e8ef;
+  --fg-2:    #a6b0c0;
+  --fg-3:    #6f7a8c;
+
+  --jade:    #5fbfa4;   /* โครงสร้าง / ลิงก์ / active */
+  --jade-d:  #2f6d5d;
+  --jade-bg: rgba(95, 191, 164, .09);
+
+  --signal:  #e0a33f;   /* ⭐ ความสำคัญเท่านั้น */
+  --signal-bg: rgba(224, 163, 63, .09);
+
+  --alarm:   #e26a72;   /* fail / ห้าม */
+  --alarm-bg: rgba(226, 106, 114, .09);
+  --clear:   #74c48a;   /* pass / ควรทำ */
+  --clear-bg: rgba(116, 196, 138, .09);
+  --info:    #7aa7d8;
+  --info-bg: rgba(122, 167, 216, .09);
+
+  /* ---- type ---- */
+  --sans: "IBM Plex Sans Thai", "Noto Sans Thai", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", "SFMono-Regular", ui-monospace, Menlo, monospace;
+
+  /* ---- metrics ---- */
+  --rail-w: 292px;
+  --head-h: 56px;
+  --measure: 74ch;
+  --r: 6px;
+}
+
+/* ============================================================
+   base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--head-h) + 20px); }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: 16.5px;
+  font-weight: 400;
+  /* ไทยต้องการ leading มากกว่า latin เพราะสระบน/ล่าง + วรรณยุกต์ */
+  line-height: 1.85;
+  /* L3.7.3 — ห้าม break-all กับข้อความไทย */
+  word-break: normal;
+  overflow-wrap: normal;
+  line-break: auto;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--jade-d); color: #fff; }
+
+a { color: var(--jade); text-decoration: none; border-bottom: 1px solid transparent; }
+a:hover { border-bottom-color: var(--jade); }
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible {
+  outline: 2px solid var(--jade); outline-offset: 2px; border-radius: 3px;
+}
+
+/* ============================================================
+   header
+   ============================================================ */
+.hdr {
+  position: sticky; top: 0; z-index: 60;
+  height: var(--head-h);
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 18px;
+  background: rgba(10, 12, 15, .93);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.hdr-brand {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--fg-3);
+  white-space: nowrap;
+}
+.hdr-brand b { color: var(--jade); font-weight: 600; }
+.hdr-crumb {
+  font-family: var(--mono); font-size: 12.5px; color: var(--fg-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;
+}
+.hdr-crumb .sep { color: var(--fg-3); margin: 0 6px; }
+
+.search-wrap { position: relative; }
+.search {
+  width: 210px; height: 32px; padding: 0 10px 0 28px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--r); color: var(--fg);
+  font-family: var(--mono); font-size: 12.5px;
+}
+.search::placeholder { color: var(--fg-3); }
+.search:focus { border-color: var(--jade-d); }
+.search-ico {
+  position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+  color: var(--fg-3); font-size: 12px; pointer-events: none;
+}
+.search-kbd {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  font-family: var(--mono); font-size: 10px; color: var(--fg-3);
+  border: 1px solid var(--line-2); border-radius: 3px; padding: 0 4px;
+  pointer-events: none;
+}
+.search:focus + .search-kbd { display: none; }
+
+.btn-ghost {
+  height: 32px; padding: 0 11px; background: transparent;
+  border: 1px solid var(--line); border-radius: var(--r);
+  color: var(--fg-2); font-family: var(--mono); font-size: 11.5px;
+  cursor: pointer; white-space: nowrap;
+}
+.btn-ghost:hover { border-color: var(--line-2); color: var(--fg); }
+.btn-ghost[aria-pressed="true"] { border-color: var(--jade-d); color: var(--jade); background: var(--jade-bg); }
+
+.rail-toggle { display: none; }
+
+/* ============================================================
+   shell
+   ============================================================ */
+.shell { display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr); align-items: start; }
+
+/* ---- left rail ---- */
+.rail-col {
+  position: sticky; top: var(--head-h);
+  height: calc(100vh - var(--head-h));
+  overflow-y: auto; overscroll-behavior: contain;
+  border-right: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--panel), var(--void) 70%);
+  padding: 18px 0 60px;
+  scrollbar-width: thin; scrollbar-color: var(--line-2) transparent;
+}
+.rail-col::-webkit-scrollbar { width: 8px; }
+.rail-col::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
+
+.rail-label {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+  letter-spacing: .13em; text-transform: uppercase; color: var(--fg-3);
+  padding: 0 18px; margin: 0 0 10px;
+}
+
+/* ---- SIGNATURE: gate chain ---- */
+.chain { list-style: none; margin: 0 0 26px; padding: 0 14px; position: relative; }
+.chain::before {
+  content: ""; position: absolute; left: 27px; top: 16px; bottom: 16px;
+  width: 1px; background: linear-gradient(180deg, var(--line), var(--line-2), var(--line));
+}
+.chain li { position: relative; }
+.chain a {
+  display: grid; grid-template-columns: 26px 1fr; align-items: baseline; gap: 10px;
+  padding: 6px 8px; border-radius: var(--r); border-bottom: 0;
+  color: var(--fg-2); position: relative;
+}
+.chain a:hover { background: var(--rail); color: var(--fg); }
+.chain .node {
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  color: var(--fg-3); text-align: center;
+  background: var(--void); position: relative; z-index: 1;
+  padding: 2px 0; border-radius: 3px;
+}
+.chain .lbl { font-size: 13.5px; line-height: 1.45; }
+.chain .sub {
+  display: block; font-family: var(--mono); font-size: 10.5px;
+  color: var(--fg-3); letter-spacing: .02em;
+}
+.chain a[aria-current="page"] { background: var(--jade-bg); color: var(--fg); }
+.chain a[aria-current="page"] .node { color: var(--jade); box-shadow: 0 0 0 1px var(--jade-d); }
+.chain a[aria-current="page"]::before {
+  content: ""; position: absolute; left: -14px; top: 6px; bottom: 6px;
+  width: 2px; background: var(--jade); border-radius: 2px;
+}
+
+/* ---- page toc ---- */
+.toc { padding: 0 14px; }
+.toc ul { list-style: none; margin: 0; padding: 0; }
+.toc a {
+  display: block; padding: 3.5px 10px; border-radius: 4px; border-bottom: 0;
+  color: var(--fg-2); font-size: 13px; line-height: 1.5;
+  border-left: 2px solid transparent;
+}
+.toc a:hover { background: var(--rail); color: var(--fg); }
+.toc a.on { color: var(--jade); border-left-color: var(--jade); background: var(--jade-bg); }
+.toc .lv3 { padding-left: 22px; font-size: 12.5px; color: var(--fg-3); }
+.toc .lv4 { padding-left: 34px; font-size: 12px; color: var(--fg-3); }
+.toc .star::after { content: "★"; color: var(--signal); font-size: 9px; margin-left: 5px; vertical-align: 1px; }
+.toc li.hide { display: none; }
+.toc-empty {
+  display: none; padding: 10px; font-size: 12.5px; color: var(--fg-3);
+  font-family: var(--mono);
+}
+.toc.filtered .toc-empty:only-child { display: block; }
+
+/* ---- main ---- */
+.main { min-width: 0; padding: 0 40px 140px; }
+.wrap { max-width: 960px; margin: 0 auto; }
+
+/* ============================================================
+   page head
+   ============================================================ */
+.phead { padding: 46px 0 34px; border-bottom: 1px solid var(--line); margin-bottom: 34px; }
+.eyebrow {
+  font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--jade);
+  margin: 0 0 12px;
+}
+.phead h1 {
+  margin: 0 0 14px; font-size: clamp(30px, 4.2vw, 44px);
+  font-weight: 700; line-height: 1.28; letter-spacing: -.015em;
+}
+.phead .lede { margin: 0; font-size: 17.5px; color: var(--fg-2); max-width: var(--measure); }
+.phead .meta {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px;
+  font-family: var(--mono); font-size: 11.5px;
+}
+.meta-chip {
+  padding: 3px 9px; border: 1px solid var(--line); border-radius: 100px;
+  color: var(--fg-3); background: var(--panel);
+}
+.meta-chip b { color: var(--fg-2); font-weight: 500; }
+
+/* ============================================================
+   typography
+   ============================================================ */
+.main h2, .main h3, .main h4 { scroll-margin-top: calc(var(--head-h) + 20px); }
+
+.main h2 {
+  margin: 58px 0 18px; padding-top: 22px;
+  border-top: 1px solid var(--line);
+  font-size: 27px; font-weight: 700; line-height: 1.35; letter-spacing: -.01em;
+}
+.main h2 .num {
+  font-family: var(--mono); font-size: 15px; font-weight: 600;
+  color: var(--jade); margin-right: 11px;
+}
+.main h3 {
+  margin: 38px 0 12px; font-size: 20px; font-weight: 600; line-height: 1.45;
+}
+.main h3 .num { font-family: var(--mono); font-size: 13.5px; color: var(--fg-3); margin-right: 9px; }
+.main h4 { margin: 26px 0 8px; font-size: 16.5px; font-weight: 600; color: var(--fg); }
+
+.main p { margin: 0 0 16px; max-width: var(--measure); }
+.main > .wrap > p, .sec > p { max-width: var(--measure); }
+
+.main ul, .main ol { margin: 0 0 16px; padding-left: 22px; max-width: var(--measure); }
+.main li { margin-bottom: 7px; }
+.main li::marker { color: var(--fg-3); }
+
+strong, b { font-weight: 600; color: #f2f5f9; }
+em { font-style: italic; color: var(--fg-2); }
+
+hr { border: 0; border-top: 1px solid var(--line); margin: 40px 0; }
+
+/* ⭐ = สัญญาณความสำคัญ ไม่ใช่ของตกแต่ง */
+.st { color: var(--signal); font-style: normal; letter-spacing: -.05em; }
+h2.imp, h3.imp { position: relative; }
+h2.imp::before, h3.imp::before {
+  content: ""; position: absolute; left: -18px; top: .35em; bottom: .2em;
+  width: 3px; background: var(--signal); border-radius: 2px;
+}
+
+/* ============================================================
+   MONO = ภาษาเครื่อง (กฎเหล็กของหน้านี้)
+   ============================================================ */
+code, kbd, samp, .mono { font-family: var(--mono); font-size: .875em; }
+
+:not(pre) > code {
+  background: var(--rail); border: 1px solid var(--line);
+  padding: 1px 5px; border-radius: 4px; color: #b8e0d2;
+  word-break: break-word;
+}
+
+kbd {
+  background: var(--rail-2); border: 1px solid var(--line-2);
+  border-bottom-width: 2px; padding: 1px 5px; border-radius: 4px;
+  font-size: 11.5px; color: var(--fg-2);
+}
+
+/* ---- code block ---- */
+.code {
+  position: relative; margin: 20px 0;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+  overflow: hidden;
+}
+.code-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 12px; background: var(--rail);
+  border-bottom: 1px solid var(--line);
+}
+.code-lang {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--fg-3);
+}
+.code-file { font-family: var(--mono); font-size: 11px; color: var(--fg-2); }
+.code-copy {
+  background: transparent; border: 1px solid var(--line-2); border-radius: 4px;
+  color: var(--fg-3); font-family: var(--mono); font-size: 10.5px;
+  padding: 2px 8px; cursor: pointer; white-space: nowrap;
+}
+.code-copy:hover { color: var(--jade); border-color: var(--jade-d); }
+.code-copy.done { color: var(--clear); border-color: var(--clear); }
+.code pre {
+  margin: 0; padding: 14px 16px; overflow-x: auto;
+  font-family: var(--mono); font-size: 13px; line-height: 1.72;
+  color: #cfd8e3; tab-size: 2;
+}
+.code pre::-webkit-scrollbar { height: 9px; }
+.code pre::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
+.code pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* ---- diagram / ascii ---- */
+.diagram {
+  margin: 20px 0; padding: 16px 18px; overflow-x: auto;
+  background: var(--panel); border: 1px solid var(--line);
+  border-left: 3px solid var(--jade-d); border-radius: var(--r);
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.62;
+  color: var(--fg-2); white-space: pre;
+}
+
+/* ============================================================
+   tables
+   ============================================================ */
+.tbl { margin: 20px 0; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); }
+.tbl table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.tbl th {
+  background: var(--rail); text-align: left; padding: 9px 13px;
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  letter-spacing: .07em; text-transform: uppercase; color: var(--fg-2);
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.tbl td { padding: 10px 13px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.65; }
+.tbl tbody tr:last-child td { border-bottom: 0; }
+.tbl tbody tr:hover { background: rgba(255,255,255,.017); }
+.tbl code { font-size: 12.5px; }
+.tbl .num-col { font-family: var(--mono); font-size: 12.5px; color: var(--fg-3); white-space: nowrap; }
+.tbl .yes { color: var(--clear); }
+.tbl .no { color: var(--alarm); }
+.tbl .mid { color: var(--signal); }
+
+/* ============================================================
+   callouts — สีบอกชนิด ไม่ใช่บอกอารมณ์
+   ============================================================ */
+.note {
+  margin: 20px 0; padding: 13px 16px 13px 17px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-left: 3px solid var(--fg-3); border-radius: var(--r);
+  font-size: 15.5px;
+}
+.note > :first-child { margin-top: 0; }
+.note > :last-child { margin-bottom: 0; }
+.note p { max-width: none; }
+.note-t {
+  display: block; font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; color: var(--fg-3);
+}
+.note.imp   { border-left-color: var(--signal); background: var(--signal-bg); }
+.note.imp .note-t { color: var(--signal); }
+.note.warn  { border-left-color: var(--alarm); background: var(--alarm-bg); }
+.note.warn .note-t { color: var(--alarm); }
+.note.good  { border-left-color: var(--clear); background: var(--clear-bg); }
+.note.good .note-t { color: var(--clear); }
+.note.fix   { border-left-color: var(--info); background: var(--info-bg); }
+.note.fix .note-t { color: var(--info); }
+.note.take  { border-left-color: var(--jade); background: var(--jade-bg); }
+.note.take .note-t { color: var(--jade); }
+
+/* ============================================================
+   checklist
+   ============================================================ */
+.check { list-style: none; margin: 18px 0; padding: 0; max-width: var(--measure); }
+.check li {
+  position: relative; padding: 5px 0 5px 30px; margin: 0;
+  border-bottom: 1px solid rgba(42,49,64,.55); font-size: 15.5px; line-height: 1.7;
+}
+.check li:last-child { border-bottom: 0; }
+.check li::before {
+  content: ""; position: absolute; left: 4px; top: 12px;
+  width: 13px; height: 13px; border: 1.5px solid var(--line-2); border-radius: 3px;
+}
+.check li.key::before { border-color: var(--signal); }
+
+/* ============================================================
+   layer cards (index)
+   ============================================================ */
+.cards { display: grid; gap: 14px; margin: 26px 0; }
+@media (min-width: 900px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+
+.card {
+  display: block; padding: 18px 20px; border-bottom: 0;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+  color: inherit; position: relative; overflow: hidden;
+  transition: border-color .16s ease, transform .16s ease;
+}
+.card::after {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--jade-d); transition: background .16s ease;
+}
+.card:hover { border-color: var(--line-2); transform: translateY(-1px); }
+.card:hover::after { background: var(--jade); }
+.card-id {
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  letter-spacing: .12em; color: var(--jade); margin-bottom: 7px;
+}
+.card h3 { margin: 0 0 7px; font-size: 18px; font-weight: 600; }
+.card p { margin: 0 0 12px; font-size: 14.5px; color: var(--fg-2); max-width: none; }
+.card-q {
+  font-size: 14px; color: var(--fg-2); font-style: italic;
+  padding-left: 11px; border-left: 2px solid var(--line-2); margin: 0 0 12px;
+}
+.card-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag {
+  font-family: var(--mono); font-size: 10.5px; color: var(--fg-3);
+  border: 1px solid var(--line); border-radius: 100px; padding: 2px 8px;
+}
+.card-stat {
+  display: flex; gap: 14px; margin-top: 12px; padding-top: 11px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono); font-size: 11px; color: var(--fg-3);
+}
+.card-stat b { color: var(--fg-2); font-weight: 500; }
+
+/* ============================================================
+   collapsible sections
+   ============================================================ */
+.fold-h { cursor: pointer; user-select: none; position: relative; padding-left: 20px; }
+.fold-h::after {
+  content: "▾"; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  font-size: 12px; color: var(--fg-3); transition: transform .16s ease;
+}
+.fold-h[aria-expanded="false"]::after { transform: translateY(-50%) rotate(-90deg); }
+.fold-h:hover::after { color: var(--jade); }
+.fold-b[hidden] { display: none; }
+.fold-h[aria-expanded="false"] + .fold-b { display: none; }
+
+/* ============================================================
+   cross-reference
+   ============================================================ */
+.xref {
+  font-family: var(--mono); font-size: 12px;
+  border-bottom: 1px dotted var(--jade-d); color: var(--jade);
+  white-space: nowrap;
+}
+.xref:hover { border-bottom-style: solid; }
+.xref::before { content: "↗ "; opacity: .6; }
+
+.pager {
+  display: flex; gap: 12px; justify-content: space-between; margin-top: 66px;
+  padding-top: 22px; border-top: 1px solid var(--line);
+}
+.pager a {
+  flex: 1; padding: 14px 16px; border-bottom: 0; border-radius: var(--r);
+  background: var(--panel); border: 1px solid var(--line); color: inherit;
+}
+.pager a:hover { border-color: var(--jade-d); }
+.pager .dir {
+  display: block; font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--fg-3); margin-bottom: 4px;
+}
+.pager .ttl { font-weight: 600; font-size: 15px; }
+.pager .next { text-align: right; }
+
+/* ============================================================
+   misc
+   ============================================================ */
+.lead-in {
+  font-size: 17px; color: var(--fg-2); max-width: var(--measure);
+  padding-left: 15px; border-left: 2px solid var(--jade-d); margin: 0 0 26px;
+}
+.kv { display: grid; gap: 2px; margin: 18px 0; max-width: var(--measure); }
+.kv > div { display: grid; grid-template-columns: 190px 1fr; gap: 14px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.kv dt, .kv .k { font-family: var(--mono); font-size: 12.5px; color: var(--fg-3); }
+.kv dd, .kv .v { margin: 0; font-size: 15px; }
+
+.mark { background: var(--signal-bg); box-shadow: 0 0 0 2px var(--signal-bg); border-radius: 2px; }
+
+.top {
+  position: fixed; right: 22px; bottom: 22px; z-index: 50;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--rail); border: 1px solid var(--line-2); color: var(--fg-2);
+  font-size: 15px; cursor: pointer; opacity: 0; pointer-events: none;
+  transition: opacity .2s ease;
+}
+.top.on { opacity: 1; pointer-events: auto; }
+.top:hover { color: var(--jade); border-color: var(--jade-d); }
+
+/* ============================================================
+   responsive
+   ============================================================ */
+@media (max-width: 1080px) {
+  :root { --rail-w: 250px; }
+  .main { padding: 0 26px 120px; }
+}
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+  .rail-toggle { display: inline-block; }
+  .rail-col {
+    position: fixed; top: var(--head-h); left: 0; bottom: 0; width: 300px; z-index: 55;
+    transform: translateX(-102%); transition: transform .2s ease;
+    box-shadow: 12px 0 34px rgba(0,0,0,.55);
+    background: var(--panel);
+  }
+  .rail-col.open { transform: none; }
+  .main { padding: 0 18px 100px; }
+  .search { width: 130px; }
+  .hdr-brand { display: none; }
+  .phead { padding: 32px 0 26px; }
+  .kv > div { grid-template-columns: 1fr; gap: 2px; }
+  .pager { flex-direction: column; }
+  .pager .next { text-align: left; }
+}
+
+/* ============================================================
+   print
+   ============================================================ */
+@media print {
+  :root { --void: #fff; --panel: #fff; --fg: #111; --fg-2: #333; --fg-3: #666; --line: #ccc; }
+  body { background: #fff; color: #111; font-size: 11pt; line-height: 1.6; }
+  .hdr, .rail-col, .top, .code-copy, .pager { display: none !important; }
+  .shell { display: block; }
+  .main { padding: 0; }
+  .fold-b { display: block !important; }
+  .fold-h::after { display: none; }
+  .code, .tbl, .note, .diagram { break-inside: avoid; border-color: #ccc; }
+  .code pre { color: #111; }
+  a { color: #111; border: 0; }
+  .xref::after { content: " (" attr(href) ")"; font-size: 9pt; color: #666; }
+  h2 { break-after: avoid; }
+}
+
+</style>
+<link rel="prev" href="index.html">
+<link rel="next" href="l1-design.html">
+</head>
+<body>
+
+<header class="hdr">
+  <button class="btn-ghost rail-toggle" id="railToggle" aria-expanded="false" aria-label="สลับสารบัญ">☰</button>
+  <div class="hdr-brand">pedpro <b>/</b> qe field manual</div>
+  <div class="hdr-crumb"><a href="index.html">index</a><span class="sep">/</span>L0 — foundation</div>
+  <button class="btn-ghost" id="foldAll" aria-pressed="false">ยุบหัวข้อย่อย</button>
+  <div class="search-wrap">
+    <span class="search-ico">⌕</span>
+    <input class="search" id="search" type="search" placeholder="ค้นหัวข้อในหน้านี้" aria-label="ค้นหัวข้อ">
+    <span class="search-kbd">/</span>
+  </div>
+</header>
+
+<div class="shell">
+
+  <nav class="rail-col" aria-label="สารบัญ">
+    <p class="rail-label">gate chain</p>
+    <ul class="chain">
+      <li><a href="index.html"><span class="node">◆</span><span class="lbl">ภาพรวม<span class="sub">index</span></span></a></li>
+      <li><a href="l0-foundation.html" aria-current="page"><span class="node">L0</span><span class="lbl">รากฐาน<span class="sub">foundation</span></span></a></li>
+      <li><a href="l1-design.html"><span class="node">L1</span><span class="lbl">ออกแบบเทส<span class="sub">test design</span></span></a></li>
+      <li><a href="l2-automation.html"><span class="node">L2</span><span class="lbl">automation &amp; CI<span class="sub">gate design</span></span></a></li>
+      <li><a href="l3-nfr.html"><span class="node">L3</span><span class="lbl">non-functional<span class="sub">perf · sec · a11y · ไทย</span></span></a></li>
+      <li><a href="l4-qe.html"><span class="node">L4</span><span class="lbl">quality engineering<span class="sub">slo · learning loop</span></span></a></li>
+      <li><a href="l5-advanced.html"><span class="node">L5</span><span class="lbl">เทพ<span class="sub">mutation · llm eval</span></span></a></li>
+      <li><a href="appendix.html"><span class="node">◇</span><span class="lbl">ภาคผนวก<span class="sub">appendix</span></span></a></li>
+    </ul>
+    <p class="rail-label">ในหน้านี้</p>
+    <div class="toc" id="toc"></div>
+  </nav>
+
+  <main class="main">
+    <div class="wrap">
+
+      <div class="phead">
+        <p class="eyebrow">ชั้นที่ 0 · foundation</p>
+        <h1>รากฐาน</h1>
+        <p class="lede">
+          ชั้นนี้ไม่มีเทคนิคให้ใช้เลยสักอย่าง มันคือ<strong>คำศัพท์และกรอบคิด</strong>
+          ที่ถ้าแยกไม่ออก จะวิเคราะห์ root cause ผิดตลอดชีวิต และจะอ่านชั้นที่เหลือไม่เข้าใจ
+        </p>
+        <div class="meta">
+          <span class="meta-chip">เวลาที่ควรใช้ <b>2–4 สัปดาห์</b></span>
+          <span class="meta-chip">เช็คลิสต์ <b>13 ข้อ</b></span>
+          <span class="meta-chip">แบบฝึกหัด <b>5 ข้อ</b></span>
+        </div>
+      </div>
+
+      <p class="lead-in">
+        คำถามที่ชั้นนี้ตอบ: <em>“บั๊กตัวนี้ root cause อยู่ชั้นไหน และเรารู้ได้ยังไงว่าอะไรถูก”</em><br>
+        คำถามที่ชั้นนี้<strong>เปิดค้างไว้</strong>แล้วส่งต่อให้ชั้นบน: <em>oracle problem</em> —
+        ซึ่งจะถูกปิดจริงๆ ที่ <a class="xref" href="l5-advanced.html">L5</a>
+      </p>
+
+      <!-- ============================================================ -->
+      <h2 id="qa-qc-tester"><span class="num">L0.0</span>QA ≠ QC ≠ Tester — แยกให้ชัดก่อน</h2>
+
+      <p>สามคำนี้คนไทยใช้ปนกันหมด ทั้งที่มันคนละชั้นกันเลย</p>
+
+      <div class="tbl">
+        <table>
+          <thead>
+            <tr><th style="width:14%"></th><th>QA (Quality Assurance)</th><th>QC (Quality Control)</th><th>Testing / Tester</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="num-col">โฟกัส</td><td>Process</td><td>Product</td><td>Product</td></tr>
+            <tr><td class="num-col">เจตนา</td><td>ป้องกัน (preventive)</td><td>ตรวจจับ (detective)</td><td>ตรวจจับ + ให้ข้อมูล</td></tr>
+            <tr><td class="num-col">คำถามหลัก</td><td>“เราทำงานแบบนี้แล้วมันจะเกิดบั๊กมั้ย”</td><td>“ของที่ทำเสร็จมันตรงสเปคมั้ย”</td><td>“มันพังตรงไหน และเสี่ยงแค่ไหน”</td></tr>
+            <tr><td class="num-col">ทำอะไร</td><td>ตั้ง standard, DoD, review gate, retro, metric</td><td>ตรวจ/inspect ของที่ build เสร็จ</td><td>ออกแบบ + รันเทส, หา risk</td></tr>
+            <tr><td class="num-col">เวลา</td><td>ตลอด lifecycle</td><td>หลัง build</td><td>ตลอด (ถ้าทำเป็น)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note fix">
+        <span class="note-t">แก้ไขจากการทบทวน — สูตร Testing ⊂ QC ⊂ QA มี caveat</span>
+        <p>
+          สูตรนี้ใช้ได้ในโลก ISTQB/ISO แต่สาย <strong>context-driven</strong> (Bach / Bolton / Kaner) ปฏิเสธตรงๆ
+          เขามองว่า testing ไม่ได้อยู่ใต้ QC ด้วยซ้ำ เพราะ QC = การตัดสินว่า “ผ่าน/ไม่ผ่าน” ซึ่งเป็นอำนาจของ management
+          ส่วน testing = การ<strong>ให้ข้อมูล</strong> ไม่ใช่การตัดสิน
+        </p>
+        <p style="margin-bottom:0">
+          <strong>ใช้สูตรตอนคุยกับ HR/องค์กร ใช้มุมมองที่สองตอนทำงานจริง</strong>
+        </p>
+      </div>
+
+      <h3 id="ตลาดงานไทย">ความจริงในตลาดงานไทย</h3>
+
+      <p>
+        ประกาศรับ “QA Engineer” ส่วนใหญ่จริงๆ คือ <strong>Manual Tester</strong> —
+        นั่งเขียน test case ใน Excel แล้วคลิกตามสเปค นั่นไม่ใช่ QA มันคือ QC ล้วนๆ
+        ต้องรู้ตัวไว้ ไม่งั้นสมัครไปแล้วงงว่าทำไมไม่ได้แตะ process อะไรเลย
+      </p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:32%">Title ที่มีจริงในสายนี้</th><th>ทำอะไร</th></tr></thead>
+          <tbody>
+            <tr><td>Manual / Functional Tester</td><td>รันเทสด้วยมือ — <span class="no">เสี่ยงที่สุดในยุค AI</span></td></tr>
+            <tr><td>Test Analyst</td><td>ออกแบบเทส, risk analysis (คิดมากกว่าคลิก)</td></tr>
+            <tr><td>SDET / Automation Engineer</td><td>เขียนโค้ดสร้าง test framework</td></tr>
+            <tr><td>Quality Engineer / Quality Coach</td><td>โมเดลใหม่ ไม่มีทีม QA แยก แต่ฝังในทีม dev แล้วสอนให้ dev เทสเป็น</td></tr>
+            <tr><td>QA Lead / Test Manager</td><td>strategy, metric, คน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ความเห็นตรงๆ สำหรับ dev ที่จะเปลี่ยนสาย</span>
+        <p>
+          ถ้าคุณเป็น frontend dev ที่มี agentic pipeline มี Playwright, Bruno contract, S6/S7 gate อยู่แล้ว —
+          <strong>อย่าไปเริ่มที่ Manual Tester เด็ดขาด มันถอยหลัง</strong>
+        </p>
+        <p>
+          เส้นทางที่ถูกคือ <strong>Dev → SDET → Quality Engineer</strong> ซึ่งเป็นสายที่เงินดีสุดและ AI แทนยากสุด
+          เพราะสิ่งที่แทนไม่ได้ไม่ใช่ “การรันเทส” แต่คือ <strong>การรู้ว่าต้องเทสอะไร</strong>
+          (test design + risk analysis + oracle problem)
+        </p>
+        <p style="margin-bottom:0">
+          pipeline ที่คุณมีอยู่ตอนนี้ก็คืองาน QA ของจริงอยู่แล้ว — deterministic gate ก่อน LLM reviewer,
+          <code>blind_approve_rate</code>, fail-closed default พวกนี้คือ QA thinking ระดับ senior
+          สิ่งที่ขาดคือ <strong>vocabulary + technique ที่เป็นระบบ</strong> เพื่อให้อธิบายและขายได้ และเห็นช่องที่ตัวเองมองข้าม
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="error-defect-failure"><span class="num">L0.1</span>Error → Defect → Failure</h2>
+
+      <p>สามคำนี้คือรากของทุกอย่าง ถ้าแยกไม่ออก จะวิเคราะห์ root cause ผิดตลอดชีวิต</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:8%">ชั้น</th><th style="width:22%">คำ</th><th>คืออะไร</th><th style="width:24%">อยู่ที่ไหน</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">1</td><td><strong>Error / Mistake</strong></td><td>คนทำผิด</td><td>ในหัวคน</td></tr>
+            <tr><td class="num-col">2</td><td><strong>Defect / Fault / Bug</strong></td><td>ผลของความผิดนั้นที่ฝังอยู่ในของ</td><td>ในโค้ด / สเปค / config</td></tr>
+            <tr><td class="num-col">3</td><td><strong>Failure</strong></td><td>พฤติกรรมที่เบี่ยงจากที่คาดไว้ตอนรัน</td><td>ตอน runtime</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="ตัวอย่าง-edf">ตัวอย่างจาก Pedpro</h3>
+
+      <div class="diagram">Error   : dev อ่าน spec "ฝากขั้นต่ำ 100 บาท" แล้วตีความว่า "มากกว่า 100"
+Defect  : if (amount > 100) return { Error: "ต่ำกว่าขั้นต่ำ" }
+Failure : ผู้ใช้ฝาก 100 บาทพอดี → ระบบปฏิเสธ</div>
+
+      <h3 id="rip-model">เจาะลึก — ทำไม defect ถึงไม่กลายเป็น failure เสมอไป (RIP model)</h3>
+
+      <p>defect จะโผล่เป็น failure ได้ต้องครบ 3 เงื่อนไข</p>
+
+      <div class="kv">
+        <div><span class="k">R — Reachability</span><span class="v">โค้ดบรรทัดนั้นถูกรันจริง</span></div>
+        <div><span class="k">I — Infection</span><span class="v">state ภายในเพี้ยนไปจริง</span></div>
+        <div><span class="k">P — Propagation</span><span class="v">ความเพี้ยนไหลออกมาถึงจุดที่สังเกตเห็นได้</span></div>
+      </div>
+
+      <p>
+        <strong>ตัวอย่าง:</strong> คุณคำนวณโบนัสผิด 0.0001 บาท แต่ layer บนสุด <code>toFixed(2)</code> —
+        defect มีจริง, reach จริง, infect จริง แต่ไม่ propagate → เทสผ่านหมด
+      </p>
+
+      <div class="note imp">
+        <span class="note-t">ทำไมข้อนี้สำคัญ</span>
+        <p style="margin-bottom:0">
+          นี่คือเหตุผลว่าทำไม <strong>line coverage 100% ไม่ได้แปลว่าปลอดภัย</strong> —
+          คุณ reach ครบ แต่ไม่ได้แปลว่า propagate
+          และนี่คือรากของ <a class="xref" href="l5-advanced.html#mutation">mutation testing</a> ใน L5 พอดี
+        </p>
+      </div>
+
+      <h3 id="คำที่ต้องแยกเพิ่ม">คำที่ต้องแยกเพิ่ม</h3>
+
+      <div class="kv">
+        <div><span class="k">Anomaly / Incident</span><span class="v">“มันแปลกๆ” ยังไม่รู้ว่าเป็น defect หรือเปล่า — อาจเป็น test data พัง, env พัง, หรือ tester เข้าใจผิด</span></div>
+        <div><span class="k">Root cause</span><span class="v">Error ตัวจริง ไม่ใช่ defect — <strong>ถ้า RCA จบที่ “เพราะโค้ดเขียนผิด” แปลว่ายังไม่ได้ทำ RCA</strong></span></div>
+      </div>
+
+      <div class="note">
+        <span class="note-t">ประสบการณ์</span>
+        <p style="margin-bottom:0">
+          ทีมส่วนใหญ่ RCA แล้วลงเอยที่ “dev สะเพร่า” → แก้ด้วยการ “ระวังมากขึ้น” → บั๊กเดิมกลับมาใน 3 เดือน
+          ถ้า root cause จริงคือ “spec เขียนว่า 100 บาทโดยไม่ระบุ inclusive/exclusive”
+          การแก้คือ <strong>แก้ template ของ acceptance criteria</strong> — นั่นคือ QA (process)
+          ส่วนการไปแก้ <code>&gt;</code> เป็น <code>&gt;=</code> คือ QC
+        </p>
+      </div>
+
+      <h3 id="cost-of-defect">เรื่อง cost of defect 1:10:100</h3>
+
+      <div class="note warn">
+        <span class="note-t">ตัวเลขนี้ไม่มีหลักฐานรองรับ</span>
+        <p>
+          คุณจะเจอกราฟ “แก้บั๊กตอน production แพงกว่าตอน requirement 100 เท่า” ทุกที่
+          Laurent Bossavit (<em>The Leprechauns of Software Engineering</em>) ตามรอยกลับไปเจอว่า
+          มันมาจากข้อมูล IBM ยุค 70s ที่ถูกวาดกราฟใหม่ซ้ำๆ จนกลายเป็นตำนาน
+        </p>
+        <p style="margin-bottom:0">
+          <strong>ทิศทางถูก</strong> (แก้เร็วถูกกว่า) แต่<strong>อย่าเอาตัวเลขไปอ้างในสไลด์</strong>
+          ไม่งั้นเจอคนรู้จริงจะเสียเครดิต
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="verification-validation"><span class="num">L0.2</span>Verification vs Validation</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:16%"></th><th>Verification</th><th>Validation</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">คำถาม</td><td><strong>Are we building the product right?</strong></td><td><strong>Are we building the right product?</strong></td></tr>
+            <tr><td class="num-col">เทียบกับอะไร</td><td>สเปค / contract / design</td><td>ความต้องการจริงของผู้ใช้</td></tr>
+            <tr><td class="num-col">ทำเมื่อไหร่</td><td>ทุกชั้น</td><td>ปลายทาง + ต้นทาง</td></tr>
+            <tr><td class="num-col">ตัวอย่าง</td><td>Bruno contract cross-check, TypeScript, unit test</td><td>UAT, beta, usability test, การดู analytics หลัง release</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="วิเคราะห์-pipeline">วิเคราะห์ pipeline ตรงๆ <span class="st">⭐</span></h3>
+
+      <div class="diagram">S6 deterministic gate   → Verification (100%)
+S7 Codex review         → Verification (100%)
+Bruno contract check    → Verification (100%)
+Playwright observe      → Verification (100%)
+S8.5 human gate         → จุดเดียวที่ Validation มีโอกาสเกิด</div>
+
+      <div class="note imp">
+        <span class="note-t">ช่องโหว่ที่แท้จริง</span>
+        <p>
+          pipeline แข็งมากด้าน verification แต่ <strong>validation แขวนอยู่กับสายตาคุณคนเดียวที่ S8.5</strong>
+          ซึ่งเป็น single point of failure — ระบบผ่าน gate ทุกอันแล้วออกมาเป็นฟีเจอร์ที่ไม่มีคนไทยคนไหนอยากใช้ ก็ยัง “ผ่าน” ได้
+        </p>
+        <p style="margin-bottom:0">
+          นี่คือ <strong>absence-of-errors fallacy</strong> ตัวเป็นๆ (principle ข้อ 7 ใน <a href="#seven-principles">L0.7</a>)
+          และเป็นช่องที่ถูกปิดด้วย shift-right + production invariant monitor ที่
+          <a class="xref" href="l4-qe.html#shift-right">L4.3</a>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="test-levels"><span class="num">L0.3</span>Test Levels</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:22%">Level</th><th>เทสอะไร</th><th style="width:14%">ใครทำ</th><th style="width:30%">ในสแตกนี้</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Unit / Component</strong></td><td>หน่วยเดี่ยว แยกจาก dependency</td><td>dev</td><td>Vitest: composables, utils, pure logic</td></tr>
+            <tr><td><strong>Component Integration</strong></td><td>หน่วยคุยกันเอง</td><td>dev</td><td>Vue component + Pinia store</td></tr>
+            <tr><td><strong>System</strong></td><td>ทั้งระบบทำงานตาม requirement</td><td>tester / SDET</td><td>Playwright E2E บน Cloud Run</td></tr>
+            <tr><td><strong>System Integration</strong></td><td>ระบบเราคุยกับระบบนอก</td><td>SDET</td><td>Pedpro ↔ payment gateway / game provider</td></tr>
+            <tr><td><strong>Acceptance</strong></td><td>ผู้มีอำนาจยอมรับมั้ย</td><td>business / user</td><td>S8.5 + preview tunnel</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="acceptance-4-ชนิด">Acceptance testing มี 4 ชนิด — คนลืม 2 ชนิดหลังตลอด <span class="st">⭐</span></h3>
+
+      <ol>
+        <li><strong>UAT</strong> — ผู้ใช้ทดสอบว่าใช้ทำงานได้จริง</li>
+        <li><strong>Contractual / Regulatory</strong> — ตรงตามสัญญา/กฎหมาย (PDPA, กฎเรื่อง content การพนัน/เกม, KYC)</li>
+        <li><strong>Alpha / Beta</strong> — เทสในบ้าน / เทสที่ผู้ใช้จริง</li>
+        <li><strong>Operational Acceptance Testing (OAT)</strong> — backup/restore ได้มั้ย, rollback ได้มั้ย, log ครบมั้ย, alert ดังมั้ย, disaster recovery</li>
+      </ol>
+
+      <div class="note imp">
+        <span class="note-t">OAT คือช่องโหว่ที่ dev-turned-tester พลาดบ่อยที่สุด</span>
+        <p style="margin-bottom:0">
+          ลองถามตัวเอง: <em>ถ้า Cloud Run revision ใหม่พังตอนตี 3 คุณ rollback ภายในกี่นาที
+          และคุณเคย <strong>ทดสอบ</strong> การ rollback นั้นจริงๆ หรือแค่เชื่อว่าทำได้?</em><br>
+          ช่องนี้ถูกปิดที่ <a class="xref" href="l3-nfr.html#rollback-drill">L3.8.2 Rollback Drill</a>
+        </p>
+      </div>
+
+      <div class="note warn">
+        <span class="note-t">กับดัก</span>
+        <p style="margin-bottom:0">
+          อย่าคิดว่า level = เฟสตามเวลา (V-model classic) ใน CD ทุก level รันขนานกันในทุก commit —
+          level บอกแค่ว่า <strong>“เทสอะไรเป็นหน่วยของการทดสอบ”</strong> ไม่ได้บอกว่าเทสเมื่อไหร่
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="test-types"><span class="num">L0.4</span>Test Types — 4 แกนที่ตั้งฉากกัน</h2>
+
+      <p>แกนเหล่านี้<strong>ตั้งฉากกัน</strong> ไม่ใช่ตัวเลือกแทนกัน — เทสหนึ่งตัวมีได้ทั้ง 4 คุณสมบัติพร้อมกัน</p>
+
+      <ol>
+        <li><strong>Functional</strong> — “ทำอะไรได้” → ระบบทำตาม requirement มั้ย</li>
+        <li><strong>Non-functional</strong> — “ทำได้ดีแค่ไหน” → เร็ว/ปลอดภัย/ใช้ง่าย/รับโหลดได้ (ISO 25010, ดู <a href="#iso-25010">L0.11</a>)</li>
+        <li><strong>Black-box vs White-box</strong> — เทสจากสเปค vs เทสจากโครงสร้างภายใน</li>
+        <li><strong>Change-related</strong>
+          <ul>
+            <li><strong>Confirmation testing (Re-test)</strong> — บั๊กที่แก้แล้วหายจริงมั้ย</li>
+            <li><strong>Regression testing</strong> — ของที่เคยดีพังเพราะการแก้นี้มั้ย</li>
+          </ul>
+        </li>
+      </ol>
+
+      <div class="note imp">
+        <span class="note-t">ศัพท์ที่คนไทยใช้ผิดที่สุด</span>
+        <p style="margin-bottom:0">
+          “regression test” <strong>ไม่ใช่ชื่อชุดไฟล์เทส</strong> แต่คือ <strong>เจตนา</strong> —
+          เทสตัวเดียวกัน รันตอนพัฒนา = functional test, รันหลังแก้บั๊กอื่น = regression test
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="static-dynamic"><span class="num">L0.5</span>Static vs Dynamic Testing</h2>
+
+      <p><strong>Dynamic</strong> = รันโค้ด แล้วดูผล · <strong>Static</strong> = ไม่รันโค้ด แต่ตรวจ artifact</p>
+
+      <h3 id="review-types">A. Review (คนตรวจ) — เรียงตามความเป็นทางการ</h3>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:24%">ชนิด</th><th>ลักษณะ</th><th style="width:28%">ในสแตกนี้</th></tr></thead>
+          <tbody>
+            <tr><td>Informal review</td><td>เดินไปถามเพื่อน</td><td>ถาม Claude</td></tr>
+            <tr><td>Walkthrough</td><td>ผู้เขียนนำเสนอทีละบรรทัด</td><td>S4B plan review</td></tr>
+            <tr><td>Technical review</td><td>peer ผู้เชี่ยวชาญตรวจ มี checklist</td><td><span class="mid">S7 Codex CLI — ดูหมายเหตุด้านล่าง</span></td></tr>
+            <tr><td>Inspection (Fagan)</td><td>เป็นทางการสุด มี moderator, metric, exit criteria</td><td>S8.5 human gate</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note fix">
+        <span class="note-t">แก้ไขจากการทบทวน — S7 Codex ไม่ใช่ Technical Review</span>
+        <p>
+          Technical review ตามนิยามคือ <strong>peer ที่เป็นมนุษย์ผู้เชี่ยวชาญ</strong>ตรวจ
+          ส่วน Codex จริงๆ อยู่กึ่งกลางระหว่าง static analysis กับ review — มันคือ
+          <strong>“static analysis ที่มี judgment แต่ไม่มี accountability”</strong>
+        </p>
+        <p style="margin-bottom:0">
+          ความต่างสำคัญตรงนี้: reviewer มนุษย์ <em>รับผิดชอบ</em> กับสิ่งที่ปล่อยผ่าน LLM reviewer ไม่รับ
+          ดังนั้น<strong>อย่านับ S7 แทน review ในเชิงกระบวนการ</strong> ให้นับเป็น
+          <strong>filter ชั้นที่ลดภาระ S8.5</strong> เท่านั้น
+          (ขยายที่ <a class="xref" href="l4-qe.html#accountability">L4.12 accountability</a>)
+        </p>
+      </div>
+
+      <h3 id="static-analysis">B. Static Analysis (เครื่องตรวจ)</h3>
+      <p>ESLint, <code>vue-tsc</code>, TypeScript strict, SonarQube, dependency audit</p>
+
+      <h3 id="ทำไม-static-สำคัญ">ทำไม static สำคัญกว่าที่คิด</h3>
+
+      <p>Static หา defect บางชนิดที่ <strong>dynamic หาไม่ได้เลย</strong></p>
+      <ul>
+        <li>requirement กำกวม / ขัดแย้งกันเอง</li>
+        <li>dead code, unreachable branch</li>
+        <li>ปัญหา maintainability, coupling</li>
+        <li>ช่องโหว่ security เชิงโครงสร้าง</li>
+      </ul>
+      <p>และหาได้ <strong>ก่อนเขียนโค้ดด้วยซ้ำ</strong></p>
+
+      <h3 id="ambiguity-review">เทคนิคที่ต้องมีติดตัว — Ambiguity Review <span class="st">⭐</span></h3>
+
+      <p>อ่าน requirement แล้วล่าคำเหล่านี้ — เจอเมื่อไหร่คือบั๊กในอนาคต</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:20%">ธงแดง</th><th style="width:38%">ตัวอย่างใน spec ไทย</th><th>ต้องถามกลับ</th></tr></thead>
+          <tbody>
+            <tr><td>คำวัดไม่ได้</td><td>“โหลดเร็ว”, “ใช้ง่าย”, “เหมาะสม”</td><td>เร็วคือ p95 กี่ ms?</td></tr>
+            <tr><td>ขอบเขตไม่ชัด</td><td>“ขั้นต่ำ 100 บาท”</td><td>inclusive หรือ exclusive?</td></tr>
+            <tr><td>และ/หรือ</td><td>“user ที่ verify แล้วและ/หรือมียอดคงเหลือ”</td><td>AND หรือ OR?</td></tr>
+            <tr><td>Passive voice</td><td>“ข้อมูลจะถูกบันทึก”</td><td>ใครบันทึก? ที่ไหน? เมื่อไหร่?</td></tr>
+            <tr><td>ฯลฯ / เป็นต้น</td><td>“รองรับ Chrome, Safari ฯลฯ”</td><td>ฯลฯ คืออะไรบ้าง?</td></tr>
+            <tr><td>ไม่มี negative path</td><td>“ผู้ใช้กดฝากเงินแล้วเงินเข้า”</td><td>ถ้า gateway timeout ล่ะ?</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <span class="note-t">ประสบการณ์ + ปัญหาการเมืองที่ต้องรู้ล่วงหน้า</span>
+        <p style="margin-bottom:0">
+          ในโปรเจกต์จริง การนั่ง review requirement 2 ชั่วโมง มักหาบั๊กได้มากกว่าการรัน E2E 2 สัปดาห์
+          แต่<strong>ไม่มีใครนับเป็นผลงานเพราะ “ยังไม่มีบั๊กให้นับ”</strong> —
+          นี่คือปัญหาการเมืองของ QA ที่คุณต้องรู้ล่วงหน้า
+          และเป็นเหตุผลที่ metric อย่าง “จำนวนบั๊กที่หาเจอ” เป็น metric ขยะ (<a class="xref" href="l4-qe.html#metric">L4.5</a>)
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="testing-vs-checking"><span class="num">L0.6</span>Testing vs Checking <span class="st">⭐</span></h2>
+
+      <p>
+        อันนี้ไม่มีใน ISTQB แต่<strong>สำคัญที่สุดสำหรับคนที่มี AI pipeline</strong>
+        Michael Bolton &amp; James Bach แยกไว้ว่า
+      </p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:14%"></th><th>Checking</th><th>Testing</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">นิยาม</td><td>ยืนยันสิ่งที่เรารู้อยู่แล้ว ด้วยกฎที่เขียนเป็นอัลกอริทึมได้</td><td>สำรวจ ประเมิน เรียนรู้ ตั้งคำถามใหม่</td></tr>
+            <tr><td class="num-col">ใครทำได้</td><td>เครื่อง / agent</td><td><strong>คนเท่านั้น (ตอนนี้)</strong></td></tr>
+            <tr><td class="num-col">ผลลัพธ์</td><td>pass / fail</td><td>ความเข้าใจเรื่องความเสี่ยง</td></tr>
+            <tr><td class="num-col">ตัวอย่าง</td><td><code>expect(res.Result).toBe(1)</code></td><td>“ทำไมเราถึงคาดว่ามันควรเป็น 1?”</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ประเด็นหลักของทั้งคู่มือ</span>
+        <p>
+          <strong>Playwright, Vitest, Bruno, Codex review = checking ทั้งหมด</strong>
+        </p>
+        <p>
+          Automation ไม่ได้ทำ testing มันทำ checking ตามสิ่งที่ <em>มีคนคิดไว้แล้ว</em> —
+          และนั่นคือเหตุผลว่าทำไม pipeline ที่ผ่าน gate 100% ยัง ship บั๊กออกไปได้
+          เพราะ <strong>บั๊กที่หลุด คือบั๊กที่ไม่มีใครคิดถึงตอนออกแบบ check</strong>
+        </p>
+        <p style="margin-bottom:0">
+          สิ่งที่ AI แทนคุณไม่ได้จึงไม่ใช่การรันเทส แต่คือ
+          <strong>การตัดสินใจว่าอะไรควรถูก check</strong>
+        </p>
+      </div>
+
+      <div class="note fix">
+        <span class="note-t">เติมจากการทบทวน — confirmation bias คือ defect ที่ฝังในตัว tester เอง</span>
+        <p>
+          มนุษย์ออกแบบเทสเพื่อ <em>ยืนยัน</em> ว่ามันทำงาน ไม่ใช่เพื่อ <em>หักล้าง</em> (Wason selection task)
+          นี่คือรากของ “happy path only” ที่ทุกคนบอกว่าไม่ทำแต่ก็ทำ
+        </p>
+        <p style="margin-bottom:0">
+          <strong>เทคนิคทั้งหมดใน <a class="xref" href="l1-design.html">L1</a> คือเครื่องมือบังคับให้สมองออกจาก confirmation bias</strong>
+          ไม่ใช่แค่ template ให้กรอก
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="seven-principles"><span class="num">L0.7</span>7 Testing Principles + วิเคราะห์</h2>
+
+      <h3 id="p1">1. Testing shows the presence of defects, not their absence</h3>
+      <p>เทสผ่าน ≠ ไม่มีบั๊ก แปลว่า “ยังหาไม่เจอด้วยวิธีที่ใช้”</p>
+      <div class="note good">
+        <span class="note-t">ผลทางปฏิบัติ</span>
+        <p style="margin-bottom:0">ห้ามพูดว่า “เทสผ่านแล้ว ปลอดภัย” ให้พูดว่า <strong>“ครอบคลุมความเสี่ยง A B C แล้ว, D ยังไม่ได้ตรวจ”</strong></p>
+      </div>
+
+      <h3 id="p2">2. Exhaustive testing is impossible</h3>
+      <p>ฟอร์มสมัครสมาชิก 8 ฟิลด์ แต่ละฟิลด์มี 10 ค่าที่น่าสนใจ = 10⁸ = 100 ล้าน combination รันวินาทีละเคส = 3 ปี</p>
+      <p><strong>ผลทางปฏิบัติ:</strong> คุณต้อง <em>เลือก</em> เสมอ → นี่คือเหตุผลของทั้ง <a class="xref" href="l1-design.html">L1</a></p>
+
+      <h3 id="p3">3. Early testing saves time and money (Shift-left)</h3>
+      <p>การให้ agent review spec ก่อนเขียนโค้ดคือ shift-left ที่แรงที่สุด — ขยายที่ <a class="xref" href="l4-qe.html#shift-left">L4.2</a></p>
+
+      <h3 id="p4">4. Defects cluster together</h3>
+      <p>Pareto: บั๊ก 80% กระจุกใน module 20%</p>
+      <div class="note good">
+        <span class="note-t">ผลทางปฏิบัติ</span>
+        <p style="margin-bottom:0">
+          ถ้าเจอ 3 บั๊กในหน้าฝากเงิน อย่ารีบไปหน้าอื่น <strong>ขุดต่อตรงนั้น</strong> ที่นั่นมีอีก<br>
+          ข้อมูลจาก YouTrack บอกได้ว่า module ไหนคือ hotspot — ควรทำ heat map
+        </p>
+      </div>
+
+      <h3 id="p5">5. Tests wear out (Pesticide Paradox)</h3>
+      <p>เทสชุดเดิมรันซ้ำๆ จะหยุดหาบั๊กใหม่ได้ เหมือนแมลงดื้อยา → ต้องเติมเทสใหม่/เปลี่ยนมุมเรื่อยๆ</p>
+      <div class="note warn">
+        <span class="note-t">ระวังตีความผิด</span>
+        <p style="margin-bottom:0">
+          <strong>ไม่ได้แปลว่าให้ทิ้ง regression suite</strong> — เทสเก่ายังมีค่าในฐานะ <strong>change detector</strong>
+          มันแค่หมดคุณค่าในฐานะ <strong>bug finder</strong> สองบทบาทนี้ต่างกัน
+        </p>
+      </div>
+
+      <h3 id="p6">6. Testing is context dependent</h3>
+      <p>เทสแอปเกมกับเทสเครื่องมือแพทย์ใช้มาตรฐานเดียวกันไม่ได้ — portal เกม = uptime + payment correctness สำคัญกว่า pixel-perfect UI</p>
+
+      <h3 id="p7">7. Absence-of-errors fallacy <span class="st">⭐</span></h3>
+      <p>ระบบไม่มีบั๊กเลย แต่ไม่ตอบโจทย์ผู้ใช้ = ล้มเหลว → วนกลับไปหา validation gap ที่ชี้ใน <a href="#วิเคราะห์-pipeline">L0.2</a> พอดี</p>
+
+      <h3 id="goodhart">เจาะลึก — Principle 2 + 5 + Goodhart's Law</h3>
+
+      <div class="diagram">exhaustive testing เป็นไปไม่ได้
+   → คนหา proxy → code coverage
+   → coverage กลายเป็น target
+   → คนเขียนเทสเพื่อเพิ่มเลข ไม่ใช่เพื่อหาบั๊ก
+   → suite ที่ coverage 95% แต่ไม่มี assertion ที่มีความหมาย</div>
+
+      <p><em>“When a measure becomes a target, it ceases to be a good measure.”</em></p>
+
+      <div class="note imp">
+        <span class="note-t">จำภาพนี้ไว้</span>
+        <p style="margin-bottom:0">
+          <strong>มันเป็นไปได้ที่จะได้ 100% coverage โดยลบ assertion ทุกบรรทัดออก</strong> —
+          แล้วคุณจะเข้าใจว่าทำไม <a class="xref" href="l5-advanced.html#mutation">mutation testing</a> ถึงมีอยู่
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="test-process"><span class="num">L0.8</span>Test Process — 7 กิจกรรม</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:22%">กิจกรรม</th><th style="width:32%">ผลลัพธ์</th><th>คำถามหลัก</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Planning</strong></td><td>Test plan, entry/exit criteria</td><td>เราจะทดสอบด้วยกลยุทธ์อะไร ทรัพยากรเท่าไหร่</td></tr>
+            <tr><td><strong>Monitoring &amp; Control</strong></td><td>รายงานความคืบหน้า</td><td>ตอนนี้เทียบแผนแล้วอยู่ตรงไหน ต้องปรับอะไร</td></tr>
+            <tr><td><strong>Analysis</strong></td><td>Test <strong>conditions</strong></td><td>เทสอะไรบ้าง (What)</td></tr>
+            <tr><td><strong>Design</strong></td><td>Test cases, coverage items</td><td>เทสยังไง (How)</td></tr>
+            <tr><td><strong>Implementation</strong></td><td>Test data, env, script, suite</td><td>เตรียมของให้พร้อมรัน</td></tr>
+            <tr><td><strong>Execution</strong></td><td>ผลเทส, defect report</td><td>รันแล้วผลเป็นไง</td></tr>
+            <tr><td><strong>Completion</strong></td><td>Test summary, lessons learned, archive</td><td>เราเรียนรู้อะไร เก็บอะไรไว้ใช้ต่อ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">Test Completion คือชั้นที่คนข้ามมากที่สุด</span>
+        <p>
+          เพราะพอ release เสร็จทุกคนวิ่งไป sprint หน้า ผลคือความรู้ว่า “บั๊กชนิดไหนหลุดบ่อย”
+          ไม่เคยถูกแปลงเป็น gate ใหม่
+        </p>
+        <p style="margin-bottom:0">
+          <code>blind_approve_rate</code> ที่มีอยู่แล้ว = monitoring &amp; control ที่ดีกว่าทีมไทยส่วนใหญ่
+          แต่ยังไม่เห็น artifact ของ test completion —
+          ช่องนี้ถูกปิดด้วย <a class="xref" href="l4-qe.html#learning-loop">L4.9 Learning Loop</a>
+        </p>
+      </div>
+
+      <h3 id="traceability">Traceability chain — ต้องท่องได้</h3>
+
+      <div class="diagram">Test Basis (spec / Bruno contract / AC)
+    ↓
+Test Condition (สิ่งที่ควรตรวจ)
+    ↓
+Test Case (input + expected result)
+    ↓
+Test Result
+    ↓
+Defect</div>
+
+      <p>
+        ถ้า chain นี้ขาด คุณจะตอบคำถามนี้ไม่ได้:
+        <em>“requirement ข้อนี้ ถูกทดสอบด้วยอะไรบ้าง และตอนนี้สถานะยังไง”</em> —
+        ซึ่งเป็นคำถามที่ stakeholder ถามทุกครั้งก่อน release
+      </p>
+      <p>
+        วิธีทำให้ chain นี้ทำงานจริงกับ YouTrack อยู่ที่
+        <a class="xref" href="l2-automation.html#traceability">L2 (ทบทวน) — Traceability Matrix</a>
+      </p>
+
+      <!-- ============================================================ -->
+      <h2 id="anatomy"><span class="num">L0.9</span>Anatomy ของ Test Case + Bug Report</h2>
+
+      <h3 id="test-case-9-ส่วน">Test case ที่สมบูรณ์มี 9 ส่วน</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">test case</span><span class="code-file">TC-DEP-004</span></div>
+<pre><code>ID              : TC-DEP-004
+Title           : ฝากเงินด้วยจำนวนเท่ากับขั้นต่ำพอดี (boundary)
+Traceability    : PED-1123 / Bruno: deposit.create
+Precondition    : user verified แล้ว, balance = 0, gateway sandbox up
+Test data       : amount = 100
+Steps           : 1. เปิด /deposit  2. กรอก 100  3. กดยืนยัน
+Expected result : res?.Result = 1, balance = 100, toast สำเร็จ
+Postcondition   : rollback transaction
+Priority        : High</code></pre>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">ความเห็นตรงๆ</span>
+        <p>
+          ในทีมสมัยใหม่ การเขียน test case ละเอียดขนาดนี้ลง Excel คือ waste
+          ให้เขียนเป็น automated test + <strong>charter</strong> สำหรับ exploratory แทน
+          (<a class="xref" href="l1-design.html#exploratory">L1.9</a>)
+        </p>
+        <p style="margin-bottom:0">
+          <strong>แต่</strong> คุณต้องรู้ anatomy ก่อน ถึงจะรู้ว่าตัดส่วนไหนได้โดยไม่เสียข้อมูล —
+          คนที่ข้ามขั้นนี้จะเขียน automated test ที่ไม่มี precondition ชัด แล้วได้ flaky test เต็มไปหมด
+        </p>
+      </div>
+
+      <h3 id="bug-report">Bug report ที่ dev ไม่ด่า</h3>
+
+      <div class="code">
+        <div class="code-bar"><span class="code-lang">bug report</span><span class="code-file">สูตรพื้นฐาน</span></div>
+<pre><code>Title    : [หน้าฝากเงิน] ฝาก 100 บาทพอดีถูกปฏิเสธว่าต่ำกว่าขั้นต่ำ
+Env      : staging, Chrome 126, iPhone 13 / Safari, build a1b2c3
+Steps    : 1... 2... 3...  (ทำซ้ำได้ 5/5 ครั้ง)
+Expected : ฝากสำเร็จ (spec PED-1123 ระบุขั้นต่ำ 100 = inclusive)
+Actual   : Error "ยอดต่ำกว่าขั้นต่ำ", res.Result = 0
+Evidence : screenshot + har + trace.zip
+Severity : High (blocker ต่อ flow หลัก)
+Priority : (ให้ PO ตัดสิน)
+Note     : ค่าอื่น 101, 500 ปกติ → สงสัย off-by-one ที่ comparison</code></pre>
+      </div>
+
+      <div class="note good">
+        <span class="note-t">หลักการ</span>
+        <p style="margin-bottom:0">
+          เขียนถึง<strong>สิ่งของ</strong> ไม่ใช่<strong>คน</strong> — “ระบบปฏิเสธ” ไม่ใช่ “คุณเขียนผิด”<br>
+          และอย่าเดา root cause แบบฟันธง ใส่เป็น Note ว่า “สงสัย” พอ<br>
+          ระดับ craft ที่ทำให้บั๊กถูกแก้จริง (RIMGEA) อยู่ที่ <a class="xref" href="l1-design.html#rimgea">L1.12</a>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="test-oracle"><span class="num">L0.10</span>Test Oracle + HICCUPPS <span class="st">⭐</span></h2>
+
+      <div class="note take">
+        <span class="note-t">oracle problem</span>
+        <p style="margin-bottom:0; font-size:17px">
+          <strong>คุณรู้ได้ยังไงว่าผลลัพธ์ที่เห็น “ถูก”?</strong><br>
+          ถ้าไม่มี oracle คุณ<strong>ทดสอบไม่ได้เลย</strong> ทำได้แค่ “สังเกต”
+        </p>
+      </div>
+
+      <p>Bolton ให้ heuristic ชื่อ <strong>HICCUPPS</strong> — ถ้าผลลัพธ์ขัดกับข้อใดข้อหนึ่ง = น่าจะเป็นบั๊ก</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:10%"></th><th style="width:26%">Consistent with…</th><th>ตัวอย่าง</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col"><strong>H</strong></td><td>History (เวอร์ชันก่อนหน้า)</td><td>เดิมกดปุ่มนี้แล้วเด้ง modal ตอนนี้ไม่เด้ง</td></tr>
+            <tr><td class="num-col"><strong>I</strong></td><td>Image (ภาพลักษณ์แบรนด์)</td><td>error message ภาษาอังกฤษโผล่ในแอปไทย</td></tr>
+            <tr><td class="num-col"><strong>C</strong></td><td>Comparable products</td><td>เจ้าอื่นฝากเสร็จภายใน 3 วิ ของเรา 40 วิ</td></tr>
+            <tr><td class="num-col"><strong>C</strong></td><td>Claims (สิ่งที่โฆษณาไว้)</td><td>หน้าเว็บเขียน “ถอนเร็ว 1 นาที”</td></tr>
+            <tr><td class="num-col"><strong>U</strong></td><td>Users' expectations</td><td>ผู้ใช้ไทยคาดว่าจะเห็นวันที่เป็น พ.ศ.</td></tr>
+            <tr><td class="num-col"><strong>P</strong></td><td>Product (ส่วนอื่นของระบบเดียวกัน)</td><td>หน้า A เรียกว่า “กระเป๋า” หน้า B เรียก “วอลเล็ท”</td></tr>
+            <tr><td class="num-col"><strong>P</strong></td><td>Purpose (เจตนาของฟีเจอร์)</td><td>ปุ่มช่วยเหลือที่ไม่มีทางติดต่อใครได้</td></tr>
+            <tr><td class="num-col"><strong>S</strong></td><td>Statutes (กฎหมาย)</td><td>PDPA: เก็บเลขบัตร ปชช. โดยไม่มี consent</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">เจาะลึก — หลักฐานเชิงโครงสร้าง</span>
+        <p style="margin-bottom:0">
+          สังเกตว่ามีแค่ <strong>Claims</strong> กับ <strong>Product</strong> ที่ automation ตรวจได้ —
+          อีก 6 ตัวต้องใช้คน
+          <strong>นี่คือหลักฐานเชิงโครงสร้างว่าทำไม 100% automation ถึงเป็นไปไม่ได้</strong>
+          และเป็นเหตุผลว่าทำไม approval drill (<a class="xref" href="l4-qe.html#approval-drill">L4.5</a>)
+          ที่ valid ถึงเป็นเรื่อง “ความหมาย” ไม่ใช่ “ความถูกต้อง”
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="iso-25010"><span class="num">L0.11</span>ISO 25010 — แผนที่ “มิติที่ลืมเทส”</h2>
+
+      <p>ใช้เป็น checklist ตอน analysis ว่าลืมอะไรมั้ย (ฉบับ 2023 มี 9 ข้อ)</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:26%">Characteristic</th><th style="width:32%">ถามตัวเองว่า</th><th>ของ Pedpro</th></tr></thead>
+          <tbody>
+            <tr><td>Functional Suitability</td><td>ทำครบ ถูก เหมาะสมมั้ย</td><td>ยอดเงิน คำนวณโบนัสถูกมั้ย</td></tr>
+            <tr><td>Performance Efficiency</td><td>เร็ว กินทรัพยากรเท่าไหร่ รองรับโตมั้ย</td><td>Cloud Run cold start, bundle size</td></tr>
+            <tr><td>Compatibility</td><td>อยู่ร่วมกับระบบอื่น/browser ได้มั้ย</td><td><strong>Safari iOS, LINE in-app browser</strong> <span class="st">⭐</span></td></tr>
+            <tr><td><strong>Interaction Capability</strong> <span style="color:var(--fg-3)">(เดิม Usability)</span></td><td>ใช้ง่าย เรียนรู้ง่าย เข้าถึงได้มั้ย</td><td>a11y, ตัวอักษรไทยเล็กเกินบนมือถือ</td></tr>
+            <tr><td>Reliability</td><td>ล่มบ่อยมั้ย กู้คืนได้มั้ย</td><td>retry logic ตอน gateway timeout</td></tr>
+            <tr><td>Security</td><td>ปลอดภัยมั้ย</td><td>auth, IDOR, <code>DoAdmin</code>/<code>DoIp</code> audit trail</td></tr>
+            <tr><td>Maintainability</td><td>แก้ง่ายมั้ย เทสง่ายมั้ย</td><td><strong>testability คือ sub-characteristic ตรงนี้</strong></td></tr>
+            <tr><td><strong>Flexibility</strong> <span style="color:var(--fg-3)">(เดิม Portability)</span></td><td>ย้าย/ปรับ/ขยายได้มั้ย</td><td>ย้าย GCP → Oracle ได้มั้ย</td></tr>
+            <tr><td><strong>Safety</strong> <span style="color:var(--fg-3)">(ใหม่ 2023)</span></td><td>ทำให้คนเสียหายได้มั้ย</td><td>ความเสี่ยงการเงินผู้ใช้, responsible gaming</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note warn">
+        <span class="note-t">จุดพลาดของคนไทยที่เห็นบ่อย</span>
+        <p style="margin-bottom:0">
+          เทส functional ครบ 100% แล้วปล่อย แต่ลืม Compatibility กับ <strong>LINE in-app browser</strong>
+          ซึ่งเป็น browser ที่ผู้ใช้ไทยเข้าเว็บมากที่สุดช่องทางหนึ่ง —
+          cookie policy, <code>window.open</code>, และ viewport มันเพี้ยนจาก Chrome ปกติหมด
+          (รายละเอียดเต็ม + checklist ที่ <a class="xref" href="l3-nfr.html#line-inapp">L3.6.1</a>)
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="ศัพท์ที่ใช้ผิด"><span class="num">L0.12</span>ศัพท์ที่คนใช้ผิดบ่อย</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:16%">คำ</th><th style="width:26%">ความเข้าใจผิด</th><th>ความจริง</th></tr></thead>
+          <tbody>
+            <tr><td>Smoke test</td><td>“เทสคร่าวๆ”</td><td>ชุดเทสสั้นๆ ตอบว่า “build นี้ควรเทสต่อมั้ย” — เป็น <strong>gate ไม่ใช่ความละเอียด</strong></td></tr>
+            <tr><td>Sanity test</td><td>เหมือน smoke</td><td>เทสแคบแต่ลึก เจาะเฉพาะส่วนที่เพิ่งแก้</td></tr>
+            <tr><td>Re-test</td><td>= regression</td><td>Re-test = ยืนยันบั๊กที่แก้แล้ว · Regression = ของเดิมพังมั้ย</td></tr>
+            <tr><td>Test Plan</td><td>= Test Strategy</td><td>Strategy = ระดับองค์กร วิธีการโดยรวม · Plan = ระดับโปรเจกต์ ใคร เมื่อไหร่ ทรัพยากร</td></tr>
+            <tr><td>Severity</td><td>= Priority</td><td>Severity = ผลกระทบทางเทคนิค (tester ตัดสิน) · Priority = ลำดับการแก้ (PO ตัดสิน)</td></tr>
+            <tr><td>Coverage</td><td>= code coverage</td><td>มีทั้ง requirement coverage, risk coverage, boundary coverage — <strong>code coverage อ่อนที่สุด</strong></td></tr>
+            <tr><td>QA</td><td>= คนกดเทส</td><td>QA = process (ดู <a href="#qa-qc-tester">L0.0</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">เคสคลาสสิก Severity ≠ Priority</span>
+        <p style="margin-bottom:0">
+          สะกดชื่อบริษัทผิดบนหน้าแรก = Severity <strong>Low</strong> (ระบบไม่พัง) แต่ Priority <strong>Critical</strong> (น่าอายมาก)<br>
+          ในทางกลับกัน ระบบ crash ในฟีเจอร์ที่มีคนใช้ 3 คน/เดือน = Severity <strong>Critical</strong>, Priority <strong>Low</strong>
+        </p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2 id="เช็คลิสต์"><span class="num">✓</span>เช็คลิสต์ความพร้อม L0</h2>
+
+      <p>ตอบได้ทุกข้อ <strong>โดยไม่เปิดหน้านี้</strong> = ผ่านไป <a href="l1-design.html">L1</a></p>
+
+      <ul class="check">
+        <li>ยกตัวอย่าง error/defect/failure จากงานตัวเองได้ 1 ชุด และบอกได้ว่า root cause อยู่ชั้นไหน</li>
+        <li>อธิบายได้ว่าทำไม defect บางตัวไม่กลายเป็น failure (RIP)</li>
+        <li class="key">แยก verification/validation ในงานตัวเองได้ และรู้ว่าตัวเองอ่อนด้านไหน</li>
+        <li>บอก test level ครบ 5 + acceptance 4 ชนิด (รวม OAT)</li>
+        <li>แยก confirmation vs regression ได้</li>
+        <li>ยกตัวอย่าง static testing ที่ไม่ใช่ lint ได้ 2 อย่าง</li>
+        <li>หา ambiguity ใน requirement ได้ 3 จุดใน 5 นาที</li>
+        <li>ท่อง 7 principles และยกตัวอย่างจริงได้อย่างน้อย 4 ข้อ</li>
+        <li class="key">อธิบายความต่าง testing vs checking และบอกได้ว่า pipeline ตัวเองทำอะไรอยู่</li>
+        <li>เขียน test case ครบ 9 ส่วน และ bug report ครบสูตร</li>
+        <li class="key">อธิบาย oracle problem + ยกตัวอย่าง HICCUPPS ได้ 3 ตัว</li>
+        <li>ใช้ ISO 25010 ไล่หามิติที่ยังไม่เคยเทสในโปรเจกต์ตัวเอง ได้อย่างน้อย 2 มิติ</li>
+        <li>แยก severity/priority ด้วยตัวอย่างที่ค่าสวนทางกัน</li>
+      </ul>
+
+      <!-- ============================================================ -->
+      <h2 id="แบบฝึกหัด"><span class="num">✎</span>แบบฝึกหัด L0 — ทำจริงกับ Pedpro</h2>
+
+      <ol>
+        <li>
+          <strong>Root cause audit</strong> — เปิด YouTrack ย้อนหลัง หยิบบั๊กที่ปิดไปแล้ว 3 ตัว
+          → เขียน error/defect/failure ของแต่ละตัว
+          → ดูว่ามีกี่ตัวที่ <strong>root cause จริงอยู่ที่ spec ไม่ใช่โค้ด</strong>
+        </li>
+        <li>
+          <strong>Ambiguity review</strong> — หยิบ acceptance criteria ล่าสุด 1 ใบ
+          → ทำ ambiguity review ตามตาราง <a href="#ambiguity-review">L0.5</a> → นับจุดกำกวม
+        </li>
+        <li>
+          <strong>Pipeline mapping</strong> <span class="st">⭐</span> — ไล่ pipeline stage S1–S8.5
+          → เขียนว่าแต่ละ stage เป็น static/dynamic, verification/validation, testing/checking
+          → <strong>หาช่องว่างที่ไม่มี stage ไหนคุมเลย</strong>
+        </li>
+        <li>
+          <strong>ISO 25010 self-score</strong> — เอาทั้ง 9 ข้อมาไล่กับ Pedpro
+          → ให้คะแนนตัวเอง 0–3 ว่าเคยเทสมิตินั้นจริงจังแค่ไหน
+        </li>
+        <li>
+          <strong>Defect clustering</strong> — หา module ที่มีบั๊กเยอะสุดใน YouTrack → ตั้งสมมติฐานว่าทำไม
+        </li>
+      </ol>
+
+      <div class="note take">
+        <span class="note-t">สรุปแกนที่ต้องติดหัวไป L1</span>
+        <div class="diagram" style="margin:8px 0 0">Error → Defect → Failure          (RIP: reach + infect + propagate)
+Verification ⟂ Validation          (pipeline แข็ง V1 อ่อน V2)
+Level ⟂ Type ⟂ Static/Dynamic      (3 แกนตั้งฉาก ไม่ใช่ตัวเลือกแทนกัน)
+Testing ⊃ Checking                 (agent ทำได้แค่ checking)
+Oracle problem                     (ไม่มี oracle = ทดสอบไม่ได้ ทำได้แค่มอง)
+Exhaustive impossible              (→ ต้อง "เลือก" → นั่นคือ L1 ทั้งชั้น)</div>
+      </div>
+
+      <div class="pager">
+        <a href="index.html"><span class="dir">← ก่อนหน้า</span><span class="ttl">ภาพรวม</span></a>
+        <a class="next" href="l1-design.html"><span class="dir">ชั้นถัดไป →</span><span class="ttl">L1 — ออกแบบเทส</span></a>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<button class="top" aria-label="กลับขึ้นบน">↑</button>
+<script>
+/* ============================================================
+   Pedpro Testing & QE Field Manual — shared behaviour
+   ไม่ใช้ localStorage / sessionStorage โดยเจตนา
+   ============================================================ */
+(function () {
+  "use strict";
+
+  var main = document.querySelector(".main");
+  var tocEl = document.getElementById("toc");
+  var railCol = document.querySelector(".rail-col");
+
+  /* ---------------------------------------------------------
+     1. slug + heading prep
+     --------------------------------------------------------- */
+  function slug(txt) {
+    return txt
+      .trim()
+      .replace(/[⭐★]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9._-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "")
+      .toLowerCase();
+  }
+
+  var heads = main ? Array.prototype.slice.call(main.querySelectorAll("h2, h3, h4")) : [];
+  var used = {};
+
+  heads.forEach(function (h) {
+    if (!h.id) {
+      var base = slug(h.textContent) || "s";
+      used[base] = (used[base] || 0) + 1;
+      h.id = used[base] > 1 ? base + "-" + used[base] : base;
+    }
+    // ⭐ ในหัวข้อ = สัญญาณความสำคัญ → ขีดทองที่ขอบซ้าย
+    if (/[⭐★]/.test(h.textContent)) h.classList.add("imp");
+  });
+
+  /* ---------------------------------------------------------
+     2. build page TOC
+     --------------------------------------------------------- */
+  if (tocEl && heads.length) {
+    var ul = document.createElement("ul");
+    heads.forEach(function (h) {
+      var lv = +h.tagName.slice(1);
+      var li = document.createElement("li");
+      var a = document.createElement("a");
+      a.href = "#" + h.id;
+      a.className = lv === 3 ? "lv3" : lv === 4 ? "lv4" : "lv2";
+      if (/[⭐★]/.test(h.textContent)) a.classList.add("star");
+      a.textContent = h.textContent.replace(/[⭐★]/g, "").trim();
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    var empty = document.createElement("div");
+    empty.className = "toc-empty";
+    empty.textContent = "ไม่พบหัวข้อที่ตรงกัน";
+    tocEl.appendChild(ul);
+    tocEl.appendChild(empty);
+  }
+
+  /* ---------------------------------------------------------
+     3. scrollspy
+     --------------------------------------------------------- */
+  var links = tocEl ? Array.prototype.slice.call(tocEl.querySelectorAll("a")) : [];
+  var byId = {};
+  links.forEach(function (a) { byId[a.getAttribute("href").slice(1)] = a; });
+
+  var visible = new Set();
+
+  function paint() {
+    if (!links.length) return;
+    var best = null, bestTop = Infinity;
+    visible.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var t = el.getBoundingClientRect().top;
+      if (t < bestTop) { bestTop = t; best = id; }
+    });
+    if (!best) {
+      // ไม่มีหัวข้อในจอ → เลือกหัวข้อสุดท้ายที่ผ่านไปแล้ว
+      for (var i = heads.length - 1; i >= 0; i--) {
+        if (heads[i].getBoundingClientRect().top < 120) { best = heads[i].id; break; }
+      }
+    }
+    links.forEach(function (a) { a.classList.remove("on"); });
+    if (best && byId[best]) {
+      byId[best].classList.add("on");
+      var a = byId[best];
+      var rTop = railCol.scrollTop, rBot = rTop + railCol.clientHeight;
+      var aTop = a.offsetTop, aBot = aTop + a.offsetHeight;
+      if (aTop < rTop + 60 || aBot > rBot - 40) {
+        railCol.scrollTo({ top: aTop - railCol.clientHeight / 2, behavior: "auto" });
+      }
+    }
+  }
+
+  if ("IntersectionObserver" in window && heads.length) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) visible.add(e.target.id);
+        else visible.delete(e.target.id);
+      });
+      paint();
+    }, { rootMargin: "-" + (56 + 24) + "px 0px -70% 0px", threshold: 0 });
+    heads.forEach(function (h) { io.observe(h); });
+    window.addEventListener("scroll", function () {
+      clearTimeout(paint._t);
+      paint._t = setTimeout(paint, 90);
+    }, { passive: true });
+  }
+
+  /* ---------------------------------------------------------
+     4. copy buttons
+     --------------------------------------------------------- */
+  Array.prototype.forEach.call(document.querySelectorAll(".code"), function (box) {
+    var bar = box.querySelector(".code-bar");
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.className = "code-bar";
+      bar.innerHTML = '<span class="code-lang">code</span>';
+      box.insertBefore(bar, box.firstChild);
+    }
+    if (bar.querySelector(".code-copy")) return;
+    var btn = document.createElement("button");
+    btn.className = "code-copy";
+    btn.type = "button";
+    btn.textContent = "คัดลอก";
+    btn.addEventListener("click", function () {
+      var pre = box.querySelector("pre");
+      var txt = pre ? pre.innerText : "";
+      var done = function () {
+        btn.textContent = "คัดลอกแล้ว ✓";
+        btn.classList.add("done");
+        setTimeout(function () { btn.textContent = "คัดลอก"; btn.classList.remove("done"); }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(done, fallback);
+      } else fallback();
+      function fallback() {
+        var ta = document.createElement("textarea");
+        ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); done(); } catch (e) {}
+        document.body.removeChild(ta);
+      }
+    });
+    bar.appendChild(btn);
+  });
+
+  /* ---------------------------------------------------------
+     5. collapsible h3 sections
+     หมายเหตุ: default = กางไว้ เพื่อให้ Ctrl+F ของเบราว์เซอร์
+     ค้นเจอทั้งหน้า — reference guide ต้องค้นได้ก่อนต้องสวย
+     --------------------------------------------------------- */
+  var folds = [];
+  heads.filter(function (h) { return h.tagName === "H3"; }).forEach(function (h3) {
+    var body = document.createElement("div");
+    body.className = "fold-b";
+    var n = h3.nextSibling;
+    while (n) {
+      var next = n.nextSibling;
+      if (n.nodeType === 1 && (/^H[123]$/.test(n.tagName) || n.classList.contains("pager"))) break;
+      body.appendChild(n);
+      n = next;
+    }
+    h3.parentNode.insertBefore(body, h3.nextSibling);
+    h3.classList.add("fold-h");
+    h3.setAttribute("role", "button");
+    h3.setAttribute("tabindex", "0");
+    h3.setAttribute("aria-expanded", "true");
+    function toggle() {
+      var open = h3.getAttribute("aria-expanded") === "true";
+      h3.setAttribute("aria-expanded", open ? "false" : "true");
+    }
+    h3.addEventListener("click", function (e) {
+      if (e.target.tagName === "A") return;
+      toggle();
+    });
+    h3.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+    });
+    folds.push(h3);
+  });
+
+  var foldBtn = document.getElementById("foldAll");
+  if (foldBtn) {
+    foldBtn.addEventListener("click", function () {
+      var collapse = foldBtn.getAttribute("aria-pressed") !== "true";
+      folds.forEach(function (h) { h.setAttribute("aria-expanded", collapse ? "false" : "true"); });
+      foldBtn.setAttribute("aria-pressed", collapse ? "true" : "false");
+      foldBtn.textContent = collapse ? "กางทั้งหมด" : "ยุบหัวข้อย่อย";
+    });
+  }
+
+  /* ---------------------------------------------------------
+     6. search — กรอง TOC ของหน้าปัจจุบัน
+     --------------------------------------------------------- */
+  var search = document.getElementById("search");
+  if (search && tocEl) {
+    var items = Array.prototype.slice.call(tocEl.querySelectorAll("li"));
+    search.addEventListener("input", function () {
+      var q = search.value.trim().toLowerCase();
+      tocEl.classList.toggle("filtered", !!q);
+      var hits = 0;
+      items.forEach(function (li) {
+        var a = li.querySelector("a");
+        var hit = !q || a.textContent.toLowerCase().indexOf(q) > -1;
+        li.classList.toggle("hide", !hit);
+        if (hit) hits++;
+      });
+      var e = tocEl.querySelector(".toc-empty");
+      if (e) e.style.display = q && hits === 0 ? "block" : "none";
+    });
+    search.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        var first = tocEl.querySelector("li:not(.hide) a");
+        if (first) { first.click(); search.blur(); }
+      }
+      if (e.key === "Escape") { search.value = ""; search.dispatchEvent(new Event("input")); search.blur(); }
+    });
+  }
+
+  /* ---------------------------------------------------------
+     7. rail drawer (mobile)
+     --------------------------------------------------------- */
+  var railBtn = document.getElementById("railToggle");
+  if (railBtn && railCol) {
+    railBtn.addEventListener("click", function () {
+      railCol.classList.toggle("open");
+      railBtn.setAttribute("aria-expanded", railCol.classList.contains("open") ? "true" : "false");
+    });
+    railCol.addEventListener("click", function (e) {
+      if (e.target.tagName === "A" && window.innerWidth <= 860) railCol.classList.remove("open");
+    });
+  }
+
+  /* ---------------------------------------------------------
+     8. keyboard
+     --------------------------------------------------------- */
+  document.addEventListener("keydown", function (e) {
+    var tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea") return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+    if (e.key === "/") { e.preventDefault(); if (search) search.focus(); }
+    if (e.key === "t" && railCol) railCol.classList.toggle("open");
+
+    var prev = document.querySelector('link[rel="prev"]');
+    var next = document.querySelector('link[rel="next"]');
+    if (e.key === "[" && prev) location.href = prev.href;
+    if (e.key === "]" && next) location.href = next.href;
+  });
+
+  /* ---------------------------------------------------------
+     9. back to top
+     --------------------------------------------------------- */
+  var top = document.querySelector(".top");
+  if (top) {
+    top.addEventListener("click", function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    window.addEventListener("scroll", function () {
+      top.classList.toggle("on", window.scrollY > 700);
+    }, { passive: true });
+  }
+
+  /* ---------------------------------------------------------
+     10. deep-link highlight
+     --------------------------------------------------------- */
+  function flash() {
+    if (!location.hash) return;
+    var el = document.getElementById(location.hash.slice(1));
+    if (!el) return;
+    el.classList.add("mark");
+    setTimeout(function () { el.classList.remove("mark"); }, 1900);
+  }
+  window.addEventListener("hashchange", flash);
+  flash();
+})();
+
+</script>
+</body>
+</html>

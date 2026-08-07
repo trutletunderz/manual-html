@@ -1,0 +1,39 @@
+{
+  "_comment": "merge scripts เหล่านี้เข้า package.json ของโปรเจกต์",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run test/unit",
+    "test:i18n": "vitest run test/i18n",
+    "test:security": "vitest run security/",
+    "test:authz": "vitest run security/authz",
+    "test:authz:complete": "vitest run security/authz -t completeness",
+    "test:race": "vitest run security/race",
+    "test:shuffle": "for s in 1 2 3; do vitest run --sequence.shuffle --sequence.seed=$s || exit 1; done",
+
+    "e2e": "playwright test",
+    "e2e:smoke": "playwright test --grep @smoke",
+    "e2e:line": "playwright test --project=line-inapp",
+
+    "gate:all": "./ci/run-gates.sh",
+    "gate:filescope": "./ci/s6-file-scope-guard.sh",
+
+    "drill:make": "./drills/make-drills.sh",
+    "drill:gate": "./scripts/gate-drill.sh",
+    "drill:rollback": "./scripts/rollback-drill.sh",
+    "drill:alert": "./scripts/alert-drill.sh",
+
+    "audit:phase1": "./scripts/phase1-audit.sh",
+    "audit:bundle": "node scripts/bundle-budget.mjs",
+    "audit:secrets": "node security/secrets/scan.mjs",
+    "audit:secrets:history": "node security/secrets/scan.mjs history",
+
+    "knowledge:gc": "node scripts/knowledge-gc.mjs --write",
+
+    "perf:smoke": "k6 run perf/scenarios/smoke.js",
+    "perf:load": "k6 run perf/scenarios/load.js && node perf/analyze/validity.mjs && node perf/analyze/gate.mjs",
+
+    "mutation": "stryker run",
+    "mutation:incremental": "stryker run --incremental"
+  }
+}

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testing &amp; Quality Engineering — คู่มือภาคสนาม 6 ชั้น | Pedpro</title>
+<meta name="description" content="คู่มืออ้างอิงเรื่องการทดสอบซอฟต์แวร์และ Quality Engineering 6 ชั้น ตั้งแต่ศัพท์พื้นฐานถึง mutation testing, LLM eval และ agentic QE — ภาษาไทย พร้อมโค้ดจริง">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="next" href="l0-foundation.html">
+</head>
+<body>
+
+<header class="hdr">
+  <button class="btn-ghost rail-toggle" id="railToggle" aria-expanded="false" aria-label="สลับสารบัญ">☰</button>
+  <div class="hdr-brand">pedpro <b>/</b> qe field manual</div>
+  <div class="hdr-crumb">index</div>
+  <div class="search-wrap">
+    <span class="search-ico">⌕</span>
+    <input class="search" id="search" type="search" placeholder="ค้นหัวข้อในหน้านี้" aria-label="ค้นหัวข้อ">
+    <span class="search-kbd">/</span>
+  </div>
+</header>
+
+<div class="shell">
+
+  <nav class="rail-col" aria-label="สารบัญ">
+    <p class="rail-label">gate chain</p>
+    <ul class="chain">
+      <li><a href="index.html" aria-current="page"><span class="node">◆</span><span class="lbl">ภาพรวม<span class="sub">index</span></span></a></li>
+      <li><a href="l0-foundation.html"><span class="node">L0</span><span class="lbl">รากฐาน<span class="sub">foundation</span></span></a></li>
+      <li><a href="l1-design.html"><span class="node">L1</span><span class="lbl">ออกแบบเทส<span class="sub">test design</span></span></a></li>
+      <li><a href="l2-automation.html"><span class="node">L2</span><span class="lbl">automation &amp; CI<span class="sub">gate design</span></span></a></li>
+      <li><a href="l3-nfr.html"><span class="node">L3</span><span class="lbl">non-functional<span class="sub">perf · sec · a11y · ไทย</span></span></a></li>
+      <li><a href="l4-qe.html"><span class="node">L4</span><span class="lbl">quality engineering<span class="sub">slo · learning loop</span></span></a></li>
+      <li><a href="l5-advanced.html"><span class="node">L5</span><span class="lbl">เทพ<span class="sub">mutation · llm eval</span></span></a></li>
+      <li><a href="appendix.html"><span class="node">◇</span><span class="lbl">ภาคผนวก<span class="sub">appendix</span></span></a></li>
+    </ul>
+    <p class="rail-label">ในหน้านี้</p>
+    <div class="toc" id="toc"></div>
+  </nav>
+
+  <main class="main">
+    <div class="wrap">
+
+      <div class="phead">
+        <p class="eyebrow">field manual · v1</p>
+        <h1>Testing &amp; Quality Engineering<br>คู่มือภาคสนาม 6 ชั้น</h1>
+        <p class="lede">
+          จากไม่รู้อะไรเลย ถึงระดับที่ออกแบบระบบตรวจสอบให้ทีมที่ประกอบด้วย agent ได้ —
+          เขียนสำหรับ frontend dev ที่รัน agentic pipeline อยู่แล้ว ไม่ใช่สำหรับคนที่จะไปนั่งคลิกตามสเปค
+        </p>
+        <div class="meta">
+          <span class="meta-chip">6 ชั้น <b>+ ภาคผนวก</b></span>
+          <span class="meta-chip">เช็คลิสต์ <b>~180 ข้อ</b></span>
+          <span class="meta-chip">โค้ดจริง <b>ครบทุกบรรทัด</b></span>
+          <span class="meta-chip">บริบท <b>Nuxt 4 · Cloud Run · ผู้ใช้ไทย</b></span>
+        </div>
+      </div>
+
+      <p class="lead-in">
+        คู่มือนี้ไม่ได้เขียนให้อ่านรวดเดียวจบ มันเขียนให้เปิดกลางงาน —
+        เจอปัญหาแล้วเปิดหาว่า “เคสแบบนี้ใช้เทคนิคไหน” หรือ “gate ตัวนี้ตั้งยังไง”
+        ถ้าคุณมาที่นี่เพราะกำลังติดอะไรอยู่ ให้ข้ามไปที่
+        <a href="#เลือกเทคนิค">ตารางเลือกเทคนิค</a> ได้เลย
+      </p>
+
+      <h2 id="แนวคิดเดียว"><span class="num">§1</span>แนวคิดเดียวที่ร้อยทั้ง 6 ชั้น <span class="st">⭐</span></h2>
+
+      <div class="note take">
+        <span class="note-t">thesis</span>
+        <p style="font-size:19px;line-height:1.7;margin:0"><strong>ระบบป้องกันที่ไม่เคยถูกโจมตี ไม่รู้ว่ามันป้องกันได้จริงมั้ย</strong></p>
+      </div>
+
+      <p>
+        ทุกเทคนิคในคู่มือนี้ ถ้าไล่ลงไปถึงราก มันคือประโยคเดียวกันในระดับที่ต่างกัน —
+        การจงใจใส่ของเสียเข้าไปเพื่อดูว่าระบบจับได้มั้ย ไม่ใช่การหวังว่ามันจะจับได้
+      </p>
+
+      <div class="diagram">โจมตีอะไร            ชื่อเทคนิค              อยู่ชั้นไหน
+───────────────────────────────────────────────────────────
+โค้ด                mutation testing         L5
+gate                gate drill               L2 · L5
+มนุษย์ (ตัวคุณเอง)   approval drill           L4
+ระบบทั้งระบบ         chaos engineering        L5
+prompt / context    held-out eval            L5
+การกู้คืน           rollback drill           L3
+เส้นทางแจ้งเตือน     alert drill              L3</div>
+
+      <p>
+        และอีกแกนหนึ่งที่ร้อยทุกชั้นเช่นกันคือ <strong>oracle problem</strong> —
+        คำถามว่า “เรารู้ได้ยังไงว่าผลลัพธ์ที่เห็นถูก” ซึ่งเปิดไว้ที่
+        <a class="xref" href="l0-foundation.html#test-oracle">L0.10</a>
+        แล้วค่อยๆ ถูกปิดด้วย oracle ที่มีแหล่งกำเนิดนอกตัวระบบเอง —
+        invariant, contract ที่แก้ไม่ได้, red-proof, property, และข้อมูล production จริง
+      </p>
+
+      <h2 id="แผนที่-6-ชั้น"><span class="num">§2</span>แผนที่ 6 ชั้น</h2>
+
+      <p>แต่ละชั้นตอบคำถามคนละคำถาม และชั้นถัดไปตอบคำถามที่ชั้นก่อนหน้าเปิดค้างไว้</p>
+
+      <div class="diagram">L0  คำศัพท์ + testing vs checking + oracle problem
+      ↓  (oracle problem เปิดค้าง)
+L1  เทคนิคออกแบบเทส — วิธี "เลือก" เมื่อ exhaustive เป็นไปไม่ได้
+      ↓  (ได้ 78 เทสต่อฟีเจอร์ — จะเอาไปวางตรงไหน?)
+L2  สถาปัตยกรรม + gate + F.I.R.S.T+U + agent failure mode
+      ↓  (gate ที่สร้างไว้ ทำงานจริงมั้ย?)
+L3  NFR: perf · security · a11y · localization ไทย · resilience
+      ↓  (เจอปัญหาแล้วทำยังไงต่อ?)
+L4  QE: SLO · error budget · learning loop · agentic QE
+      ↓  (แล้วเทสของเราเองดีพอมั้ย? สิ่งที่ไม่ deterministic ล่ะ?)
+L5  mutation · property · model-based · LLM eval · injection defense
+      ↓
+    วนกลับไปปิด oracle problem ของ L0</div>
+
+      <div class="cards">
+
+        <a class="card" href="l0-foundation.html">
+          <div class="card-id">L0 — FOUNDATION</div>
+          <h3>รากฐาน</h3>
+          <p class="card-q">“บั๊กตัวนี้ root cause อยู่ชั้นไหน และเรารู้ได้ยังไงว่าอะไรถูก”</p>
+          <p>Error→Defect→Failure, RIP model, verification vs validation, test level/type, static testing, <strong>testing vs checking</strong>, 7 principles, test process, oracle + HICCUPPS, ISO 25010</p>
+          <div class="card-tags">
+            <span class="tag">2–4 สัปดาห์</span><span class="tag">13 เช็คลิสต์</span><span class="tag">5 แบบฝึกหัด</span>
+          </div>
+        </a>
+
+        <a class="card" href="l1-design.html">
+          <div class="card-id">L1 — TEST DESIGN</div>
+          <h3>ออกแบบเทส <span class="st">⭐</span></h3>
+          <p class="card-q">“requirement แบบนี้ ใช้เทคนิคไหน ลึกแค่ไหน”</p>
+          <p>EP, BVA, Decision Table, State Transition, Pairwise, Classification Tree, MC-DC, Fault Attack, <strong>Exploratory + SBTM</strong>, Risk-Based Testing, metamorphic oracle, RIMGEA</p>
+          <div class="card-tags">
+            <span class="tag">2–3 เดือน</span><span class="tag">ชั้นที่แยกเทพ</span><span class="tag">คำนวณจริงทุกเทคนิค</span>
+          </div>
+        </a>
+
+        <a class="card" href="l2-automation.html">
+          <div class="card-id">L2 — AUTOMATION &amp; CI</div>
+          <h3>automation &amp; gate design</h3>
+          <p class="card-q">“เทส 78 ตัวนี้ควรอยู่ชั้นไหน และ gate ควรเรียงยังไง”</p>
+          <p>Pyramid/Trophy/Honeycomb, <strong>F.I.R.S.T + U</strong> เป็นเกณฑ์ปฏิเสธ, test doubles, contract testing, flaky taxonomy, gate design, <strong>8 failure mode ของ agent</strong>, gate drill</p>
+          <div class="card-tags">
+            <span class="tag">3–6 เดือน</span><span class="tag">ตรงกับ pipeline ที่สุด</span>
+          </div>
+        </a>
+
+        <a class="card" href="l3-nfr.html">
+          <div class="card-id">L3 — NON-FUNCTIONAL</div>
+          <h3>perf · security · a11y · ไทย</h3>
+          <p class="card-q">“มันทำงานถูก แต่มันดีพอมั้ย”</p>
+          <p>NFR template 6 องค์ประกอบ, open vs closed model, Little's Law, k6, Web Vitals, N+1 detector, threat model, authz matrix, race condition, WCAG 2.2, <strong>localization ไทยฉบับเต็ม</strong>, chaos-lite</p>
+          <div class="card-tags">
+            <span class="tag">ต่อเนื่อง</span><span class="tag">คนไทยพลาดเยอะสุด</span><span class="tag">โค้ดเยอะสุด</span>
+          </div>
+        </a>
+
+        <a class="card" href="l4-qe.html">
+          <div class="card-id">L4 — QUALITY ENGINEERING</div>
+          <h3>ระบบที่ผลิต release <span class="st">⭐</span></h3>
+          <p class="card-q">“ทำไมบั๊กชนิดนี้ถึงหลุดมาได้ และจะทำให้มันหลุดไม่ได้อีกยังไง”</p>
+          <p>Policy/Strategy/Plan, shift-left 5 ระดับ, shift-right, <strong>production invariant monitor</strong>, SLO + error budget, <strong>approval drill</strong>, escape taxonomy, knowledge lifecycle, agentic QE</p>
+          <div class="card-tags">
+            <span class="tag">ไม่มีเทคนิคใหม่</span><span class="tag">จัดวางสิ่งที่มีอยู่</span>
+          </div>
+        </a>
+
+        <a class="card" href="l5-advanced.html">
+          <div class="card-id">L5 — ADVANCED</div>
+          <h3>เทพ <span class="st">⭐</span></h3>
+          <p class="card-q">“แล้วเทสของเราเองดีพอมั้ย และจะเทสสิ่งที่ไม่มีคำตอบตายตัวยังไง”</p>
+          <p>Mutation testing + custom mutator, property-based, model-based, metamorphic, fuzzing, chaos, <strong>LLM eval + judge calibration</strong>, <strong>prompt injection defense</strong>, SPC, golden master, shadow run</p>
+          <div class="card-tags">
+            <span class="tag">วัดระบบทดสอบเอง</span><span class="tag">non-deterministic</span>
+          </div>
+        </a>
+
+      </div>
+
+      <h2 id="เส้นทางการอ่าน"><span class="num">§3</span>เส้นทางการอ่าน — เลือกตามสถานการณ์</h2>
+
+      <h3 id="path-a">A. เปลี่ยนสายมาทำ Tester/QA จากศูนย์</h3>
+      <p>เป้าคือ <strong>คำศัพท์ที่คุยกับ HR รู้เรื่อง + เทคนิคที่ใช้ได้จริง</strong></p>
+      <div class="diagram">L0 ทั้งหมด          → 2-4 สัปดาห์
+L1 ทั้งหมด          → 2-3 เดือน  ⭐ อย่าข้าม ชั้นนี้คือชั้นที่แยกเทพ
+L2.1 – L2.4         → พอเข้าใจว่าเทสไปวางตรงไหน
+L3.5 (a11y) + L3.7  → ทักษะที่หาคนทำได้ยากในไทย
+──── หยุดตรงนี้ได้ สมัครงานได้แล้ว ────
+L4 · L5             → ตอนอยู่ในงานจริงแล้ว</div>
+      <p>เรื่อง cert: ISTQB Foundation ใช้ผ่าน HR และได้ vocabulary มาตรฐาน อ่าน syllabus 2–3 สัปดาห์ก็สอบได้ แต่มันไม่ทำให้เทสเก่งขึ้นเลย — ถ้าเป้าคือเก่งขึ้นให้อ่าน <em>Explore It!</em> ของ Elisabeth Hendrickson แทน</p>
+
+      <h3 id="path-b">B. Dev ที่อยากเทสเป็นจริงๆ</h3>
+      <div class="diagram">L0.6 testing vs checking    → เข้าใจว่าทำไม automation ไม่พอ
+L0.10 oracle problem        → เข้าใจว่าปัญหาที่แท้จริงคืออะไร
+L1 ทั้งหมด                  → ⭐ ตรงนี้คือของจริง
+L2 ทั้งหมด                  → สถาปัตยกรรมและ gate
+L5.1 mutation               → วัดว่าเทสที่เขียนมามีค่าจริงมั้ย
+L5.2 property-based         → เทสที่คิดเคสให้เอง</div>
+
+      <h3 id="path-c">C. คนที่มี agentic pipeline อยู่แล้ว <span class="st">⭐</span></h3>
+      <p>เส้นทางนี้ตัดตรงไปที่สิ่งที่ agent ทำให้พังแล้ว automation ปกติจับไม่ได้</p>
+      <div class="diagram">L0.6  testing vs checking      → agent ทำ checking ได้ ทำ testing ไม่ได้
+L2.2  F.I.R.S.T + U            → แปลงเป็นเกณฑ์ปฏิเสธของ gate
+L2.14 8 failure mode ของ agent → ⭐⭐ file-scope guard + red-proof
+L4.5  approval drill           → ⭐⭐ human gate ยังทำงานอยู่มั้ย
+L4.12 agentic QE               → judgment budget · accountability
+L5.7  LLM eval                 → held-out · judge calibration · model drift
+L5.11 prompt injection         → ⭐⭐ ช่องโหว่ที่มีอยู่จริงตอนนี้
+L5.1  mutation                 → วัด oracle strength ของเทสที่ agent เขียน</div>
+
+      <div class="note imp">
+        <span class="note-t">ถ้าทำได้แค่ 3 อย่าง</span>
+        <ol style="margin:0">
+          <li><strong>Production invariant monitor</strong> (<a class="xref" href="l4-qe.html#invariant-monitor">L4.3</a>) — 3 ชม. จับสิ่งที่ pipeline ทั้งชุดไม่มีทางจับ เพราะมันทำงานกับข้อมูลจริงทั้งหมด ไม่ใช่เคสที่มีคนคิดถึง</li>
+          <li><strong>File-scope guard + red-proof</strong> (<a class="xref" href="l2-automation.html#agent-failure-mode">L2.14</a>) — ครึ่งวัน ปิด failure mode ที่แพงที่สุดของ agentic pipeline</li>
+          <li><strong>Approval drill</strong> (<a class="xref" href="l4-qe.html#approval-drill">L4.5</a>) — ตอบคำถามที่ยังไม่มีใครตอบให้คุณได้ ว่า human gate ของคุณยังเป็น gate อยู่มั้ย</li>
+        </ol>
+      </div>
+
+      <h2 id="เลือกเทคนิค"><span class="num">§4</span>ตารางเลือกเทคนิคใน 2 นาที <span class="st">⭐</span></h2>
+
+      <p>อ่าน requirement แล้วมองหาลักษณะพวกนี้ — นี่คือ 80% ของงาน test analysis</p>
+
+      <div class="tbl">
+        <table>
+          <thead>
+            <tr><th style="width:44%">ถ้า requirement มีลักษณะนี้</th><th>ใช้เทคนิค</th><th style="width:18%">อยู่ที่</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>มีค่าที่เรียงลำดับได้ + มีขอบ</td><td><strong>BVA</strong> (+ EP เสมอ)</td><td class="num-col"><a class="xref" href="l1-design.html#bva">L1.2</a></td></tr>
+            <tr><td>มีค่าเป็นกลุ่มที่ไม่เรียงลำดับ</td><td><strong>Equivalence Partitioning</strong></td><td class="num-col"><a class="xref" href="l1-design.html#ep">L1.1</a></td></tr>
+            <tr><td>มีคำว่า “และ / หรือ / ถ้า…ยกเว้น” ≥ 2 เงื่อนไข</td><td><strong>Decision Table</strong></td><td class="num-col"><a class="xref" href="l1-design.html#decision-table">L1.3</a></td></tr>
+            <tr><td>มีคำว่า “สถานะ / หลังจาก / ก่อนที่ / ต้อง…ก่อน”</td><td><strong>State Transition</strong></td><td class="num-col"><a class="xref" href="l1-design.html#state-transition">L1.4</a></td></tr>
+            <tr><td>มีคำว่า “รองรับ A, B, C บน X, Y” (config)</td><td><strong>Pairwise</strong></td><td class="num-col"><a class="xref" href="l1-design.html#pairwise">L1.5</a></td></tr>
+            <tr><td>มีหลายมิติที่ไม่รู้ว่าครบยัง</td><td><strong>Classification Tree</strong></td><td class="num-col"><a class="xref" href="l1-design.html#classification-tree">L1.6</a></td></tr>
+            <tr><td>เป็น flow ที่มีลำดับขั้นและมีทางแยก</td><td><strong>Use Case / Scenario</strong></td><td class="num-col"><a class="xref" href="l1-design.html#scenario">L1.x</a></td></tr>
+            <tr><td>เป็นสูตรคำนวณที่ตรวจผลยาก</td><td><strong>Metamorphic relation</strong></td><td class="num-col"><a class="xref" href="l1-design.html#metamorphic">L1.11</a></td></tr>
+            <tr><td>เป็นโค้ดที่มี boolean ซับซ้อน + แตะเงิน</td><td><strong>MC-DC</strong></td><td class="num-col"><a class="xref" href="l1-design.html#mcdc">L1.7</a></td></tr>
+            <tr><td>ไม่มี spec / spec ห่วย / ของใหม่</td><td><strong>Exploratory + Fault attack</strong></td><td class="num-col"><a class="xref" href="l1-design.html#exploratory">L1.9</a></td></tr>
+            <tr><td>ไม่รู้จะเริ่มตรงไหน</td><td><strong>Risk register ก่อนเสมอ</strong></td><td class="num-col"><a class="xref" href="l1-design.html#risk-based">L1.10</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="วิธีอ่าน"><span class="num">§5</span>วิธีอ่านคู่มือนี้</h2>
+
+      <div class="kv">
+        <div><span class="k">⭐ ในหัวข้อ</span><span class="v">จุดที่ถ้าอ่านแค่บางส่วน ให้อ่านตรงนี้ — มีขีดทองที่ขอบซ้ายให้กวาดตาหา</span></div>
+        <div><span class="k">กล่องสีเหลือง</span><span class="v">ประเด็นสำคัญ / กับดักที่คนพลาดบ่อย</span></div>
+        <div><span class="k">กล่องสีแดง</span><span class="v">ข้อผิดพลาดที่แก้แล้ว หรือสิ่งที่ห้ามทำ</span></div>
+        <div><span class="k">กล่องสีเขียว</span><span class="v">สิ่งที่ควรทำ / รูปแบบที่ถูกต้อง</span></div>
+        <div><span class="k">กล่องสีฟ้า</span><span class="v">การแก้ไขจากการทบทวน — ของเดิมผิดตรงไหนและทำไม</span></div>
+        <div><span class="k">ตัวหนังสือ mono</span><span class="v">ภาษาเครื่องเสมอ — gate id, stage, metric, path, ค่าคงที่</span></div>
+      </div>
+
+      <p><strong>คีย์ลัด:</strong> <kbd>/</kbd> ค้นหา · <kbd>t</kbd> สลับสารบัญ · <kbd>[</kbd> <kbd>]</kbd> ชั้นก่อนหน้า/ถัดไป · <kbd>Esc</kbd> ล้างการค้นหา</p>
+
+      <div class="note">
+        <span class="note-t">หมายเหตุเรื่องการยุบหัวข้อ</span>
+        <p>หัวข้อระดับ 3 <strong>กางไว้เป็นค่าเริ่มต้น</strong> ทั้งที่ตอนวางแผนบอกว่าจะยุบ — เพราะถ้ายุบไว้ <kbd>Ctrl</kbd>+<kbd>F</kbd> ของเบราว์เซอร์จะค้นไม่เจอเนื้อหาที่ถูกซ่อน ซึ่งขัดกับหน้าที่หลักของ reference guide ปุ่ม <em>ยุบหัวข้อย่อย</em> ที่หัวหน้าไว้ใช้ตอนอยากกวาดโครงสร้าง</p>
+      </div>
+
+      <h2 id="โค้ดในคู่มือ"><span class="num">§6</span>เรื่องโค้ดตัวอย่าง <span class="st">⭐</span></h2>
+
+      <div class="note warn">
+        <span class="note-t">ต้องปรับให้ตรงสแตกจริงก่อนใช้</span>
+        <p>โค้ดในคู่มือนี้ <strong>เดา API shape ของ Pedpro ไว้หลายจุด</strong> — คัดลอกไปแล้วรันทันทีไม่ได้ ต้องแมปกับของจริงก่อน จุดที่เดาไว้แน่ๆ:</p>
+        <div class="tbl" style="margin-bottom:0">
+          <table>
+            <thead><tr><th style="width:38%">ที่เดาไว้</th><th>ต้องตรวจว่าของจริงคืออะไร</th></tr></thead>
+            <tbody>
+              <tr><td><code>res?.Result === 1</code></td><td>รูปแบบ success/failure จริงของ API layer</td></tr>
+              <tr><td><code>{ Result, Error, Data }</code></td><td>ชื่อฟิลด์ใน response envelope</td></tr>
+              <tr><td><code>DoAdmin</code> / <code>DoIp</code></td><td>ชนิดข้อมูลและตำแหน่งที่ถูกใส่ (body / header / server-side)</td></tr>
+              <tr><td><code>createUser()</code> <code>getBalance()</code> <code>fetchAccounting()</code></td><td>test helper — ต้องเขียนเองตาม internal API ที่มี</td></tr>
+              <tr><td><code>/internal/accounting/:id</code> <code>/internal/audit/count</code></td><td>endpoint ภายในสำหรับเทส — ยังไม่มี ต้องสร้าง</td></tr>
+              <tr><td><code>getLedgerSum()</code> <code>getLedgerEntries()</code></td><td>โครงสร้างตาราง ledger จริง</td></tr>
+              <tr><td>ชื่อ stage <code>S1</code>–<code>S8.5</code></td><td>ตรงกับ pedpro-pipeline แล้ว แต่ชื่อ artifact/ไฟล์อาจต่าง</td></tr>
+              <tr><td><code>data-test</code> selector</td><td>ตรงแล้ว — แต่ต้องตั้ง <code>testIdAttribute</code> ใน Playwright config</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p>
+        โค้ดทุกบล็อกมีปุ่มคัดลอก และตั้งใจให้เป็น <strong>โครงที่สมบูรณ์</strong> ไม่ใช่ snippet ที่ต้องเดาส่วนที่เหลือ —
+        ถ้าเห็น <code>// ...</code> แปลว่าจงใจตัดจริงๆ ไม่ใช่ขี้เกียจเขียน
+      </p>
+
+      <h2 id="การตัดสินใจที่ล็อกแล้ว"><span class="num">§7</span>การตัดสินใจที่ล็อกแล้ว</h2>
+
+      <p>คู่มือนี้เขียนบนสมมติฐานเหล่านี้ ถ้าข้อไหนเปลี่ยน เนื้อหาบางส่วนต้องทบทวน</p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:34%">การตัดสินใจ</th><th>สถานะ</th><th style="width:26%">กระทบชั้นไหน</th></tr></thead>
+          <tbody>
+            <tr><td>conductor ไม่เขียน application code</td><td class="yes">ล็อกแล้ว</td><td class="num-col">L2 · L4</td></tr>
+            <tr><td>Codex CLI ที่ S7 เป็น reviewer อิสระ (ไม่ใช่ Claude)</td><td class="yes">ล็อกแล้ว</td><td class="num-col">L0.5 · L2.11 · L4.12</td></tr>
+            <tr><td>Bruno contract เป็น read-only</td><td class="yes">ล็อกแล้ว</td><td class="num-col">L2.5 · L5 (oracle provenance)</td></tr>
+            <tr><td>deterministic gate มาก่อน LLM reviewer เสมอ</td><td class="yes">ล็อกแล้ว</td><td class="num-col">L2.11 · L4.1</td></tr>
+            <tr><td>fail-closed เป็นค่าเริ่มต้น</td><td class="yes">ล็อกแล้ว</td><td class="num-col">ทุกชั้น</td></tr>
+            <tr><td>subscription-first · ไม่พึ่ง metered API billing</td><td class="yes">ล็อกแล้ว</td><td class="num-col">L5.7 (eval cost)</td></tr>
+            <tr><td><strong>S8.5 human gate ข้ามไม่ได้</strong></td><td class="mid">ปรับเป็นแบบมีชั้น</td><td class="num-col">L4.7</td></tr>
+            <tr><td><strong>auto-approve งาน T0</strong> (risk 1–3)</td><td class="yes">รับแล้ว ✓</td><td class="num-col">L4.7 · L4.12</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note imp">
+        <span class="note-t">บันทึกการตัดสินใจ — auto-approve T0</span>
+        <p>
+          เดิมหลักคือ “S8.5 ข้ามไม่ได้” ตอนนี้ปรับเป็น <strong>“S8.5 ข้ามไม่ได้สำหรับ T1 ขึ้นไป และ T0 auto-approve ได้ภายใต้เงื่อนไข”</strong>
+        </p>
+        <p><strong>เหตุผล:</strong> human judgment คือคอขวดที่แท้จริงของ pipeline ไม่ใช่ agent throughput
+        การใช้มันกับการแก้ typo คือการเผาทรัพยากรที่แพงที่สุดกับงานที่ถูกที่สุด และที่แย่กว่าคือมันสร้าง habituation ซึ่งไปทำลายคุณภาพการตัดสินใจใน T3</p>
+        <p><strong>เงื่อนไขที่ต้องมีครบ:</strong></p>
+        <ul style="margin-bottom:8px">
+          <li>T0 นิยามแคบมาก — ไม่แตะเงิน ไม่แตะ auth ไม่แตะ webhook ไม่เปลี่ยนพฤติกรรมที่ผู้ใช้เห็น</li>
+          <li>audit sampling 10% — สุ่มตรวจย้อนหลังจริง ไม่ใช่ตั้งไว้เฉยๆ</li>
+          <li>ถ้า T0 เคยทำให้เกิด incident ครั้งเดียว → ยกเลิกทันที กลับไป required</li>
+          <li>วัด <code>t0_auto_approve_rate</code> คู่กับ <code>escaped_defect_rate</code> ของงาน T0 แยกต่างหาก</li>
+        </ul>
+        <p style="margin-bottom:0">รายละเอียดเต็มอยู่ที่ <a class="xref" href="l4-qe.html#tiered-dod">L4.7 Tiered DoD</a></p>
+      </div>
+
+      <h2 id="ข้อผิดพลาดที่แก้แล้ว"><span class="num">§8</span>ข้อผิดพลาดที่แก้แล้ว</h2>
+
+      <p>
+        คู่มือนี้ผ่านการทบทวนทุกชั้น และมีข้อผิดพลาดที่ถูกจับได้ระหว่างทาง 15 จุด
+        ทั้งหมดถูกแก้ในเนื้อหาแล้ว และเก็บบันทึกไว้ที่
+        <a class="xref" href="appendix.html#แก้ไข">ภาคผนวก → บันทึกการแก้ไข</a>
+        เพราะ<strong>ตัวความผิดพลาดมักสอนได้มากกว่าคำตอบที่ถูก</strong>
+      </p>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:14%">ชั้น</th><th>สิ่งที่ผิด</th><th style="width:34%">บทเรียนที่กว้างกว่าตัวบั๊ก</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col">L1</td><td>นับ 1-switch coverage ได้ 8 ควรเป็น 11 — ลืม initial transition</td><td>ต้องใส่ initial/terminal ในโมเดลเสมอ ไม่งั้นตัวเลข coverage โกหก</td></tr>
+            <tr><td class="num-col">L2</td><td>คณิตศาสตร์ flaky ปนสองความหมายของ p</td><td>retry ทำให้ build เขียวโดยที่ปัญหาไม่ลดลงเลย — วัด flake ที่ attempt แรกเสมอ</td></tr>
+            <tr><td class="num-col">L2</td><td>บอกให้ลบ gate ที่ efficacy = 0</td><td><strong>deterrence confound</strong> — gate ที่ได้ผลที่สุดคือ gate ที่ไม่เคยต้องทำงาน</td></tr>
+            <tr><td class="num-col">L3</td><td>ใช้ p95 ใน Little's Law แทน mean</td><td>over-provision 3 เท่า แล้วไปแก้ปัญหาผิดจุด</td></tr>
+            <tr><td class="num-col">L3</td><td>authz matrix มี <code>?? 403</code> เป็น default</td><td><strong>fail-open ที่ปลอมตัวเป็น fail-closed</strong> — endpoint ที่ลืมใส่ spec จะผ่านอัตโนมัติ</td></tr>
+            <tr><td class="num-col">L4</td><td>approval drill ใช้ defect ที่ automated gate จับได้</td><td>drill ที่ valid = <strong>แผนที่ของสิ่งที่ automation ยังจับไม่ได้</strong> และมันจะหดลงเรื่อยๆ</td></tr>
+            <tr><td class="num-col">L5</td><td>ใช้ McNemar บน pass rate ที่ binarize แล้ว</td><td>รัน 20 ครั้งเพื่อความละเอียด แล้วบีบเหลือ 1 บิต — ต้องใช้ hierarchical bootstrap</td></tr>
+            <tr><td class="num-col">L5</td><td>ใช้ Cohen's kappa กับ calibration set ที่เอียง</td><td><strong>kappa paradox</strong> — agreement 94% ได้ kappa 0.37 → เกณฑ์ที่ตั้งไว้ปฏิบัติไม่ได้</td></tr>
+            <tr><td class="num-col">L5</td><td>PII scanner จับ <code>Date.now()</code> เป็นเลขบัตรเครดิต</td><td>gate ที่ false positive สูงไม่ได้ “เข้มเกินไป” มันคือ <strong>gate ที่กำลังจะตาย</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="สถานะ"><span class="num">§9</span>สถานะของคู่มือ</h2>
+
+      <div class="tbl">
+        <table>
+          <thead><tr><th style="width:22%">ไฟล์</th><th style="width:16%">สถานะ</th><th>เนื้อหา</th></tr></thead>
+          <tbody>
+            <tr><td class="num-col"><code>index.html</code></td><td class="yes">เสร็จ</td><td>แผนที่ · เส้นทางอ่าน · ตารางเลือกเทคนิค · การตัดสินใจ</td></tr>
+            <tr><td class="num-col"><code>l0-foundation.html</code></td><td class="yes">เสร็จ</td><td>L0 ครบ + การแก้ไขจากการทบทวน</td></tr>
+            <tr><td class="num-col"><code>l1-design.html</code></td><td class="yes">เสร็จ</td><td>L1 ครบ 15 หัวข้อ + ตัวอย่างคำนวณทุกเทคนิค + การแก้ไข 4 จุด</td></tr>
+            <tr><td class="num-col"><code>l2-automation.html</code></td><td class="yes">เสร็จ</td><td>L2 ครบ 17 หัวข้อ + gate config + agent failure mode + gate drill</td></tr>
+            <tr><td class="num-col"><code>l3-nfr.html</code></td><td class="yes">เสร็จ</td><td>L3 ครบ 14 หัวข้อ · k6 ครบชุด · security 12 ส่วน · ไทย · การแก้ไข 6 จุด</td></tr>
+            <tr><td class="num-col"><code>l4-qe.html</code></td><td class="yes">เสร็จ</td><td>L4 ครบ 15 หัวข้อ · approval drill · learning loop · agentic QE · การแก้ไข 3 จุด</td></tr>
+            <tr><td class="num-col"><code>l5-advanced.html</code></td><td class="yes">เสร็จ</td><td>L5 ครบ 17 หัวข้อ · mutation · LLM eval · injection · การแก้ไข 3 จุด</td></tr>
+            <tr><td class="num-col"><code>appendix.html</code></td><td class="yes">เสร็จ</td><td>13 หัวข้อ (A–M) · fault-attacks 47 กฎ · gate catalog 47 · runbook + cron · แผนที่ลง S1–S8.6 · ข้อโต้แย้ง 15 ข้อ · การแก้ไข 28 จุด</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pager">
+        <span></span>
+        <a class="next" href="l0-foundation.html">
+          <span class="dir">ชั้นถัดไป →</span>
+          <span class="ttl">L0 — รากฐาน</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<button class="top" aria-label="กลับขึ้นบน">↑</button>
+<script src="assets/app.js"></script>
+</body>
+</html>

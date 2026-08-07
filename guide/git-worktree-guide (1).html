@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git Worktree — จากศูนย์ถึงเทพ | Reference Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e1113;
+  --surface:#141a1d;
+  --surface2:#1a2125;
+  --border:#242d32;
+  --border-soft:#1d2529;
+  --text:#e7e5de;
+  --text-dim:#a8b0ab;
+  --muted:#6d7873;
+  /* ระบบสีสองขั้ว: แชร์ = teal, per-worktree = ส้ม */
+  --shared:#45d0b2;
+  --shared-dim:rgba(69,208,178,.12);
+  --wt:#f2794f;
+  --wt-dim:rgba(242,121,79,.12);
+  --danger:#ef6a6a;
+  --danger-dim:rgba(239,106,106,.10);
+  --ok:#8fd06a;
+  --code-bg:#10161a;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans Thai',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--sans);font-weight:400;
+  line-height:1.75;font-size:16.5px;
+  -webkit-font-smoothing:antialiased;
+}
+.layout{display:grid;grid-template-columns:288px minmax(0,1fr);max-width:1240px;margin:0 auto}
+
+/* ---------- TOC : commit-graph rail ---------- */
+nav.toc{
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+  padding:36px 20px 48px 28px;
+  border-right:1px solid var(--border-soft);
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.toc-brand{font-family:var(--mono);font-size:12.5px;color:var(--muted);letter-spacing:.06em;margin-bottom:4px}
+.toc-title{font-weight:700;font-size:17px;margin-bottom:22px;line-height:1.35}
+.toc-title .accent{color:var(--wt)}
+.toc ul{list-style:none;position:relative}
+.toc ul::before{ /* เส้น branch */
+  content:"";position:absolute;left:5px;top:10px;bottom:10px;
+  width:2px;background:linear-gradient(var(--shared),var(--wt));opacity:.35;border-radius:2px;
+}
+.toc li{position:relative;padding-left:24px;margin:2px 0}
+.toc li::before{ /* จุด commit */
+  content:"";position:absolute;left:0;top:13px;width:12px;height:12px;
+  border-radius:50%;background:var(--bg);border:2px solid var(--border);
+  transition:border-color .2s,background .2s;
+}
+.toc li.lvl2{padding-left:40px}
+.toc li.lvl2::before{left:16px;width:8px;height:8px;top:15px;border-width:1.5px}
+.toc a{
+  display:block;color:var(--text-dim);text-decoration:none;
+  font-size:14px;padding:5px 8px;border-radius:6px;line-height:1.45;
+  transition:color .15s,background .15s;
+}
+.toc li.lvl2 a{font-size:13px;color:var(--muted)}
+.toc a:hover{color:var(--text);background:var(--surface)}
+.toc li.active::before{border-color:var(--wt);background:var(--wt)}
+.toc li.active a{color:var(--text);background:var(--surface)}
+.toc li.lvl2.active::before{border-color:var(--shared);background:var(--shared)}
+.toc .badge{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-right:7px}
+
+/* ---------- main ---------- */
+main{padding:52px 56px 120px;max-width:860px}
+section{margin-bottom:88px}
+
+/* hero */
+.hero{margin-bottom:76px}
+.hero-eyebrow{font-family:var(--mono);font-size:13px;color:var(--shared);letter-spacing:.08em;margin-bottom:14px}
+h1{font-size:44px;font-weight:700;line-height:1.2;letter-spacing:-.01em;margin-bottom:18px}
+h1 .accent{color:var(--wt)}
+.hero-sub{color:var(--text-dim);font-size:18px;max-width:620px;margin-bottom:26px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px}
+.chip{
+  font-family:var(--mono);font-size:12px;padding:5px 12px;border-radius:100px;
+  border:1px solid var(--border);color:var(--text-dim);background:var(--surface);
+}
+.chip.teal{border-color:rgba(69,208,178,.4);color:var(--shared)}
+.chip.orange{border-color:rgba(242,121,79,.4);color:var(--wt)}
+
+/* legend ระบบสี */
+.legend{
+  display:flex;gap:22px;flex-wrap:wrap;margin-top:30px;padding:16px 20px;
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  font-size:14px;color:var(--text-dim);
+}
+.legend .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:baseline}
+.legend .dot.s{background:var(--shared)}
+.legend .dot.w{background:var(--wt)}
+
+/* headings */
+h2{
+  font-size:29px;font-weight:700;letter-spacing:-.01em;
+  margin-bottom:6px;display:flex;align-items:center;gap:14px;line-height:1.3;
+  scroll-margin-top:28px;
+}
+.lv{
+  font-family:var(--mono);font-size:13px;font-weight:600;flex-shrink:0;
+  padding:4px 11px;border-radius:8px;letter-spacing:.04em;
+  background:var(--wt-dim);color:var(--wt);border:1px solid rgba(242,121,79,.3);
+}
+.lv.t{background:var(--shared-dim);color:var(--shared);border-color:rgba(69,208,178,.3)}
+h2 + .section-sub{color:var(--muted);font-size:15px;margin-bottom:30px;font-family:var(--mono)}
+h3{font-size:20px;font-weight:600;margin:40px 0 14px;scroll-margin-top:28px}
+h4{font-size:16.5px;font-weight:600;margin:26px 0 10px;color:var(--text)}
+p{margin-bottom:16px;color:var(--text-dim)}
+p strong,li strong{color:var(--text);font-weight:600}
+main ul,main ol{margin:0 0 18px 22px;color:var(--text-dim)}
+main li{margin-bottom:7px}
+a{color:var(--shared)}
+em{color:var(--text)}
+
+/* inline code */
+code{
+  font-family:var(--mono);font-size:.87em;
+  background:var(--surface2);border:1px solid var(--border-soft);
+  padding:2px 6px;border-radius:5px;color:#dcd9cf;white-space:nowrap;
+}
+h2 code,h3 code{font-size:.82em}
+
+/* code blocks + copy */
+.codeblock{position:relative;margin:18px 0 24px;border:1px solid var(--border);border-radius:12px;background:var(--code-bg);overflow:hidden}
+.codeblock .cb-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 14px;border-bottom:1px solid var(--border-soft);
+  font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.05em;
+}
+.codeblock pre{padding:16px 18px;overflow-x:auto;scrollbar-width:thin}
+.codeblock pre code{background:none;border:none;padding:0;white-space:pre;font-size:13.5px;line-height:1.7;color:#d5dbd6}
+.copy-btn{
+  font-family:var(--mono);font-size:11.5px;cursor:pointer;
+  background:var(--surface2);color:var(--text-dim);
+  border:1px solid var(--border);border-radius:6px;padding:4px 12px;
+  transition:all .15s;
+}
+.copy-btn:hover{color:var(--text);border-color:var(--muted)}
+.copy-btn.done{color:var(--ok);border-color:var(--ok)}
+.copy-btn:focus-visible{outline:2px solid var(--shared);outline-offset:2px}
+/* comment highlight ในโค้ด */
+.c{color:#5f6f68;font-style:italic}
+.hl-s{color:var(--shared)}
+.hl-w{color:var(--wt)}
+.hl-d{color:var(--danger)}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;margin:18px 0 26px;border:1px solid var(--border);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{
+  text-align:left;font-family:var(--mono);font-size:12px;font-weight:600;
+  letter-spacing:.05em;color:var(--muted);background:var(--surface);
+  padding:11px 16px;border-bottom:1px solid var(--border);white-space:nowrap;
+}
+td{padding:11px 16px;border-bottom:1px solid var(--border-soft);color:var(--text-dim);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td:first-child{color:var(--text)}
+th.col-s,td.col-s{box-shadow:inset 3px 0 0 var(--shared)}
+th.col-w,td.col-w{box-shadow:inset 3px 0 0 var(--wt)}
+
+/* callouts */
+.note{border:1px solid var(--border);border-left:3px solid var(--shared);background:var(--surface);border-radius:0 12px 12px 0;padding:16px 20px;margin:20px 0}
+.warn{border:1px solid var(--border);border-left:3px solid var(--danger);background:var(--danger-dim);border-radius:0 12px 12px 0;padding:16px 20px;margin:20px 0}
+.field{border:1px solid var(--border);border-left:3px solid var(--wt);background:var(--surface);border-radius:0 12px 12px 0;padding:16px 20px;margin:20px 0}
+.note p:last-child,.warn p:last-child,.field p:last-child{margin-bottom:0}
+.callout-tag{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em;display:block;margin-bottom:8px}
+.note .callout-tag{color:var(--shared)}
+.warn .callout-tag{color:var(--danger)}
+.field .callout-tag{color:var(--wt)}
+
+/* badges แชร์/แยก */
+.b-s,.b-w{font-family:var(--mono);font-size:11px;padding:2px 9px;border-radius:100px;white-space:nowrap;font-weight:500}
+.b-s{background:var(--shared-dim);color:var(--shared);border:1px solid rgba(69,208,178,.3)}
+.b-w{background:var(--wt-dim);color:var(--wt);border:1px solid rgba(242,121,79,.3)}
+
+/* pitfall numbering */
+.pit{display:flex;gap:16px;margin:34px 0 12px;align-items:baseline}
+.pit .pit-n{
+  font-family:var(--mono);font-size:13px;font-weight:600;flex-shrink:0;
+  width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+  border-radius:10px;background:var(--danger-dim);color:var(--danger);
+  border:1px solid rgba(239,106,106,.3);align-self:center;
+}
+.pit h3{margin:0;font-size:19px}
+
+/* quiz */
+details.quiz{border:1px solid var(--border);border-radius:12px;background:var(--surface);margin:12px 0;overflow:hidden}
+details.quiz summary{cursor:pointer;padding:13px 18px;font-size:15px;color:var(--text);list-style:none;position:relative;padding-right:44px}
+details.quiz summary::-webkit-details-marker{display:none}
+details.quiz summary::after{content:"+";position:absolute;right:18px;top:10px;font-family:var(--mono);color:var(--muted);font-size:18px;transition:transform .2s}
+details[open].quiz summary::after{transform:rotate(45deg)}
+details.quiz .ans{padding:0 18px 15px;color:var(--text-dim);font-size:14.5px;border-top:1px dashed var(--border-soft);padding-top:12px;margin:0 0}
+details.quiz .ans strong{color:var(--shared)}
+
+/* checklist */
+.checklist{border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:8px 0;margin:18px 0 26px}
+.checklist .ck-group{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.06em;padding:12px 20px 4px}
+.checklist label{
+  display:flex;gap:12px;padding:9px 20px;font-size:14.5px;color:var(--text-dim);
+  cursor:pointer;align-items:baseline;transition:background .15s;
+}
+.checklist label:hover{background:var(--surface2)}
+.checklist input{accent-color:var(--shared);margin-top:5px;flex-shrink:0;width:15px;height:15px;transform:translateY(2px)}
+.checklist input:checked + span{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--border)}
+
+/* tree diagrams */
+.tree{font-family:var(--mono);font-size:13px;line-height:1.85;color:var(--text-dim)}
+.tree .hl-s,.tree .hl-w{font-weight:500}
+
+/* divider ท้าย section */
+section::after{content:"";display:block;height:1px;background:linear-gradient(90deg,var(--border),transparent);margin-top:64px}
+section:last-of-type::after{display:none}
+
+footer{color:var(--muted);font-size:13px;font-family:var(--mono);padding-top:8px}
+
+/* responsive */
+@media (max-width:960px){
+  .layout{grid-template-columns:1fr}
+  nav.toc{position:relative;height:auto;border-right:none;border-bottom:1px solid var(--border-soft);padding:24px 24px 12px}
+  .toc ul{display:flex;flex-wrap:wrap;gap:2px 6px}
+  .toc ul::before{display:none}
+  .toc li,.toc li.lvl2{padding-left:0}
+  .toc li::before{display:none}
+  .toc li.lvl2{display:none}
+  main{padding:36px 22px 90px}
+  h1{font-size:33px}
+  h2{font-size:24px}
+}
+::selection{background:rgba(242,121,79,.28)}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc" aria-label="สารบัญ">
+  <div class="toc-brand">git worktree</div>
+  <div class="toc-title">จากศูนย์<span class="accent">ถึงเทพ</span></div>
+  <ul id="toc-list">
+    <li><a href="#l0"><span class="badge">L0</span>Mental Model</a></li>
+    <li class="lvl2"><a href="#l0-shared">แชร์ vs แยก</a></li>
+    <li class="lvl2"><a href="#l0-internals">.git ที่เป็นไฟล์</a></li>
+    <li><a href="#l1"><span class="badge">L1</span>Core Commands</a></li>
+    <li class="lvl2"><a href="#l1-add">add — 4 ท่า</a></li>
+    <li class="lvl2"><a href="#l1-remove">remove / prune</a></li>
+    <li class="lvl2"><a href="#l1-move">move / lock / repair</a></li>
+    <li class="lvl2"><a href="#l1-cheat">Cheat Sheet</a></li>
+    <li><a href="#l2"><span class="badge">L2</span>Workflow Patterns</a></li>
+    <li class="lvl2"><a href="#l2-layout">Directory Layouts</a></li>
+    <li class="lvl2"><a href="#l2-setup">Post-add Setup</a></li>
+    <li><a href="#l3"><span class="badge">L3</span>Internals เจาะลึก</a></li>
+    <li class="lvl2"><a href="#l3-anatomy">กายวิภาค worktrees/</a></li>
+    <li class="lvl2"><a href="#l3-refs">Refs & Cross-address</a></li>
+    <li class="lvl2"><a href="#l3-config">worktreeConfig / Hooks</a></li>
+    <li><a href="#l4"><span class="badge">L4</span>หลุมพราง 10 หลุม</a></li>
+    <li class="lvl2"><a href="#l4-check">Checklist กันพลาด</a></li>
+    <li><a href="#l5"><span class="badge">L5</span>ท่าเทพ / Agentic</a></li>
+    <li class="lvl2"><a href="#l5-bare">Bare Repo Layout</a></li>
+    <li class="lvl2"><a href="#l5-agents">Parallel Agents</a></li>
+    <li class="lvl2"><a href="#l5-scripts">Automation Scripts</a></li>
+    <li><a href="#lab"><span class="badge">LAB</span>Workshop ลงมือจริง</a></li>
+    <li class="lvl2"><a href="#lab13">Lab 1–3: ใช้งาน + internals</a></li>
+    <li class="lvl2"><a href="#lab46">Lab 4–6: ทำพัง ซ่อม กู้ bare</a></li>
+    <li><a href="#extras"><span class="badge">+9</span>เก็บตก</a></li>
+    <li><a href="#readiness"><span class="badge">✓</span>เช็คลิสความพร้อม</a></li>
+  </ul>
+</nav>
+
+<main>
+
+<header class="hero">
+  <div class="hero-eyebrow">REFERENCE GUIDE · ทุกคำสั่งผ่านการ demo จริงใน sandbox</div>
+  <h1>Git Worktree<br>จากศูนย์<span class="accent">ถึงเทพ</span></h1>
+  <p class="hero-sub">Repo เดียว หลาย working directory — จาก mental model ถึง bare-repo layout สำหรับ parallel AI agents ครบทั้ง internals, หลุมพราง, และ automation scripts ระดับ production</p>
+  <div class="hero-meta">
+    <span class="chip">L0 → L5 + เก็บตก 9 จุด</span>
+    <span class="chip orange">verified in sandbox</span>
+    <span class="chip">2026-07</span>
+  </div>
+  <div class="legend">
+    <span><span class="dot s"></span><strong>Teal = แชร์</strong> ทุก worktree (common dir)</span>
+    <span><span class="dot w"></span><strong>ส้ม = แยก</strong> ต่อ worktree ($GIT_DIR)</span>
+    <span style="color:var(--muted)">— ระบบสีนี้ใช้ทั้ง guide เพราะแกนของ worktree คือแยกสองอย่างนี้ให้ขาด</span>
+  </div>
+</header>
+
+<!-- ================= L0 ================= -->
+<section id="l0">
+  <h2><span class="lv">L0</span>Mental Model — worktree คืออะไรกันแน่</h2>
+  <p class="section-sub">หัวอ่านหลายหัว จานเดียว</p>
+
+  <h3>ปัญหาที่มันเกิดมาแก้</h3>
+  <p>Git ปกติ: <strong>1 repo = 1 working directory = checkout ได้ทีละ 1 branch</strong> พอทำงานค้างอยู่บน <code>feature/login</code> แล้วมี hotfix ด่วน ทางเลือกเดิมมี 3 ทาง และเจ็บทุกทาง:</p>
+  <ol>
+    <li><code>git stash</code> → เสี่ยง stash หาย, conflict ตอน pop, state ครึ่งๆ กลางๆ</li>
+    <li>commit WIP ทิ้งไว้ → history สกปรก ต้องมา amend/rebase ทีหลัง</li>
+    <li><code>git clone</code> repo ใหม่อีกก้อน → เปลือง disk, object database แยกกัน, ต้อง fetch/push ข้ามกัน</li>
+  </ol>
+  <p><strong>Worktree คือทางที่ 4:</strong> repo เดียว แต่มี working directory ได้หลายอัน แต่ละอัน checkout คนละ branch พร้อมกัน แชร์ object database เดียวกันหมด</p>
+
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code><span class="c"># อยู่ใน myapp/ ทำงาน feature อยู่</span>
+git worktree add ../myapp-hotfix hotfix/payment-bug
+
+<span class="c"># ตอนนี้มี 2 โฟลเดอร์ ทำงานอิสระต่อกัน</span>
+<span class="c"># myapp/         → feature/login (งานค้างอยู่เฉยๆ ไม่ต้องแตะ)</span>
+<span class="c"># myapp-hotfix/  → hotfix/payment-bug (แก้ด่วน เทส push ได้เลย)</span></code></pre></div>
+
+  <h3 id="l0-shared">Mental model: "หัวอ่านหลายหัว จานเดียว"</h3>
+  <p>Repo คือฮาร์ดดิสก์ (object database + refs) ส่วน worktree คือ<strong>หัวอ่าน</strong> — แต่ละหัวชี้คนละ branch ได้ แต่ข้อมูลข้างใต้คือก้อนเดียวกัน</p>
+
+  <div class="tbl-wrap"><table>
+    <thead><tr><th class="col-s">แชร์กันทุก worktree <span class="b-s">SHARED</span></th><th class="col-w">แยกต่อ worktree <span class="b-w">PER-WT</span></th></tr></thead>
+    <tbody>
+      <tr><td class="col-s">Object database — commit ในอันหนึ่ง อีกอันเห็น<strong>ทันที</strong> ไม่ต้อง push/pull</td><td class="col-w"><code>HEAD</code> — แต่ละอันอยู่คนละ branch</td></tr>
+      <tr><td class="col-s">Branches, tags (refs) — มีข้อยกเว้น 3 กลุ่ม ดู L3</td><td class="col-w">Index (staging) — stage ที่นี่ไม่กวนใคร</td></tr>
+      <tr><td class="col-s"><code>refs/stash</code> — <strong>stash แชร์!</strong> stash ที่ A ไป pop ที่ B ได้ = trick ย้ายงานข้าม worktree</td><td class="col-w">Working files</td></tr>
+      <tr><td class="col-s">Remotes, config หลัก, hooks</td><td class="col-w">ไฟล์ untracked/ignored: <code>node_modules</code>, <code>.env</code>, <code>.nuxt</code> ← จุดพลาดอันดับหนึ่ง (L4)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>worktree ≠ clone</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th></th><th><code>git clone</code> อีกก้อน</th><th><code>git worktree add</code></th></tr></thead>
+    <tbody>
+      <tr><td>Object database</td><td>แยกก้อน (เปลือง disk)</td><td>ก้อนเดียวกัน</td></tr>
+      <tr><td>Commit ข้ามกันเห็นไหม</td><td>ต้อง push/fetch</td><td>เห็นทันที (local)</td></tr>
+      <tr><td>Branch เดียว checkout 2 ที่</td><td>ทำได้ (แล้วพังตอน push)</td><td>Git <strong>ห้าม</strong>ทันที — เป็น feature ไม่ใช่ bug</td></tr>
+      <tr><td>Remote/config</td><td>ตั้งใหม่</td><td>ใช้ร่วมกัน</td></tr>
+      <tr><td>ลบทิ้ง</td><td><code>rm -rf</code> จบ</td><td>ต้อง <code>worktree remove</code> (ห้าม rm -rf — L4)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><span class="callout-tag">POINT ที่คนไม่รู้</span>
+    <p>Git ห้าม checkout <em>branch</em> เดียวกันซ้ำ แต่ <strong>detached HEAD ที่ commit เดียวกันหลาย worktree ได้</strong> — สำคัญมากกับ pattern agentic ใน L5 (reviewer checkout detached)</p>
+  </div>
+
+  <h3 id="l0-internals">Internals เบื้องต้น: <code>.git</code> ที่เป็น "ไฟล์" ไม่ใช่โฟลเดอร์</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash · จาก sandbox จริง</span><button class="copy-btn" type="button">copy</button></div><pre><code>cat ../myapp-hotfix/.git
+<span class="c"># gitdir: /home/dev/myapp/.git/worktrees/myapp-hotfix</span></code></pre></div>
+  <p>Worktree รอง <code>.git</code> เป็น <strong>text file บรรทัดเดียว</strong> ชี้กลับไปหา metadata ใน repo หลัก:</p>
+  <div class="codeblock"><div class="cb-head"><span>โครงสร้าง</span><button class="copy-btn" type="button">copy</button></div><pre><code class="tree">myapp/.git/
+├── <span class="hl-s">objects/</span>              ← แชร์กันหมด
+├── <span class="hl-s">refs/</span>                 ← แชร์กันหมด
+├── <span class="hl-w">HEAD</span>                  ← ของ worktree หลัก
+├── <span class="hl-w">index</span>                 ← ของ worktree หลัก
+└── worktrees/
+    └── myapp-hotfix/
+        ├── <span class="hl-w">HEAD</span>          ← ของ worktree รอง
+        ├── <span class="hl-w">index</span>         ← ของ worktree รอง
+        └── gitdir        ← ชี้กลับไปหา .git file</code></pre></div>
+  <p>นี่คือเหตุผลว่าทำไม<strong>ห้าม <code>rm -rf</code> worktree เฉยๆ</strong> — โฟลเดอร์หายแต่ metadata ค้าง กลายเป็น stale entry (วิธีแก้อยู่ L1/L4)</p>
+
+  <h3>เช็คความเข้าใจ L0</h3>
+  <details class="quiz"><summary>commit ใน worktree A แล้ว worktree B เห็นไหม โดยไม่ต้องทำอะไรเลย?</summary><p class="ans"><strong>เห็นทันที</strong> — object database ก้อนเดียวกัน ไม่มี push/fetch เกี่ยว</p></details>
+  <details class="quiz"><summary><code>git stash</code> ใน A แล้วไป <code>stash pop</code> ใน B ได้ไหม?</summary><p class="ans"><strong>ได้</strong> — <code>refs/stash</code> เป็น ref แชร์กัน ใช้เป็น trick ย้ายงานข้าม worktree ได้เนียนมาก (พิสูจน์แล้วใน sandbox)</p></details>
+  <details class="quiz"><summary>ทำไม Git ห้าม checkout branch เดียวกัน 2 worktree?</summary><p class="ans">กัน <strong>HEAD/index เหยียบกันเอง</strong> — สอง index base คนละ state บน branch เดียว = history แตกแขนง งงทั้ง repo</p></details>
+</section>
+
+<!-- ================= L1 ================= -->
+<section id="l1">
+  <h2><span class="lv">L1</span>Core Commands ครบทุกอันที่ใช้จริง</h2>
+  <p class="section-sub">add · list · remove · prune · move · lock · repair</p>
+
+  <h3 id="l1-add">1. <code>git worktree add</code> — 4 ท่าหลัก</h3>
+
+  <h4>ท่าที่ 1: มี branch อยู่แล้ว</h4>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree add ../myapp-hotfix hotfix/payment-bug</code></pre></div>
+
+  <h4>ท่าที่ 2: สร้าง branch ใหม่พร้อมกัน (ใช้บ่อยสุด)</h4>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code><span class="c"># -b = สร้าง branch ใหม่จาก HEAD ปัจจุบัน</span>
+git worktree add -b feature/new-login ../myapp-login
+
+<span class="c"># ระบุ base ชัดๆ (แนะนำ — อย่าพึ่ง HEAD ที่อาจลืมว่าอยู่ไหน)</span>
+git worktree add -b feature/new-login ../myapp-login origin/main
+
+<span class="c"># -B = force: branch มีอยู่แล้วให้ reset มาที่ base (ระวัง! ทับของเดิม)</span>
+git worktree add -B feature/new-login ../myapp-login origin/main</code></pre></div>
+
+  <h4>ท่าที่ 3: ขี้เกียจ — ให้เดา branch จากชื่อโฟลเดอร์</h4>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree add ../hotfix-123
+<span class="c"># = git worktree add -b hotfix-123 ../hotfix-123 HEAD</span>
+<span class="c"># ชื่อ branch = basename ของ path</span></code></pre></div>
+  <p>แถม: ถ้าชื่อ<strong>ตรงกับ remote branch ที่มีอยู่</strong> git จะทำ DWIM สร้าง local branch track remote ให้เลย (พฤติกรรมเดียวกับ <code>git checkout &lt;ชื่อ&gt;</code> — บังคับด้วย <code>--guess-remote</code>)</p>
+
+  <h4>ท่าที่ 4: detached HEAD</h4>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree add --detach ../myapp-test v2.1.0
+git worktree add --detach ../myapp-repro abc1234</code></pre></div>
+  <p>ใช้ตอน: เทส tag/commit เก่า, <strong>หลาย worktree จาก commit เดียวกัน</strong> (branch ทำไม่ได้ detach ทำได้), throwaway experiments, reviewer ที่ไม่ควรมีสิทธิ์ commit (L5)</p>
+
+  <h4>Flags เสริมที่ควรรู้</h4>
+  <div class="tbl-wrap"><table>
+    <tbody>
+      <tr><td><code>--no-checkout</code></td><td>สร้างแต่ยังไม่ checkout — ไว้ config sparse-checkout ก่อน (L5)</td></tr>
+      <tr><td><code>--lock --reason "..."</code></td><td>lock ตั้งแต่สร้าง กัน prune — เช่น worktree บน external drive</td></tr>
+      <tr><td><code>--track / --no-track</code></td><td>คุมว่า branch ใหม่ track upstream ไหม</td></tr>
+      <tr><td><code>--orphan</code></td><td>branch เปล่าไม่มี history (git ≥ 2.42) — gh-pages, docs (เก็บตก #1)</td></tr>
+      <tr><td><code>-f / --force</code></td><td>ยอม checkout branch ที่อันอื่นถือ — <strong>อย่าใช้</strong> (L4 หลุม 4)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>2. <code>git worktree list</code></h3>
+  <div class="codeblock"><div class="cb-head"><span>bash · จาก sandbox จริง</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree list
+<span class="c"># /home/dev/myapp          a1b2c3d [feature/login]   ← บรรทัดแรกเสมอ = main worktree</span>
+<span class="c"># /home/dev/myapp-hotfix   e4f5g6h [hotfix/payment-bug]</span>
+<span class="c"># /home/dev/myapp-test     i7j8k9l (detached HEAD)</span>
+
+git worktree list -v           <span class="c"># โชว์ lock reason + prunable status ← ใช้เป็น health check!</span>
+git worktree list --porcelain  <span class="c"># format สำหรับ script (L5)</span></code></pre></div>
+
+  <h3 id="l1-remove">3. <code>git worktree remove</code> — ลบให้ถูกวิธี</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree remove ../myapp-hotfix          <span class="c"># ลบโฟลเดอร์ + metadata ทีเดียว = สะอาด</span>
+git worktree remove --force ../x              <span class="c"># มี dirty/untracked → ต้อง --force</span>
+git worktree remove --force --force ../x      <span class="c"># ถูก lock → ต้อง -f สองที! (git บอกใน error เอง)</span></code></pre></div>
+  <div class="warn"><span class="callout-tag">⚠ REMOVE ≠ ลบ BRANCH</span>
+    <p><code>remove</code> ลบ <strong>worktree ไม่ใช่ branch</strong> — branch ยังอยู่ ต้องตามลบเอง: <code>git branch -d hotfix/payment-bug</code> (<code>-D</code> ถ้ายังไม่ merge)</p>
+  </div>
+
+  <h3>4. <code>git worktree prune</code> — เก็บกวาดซาก</h3>
+  <p>ใช้เมื่อมีคน (หรือคุณเอง 55) <code>rm -rf</code> โฟลเดอร์ worktree ดื้อๆ → metadata ค้าง อาการ:</p>
+  <div class="codeblock"><div class="cb-head"><span>bash · reproduced ใน sandbox</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree add ../myapp-hotfix hotfix/x
+<span class="hl-d"># fatal: 'hotfix/x' is already used by worktree at '../myapp-hotfix'</span>
+<span class="c"># ← แต่โฟลเดอร์ไม่มีอยู่แล้ว! = stale entry</span>
+
+git worktree list -v
+<span class="c"># .../myapp-oops  edd0ff4 [temp/oops]</span>
+<span class="c">#     prunable: gitdir file points to non-existent location   ← ป้ายบอกชัด</span>
+
+git worktree prune --dry-run -v   <span class="c"># ดูก่อนเสมอ (output ออก stderr นะ)</span>
+git worktree prune -v             <span class="c"># กวาดจริง</span></code></pre></div>
+  <p>บางคำสั่ง (เช่น <code>gc</code>) auto-prune ตาม <code>gc.worktreePruneExpire</code> (default 3 เดือน) — อย่ารอ auto, และจริงๆ ควร<strong>ปิด</strong> auto (L4 หลุม 1)</p>
+
+  <h3 id="l1-move">5. <code>git worktree move</code> — ย้ายที่</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree move ../myapp-hotfix ~/work/myapp-hotfix
+<span class="c"># git อัพเดต pointer สองขา (gitdir file + metadata) ให้เอง — ห้าม mv เอง!</span></code></pre></div>
+  <p>ข้อจำกัด: main worktree ย้ายด้วยคำสั่งนี้ไม่ได้, worktree ที่มี submodules ก็ move ไม่ได้</p>
+
+  <h3>6. <code>git worktree lock / unlock</code></h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree lock ../myapp-usb --reason "อยู่บน external drive ถอดออกบ่อย"
+git worktree unlock ../myapp-usb</code></pre></div>
+  <p>Use case: worktree บน network mount / USB — ถ้าไม่ lock วันที่ drive ไม่ได้เสียบ prune จะเห็นว่า "หายไป" แล้วลบ metadata ทิ้ง เสียบกลับมา = เป็ดง่อย</p>
+
+  <h3>7. <code>git worktree repair</code> — ซ่อม pointer ขาด</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree repair                    <span class="c"># รันจาก main — ซ่อม link ทุก worktree ที่ยังหาเจอ</span>
+git worktree repair /path/to/moved-wt  <span class="c"># บอก path ที่ worktree ย้ายไป</span></code></pre></div>
+  <p>ใช้เมื่อ: เผลอ <code>mv</code> เอง / ย้าย main repo (worktree รองชี้ผิดหมด) / copy repo ข้ามเครื่อง / mount path เปลี่ยนใน Docker</p>
+
+  <h3 id="l1-cheat">Cheat Sheet</h3>
+  <div class="codeblock"><div class="cb-head"><span>สรุป L1</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree add &lt;path&gt; &lt;branch&gt;            <span class="c"># มี branch แล้ว</span>
+git worktree add -b &lt;new&gt; &lt;path&gt; &lt;base&gt;     <span class="c"># สร้าง branch ใหม่</span>
+git worktree add --detach &lt;path&gt; &lt;ref&gt;      <span class="c"># detached</span>
+git worktree list -v                        <span class="c"># สถานะ + prunable/lock</span>
+git worktree remove &lt;path&gt;                  <span class="c"># ลบสะอาด (branch ไม่ลบ!)</span>
+git worktree prune --dry-run -v             <span class="c"># เช็คซาก → prune จริง</span>
+git worktree move &lt;old&gt; &lt;new&gt;               <span class="c"># ย้าย (ห้าม mv เอง)</span>
+git worktree lock/unlock &lt;path&gt;             <span class="c"># กัน prune</span>
+git worktree repair [&lt;path&gt;...]             <span class="c"># ซ่อม pointer</span></code></pre></div>
+
+  <h3>เช็คความเข้าใจ L1</h3>
+  <details class="quiz"><summary><code>worktree remove</code> แล้ว branch หายไหม?</summary><p class="ans"><strong>ไม่หาย</strong> — ต้อง <code>branch -d</code> แยกอีก step</p></details>
+  <details class="quiz"><summary>เผลอ <code>rm -rf</code> โฟลเดอร์ worktree ไปแล้ว ทำไง?</summary><p class="ans"><code>git worktree prune</code> (dry-run ก่อน) — แล้ว branch ที่ถูกซากล็อกจะลบได้</p></details>
+  <details class="quiz"><summary>เผลอ <code>mv</code> worktree ไปแล้ว ทำไง?</summary><p class="ans"><code>git worktree repair &lt;path ใหม่&gt;</code> — และรีบทำ เพราะระหว่างนั้นเป็น silent prunable (L4 หลุม 1)</p></details>
+  <details class="quiz"><summary>อยากได้ 3 worktree ที่ commit เดียวกันเป๊ะ?</summary><p class="ans">ได้ ด้วย <code>--detach</code> ทั้งสามอัน — branch เดียวกันซ้ำไม่ได้ แต่ detached commit เดียวกันได้ (พิสูจน์ใน sandbox)</p></details>
+</section>
+
+<!-- ================= L2 ================= -->
+<section id="l2">
+  <h2><span class="lv">L2</span>Workflow Patterns ที่ใช้จริง</h2>
+  <p class="section-sub">8 patterns · 3 layouts · post-add setup</p>
+
+  <h3>Pattern 1: Hotfix ระหว่างงานค้าง (ตัวจุดประกายของ worktree)</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code><span class="c"># กำลังทำ feature/login ค้างอยู่ ไฟล์แก้ครึ่งๆ กลางๆ ห้ามแตะ</span>
+git worktree add -b hotfix/TASK-512 ../myapp-hotfix origin/main
+cd ../myapp-hotfix
+<span class="c"># แก้ → test → commit → push → เปิด PR</span>
+git push -u origin hotfix/TASK-512
+cd ../myapp
+git worktree remove ../myapp-hotfix
+<span class="c"># กลับมา งานค้างอยู่ครบทุก byte ไม่เคยโดนแตะเลย</span></code></pre></div>
+  <p>จุดขายเทียบ stash: <strong>ไม่มี state transition เลย</strong> — stash คือ save/restore state (มีโอกาสพลาด) ส่วน worktree คืองานค้างไม่เคยขยับไปไหน risk = 0</p>
+
+  <h3>Pattern 2: Review PR โดยไม่หยุดงานตัวเอง</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git fetch origin
+git worktree add --detach ../myapp-review origin/pr-branch-name
+cd ../myapp-review &amp;&amp; pnpm install &amp;&amp; pnpm test
+<span class="c"># อ่านโค้ด รัน dev server — งานตัวเองอีกแท็บยังรันอยู่</span>
+git worktree remove --force ../myapp-review</code></pre></div>
+  <p>ใช้ <code>--detach</code> เพราะไม่ทิ้ง local branch ขยะ · <strong>ยกระดับ:</strong> เปิด dev server สองพอร์ต — <code>myapp/</code> พอร์ต 3000 (ของคุณ), <code>myapp-review/</code> พอร์ต 3001 (PR) → เทียบ UI สอง browser tab แบบ pixel-by-pixel ทำกับ stash ไม่ได้เด็ดขาด</p>
+
+  <h3>Pattern 3: Parallel builds / long-running tasks</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree add --detach ../myapp-ci HEAD
+(cd ../myapp-ci &amp;&amp; pnpm build &amp;&amp; pnpm test:e2e) &amp;   <span class="c"># รัน background</span>
+<span class="c"># commit ต่อใน worktree หลักได้เลย — build ไม่โดนไฟล์ที่แก้อยู่กวน</span></code></pre></div>
+  <p>แก้ปัญหาคลาสสิก: รัน e2e อยู่แล้วมือลั่น save ไฟล์ → HMR reload → test พัง แยก worktree = snapshot นิ่งสนิท</p>
+
+  <h3>Pattern 4: เทียบ behavior ข้าม version</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree add --detach ../myapp-v2.0 v2.0.0
+git worktree add --detach ../myapp-v2.1 v2.1.0
+<span class="c"># รันพร้อมกันคนละพอร์ต — ไล่หา regression / เป็นฐาน git bisect โดยไม่กวน worktree หลัก</span></code></pre></div>
+
+  <h3>Pattern 5: Deploy branch (gh-pages style)</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree add ../site gh-pages
+pnpm generate --out ../site        <span class="c"># build ลง worktree ตรงๆ</span>
+cd ../site &amp;&amp; git add -A &amp;&amp; git commit -m "deploy $(date +%F)" &amp;&amp; git push</code></pre></div>
+  <p>Use case ยอดนิยมอันดับต้นของ worktree ในโลกจริง — ก่อนหน้านี้ต้อง checkout สลับไปมาหรือใช้ repo แยก · คู่กับ <code>--orphan</code> ตอนสร้าง branch ครั้งแรก (เก็บตก #1)</p>
+
+  <h3>Pattern 6: Worktree ไม่ได้แต่งงานกับ branch</h3>
+  <p>จุดที่คนเข้าใจผิดเงียบๆ: worktree <strong>สลับ branch ข้างในได้อิสระ</strong>ด้วย <code>git switch</code> ปกติ (ติดแค่กติกา branch ต้องไม่ถูกอันอื่นถือ) — worktree คือ "ที่นั่ง" ไม่ใช่ "คู่ชีวิตของ branch" ตั้ง worktree ยืนพื้น 2–3 อันแล้วสลับ branch ข้างในก็เป็น workflow ที่ valid</p>
+
+  <h3 id="l2-layout">Pattern 7: Directory Layouts — วางยังไงไม่ให้รก</h3>
+  <div class="codeblock"><div class="cb-head"><span>แบบ A: siblings — เริ่มต้นง่ายสุด</span><button class="copy-btn" type="button">copy</button></div><pre><code class="tree">~/work/
+├── myapp/            ← main worktree
+├── myapp-hotfix/
+└── myapp-review/</code></pre></div>
+  <p>ข้อดี: ง่าย · ข้อเสีย: กระจาย, ชื่อชนกับ repo อื่น, <code>~/work</code> รกเร็ว</p>
+  <div class="codeblock"><div class="cb-head"><span>แบบ B: parent container — แนะนำสำหรับงานเดี่ยว</span><button class="copy-btn" type="button">copy</button></div><pre><code class="tree">~/work/myapp/
+├── main/              ← main worktree
+├── hotfix-TASK-512/
+└── review-pr-88/</code></pre></div>
+  <p>ข้อดี: ทุกอย่างใต้ร่มเดียว ลบทั้งโปรเจกต์ = ลบโฟลเดอร์เดียว · ข้อเสีย: path ลึกขึ้น, repo เดิมต้องย้าย</p>
+  <div class="codeblock"><div class="cb-head"><span>แบบ C: bare repo — ท่าเทพ เจาะเต็มใน L5</span><button class="copy-btn" type="button">copy</button></div><pre><code class="tree">~/work/myapp/
+├── .bare/             ← bare repo (ไม่มี working files)
+├── .git               ← file: "gitdir: ./.bare"
+├── main/
+├── feature-login/
+└── hotfix-TASK-512/</code></pre></div>
+  <p>ทุก worktree เท่าเทียม ไม่มี "main worktree พิเศษ" — เหมาะกับ agentic workflow ที่ spawn/destroy ตลอดเวลา · <strong>คำแนะนำตรงๆ:</strong> งานเดี่ยวใช้แบบ B พอ, parallel agents จริงจังค่อยไปแบบ C</p>
+
+  <h3>Pattern 8: ตั้งชื่อให้ future-you ไม่งง</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code><span class="hl-d"># ❌ git worktree add ../temp     / ../test2</span>
+<span class="c"># ✅ ผูกกับ ticket/purpose</span>
+git worktree add -b fix/TASK-512-payment ../myapp/fix-TASK-512
+git worktree add --detach ../myapp/review-pr-88 origin/feat-x</code></pre></div>
+  <p>กติกาเดียว: เห็นชื่อโฟลเดอร์แล้วรู้ทันทีว่า (1) ทำอะไร (2) ลบได้หรือยัง</p>
+
+  <h3 id="l2-setup">Post-add Setup — "worktree ใหม่ = โฟลเดอร์เปลือย"</h3>
+  <p>Worktree ใหม่มีเฉพาะ <strong>tracked files</strong> — <code>node_modules/</code>, <code>.env</code>, <code>.nuxt/</code> ไม่ตามมา (untracked/ignored) ทุก worktree ใหม่จึงมีพิธี 3 ขั้น:</p>
+  <div class="codeblock"><div class="cb-head"><span>bash · พิธี 3 ขั้น</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree add -b feat/x ../myapp/feat-x origin/main
+cd ../myapp/feat-x
+cp ../main/.env .        <span class="c"># ① env (ระวัง secret ต่างสภาพแวดล้อม — direnv ดีกว่า ดูเก็บตก #8)</span>
+pnpm install             <span class="c"># ② deps — pnpm store กลาง = hardlink เร็วระดับวินาที disk แทบไม่โต</span>
+pnpm nuxi prepare        <span class="c"># ③ .nuxt types — ไม่งั้น TS แดงทั้งจอ</span></code></pre></div>
+  <div class="note"><span class="callout-tag">INSIGHT</span>
+    <p>ปัญหานี้คือเหตุผลที่ "worktree + <strong>pnpm</strong>" ดีกว่า "worktree + npm" อย่างมีนัยยะ — pnpm ทำ hardlink จาก store กลางระดับเครื่อง ส่วน npm copy จริงทุก worktree · Script อัตโนมัติเวอร์ชัน production อยู่ L5</p>
+  </div>
+
+  <h3>เช็คความเข้าใจ L2</h3>
+  <details class="quiz"><summary>Review PR ควรใช้ <code>--detach</code> หรือสร้าง branch?</summary><p class="ans"><strong>detach</strong> — ไม่ทิ้ง branch ขยะ + reviewer ไม่ควร commit ได้อยู่แล้ว</p></details>
+  <details class="quiz"><summary>ทำไม build ใน worktree แยกดีกว่า build ที่เดิม?</summary><p class="ans"><strong>snapshot นิ่ง</strong> — ไม่โดนไฟล์ที่กำลังแก้/save กลางทางกวน</p></details>
+  <details class="quiz"><summary>Worktree ใหม่ทำไมรัน dev ไม่ขึ้น?</summary><p class="ans">ไม่มี <code>node_modules</code> / <code>.env</code> / <code>.nuxt</code> — เป็น untracked ไม่ตามมา ต้องทำพิธี 3 ขั้น</p></details>
+  <details class="quiz"><summary>Layout ไหนเหมาะกับ parallel agents?</summary><p class="ans"><strong>Bare repo (แบบ C)</strong> — ไม่มี worktree พิเศษ spawn/destroy ได้ทุกตัวเท่ากัน</p></details>
+</section>
+
+<!-- ================= L3 ================= -->
+<section id="l3">
+  <h2><span class="lv t">L3</span>Internals เจาะลึก — อ่านไส้ในให้ขาด</h2>
+  <p class="section-sub">anatomy · git-dir vs common-dir · refs · worktreeConfig · hooks</p>
+
+  <h3 id="l3-anatomy">1. กายวิภาคของ <code>.git/worktrees/&lt;name&gt;/</code></h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ไฟล์</th><th>หน้าที่</th><th>Insight</th></tr></thead>
+    <tbody>
+      <tr><td><code>HEAD</code> <span class="b-w">PER-WT</span></td><td>branch ปัจจุบันของ worktree นี้</td><td><code>ref: refs/heads/hotfix/payment-bug</code></td></tr>
+      <tr><td><code>index</code> <span class="b-w">PER-WT</span></td><td>staging area</td><td>binary แยกอิสระ — stage ที่นี่ไม่กวนใคร</td></tr>
+      <tr><td><code>gitdir</code></td><td>ชี้ไปหา <code>.git</code> <em>file</em> ฝั่ง worktree</td><td><strong>ลิงก์สองขา:</strong> ขานี้ + <code>.git</code> file ฝั่งโน้น ต้องตรงกันทั้งคู่ — repair ซ่อมขานี้</td></tr>
+      <tr><td><code>commondir</code></td><td>ชี้กลับหา common <code>.git</code></td><td>ค่า <code>../..</code> (relative) — ทุกอย่างที่ "แชร์" resolve ผ่านตัวนี้</td></tr>
+      <tr><td><code>ORIG_HEAD</code>, <code>MERGE_HEAD</code>, <code>COMMIT_EDITMSG</code> <span class="b-w">PER-WT</span></td><td>state ชั่วคราวของ operation</td><td>merge/rebase ค้างใน worktree หนึ่งไม่กวนอีกอัน</td></tr>
+      <tr><td><code>logs/</code> <span class="b-w">PER-WT</span></td><td>reflog ของ HEAD worktree นี้</td><td><strong>reflog HEAD แยก แต่ reflog branch แชร์</strong> — และมันถูกลบพร้อม metadata ตอน remove (L4 หลุม 2!)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>2. <code>--git-dir</code> vs <code>--git-common-dir</code> — สองพิกัดที่ script ต้องแยกให้ออก</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash · จาก sandbox จริง</span><button class="copy-btn" type="button">copy</button></div><pre><code><span class="c"># จาก worktree รอง:</span>
+git rev-parse --git-dir         <span class="hl-w"># /…/myapp/.git/worktrees/myapp-hotfix   ← ของส่วนตัว</span>
+git rev-parse --git-common-dir  <span class="hl-s"># /…/myapp/.git                           ← ของกลาง</span>
+
+<span class="c"># จาก main worktree: ทั้งคู่ = .git</span></code></pre></div>
+  <div class="warn"><span class="callout-tag">⚠ BUG คลาสสิกใน CI / HUSKY</span>
+    <p>กติกาเขียน script/hook: แตะ <span class="b-s">hooks, config, objects</span> → ใช้ <code>--git-common-dir</code> · แตะ <span class="b-w">HEAD, index</span> → ใช้ <code>--git-dir</code> — ใช้ผิดตัว = script พังเฉพาะตอนรันใน worktree รอง หาสาเหตุยากมาก</p>
+  </div>
+
+  <h3 id="l3-refs">3. Refs: แชร์เกือบหมด ยกเว้น 3 กลุ่ม + ท่า address ข้าม worktree</h3>
+  <p>Per-worktree refs (เก็บใน <code>$GIT_DIR</code> ไม่ใช่ common): <span class="b-w">HEAD</span> <span class="b-w">refs/bisect/*</span> <span class="b-w">refs/worktree/*</span> <span class="b-w">refs/rewritten/*</span></p>
+  <ul>
+    <li><code>refs/bisect/*</code> — <strong>bisect คนละ worktree พร้อมกันได้</strong> ไม่ตีกัน</li>
+    <li><code>refs/worktree/*</code> — namespace เก็บ ref ส่วนตัวของ worktree เอง (checkpoint ฯลฯ)</li>
+    <li><code>refs/rewritten/*</code> — state ของ <code>rebase --rebase-merges</code></li>
+  </ul>
+  <div class="codeblock"><div class="cb-head"><span>bash · cross-address จาก sandbox จริง</span><button class="copy-btn" type="button">copy</button></div><pre><code><span class="c"># อ่าน per-worktree ref ของอันอื่น:</span>
+git rev-parse worktrees/myapp-hotfix/HEAD
+<span class="c"># อ่านของ main จาก worktree รอง:</span>
+git rev-parse main-worktree/HEAD</code></pre></div>
+  <div class="field"><span class="callout-tag">🔬 จุดแหลมจากสนามจริง</span>
+    <p><code>&lt;name&gt;</code> ใน <code>worktrees/&lt;name&gt;/HEAD</code> คือชื่อ <strong>metadata dir ตอน add</strong> ไม่ใช่ชื่อโฟลเดอร์ปัจจุบัน — เรา move worktree ไป <code>myapp-hotfix-moved</code> แล้วชื่อ address ยังเป็น <code>myapp-hotfix</code> · เขียน script ต้องอ่านจาก <code>worktree list --porcelain</code> เท่านั้น อย่าเดาจาก path</p>
+  </div>
+
+  <h3 id="l3-config">4. <code>extensions.worktreeConfig</code> — config แยกต่อ worktree</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git config extensions.worktreeConfig true   <span class="c"># เปิดครั้งเดียวต่อ repo — ทำก่อนเสมอ!</span>
+git config --worktree &lt;key&gt; &lt;value&gt;         <span class="c"># เขียนเฉพาะ worktree ปัจจุบัน</span>
+
+<span class="c"># เก็บที่: main → .git/config.worktree</span>
+<span class="c">#         รอง → .git/worktrees/&lt;name&gt;/config.worktree</span>
+<span class="c"># precedence: config.worktree &gt; .git/config &gt; global &gt; system</span></code></pre></div>
+  <div class="warn"><span class="callout-tag">⚠ ต้นทุนของ EXTENSION</span>
+    <p>เปิดแล้ว <strong>git &lt; 2.20 จะอ่าน repo นี้ไม่ได้เลย</strong> (unknown extension = ปฏิเสธทั้ง repo) — ทีมที่ git เก่าปนใหม่ต้องเช็คก่อน · และถ้าใช้ <code>--worktree</code> โดยไม่เปิด extension: git ใหม่เปิดให้อัตโนมัติ แต่ git เก่าบางตัวเขียนลง config รวม = key รั่วทุก worktree — เปิด explicit เองปลอดภัยสุด</p>
+  </div>
+
+  <h3>5. Hooks — จุดที่คนงงบ่อยสุด</h3>
+  <p>กติกา: <strong>hooks อยู่ใน common dir</strong> (<code>.git/hooks/</code>) <span class="b-s">SHARED</span> — มีชุดเดียวใช้ทุก worktree ผลตามมา:</p>
+  <ul>
+    <li>ตั้ง husky / pre-commit ครั้งเดียว ใช้ทุก worktree ✅</li>
+    <li>แต่ hook <em>รันจาก worktree ที่ trigger</em> — ถ้า worktree นั้น <code>pnpm install</code> ยังไม่ครบ → hook พังเฉพาะที่นั่น · อาการ "commit ได้ใน main แต่ commit ไม่ได้ใน worktree ใหม่" 90% คือ node_modules ไม่ครบแล้ว lint-staged หาไม่เจอ</li>
+    <li>อยาก hooks ต่างกันต่อ worktree: <code>git config --worktree core.hooksPath .git-hooks-experimental</code></li>
+  </ul>
+
+  <h3>6. สิ่งที่แชร์อีกชุดที่มักลืม</h3>
+  <ul>
+    <li><code>git fetch</code> จาก worktree ไหนก็ตาม → อัพเดต refs กลาง <strong>fetch ครั้งเดียวพอทั้ง repo</strong></li>
+    <li><code>packed-refs</code>, <code>FETCH_HEAD</code> แชร์</li>
+    <li>Partial clone (<code>--filter=blob:none</code>) เข้ากับ worktree ได้ดี — objects โหลด on-demand เข้า store กลาง ทุก worktree ได้ประโยชน์ร่วม (combo ใน L5)</li>
+  </ul>
+
+  <h3>แผนที่สรุป: อะไรอยู่ไหน</h3>
+  <div class="codeblock"><div class="cb-head"><span>SHARED vs PER-WORKTREE</span><button class="copy-btn" type="button">copy</button></div><pre><code class="tree"><span class="hl-s">SHARED (common dir — resolve ผ่าน commondir)</span>     <span class="hl-w">PER-WORKTREE ($GIT_DIR)</span>
+├── <span class="hl-s">objects/</span>          ← ทุก commit/blob           ├── <span class="hl-w">HEAD + logs/HEAD</span> (reflog HEAD)
+├── <span class="hl-s">refs/heads|tags</span>   ← branches/tags             ├── <span class="hl-w">index</span> (staging)
+├── <span class="hl-s">refs/stash</span>        ← stash แชร์!               ├── <span class="hl-w">refs/bisect/ worktree/ rewritten/</span>
+├── <span class="hl-s">packed-refs, FETCH_HEAD</span>                       ├── <span class="hl-w">ORIG_HEAD, MERGE_HEAD, COMMIT_EDITMSG</span>
+├── <span class="hl-s">config</span>            ← config รวม                ├── <span class="hl-w">config.worktree</span> (ถ้าเปิด extension)
+├── <span class="hl-s">hooks/</span>            ← ชุดเดียวทุก worktree      ├── gitdir (ขากลับ — ลิงก์สองขา)
+└── <span class="hl-s">info/exclude</span>                                  └── commondir (ขาไปหาของกลาง)</code></pre></div>
+
+  <h3>เช็คความเข้าใจ L3</h3>
+  <details class="quiz"><summary>Hook script ควรใช้ <code>--git-dir</code> หรือ <code>--git-common-dir</code> หา hooks path?</summary><p class="ans"><strong>common-dir</strong> — hooks เป็นของกลาง</p></details>
+  <details class="quiz"><summary>Bisect สอง worktree พร้อมกัน ตีกันไหม?</summary><p class="ans"><strong>ไม่</strong> — <code>refs/bisect</code> เป็น per-worktree</p></details>
+  <details class="quiz"><summary><code>worktrees/&lt;name&gt;/HEAD</code> — name มาจากไหน?</summary><p class="ans">ชื่อ <strong>metadata dir ตอน add</strong> — ไม่เปลี่ยนตาม move</p></details>
+  <details class="quiz"><summary>เปิด <code>extensions.worktreeConfig</code> มีต้นทุนอะไร?</summary><p class="ans">git &lt; 2.20 เปิด repo <strong>ไม่ได้เลย</strong></p></details>
+  <details class="quiz"><summary><code>git fetch</code> ใน A แล้ว B ต้อง fetch ซ้ำไหม?</summary><p class="ans"><strong>ไม่ต้อง</strong> — refs กลาง</p></details>
+</section>
+
+<!-- ================= L4 ================= -->
+<section id="l4">
+  <h2><span class="lv">L4</span>หลุมพราง 10 หลุม — แผลจริง + วิธีกัน</h2>
+  <p class="section-sub">3 หลุมแรกพิสูจน์เลือดจริงใน sandbox</p>
+
+  <div class="pit"><div class="pit-n">01</div><h3>Silent prunable — ร้ายแรงสุด</h3></div>
+  <p><strong>อาการ:</strong> <code>mv</code> worktree เอง → ทุกอย่าง<strong>ยังใช้งานได้ปกติ</strong> commit ได้ push ได้ ไม่มี error ใดๆ — เพราะขา worktree→repo ยังดี แต่ขา repo→worktree ขาด main repo มองเป็น <code>prunable</code> เงียบๆ วันไหน <code>gc</code> ทำงาน (auto trigger จาก fetch/commit ธรรมดาได้) → metadata (HEAD, index, reflog) โดนกวาด = งานใน worktree นั้นเป็นเป็ดทันที<strong>โดยไม่มีอาการเตือนล่วงหน้า</strong> — failure mode แบบ silent ที่แย่ที่สุด</p>
+  <div class="codeblock"><div class="cb-head"><span>bash · กันตัวเอง</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree list -v          <span class="c"># ทำเป็นนิสัย — เห็น prunable ที่ไม่ตั้งใจ = repair ทันที</span>
+git config gc.worktreePruneExpire never   <span class="c"># ปิด auto-prune ให้ prune ด้วยมือเท่านั้น (แนะนำ)</span></code></pre></div>
+
+  <div class="pit"><div class="pit-n">02</div><h3>Commit บน detached แล้ว remove = งานหาย(เกือบ)ถาวร</h3></div>
+  <div class="field"><span class="callout-tag">🔬 จากสนามจริง — reproduce ใน sandbox</span>
+    <p>Commit "งานสำคัญ 3 ชม" บน detached HEAD → <code>worktree remove</code> ผ่านฉลุย<strong>โดยไม่มีคำเตือนสักคำ</strong> (working tree สะอาดเพราะ commit แล้ว — ไม่ต้อง --force ด้วยซ้ำ) → reflog ของ worktree ถูกลบพร้อม metadata (L3 ข้อ 1) → commit กลายเป็น dangling ไม่อยู่ใน branch ไหนเลย</p>
+  </div>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code><span class="c"># ทางรอดสุดท้าย (ได้ผลจนกว่า gc จะกวาด หลังจากนั้นหายถาวรจริง):</span>
+git fsck --lost-found
+<span class="c"># dangling commit 5b183c0…  → git show ตรวจ → tag/branch เก็บ</span>
+
+<span class="c"># กันตัวเอง: ก่อน remove worktree ที่ detached เสมอ —</span>
+git tag archive/exp-$(date +%s) HEAD    <span class="c"># หรือ git branch keep/exp HEAD</span></code></pre></div>
+
+  <div class="pit"><div class="pit-n">03</div><h3>ลบ branch ที่ worktree ถืออยู่ — git กันให้ แต่มีรู</h3></div>
+  <div class="codeblock"><div class="cb-head"><span>bash · จาก sandbox จริง</span><button class="copy-btn" type="button">copy</button></div><pre><code>git branch -D hotfix/payment-bug
+<span class="hl-d"># error: cannot delete branch … used by worktree at '…'   ← กันให้ ✅</span>
+
+<span class="c"># แต่! ซาก stale (rm -rf ไปแล้ว) ก็ล็อก branch ด้วย:</span>
+<span class="c"># อาการ "ลบ branch ไม่ได้ทั้งที่ไม่มีใครใช้" = มีซากค้าง</span>
+git worktree prune &amp;&amp; git branch -D temp/zombie   <span class="c"># prune ก่อนถึงลบได้</span></code></pre></div>
+  <p>เช่นเดียวกัน <code>git rebase</code> / <code>pull --rebase</code> บน branch ที่ worktree อื่น checkout อยู่จะโดนปฏิเสธ — เจตนาเดียวกัน กัน HEAD คนอื่นลอย</p>
+
+  <div class="pit"><div class="pit-n">04</div><h3><code>--force</code> checkout branch ซ้ำ = ยิงเท้าตัวเอง slow-motion</h3></div>
+  <p>สอง worktree ชี้ branch เดียว: commit ฝั่ง A → index ฝั่ง B ยัง base commit เก่า → <code>git status</code> โชว์ diff ประหลาด → เผลอ commit ทับ = history แตกแขนงบน branch เดียว งงทั้ง repo · <strong>ข้อสรุปเดียว: อย่าใช้ <code>-f</code> ท่านี้เด็ดขาด</strong> อยาก 2 ที่ commit เดียวกัน → <code>--detach</code></p>
+
+  <div class="pit"><div class="pit-n">05</div><h3>Untracked/ignored ไม่ตามมา — ครอบครัว "ทำไมรันไม่ขึ้น"</h3></div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>หาย</th><th>อาการ</th></tr></thead>
+    <tbody>
+      <tr><td><code>node_modules/</code></td><td><code>Cannot find module</code> / husky hook พังตอน commit</td></tr>
+      <tr><td><code>.env</code></td><td>app ขึ้นแต่ API 500, <code>undefined</code> env vars</td></tr>
+      <tr><td><code>.nuxt/</code>, <code>.output/</code></td><td>ต้อง <code>nuxi prepare</code> ใหม่ ไม่งั้น types หาย TS แดงทั้งจอ</td></tr>
+      <tr><td><code>dist/</code>, cache</td><td>build ช้ารอบแรก (แค่รำคาญ)</td></tr>
+    </tbody>
+  </table></div>
+  <p>แก้ด้วยพิธี 3 ขั้น (L2) หรือ script <code>wt-new</code> (L5)</p>
+
+  <div class="pit"><div class="pit-n">06</div><h3>Submodules — โซนขรุขระสุด</h3></div>
+  <ul>
+    <li><code>worktree add</code> <strong>ไม่ init submodules ให้</strong> — ต้อง <code>git submodule update --init --recursive</code> เองทุกอันใหม่</li>
+    <li><code>worktree move</code> <strong>ปฏิเสธ</strong> worktree ที่มี submodule</li>
+    <li>Submodule <code>.git</code> ซ้อนกันข้าม worktree มีเคส edge เยอะ (โดยเฉพาะ submodule ที่สลับ branch)</li>
+  </ul>
+  <p>คำแนะนำตรง: repo ที่พึ่ง submodule หนัก ลดความคาดหวังกับ worktree หรือเปลี่ยนเป็น pnpm workspace / subtree ถ้าทำได้</p>
+
+  <div class="pit"><div class="pit-n">07</div><h3>IDE / LSP / file watcher — ศัตรูเงียบ</h3></div>
+  <ul>
+    <li>หลาย worktree ใน VS Code หลายหน้าต่าง = file watcher × N, TS server × N — RAM หายเป็น GB</li>
+    <li>Extension เก่าบางตัว resolve repo แล้วงงกับ <code>.git</code>-เป็นไฟล์</li>
+    <li><strong>ปวดหัวคลาสสิก:</strong> search/replace ทั้ง project ใน IDE ที่เปิด parent folder (layout B/C) → แก้ไฟล์<strong>ข้าม worktree</strong>โดยไม่รู้ตัว</li>
+  </ul>
+  <p>กัน: 1 หน้าต่าง IDE = 1 worktree, ห้ามเปิด parent, worktree ของ agent ไม่ต้องเปิด IDE เลย</p>
+
+  <div class="pit"><div class="pit-n">08</div><h3>Env vars <code>GIT_DIR</code> / <code>GIT_WORK_TREE</code> รั่วข้าม</h3></div>
+  <p>Script บางตัว (deploy เก่า, dotfiles bare-repo trick) export <code>GIT_DIR</code> ค้างใน shell → git ทุกคำสั่ง<strong>เมิน directory ปัจจุบัน</strong> · อาการ: <code>cd</code> ไป worktree แล้วแต่ <code>git status</code> โชว์ของอีก repo เหมือนผีหลอก</p>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>env | grep -E "GIT_(DIR|WORK_TREE|INDEX_FILE)"   <span class="c"># เช็คก่อนเมื่อเจออาการเพี้ยน</span>
+unset GIT_DIR GIT_WORK_TREE</code></pre></div>
+
+  <div class="pit"><div class="pit-n">09</div><h3>Disk — objects แชร์ แต่ working files ไม่แชร์</h3></div>
+  <p>Worktree ประหยัดเฉพาะฝั่ง <code>.git</code> — working files คือ copy เต็มทุกอัน · repo 500MB × 10 worktree = 5GB ไม่รวม node_modules ต่ออัน · แก้: sparse-checkout ต่อ worktree (L5), lifecycle discipline ลบทันทีที่จบงาน, pnpm</p>
+
+  <div class="pit"><div class="pit-n">10</div><h3>Absolute path ใน metadata — Docker/ย้ายเครื่องแล้วพัง</h3></div>
+  <p>จาก L3: <code>gitdir</code> เก็บ <strong>absolute path</strong> → ย้าย main repo, rename parent, copy ข้ามเครื่อง, mount path เปลี่ยน (Docker!) = ลิงก์ขาดทุก worktree · ทางแก้: <code>git worktree repair</code> เป็น entrypoint step หรือดีกว่า — <code>--relative-paths</code> / <code>worktree.useRelativePaths true</code> (git ≥ 2.48, เก็บตก #7) แก้ที่ต้นเหตุ</p>
+
+  <h3 id="l4-check">📋 Checklist กันพลาด (แปะข้างจอ)</h3>
+  <div class="checklist">
+    <label><input type="checkbox"><span>ห้าม <code>mv</code> / <code>rm -rf</code> worktree — ใช้ <code>worktree move</code> / <code>remove</code> เท่านั้น</span></label>
+    <label><input type="checkbox"><span><code>git worktree list -v</code> เป็นประจำ — เห็น prunable ที่ไม่ตั้งใจ = repair ทันที</span></label>
+    <label><input type="checkbox"><span><code>gc.worktreePruneExpire=never</code> ถ้าอยากคุม prune ด้วยมือ</span></label>
+    <label><input type="checkbox"><span>ก่อน remove detached worktree → tag/branch งานไว้ก่อน (reflog หายพร้อม metadata)</span></label>
+    <label><input type="checkbox"><span>ลบ branch ไม่ได้ทั้งที่ไม่มีใครใช้ = มีซาก → prune ก่อน</span></label>
+    <label><input type="checkbox"><span>ห้าม <code>worktree add -f</code> ทับ branch ที่ถูกถือ — ใช้ <code>--detach</code> แทน</span></label>
+    <label><input type="checkbox"><span>Worktree ใหม่: <code>.env</code> → <code>pnpm install</code> → <code>nuxi prepare</code> (พิธี 3 ขั้น)</span></label>
+    <label><input type="checkbox"><span>repo มี submodule: <code>submodule update --init</code> ทุก worktree + ห้าม move</span></label>
+    <label><input type="checkbox"><span>IDE เปิดต่อ worktree อย่าเปิด parent folder</span></label>
+    <label><input type="checkbox"><span>git เพี้ยนผิดที่ → เช็ค env <code>GIT_DIR</code>/<code>GIT_WORK_TREE</code> รั่ว</span></label>
+    <label><input type="checkbox"><span>Docker/ย้ายเครื่อง → <code>repair</code> เป็น step แรก หรือ relative paths (git ≥ 2.48)</span></label>
+  </div>
+</section>
+
+<!-- ================= L5 ================= -->
+<section id="l5">
+  <h2><span class="lv">L5</span>ท่าเทพ — Bare Repo + Parallel Agents + Automation</h2>
+  <p class="section-sub">layout สำหรับ spawn/destroy ตลอดเวลา</p>
+
+  <h3 id="l5-bare">1. Bare Repo Layout — สูตร 4 ขั้น</h3>
+  <p>ปัญหาของ layout ปกติ: main worktree เป็น "พลเมืองพิเศษ" — ลบไม่ได้, ถือ <code>.git</code> จริง, ทุก worktree ผูกชีวิตกับมัน ถ้า workflow คือ spawn/destroy worktree ตาม task ควรไม่มีใครพิเศษ:</p>
+  <div class="codeblock"><div class="cb-head"><span>bash · สูตร 4 ขั้น (ท่องได้เลย)</span><button class="copy-btn" type="button">copy</button></div><pre><code>mkdir myapp &amp;&amp; cd myapp
+git clone --bare git@github.com:you/myapp.git .bare
+echo "gitdir: ./.bare" &gt; .git
+git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"   <span class="hl-w"># ← ขั้นที่ทุก tutorial ลืม</span>
+git fetch origin
+git worktree add main main</code></pre></div>
+  <div class="warn"><span class="callout-tag">⚠ ทำไมต้องแก้ REFSPEC</span>
+    <p><code>clone --bare</code> ตั้งใจมาเป็น server (mirror refs ตรงๆ ไม่มี <code>origin/*</code> tracking) พอเอามาเป็นฐาน worktree → <code>git fetch</code> ไม่อัพเดต <code>origin/main</code> → <code>git status</code> ไม่โชว์ ahead/behind, <code>worktree add … origin/main</code> ชี้ของเก่า — อาการงงระดับชาติถ้าไม่รู้สาเหตุ · ยืนยันใน sandbox: refspec ของ bare clone <strong>ว่างเปล่า</strong>จริง</p>
+  </div>
+  <p>หลัง setup: <code>worktree list</code> บรรทัดแรกคือ <code>.bare (bare)</code> — ไม่มี worktree ไหนพิเศษ ลบได้ทุกตัว</p>
+  <div class="field"><span class="callout-tag">🔬 บทเรียน BASH แถมจากสนามจริง</span>
+    <p>ระหว่าง demo: <code>git clone … 2&gt;&amp;1 | head -1</code> ทำ clone <strong>ตายกลางทางด้วย SIGPIPE</strong> — head อ่านบรรทัดเดียวแล้วปิด pipe, clone โดน kill เงียบๆ แถม pipe กลืน exit code ทำให้ <code>&amp;&amp;</code> วิ่งต่อเหมือนไม่มีอะไรเกิดขึ้น · กติกา: อย่า pipe คำสั่งที่ต้องรันจนจบเข้า <code>head</code></p>
+  </div>
+
+  <h3 id="l5-agents">2. Parallel AI Agents — worktree คือ isolation layer ของ agent fleet</h3>
+  <p>เหตุผลที่ worktree กลับมาฮอตยุค agentic: <strong>1 agent = 1 worktree = 1 branch</strong> — Claude Code หลายตัวรันพร้อมกันโดยไฟล์ไม่เหยียบกัน, commit แยกเส้น, ทิ้ง workspace ได้ทั้งก้อนเมื่อ task จบ</p>
+  <div class="codeblock"><div class="cb-head"><span>layout</span><button class="copy-btn" type="button">copy</button></div><pre><code class="tree">myapp/
+├── .bare/
+├── main/                    ← มนุษย์ + preview gate อยู่ที่นี่
+├── agent-TASK-501/           ← Claude Code ตัวที่ 1 (S4 worker)
+├── agent-TASK-502/           ← Claude Code ตัวที่ 2
+└── review-TASK-501/          ← Codex reviewer checkout แยก (อ่านอย่างเดียว)</code></pre></div>
+
+  <h4>a) Port allocation — deterministic จาก task id</h4>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>PORT=$((3000 + ${TASK_ID#TASK-} % 1000))</code></pre></div>
+
+  <h4>b) Shared state คือดาบสองคม</h4>
+  <p>refs แชร์ = agent A เห็น branch ของ agent B ด้วย โดยหลักไม่เป็นไร แต่ <strong>fail-closed ต้องมี</strong>: gate ควรเช็คว่า diff ของ task แตะเฉพาะไฟล์ในขอบเขต และ commit อยู่บน branch ที่ถูกต้องเท่านั้น — deterministic check ก่อน LLM review</p>
+
+  <h4>c) Reviewer ใช้ <code>--detach</code></h4>
+  <p>Reviewer ไม่ควรมีสิทธิ์ commit โดยบังเอิญ — checkout detached ที่ commit ที่จะ review = อ่านได้เต็มที่ push ทับ branch ไม่ได้โดย accident (vendor independence + least privilege ในท่าเดียว)</p>
+
+  <h4>d) Lifecycle ผูกกับ pipeline stage ไม่ใช่ผูกกับใจ</h4>
+  <p>Worktree เกิดตอน dispatch, ตายตอน approve/reject — เขียนลง SQLite ว่า task ไหนถือ worktree ไหน แล้วมี janitor กวาด orphan:</p>
+  <div class="codeblock"><div class="cb-head"><span>bash · janitor</span><button class="copy-btn" type="button">copy</button></div><pre><code><span class="c"># ลบ worktree ที่ task จบแล้ว (สถานะจาก SQLite)</span>
+git worktree list --porcelain | awk '/^worktree /{print $2}' | while read -r wt; do
+  name=$(basename "$wt")
+  [[ $name == agent-* ]] || continue
+  status=$(sqlite3 pipeline.db "SELECT status FROM runs WHERE worktree='$name'")
+  if [[ $status == "done" || $status == "rejected" ]]; then
+    git worktree remove --force "$wt" &amp;&amp; echo "reaped: $name"
+  fi
+done
+git worktree prune</code></pre></div>
+
+  <h3 id="l5-scripts">3. <code>wt-new</code> เวอร์ชัน production</h3>
+  <p>Resolve path จริงจาก <code>worktree list</code> ไม่ hardcode — ใช้ได้ทุก layout รวมพิธี 3 ขั้นในตัว:</p>
+  <div class="codeblock"><div class="cb-head"><span>bash · wt-new &lt;branch&gt; [base]</span><button class="copy-btn" type="button">copy</button></div><pre><code>#!/usr/bin/env bash
+<span class="c"># wt-new &lt;branch&gt; [base] — สร้าง worktree + setup ครบ ใช้ได้ทุก layout</span>
+set -euo pipefail
+
+branch=$1 base=${2:-origin/main}
+root=$(git worktree list --porcelain | head -1 | cut -d' ' -f2)   <span class="c"># resolve จริง ไม่ hardcode</span>
+dir="$root/${branch//\//-}"                                       <span class="c"># feat/x → feat-x</span>
+
+git fetch origin -q
+git worktree add -b "$branch" "$dir" "$base"
+cd "$dir"
+
+<span class="c"># พิธี 3 ขั้น (L4 หลุม 5)</span>
+main_wt=$(git worktree list --porcelain | awk '/^worktree /{print $2}' | grep -E '/main$' | head -1)
+[[ -n ${main_wt:-} &amp;&amp; -f $main_wt/.env ]] &amp;&amp; cp "$main_wt/.env" .
+command -v pnpm &gt;/dev/null &amp;&amp; [[ -f package.json ]] &amp;&amp; pnpm install
+[[ -f nuxt.config.ts ]] &amp;&amp; pnpm nuxi prepare
+
+echo "✅ $dir พร้อมใช้"</code></pre></div>
+  <p>หมายเหตุ bare layout: <code>list --porcelain</code> บรรทัดแรกคือ <code>.bare</code> → <code>root</code> = parent อัตโนมัติ · <code>.env</code> resolve จาก worktree ชื่อ <code>main</code> จริงๆ ไม่ใช่ path relative</p>
+
+  <h3>4. Sparse-checkout + partial clone combo — worktree เบาเฉพาะทาง</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash · repo ใหญ่ agent แตะบางโฟลเดอร์</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree add --no-checkout agent-TASK-501 -b task/TASK-501 origin/main
+cd agent-TASK-501
+git sparse-checkout set components server/api      <span class="c"># cone mode (default)</span>
+git checkout                                        <span class="c"># เพิ่ง materialize ไฟล์ตรงนี้</span></code></pre></div>
+  <div class="note"><span class="callout-tag">จุดเชื่อม L3</span>
+    <p><code>sparse-checkout</code> ใน worktree จะ<strong>เปิด <code>extensions.worktreeConfig</code> ให้อัตโนมัติ</strong> — เพราะ <code>core.sparseCheckout</code> ต้องเป็น per-worktree (ไม่งั้น sparse ลามทุกอัน) นี่คือเหตุผลที่ L3 บอกให้เปิด extension เอง explicit ตั้งแต่ต้น จะไม่เจอ side effect โผล่มางง · Combo กับ <code>clone --bare --filter=blob:none</code> = fetch objects เฉพาะที่ checkout จริง → agent worktree ใช้ disk + เวลา spawn ต่ำสุด</p>
+  </div>
+
+  <h3>เช็คความเข้าใจ L5</h3>
+  <details class="quiz"><summary>ทำไม <code>clone --bare</code> ต้องแก้ fetch refspec?</summary><p class="ans">bare ตั้งใจเป็น <strong>server</strong> — mirror refs ตรงๆ ไม่มี <code>origin/*</code> tracking ต้องเติมเอง</p></details>
+  <details class="quiz"><summary>Reviewer agent ควร checkout ยังไง?</summary><p class="ans"><code>--detach</code> — <strong>least privilege</strong> อ่านได้ commit ทับไม่ได้</p></details>
+  <details class="quiz"><summary>Sparse-checkout ใน worktree ไปยุ่งอะไรกับ L3?</summary><p class="ans">Auto-เปิด <code>worktreeConfig</code> เพราะ <code>core.sparseCheckout</code> ต้อง per-worktree</p></details>
+  <details class="quiz"><summary>บทเรียน bash แถมจาก demo?</summary><p class="ans"><code>| head -1</code> ทำ clone ตายด้วย <strong>SIGPIPE</strong> + pipe กลืน exit code 55</p></details>
+</section>
+
+<!-- ================= LAB / WORKSHOP ================= -->
+<section id="lab">
+  <h2><span class="lv t">LAB</span>Workshop ลงมือจริง — 6 Labs</h2>
+  <p class="section-sub">รันได้จริงทุกคำสั่ง · scratch repo ไม่แตะ repo จริง · ~30 นาทีจบ</p>
+
+  <h3 id="lab13">Lab 0: สร้างสนามซ้อม (2 นาที)</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash · copy ทั้งก้อนวางได้เลย</span><button class="copy-btn" type="button">copy</button></div><pre><code>mkdir -p ~/wt-lab &amp;&amp; cd ~/wt-lab
+git init myapp -b main &amp;&amp; cd myapp
+git config user.email lab@test.com &amp;&amp; git config user.name Lab
+echo "console.log('myapp')" &gt; index.ts &amp;&amp; git add . &amp;&amp; git commit -m init -q
+echo "v1" &gt; api.ts &amp;&amp; git add . &amp;&amp; git commit -m "add api" -q
+git branch hotfix/payment-bug
+git log --oneline &amp;&amp; git branch</code></pre></div>
+  <div class="note"><span class="callout-tag">EXPECTED</span><p>2 commits (<code>add api</code>, <code>init</code>) + 2 branches (<code>main</code>, <code>hotfix/payment-bug</code>) — สนามพร้อม</p></div>
+
+  <h3>Lab 1: Hotfix ระหว่างงานค้าง (ครอบ L1–L2)</h3>
+  <p><strong>เป้าหมาย:</strong> พิสูจน์ว่างานค้างไม่ถูกแตะแม้แต่ byte เดียวระหว่างทำ hotfix</p>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code><span class="c"># ① สร้างงานค้าง (ห้าม commit — นี่แหละจุดที่ stash เคยบังคับเรา)</span>
+echo "งานค้างครึ่งทาง" &gt;&gt; index.ts
+
+<span class="c"># ② แยกไปทำ hotfix โดยไม่แตะงานค้าง</span>
+git worktree add ../myapp-hotfix hotfix/payment-bug
+cd ../myapp-hotfix
+echo "fixed" &gt; payment.ts &amp;&amp; git add . &amp;&amp; git commit -m "fix payment" -q
+
+<span class="c"># ③ กลับมาตรวจ + เก็บกวาด</span>
+cd ../myapp
+git status --short          <span class="c"># ต้องเห็น " M index.ts" — งานค้างอยู่ครบ!</span>
+git log --oneline hotfix/payment-bug -1   <span class="c"># เห็น commit จาก worktree ทันที</span>
+git worktree remove ../myapp-hotfix
+git worktree list</code></pre></div>
+  <div class="note"><span class="callout-tag">EXPECTED</span><p><code>status</code> ยังโชว์ <code>M index.ts</code> ไม่เปลี่ยน · commit <code>fix payment</code> มองเห็นจาก main worktree โดยไม่ต้อง push/fetch · <code>list</code> เหลือ worktree เดียว</p></div>
+  <details class="quiz"><summary>🏆 โจทย์ท้าทาย: ทำ pattern review ด้วย <code>--detach</code> ที่ commit <code>fix payment</code> แล้วลบทิ้งโดยไม่เหลือ branch ขยะ</summary><p class="ans"><code>git worktree add --detach ../review hotfix/payment-bug</code> → ตรวจงาน → <code>git worktree remove ../review</code> — ไม่มี branch ใหม่เกิดขึ้นเลย เช็คด้วย <code>git branch</code></p></details>
+
+  <h3>Lab 2: พิสูจน์ internals ด้วยตาตัวเอง (ครอบ L0 + L3)</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree add -b feat/login ../myapp-login main
+
+<span class="c"># ① .git เป็นไฟล์ ไม่ใช่โฟลเดอร์</span>
+cat ../myapp-login/.git
+
+<span class="c"># ② สองพิกัด</span>
+cd ../myapp-login
+git rev-parse --git-dir --git-common-dir
+
+<span class="c"># ③ stash ข้าม worktree</span>
+echo wip &gt; wip.ts &amp;&amp; git add wip.ts &amp;&amp; git stash -q
+cd ../myapp &amp;&amp; git stash list &amp;&amp; git stash pop -q &amp;&amp; ls wip.ts
+
+<span class="c"># ④ protection: branch ซ้ำ = fatal</span>
+git checkout feat/login
+rm wip.ts</code></pre></div>
+  <div class="note"><span class="callout-tag">EXPECTED</span><p>① <code>gitdir: …/.git/worktrees/myapp-login</code> ② git-dir ≠ common-dir ③ stash จาก login โผล่มา pop ใน main ได้ — <code>refs/stash</code> แชร์จริง ④ <code>fatal: 'feat/login' is already used by worktree…</code></p></div>
+
+  <h3 id="lab46">Lab 3: ทำพังเอง — ซ่อมเอง (ครอบ L4 หลุม 1, 3)</h3>
+  <p><strong>เป้าหมาย:</strong> เจอ zombie branch + silent prunable ด้วยมือตัวเอง จะได้จำขึ้นใจ</p>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code><span class="c"># ① rm -rf ผิดวิธี → zombie</span>
+git worktree add -b temp/oops ../myapp-oops
+rm -rf ../myapp-oops
+git branch -D temp/oops               <span class="c"># โดนปฏิเสธ! ซากล็อก branch</span>
+git worktree list -v                  <span class="c"># เห็น prunable: …non-existent location</span>
+git worktree prune -v &amp;&amp; git branch -D temp/oops   <span class="c"># prune ก่อน ค่อยลบได้</span>
+
+<span class="c"># ② mv ผิดวิธี → silent prunable → repair</span>
+mv ../myapp-login ../myapp-login-moved
+cd ../myapp-login-moved &amp;&amp; git status -sb   <span class="c"># ยังใช้ได้ปกติ = กับดักเงียบ!</span>
+cd ../myapp &amp;&amp; git worktree list -v         <span class="c"># แต่ฝั่งนี้เห็น prunable</span>
+git worktree repair ../myapp-login-moved
+git worktree list -v                          <span class="c"># prunable หาย = ซ่อมครบสองขา</span></code></pre></div>
+  <details class="quiz"><summary>🏆 โจทย์: ทำไมข้อ ② <code>git status</code> ใน worktree ที่ mv แล้วยังทำงานได้ แต่ถือว่าพัง?</summary><p class="ans">เพราะลิงก์<strong>สองขา</strong> (L3): ขา worktree→metadata (<code>.git</code> file) ยังถูก แต่ขา metadata→worktree (<code>gitdir</code>) ชี้ path เก่าที่ไม่มีแล้ว — main repo จึงมองเป็น prunable ถ้า gc auto-prune มากวาด metadata (HEAD/index/reflog) จะหายถาวรโดยไม่มีคำเตือน</p></details>
+
+  <h3>Lab 4: กู้ commit ที่ "หายไปแล้ว" (ครอบ L4 หลุม 2)</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree add --detach ../myapp-exp HEAD
+cd ../myapp-exp
+echo "งานสำคัญ 3 ชม" &gt; important.ts &amp;&amp; git add . &amp;&amp; git commit -m "important experiment" -q
+git rev-parse --short HEAD            <span class="c"># จด hash ไว้ (สมมติในใจว่าลืม 55)</span>
+cd ../myapp
+git worktree remove ../myapp-exp     <span class="c"># ผ่านฉลุย ไม่มีคำเตือน!</span>
+git log --all --oneline | grep important || echo "หายจากทุก branch!"
+
+<span class="c"># กู้:</span>
+git fsck --lost-found                 <span class="c"># เจอ dangling commit</span>
+<span class="c"># git branch rescued &lt;hash จาก fsck&gt;  ← เอา hash ที่ message ตรงมาผูก branch</span></code></pre></div>
+  <div class="note"><span class="callout-tag">EXPECTED</span><p><code>remove</code> ไม่เตือนอะไรเลยทั้งที่ commit ยังไม่อยู่ใน branch ไหน · <code>fsck</code> เจอ <code>dangling commit</code> → ผูก branch กลับมาได้ · <strong>บทเรียน:</strong> ก่อน remove detached → tag ก่อนเสมอ</p></div>
+
+  <h3>Lab 5: Bare repo layout เต็มรูปแบบ (ครอบ L5)</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>cd ~/wt-lab &amp;&amp; mkdir myapp-bare &amp;&amp; cd myapp-bare
+git clone --bare ../myapp .bare      <span class="c"># ห้าม pipe เข้า head! (SIGPIPE — เจ็บมาแล้ว)</span>
+echo "gitdir: ./.bare" &gt; .git
+
+git config remote.origin.fetch        <span class="c"># ดูก่อนแก้: ว่าง/แปลก = ปัญหา refspec ของ bare</span>
+git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+git fetch origin &amp;&amp; git branch -r     <span class="c"># ตอนนี้ origin/* ครบ</span>
+
+git worktree add main main
+git worktree add hotfix hotfix/payment-bug
+git worktree list                     <span class="c"># บรรทัดแรก .bare (bare) — ไม่มีใครพิเศษ</span></code></pre></div>
+  <details class="quiz"><summary>🏆 โจทย์: ลอง<strong>ข้าม</strong>ขั้นแก้ refspec แล้วสังเกตอาการอะไร?</summary><p class="ans">สร้าง layout ใหม่โดยไม่แก้ refspec → <code>git fetch</code> ผ่านแต่ <code>git branch -r</code> ว่าง/ไม่ครบ → <code>worktree add x origin/main</code> ชี้ของเก่าหรือ fatal — นี่คืออาการ "งงระดับชาติ" ที่ guide เตือน</p></details>
+
+  <h3>Lab 6 (Final Boss): เขียน <code>wt-new</code> ของตัวเอง</h3>
+  <p><strong>โจทย์:</strong> เขียน script ที่ (1) resolve root จาก <code>worktree list --porcelain</code> ไม่ hardcode (2) สร้าง worktree จาก branch ใหม่ (3) copy <code>.env</code> จาก worktree ชื่อ <code>main</code> ถ้ามี — ทดสอบใน layout bare จาก Lab 5 แล้วเทียบกับเฉลย (เวอร์ชันเต็มอยู่ <a href="#l5-scripts">L5 ข้อ 3</a>)</p>
+  <div class="codeblock"><div class="cb-head"><span>bash · เก็บกวาดสนามซ้อมเมื่อจบ</span><button class="copy-btn" type="button">copy</button></div><pre><code>cd ~ &amp;&amp; rm -rf ~/wt-lab   <span class="c"># สนามซ้อมลบทั้งยวงได้ — repo จริงห้ามทำแบบนี้นะ 55</span></code></pre></div>
+</section>
+
+<!-- ================= เก็บตก ================= -->
+<section id="extras">
+  <h2><span class="lv t">+9</span>เก็บตก — จุดเสริมให้ครบจริง</h2>
+  <p class="section-sub">ตรวจย้อนรอบสุดท้ายก่อนปิดเล่ม</p>
+
+  <h3>#1 <code>--orphan</code> (git ≥ 2.42) — worktree จาก branch เปล่า</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree add --orphan docs ../myapp/docs</code></pre></div>
+  <p>Branch เปล่าไม่มี history — <code>gh-pages</code>, branch เก็บ artifacts, เอกสารที่ไม่อยากลาก history โค้ดไปด้วย · ก่อน 2.42 ต้องท่ายาก (<code>--no-checkout</code> + <code>switch --orphan</code>) ตอนนี้บรรทัดเดียว</p>
+
+  <h3>#2 Deploy branch pattern</h3>
+  <p>รวมเข้า L2 Pattern 5 แล้ว — build ลง worktree ของ <code>gh-pages</code> ตรงๆ ไม่ต้อง checkout สลับ</p>
+
+  <h3>#3 Worktree ไม่ได้แต่งงานกับ branch</h3>
+  <p>รวมเข้า L2 Pattern 6 แล้ว — <code>git switch</code> ข้างใน worktree ได้อิสระ worktree คือ "ที่นั่ง"</p>
+
+  <h3>#4 <code>git maintenance</code> — ระเบิดเวลาอีกลูกของ auto-prune</h3>
+  <p>L4 ปิด <code>gc.worktreePruneExpire</code> แล้ว แต่ถ้าเครื่องเปิด <code>git maintenance start</code> (บาง tool เปิดให้เงียบๆ เช่น VS Code ecosystem บางตัว) มันรัน gc ตาม schedule ตัวเอง:</p>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git config maintenance.auto
+crontab -l | grep git        <span class="c"># ให้แน่ใจว่า policy prune เราคุมจริง</span></code></pre></div>
+
+  <h3>#5 Perf ต่อ worktree สำหรับ repo ใหญ่</h3>
+  <p><code>core.fsmonitor</code> และ <code>core.untrackedCache</code> ทำงาน<strong>ต่อ worktree</strong> (daemon แยกตัว) — เปิดเฉพาะอันที่มนุษย์นั่งทำงาน ไม่ต้องเปิดใน agent worktree อายุสั้น:</p>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git config --worktree core.fsmonitor true   <span class="c"># เฉพาะ main/ ที่นั่งจริง</span></code></pre></div>
+
+  <h3>#6 Script ให้กันขาด — <code>--porcelain -z</code></h3>
+  <p>Path มีช่องว่าง/อักขระแปลกจะพัง awk ธรรมดา — janitor/script จริงจังใช้:</p>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git worktree list --porcelain -z | tr '\0' '\n'   <span class="c"># NUL-delimited ปลอดภัยกว่า</span></code></pre></div>
+
+  <h3>#7 <code>--relative-paths</code> มีคู่ config (git ≥ 2.48)</h3>
+  <div class="codeblock"><div class="cb-head"><span>bash</span><button class="copy-btn" type="button">copy</button></div><pre><code>git config worktree.useRelativePaths true   <span class="c"># ทุก worktree ใหม่เก็บ relative path อัตโนมัติ</span></code></pre></div>
+  <p>เหมาะกับ Docker/ย้ายเครื่อง ไม่ต้องจำ flag ต่อครั้ง — แก้ L4 หลุม 10 ที่ต้นเหตุ</p>
+
+  <h3>#8 <code>.env</code> ต่าง worktree ด้วย direnv</h3>
+  <p>แต่ละ worktree ต้อง env ต่างกันจริง (คนละพอร์ต คนละ DB) — <code>direnv</code> + <code>.envrc</code> ต่อโฟลเดอร์เนียนกว่า copy <code>.env</code> เพราะ auto-load/unload ตอน <code>cd</code> และไม่มีวันหยิบผิดไฟล์:</p>
+  <div class="codeblock"><div class="cb-head"><span>agent-TASK-501/.envrc</span><button class="copy-btn" type="button">copy</button></div><pre><code>export PORT=3501
+export DATABASE_URL=postgres://localhost/myapp_task501</code></pre></div>
+
+  <h3>#9 Git LFS ใช้กับ worktree ได้ดี</h3>
+  <p>LFS objects เก็บใน common dir <span class="b-s">SHARED</span> → แชร์ทุก worktree ไม่โหลดซ้ำ ✅ · จุดเดียวที่ต้องรู้: <code>git lfs install</code> ติด hooks ซึ่ง (L3) hooks แชร์กลาง = ติดครั้งเดียวพอทั้ง repo</p>
+</section>
+
+<!-- ================= readiness ================= -->
+<section id="readiness">
+  <h2><span class="lv t">✓</span>เช็คลิสความพร้อม — ก่อนใช้จริงทั้งระบบ</h2>
+  <p class="section-sub">3 ระดับ: เครื่อง/repo → workflow → agent pipeline</p>
+
+  <div class="checklist">
+    <div class="ck-group">ระดับเครื่อง / REPO</div>
+    <label><input type="checkbox"><span><code>git --version</code> ≥ 2.38 (คำสั่งครบ) / ≥ 2.48 ถ้าจะใช้ relative paths</span></label>
+    <label><input type="checkbox"><span>pnpm (ไม่ใช่ npm) — store กลางคือหัวใจของ spawn เร็ว</span></label>
+    <label><input type="checkbox"><span>เปิด <code>extensions.worktreeConfig</code> เอง explicit (กัน side effect จาก sparse)</span></label>
+    <label><input type="checkbox"><span><code>gc.worktreePruneExpire = never</code> + เช็ค <code>git maintenance</code> ไม่แอบรัน</span></label>
+    <label><input type="checkbox"><span>ตัดสินใจ layout: parent-container (งานเดี่ยว) หรือ bare (agent fleet)</span></label>
+    <label><input type="checkbox"><span>Bare layout: แก้ fetch refspec แล้ว <code>+refs/heads/*:refs/remotes/origin/*</code></span></label>
+  </div>
+
+  <div class="checklist">
+    <div class="ck-group">ระดับ WORKFLOW</div>
+    <label><input type="checkbox"><span>มี <code>wt-new</code> script (สร้าง+setup) และ naming convention ผูก task id</span></label>
+    <label><input type="checkbox"><span>พิธี 3 ขั้นหลัง add: <code>.env</code> → <code>pnpm install</code> → <code>nuxi prepare</code> (อยู่ใน script แล้ว)</span></label>
+    <label><input type="checkbox"><span>กติกา remove: detached ต้อง tag ก่อน / ใช้ <code>worktree remove</code> เท่านั้น ห้าม rm -rf</span></label>
+    <label><input type="checkbox"><span><code>git worktree list -v</code> อยู่ใน health check ประจำ (จับ prunable/stale)</span></label>
+    <label><input type="checkbox"><span>IDE: 1 หน้าต่าง = 1 worktree ห้ามเปิด parent</span></label>
+  </div>
+
+  <div class="checklist">
+    <div class="ck-group">ระดับ AGENT PIPELINE</div>
+    <label><input type="checkbox"><span>1 agent = 1 worktree = 1 branch — สร้างตอน dispatch ลบหลัง human gate</span></label>
+    <label><input type="checkbox"><span>Port allocation deterministic จาก task id</span></label>
+    <label><input type="checkbox"><span>Reviewer checkout <code>--detach</code> เสมอ — อ่านได้ commit ทับไม่ได้</span></label>
+    <label><input type="checkbox"><span>Gate เช็ค: diff อยู่ในขอบเขตไฟล์ + commit บน branch ถูกต้อง (deterministic ก่อน LLM)</span></label>
+    <label><input type="checkbox"><span>Janitor: SQLite เป็น source of truth ของ lifecycle, prune ท้าย run</span></label>
+    <label><input type="checkbox"><span>Docker/Cloud Run: <code>worktree repair</code> เป็น entrypoint step หรือ relative paths</span></label>
+  </div>
+
+  <footer>
+    git worktree — จากศูนย์ถึงเทพ · L0–L5 + เก็บตก 9 จุด · ทุกคำสั่งผ่านการ demo จริงใน sandbox · 2026-07
+  </footer>
+</section>
+
+<script>
+// ---------- copy buttons ----------
+document.querySelectorAll('.codeblock').forEach(block => {
+  const btn = block.querySelector('.copy-btn')
+  const code = block.querySelector('pre code')
+  if (!btn || !code) return
+  btn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(code.textContent)
+      btn.textContent = 'copied ✓'
+      btn.classList.add('done')
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('done') }, 1600)
+    } catch (e) {
+      // fallback: เลือกข้อความให้ user กด cmd/ctrl+C เอง
+      const range = document.createRange()
+      range.selectNodeContents(code)
+      const sel = window.getSelection()
+      sel.removeAllRanges(); sel.addRange(range)
+      btn.textContent = 'กด Ctrl+C'
+    }
+  })
+})
+
+// ---------- scrollspy ----------
+const tocLinks = [...document.querySelectorAll('#toc-list a')]
+const targets = tocLinks
+  .map(a => document.getElementById(a.getAttribute('href').slice(1)))
+  .filter(Boolean)
+
+const setActive = id => {
+  tocLinks.forEach(a => {
+    const li = a.parentElement
+    li.classList.toggle('active', a.getAttribute('href') === '#' + id)
+  })
+}
+
+const spy = new IntersectionObserver(entries => {
+  // เลือกอันบนสุดที่กำลัง intersect
+  const visible = entries.filter(e => e.isIntersecting)
+    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+  if (visible.length) {
+    const id = visible[0].target.id
+    setActive(id)
+    const li = document.querySelector('#toc-list a[href="#' + id + '"]')?.parentElement
+    li?.scrollIntoView({ block: 'nearest' })
+  }
+}, { rootMargin: '-8% 0px -70% 0px', threshold: 0 })
+
+targets.forEach(t => spy.observe(t))
+</script>
+
+</main>
+</div>
+</body>
+</html>
